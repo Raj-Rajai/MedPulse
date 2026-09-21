@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS students (
     phone TEXT,
     posting_unit TEXT DEFAULT 'RHTC - Rural Health Training Center',
     college_id INTEGER REFERENCES colleges(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'Active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

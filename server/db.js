@@ -79,6 +79,18 @@ function initDatabase() {
             VALUES (1, 'admin', 'Dr. Rajesh Mehta (HOD Community Medicine)', '9999', 'admin@medpulse.edu', 'Super Admin')
         `).run();
 
+        // Auto-seed survey data (Roll 235) if families table is empty
+        const familyCountRow = db.prepare('SELECT COUNT(*) as count FROM families').get();
+        if (!familyCountRow || familyCountRow.count === 0) {
+            console.log('🌱 No survey records found in database. Auto-seeding Roll 235 survey data...');
+            try {
+                const { seedRoll235 } = require('./seed-roll235');
+                seedRoll235(db);
+            } catch (seedErr) {
+                console.error('⚠️ Could not auto-seed Roll 235 data:', seedErr.message);
+            }
+        }
+
         console.log('✅ SQLite Database ready at:', dbPath);
     } catch (err) {
         console.error('❌ Error initializing database:', err);

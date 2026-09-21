@@ -3,38 +3,46 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 const dbPath = path.join(__dirname, '..', 'database', 'health_survey.db');
-const db = new DatabaseSync(dbPath);
 
-console.log('Seeding Roll 235 Real Field Survey Data from Roll235.pdf...');
+function seedRoll235(targetDb) {
+    const db = targetDb || new DatabaseSync(dbPath);
 
-// Parse JSON generated from Roll235.pdf
-const parsedJsonPath = path.join(__dirname, '..', 'database', 'roll235_parsed.json');
-let membersData = [];
+    console.log('🌱 Seeding Roll 235 Real Field Survey Data from Roll235.pdf...');
 
-if (fs.existsSync(parsedJsonPath)) {
-    membersData = JSON.parse(fs.readFileSync(parsedJsonPath, 'utf8'));
-} else {
-    const fallbackPath = path.join(__dirname, 'roll235_parsed.json');
-    if (fs.existsSync(fallbackPath)) {
-        membersData = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+    // Parse JSON generated from Roll235.pdf
+    const parsedJsonPath = path.join(__dirname, '..', 'database', 'roll235_parsed.json');
+    let membersData = [];
+
+    if (fs.existsSync(parsedJsonPath)) {
+        membersData = JSON.parse(fs.readFileSync(parsedJsonPath, 'utf8'));
+    } else {
+        const fallbackPath = path.join(__dirname, 'roll235_parsed.json');
+        if (fs.existsSync(fallbackPath)) {
+            membersData = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+        }
     }
-}
 
-if (!membersData || membersData.length === 0) {
-    console.error('Error: Could not load roll235_parsed.json');
-    process.exit(1);
-}
+    if (!membersData || membersData.length === 0) {
+        console.error('Error: Could not load roll235_parsed.json');
+        return { error: 'Could not load roll235_parsed.json' };
+    }
 
-// Ensure Student 1 (Roll 235 - Dhruv Patel) exists
-let student = db.prepare("SELECT * FROM students WHERE roll_number = '235'").get();
-if (!student) {
+    // Ensure default College 1 exists
     db.prepare(`
-        INSERT INTO students (roll_number, name, pin, academic_year, college_id, email, phone, posting_unit, status)
-        VALUES ('235', 'Dhruv Patel', '1234', '3rd Year MBBS (PSM Batch 2024-25)', 1, 'dhruv.patel@medpulse.edu', '+91 98765 43210', 'Community Medicine Unit 3', 'Active')
+        INSERT OR IGNORE INTO colleges (id, name, code, city, state)
+        VALUES (1, 'GMERS Medical College & Hospital', 'GMERS-01', 'Ahmedabad', 'Gujarat')
     `).run();
-    student = db.prepare("SELECT * FROM students WHERE roll_number = '235'").get();
-}
-const studentId = student.id;
+
+    // Ensure Student 1 (Roll 235 - Dhruv Patel) exists
+    let student = db.prepare("SELECT * FROM students WHERE roll_number = '235'").get();
+    if (!student) {
+        db.prepare(`
+            INSERT INTO students (roll_number, name, pin, batch_year, college_id, email, phone, posting_unit, status)
+            VALUES ('235', 'Dhruv Patel', '1234', '3rd Year MBBS (PSM Batch 2024-25)', 1, 'dhruv.patel@medpulse.edu', '+91 98765 43210', 'Community Medicine Unit 3', 'Active')
+        `).run();
+        student = db.prepare("SELECT * FROM students WHERE roll_number = '235'").get();
+    }
+    const studentId = student.id;
 
 // Delete previous families and cascade delete for clean slate for student 1
 const oldFamilies = db.prepare('SELECT id FROM families WHERE student_id = ?').all(studentId);
@@ -428,5 +436,13 @@ for (const item of followUpsToSeed) {
     }
 }
 
-console.log(`Successfully created ${totalFollowUps} longitudinal follow-up records for Roll 235.`);
-console.log('Seed synchronization complete!');
+    console.log(`Successfully created ${totalFollowUps} longitudinal follow-up records for Roll 235.`);
+    console.log('Seed synchronization complete!');
+    return { familiesCount: Object.keys(familiesMap).length, followUpsCount: totalFollowUps };
+}
+
+module.exports = { seedRoll235 };
+
+if (require.main === module) {
+    seedRoll235();
+}
