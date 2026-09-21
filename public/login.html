@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Sign-In | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar Navigation -->
+  <!-- Sidebar Navigation (Collapsible Icon Dock) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="link-label">Home</span>
+      </a>
+      <a href="/family-manage.html" class="sidebar-link" data-route="families" data-title="Families">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="link-label">Families</span>
+      </a>
+      <a href="/entry.html" class="sidebar-link" data-route="entry" data-title="Data Entry">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h4"/>
+            <path d="M12 10h.01"/>
+          </svg>
+        </div>
+        <span class="link-label">Data Entry</span>
+      </a>
+      <a href="/analytics.html" class="sidebar-link" data-route="analytics" data-title="Analytics">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+        </div>
+        <span class="link-label">Analytics</span>
+      </a>
+      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="link-label">Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+  <!-- Mobile Drawer Toggle -->
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <main class="main-content">
+    <div class="login-wrapper" id="loginWrapper">
+
+      <div class="login-card">
+        <!-- Auth Mode Switcher -->
+        <div class="auth-mode-nav three-items" id="authModeNav">
+          <div class="auth-mode-glider" id="authModeGlider"></div>
+          <button type="button" class="auth-mode-btn active" id="tabSignIn" onclick="setAuthMode('login')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Sign In
+          </button>
+          <button type="button" class="auth-mode-btn" id="tabRegister" onclick="setAuthMode('register')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+            Register
+          </button>
+          <button type="button" class="auth-mode-btn" id="tabAdmin" onclick="setAuthMode('admin')">
+            <span style="font-size: 0.95rem; line-height: 1;">👑</span>
+            Faculty Admin
+          </button>
+        </div>
+
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div class="anim-float" id="authHeaderIcon" style="width: 54px; height: 54px; margin: 0 auto 12px; background: linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5); color: #fff; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; box-shadow: 0 8px 24px rgba(109, 40, 217, 0.4);">
+            👨‍⚕️
+          </div>
+          <h2 class="page-title-animated" id="authTitle" style="font-size: 1.45rem; font-weight: 800; margin-bottom: 4px;">Student Portal Sign In</h2>
+          <p id="authSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+            Access your assigned field families, survey metrics, and longitudinal care.
+          </p>
+        </div>
+
+        <div id="authAlert" style="display: none;" class="alert alert-error"></div>
+        <div id="authSuccess" style="display: none;" class="alert alert-success"></div>
+
+        <!-- PANE 1: Sign In -->
+        <div id="loginPane" class="auth-pane active slide-left">
+          <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="rollInput">Student Roll Number</label>
+              <input type="text" id="rollInput" placeholder="e.g. 235" required autofocus>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label for="pinInput">PIN / Passcode</label>
+              <input type="password" id="pinInput" placeholder="Default: 1234" value="1234" required>
+            </div>
+
+            <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+              Sign In to Portal &rarr;
+            </button>
+          </form>
+
+          <div class="section-divider"></div>
+
+          <div style="text-align: center;">
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+              Field Testing or Faculty Review?
+            </p>
+            <button type="button" class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="quickDemoLogin()">
+              ⚡ Quick Demo Sign-In (Roll 235 - Dhruv Patel)
+            </button>
+
+            <p style="font-size: 0.82rem; color: var(--text-secondary);">
+              New medical cadet? <a href="javascript:void(0)" onclick="setAuthMode('register')" style="color: var(--accent); font-weight: 650; text-decoration: underline;">Register Student Cadre &rarr;</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- PANE 2: Student Registration Panel -->
+        <div id="registerPane" class="auth-pane slide-right">
+          <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label for="regName">Full Name <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="regName" placeholder="e.g. Dr. Ananya Sharma" required>
+            </div>
+
+            <div class="reg-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label for="regRoll">Roll Number <span style="color: #ef4444;">*</span></label>
+                <input type="text" id="regRoll" placeholder="e.g. 236" required>
+              </div>
+
+              <div class="form-group">
+                <label for="regBatch">MBBS Batch / Year</label>
+                <select id="regBatch">
+                  <option value="3rd Year MBBS (Community Medicine)" selected>3rd Year MBBS (PSM)</option>
+                  <option value="2nd Year MBBS">2nd Year MBBS</option>
+                  <option value="Final Year MBBS Part 1">Final Year MBBS Part 1</option>
+                  <option value="Final Year MBBS Part 2">Final Year MBBS Part 2</option>
+                  <option value="CRMI Intern Doctor">CRMI Intern Doctor</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="reg-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label for="regPin">Security PIN (4-6 digits) <span style="color: #ef4444;">*</span></label>
+                <input type="password" id="regPin" placeholder="e.g. 1234" minlength="4" maxlength="8" required oninput="validatePinMatch()">
+              </div>
+
+              <div class="form-group">
+                <label for="regPinConfirm">Confirm PIN <span style="color: #ef4444;">*</span></label>
+                <input type="password" id="regPinConfirm" placeholder="Re-enter PIN" minlength="4" maxlength="8" required oninput="validatePinMatch()">
+              </div>
+            </div>
+            <div id="pinMismatchMsg" class="pin-feedback-hint" style="display: none; color: #ef4444; margin-bottom: 0.85rem;">⚠️ PINs do not match</div>
+
+            <div class="reg-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label for="regEmail">Email Address</label>
+                <input type="email" id="regEmail" placeholder="ananya.sharma@medpulse.edu">
+              </div>
+
+              <div class="form-group">
+                <label for="regPhone">Contact Phone</label>
+                <input type="tel" id="regPhone" placeholder="10-digit mobile number">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label for="regUnit">Clinical Posting Unit</label>
+              <select id="regUnit">
+                <option value="RHTC - Rural Health Training Center" selected>RHTC - Rural Health Training Center</option>
+                <option value="UHTC - Urban Health Training Center">UHTC - Urban Health Training Center</option>
+                <option value="Community Medicine Unit 1">Community Medicine Unit 1</option>
+                <option value="Community Medicine Unit 2">Community Medicine Unit 2</option>
+                <option value="Primary Health Center (PHC) Posting">Primary Health Center (PHC) Posting</option>
+                <option value="Field Health Survey Department">Field Health Survey Department</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.35rem;">
+              <label for="regCollege">Medical College / Institution</label>
+              <select id="regCollege">
+                <option value="1">GMERS Medical College & Hospital</option>
+                <option value="2">SAL Institute of Medical Sciences</option>
+              </select>
+            </div>
+
+            <button type="submit" id="regSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.82rem; font-size: 0.95rem;">
+              ✨ Complete Registration & Launch Portal &rarr;
+            </button>
+          </form>
+
+          <div class="section-divider"></div>
+
+          <div style="text-align: center;">
+            <p style="font-size: 0.82rem; color: var(--text-secondary);">
+              Already registered? <a href="javascript:void(0)" onclick="setAuthMode('login')" style="color: var(--accent); font-weight: 650; text-decoration: underline;">Sign In to Portal &rarr;</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- PANE 3: Faculty / Admin Sign In -->
+        <div id="adminPane" class="auth-pane slide-right">
+          <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="adminUserInput">Faculty / Admin Username <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="adminUserInput" placeholder="e.g. admin" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label for="adminPinInput">Security PIN / Passcode <span style="color: #ef4444;">*</span></label>
+              <input type="password" id="adminPinInput" placeholder="Default: 9999" value="9999" required>
+            </div>
+
+            <button type="submit" id="adminSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; background: linear-gradient(135deg, #d97706, #b45309); border-color: #d97706; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);">
+              👑 Sign In as Faculty Administrator &rarr;
+            </button>
+          </form>
+
+          <div class="section-divider"></div>
+
+          <div style="text-align: center;">
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+              Immediate Faculty Testing Access
+            </p>
+            <button type="button" class="btn btn-secondary" style="width: 100%; margin-bottom: 16px; border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); color: #d97706; font-weight: 700;" onclick="quickDemoAdminLogin()">
+              ⚡ Quick Demo Admin Sign-In (admin / 9999)
+            </button>
+
+            <p style="font-size: 0.82rem; color: var(--text-secondary);">
+              Medical trainee? <a href="javascript:void(0)" onclick="setAuthMode('login')" style="color: var(--accent); font-weight: 650; text-decoration: underline;">Return to Student Portal &rarr;</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('preload-transitions');
+      });
+    });
+
+    // Execute callback only when document is active/visible, and after loading, nothing
+    function runWhenActive(callback) {
+      if (document.visibilityState === 'visible') {
+        callback();
+      } else {
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            callback();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      }
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 768) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 768) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 768;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    function initAuth() {
+      const userStr = localStorage.getItem('medpulse_user');
+      const authArea = document.getElementById('authNavArea');
+      if (!authArea) return;
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          authArea.innerHTML = `
+            <div class="sidebar-user" data-tooltip="Roll ${user.roll_number} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logoutLoginUser();}else{window.location.href='/profile.html';}" title="Roll ${user.roll_number}">
+              <div class="user-avatar-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="role-dot"></span>
+              </div>
+              <div class="user-info-text">
+                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); display: block;">Student</span>
+                <span style="font-weight: 700; color: #fff;">Roll ${user.roll_number}</span>
+              </div>
+              <button class="logout-btn" onclick="event.stopPropagation(); logoutLoginUser();" title="Logout">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          `;
+        } catch (e) {
+          showLoginLink(authArea);
+        }
+      } else {
+        showLoginLink(authArea);
+      }
+    }
+
+    function showLoginLink(authArea) {
+      if (!authArea) return;
+      authArea.innerHTML = `
+        <a href="/login.html" class="sidebar-login-link" title="Sign In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span class="login-label">Sign In</span>
+        </a>
+      `;
+    }
+
+    function logoutLoginUser() {
+      localStorage.removeItem('medpulse_user');
+      window.location.reload();
+    }
+
+    let currentAuthMode = 'login';
+
+    function setAuthMode(mode) {
+      currentAuthMode = mode;
+      const nav = document.getElementById('authModeNav');
+      const tabSignIn = document.getElementById('tabSignIn');
+      const tabRegister = document.getElementById('tabRegister');
+      const tabAdmin = document.getElementById('tabAdmin');
+      const loginPane = document.getElementById('loginPane');
+      const registerPane = document.getElementById('registerPane');
+      const adminPane = document.getElementById('adminPane');
+      const wrapper = document.getElementById('loginWrapper');
+      const title = document.getElementById('authTitle');
+      const subtitle = document.getElementById('authSubtitle');
+      const icon = document.getElementById('authHeaderIcon');
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      tabSignIn.classList.remove('active');
+      tabRegister.classList.remove('active');
+      if (tabAdmin) tabAdmin.classList.remove('active');
+      loginPane.classList.remove('active', 'slide-left', 'slide-right');
+      registerPane.classList.remove('active', 'slide-left', 'slide-right');
+      if (adminPane) adminPane.classList.remove('active', 'slide-left', 'slide-right');
+
+      if (mode === 'register') {
+        nav.className = 'auth-mode-nav three-items state-register';
+        tabRegister.classList.add('active');
+        wrapper.classList.add('mode-register');
+
+        void registerPane.offsetWidth;
+        registerPane.classList.add('active', 'slide-right');
+
+        icon.textContent = '📝';
+        icon.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5)';
+        icon.style.boxShadow = '0 8px 24px rgba(109, 40, 217, 0.4)';
+        title.textContent = 'Student Cadre Registration';
+        subtitle.textContent = 'Register your clinical student profile to begin field health surveys.';
+        history.replaceState(null, '', '#register');
+        document.getElementById('regName').focus();
+      } else if (mode === 'admin') {
+        nav.className = 'auth-mode-nav three-items state-admin';
+        if (tabAdmin) tabAdmin.classList.add('active');
+        wrapper.classList.remove('mode-register');
+
+        if (adminPane) {
+          void adminPane.offsetWidth;
+          adminPane.classList.add('active', 'slide-right');
+        }
+
+        icon.textContent = '👑';
+        icon.style.background = 'linear-gradient(135deg, #d97706, #b45309, #92400e)';
+        icon.style.boxShadow = '0 8px 24px rgba(217, 119, 6, 0.45)';
+        title.textContent = 'Faculty & Administrative Portal';
+        subtitle.textContent = 'Administrative surveillance, student cadre rosters, and institutional data oversight.';
+        history.replaceState(null, '', '#admin');
+        const adminInput = document.getElementById('adminUserInput');
+        if (adminInput) adminInput.focus();
+      } else {
+        nav.className = 'auth-mode-nav three-items';
+        tabSignIn.classList.add('active');
+        wrapper.classList.remove('mode-register');
+
+        void loginPane.offsetWidth;
+        loginPane.classList.add('active', 'slide-left');
+
+        icon.textContent = '👨‍⚕️';
+        icon.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5)';
+        icon.style.boxShadow = '0 8px 24px rgba(109, 40, 217, 0.4)';
+        title.textContent = 'Student Portal Sign In';
+        subtitle.textContent = 'Access your assigned field families, survey metrics, and longitudinal care.';
+        history.replaceState(null, '', '#login');
+        document.getElementById('rollInput').focus();
+      }
+    }
+
+    async function loadColleges() {
+      try {
+        const res = await fetch('/api/colleges');
+        if (!res.ok) return;
+        const colleges = await res.json();
+        const sel = document.getElementById('regCollege');
+        if (sel && Array.isArray(colleges) && colleges.length > 0) {
+          sel.innerHTML = colleges.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+      } catch (e) {
+        console.warn('Could not load colleges:', e);
+      }
+    }
+
+    function validatePinMatch() {
+      const pin = document.getElementById('regPin').value;
+      const confirm = document.getElementById('regPinConfirm').value;
+      const hint = document.getElementById('pinMismatchMsg');
+      if (confirm && pin !== confirm) {
+        hint.style.display = 'block';
+        return false;
+      } else {
+        hint.style.display = 'none';
+        return true;
+      }
+    }
+
+    async function handleRegister(event) {
+      if (event) event.preventDefault();
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      const btn = document.getElementById('regSubmitBtn');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      if (!validatePinMatch()) {
+        alertBox.textContent = 'PIN / Passcode and confirmation do not match.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      const roll = document.getElementById('regRoll').value.trim();
+      const name = document.getElementById('regName').value.trim();
+      const pin = document.getElementById('regPin').value.trim();
+      const batch = document.getElementById('regBatch').value;
+      const unit = document.getElementById('regUnit').value;
+      const emailInput = document.getElementById('regEmail');
+      const phoneInput = document.getElementById('regPhone');
+      const email = emailInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const collegeId = document.getElementById('regCollege').value;
+
+      if (!roll || !name) {
+        alertBox.textContent = 'Please provide both Student Name and Roll Number.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      // Frontend Email Validation
+      if (email && window.MedPulseValidation) {
+        const emailCheck = MedPulseValidation.validateEmail(email, false);
+        if (!emailCheck.valid) {
+          alertBox.textContent = emailCheck.error;
+          alertBox.style.display = 'block';
+          MedPulseValidation.showError(emailInput, emailCheck.error);
+          emailInput.focus();
+          return;
+        }
+      }
+
+      // Frontend 10-Digit Phone Validation
+      let cleanPhoneVal = phone;
+      if (phone && window.MedPulseValidation) {
+        const phoneCheck = MedPulseValidation.validatePhone(phone, false);
+        if (!phoneCheck.valid) {
+          alertBox.textContent = phoneCheck.error;
+          alertBox.style.display = 'block';
+          MedPulseValidation.showError(phoneInput, phoneCheck.error);
+          phoneInput.focus();
+          return;
+        }
+        cleanPhoneVal = phoneCheck.clean;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Registering Student...';
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roll_number: roll,
+            name: name,
+            pin: pin,
+            batch_year: batch,
+            posting_unit: unit,
+            email: email,
+            phone: cleanPhoneVal,
+            college_id: collegeId
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Registration failed');
+        }
+
+        successBox.textContent = `🎉 Registration successful! Welcome, ${data.student.name}. Launching portal...`;
+        successBox.style.display = 'block';
+
+        // Auto-login newly registered student
+        localStorage.setItem('medpulse_user', JSON.stringify(data.student));
+
+        setTimeout(() => {
+          const params = new URLSearchParams(window.location.search);
+          const target = params.get('redirect') || '/family-manage.html';
+          window.location.href = target;
+        }, 1200);
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '✨ Complete Registration & Launch Portal &rarr;';
+      }
+    }
+
+    async function handleLogin(event) {
+      if (event) event.preventDefault();
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      const btn = document.getElementById('loginSubmitBtn');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      const rollNumber = document.getElementById('rollInput').value.trim();
+      const pin = document.getElementById('pinInput').value.trim();
+
+      if (!rollNumber) {
+        alertBox.textContent = 'Please enter your roll number';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Signing In...';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roll_number: rollNumber, pin: pin })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+
+        localStorage.setItem('medpulse_user', JSON.stringify(data.student));
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get('redirect') || '/family-manage.html';
+        window.location.href = target;
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In to Portal &rarr;';
+      }
+    }
+
+    function quickDemoLogin() {
+      setAuthMode('login');
+      document.getElementById('rollInput').value = '235';
+      document.getElementById('pinInput').value = '1234';
+      handleLogin();
+    }
+
+    /* ---- Faculty / Admin Login Handlers ---- */
+    async function handleAdminLogin(event) {
+      if (event) event.preventDefault();
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      const btn = document.getElementById('adminSubmitBtn');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      const username = document.getElementById('adminUserInput').value.trim();
+      const pin = document.getElementById('adminPinInput').value.trim();
+
+      if (!username) {
+        alertBox.textContent = 'Please enter your administrator username';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Authenticating Admin...';
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, pin })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Authentication failed');
+        }
+
+        successBox.textContent = `👑 Access granted. Welcome, ${data.admin.name}. Launching command center...`;
+        successBox.style.display = 'block';
+
+        localStorage.setItem('medpulse_admin', JSON.stringify(data.admin));
+
+        setTimeout(() => {
+          const params = new URLSearchParams(window.location.search);
+          const target = params.get('redirect') || '/admin.html';
+          window.location.href = target;
+        }, 900);
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '👑 Sign In as Faculty Administrator &rarr;';
+      }
+    }
+
+    function quickDemoAdminLogin() {
+      setAuthMode('admin');
+      document.getElementById('adminUserInput').value = 'admin';
+      document.getElementById('adminPinInput').value = '9999';
+      handleAdminLogin();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      initAuth();
+      loadColleges();
+
+      if (window.MedPulseValidation) {
+        MedPulseValidation.attachEmail('regEmail', true);
+        MedPulseValidation.attachPhone('regPhone', true);
+      }
+
+      runWhenActive(() => {
+        // Check URL hash or search params for admin or register mode
+        const hash = window.location.hash;
+        const params = new URLSearchParams(window.location.search);
+        if (hash === '#admin' || params.get('admin') === '1') {
+          setAuthMode('admin');
+        } else if (hash === '#register' || params.get('mode') === 'register') {
+          setAuthMode('register');
+        }
+
+        if (params.get('session_expired')) {
+          const alertBox = document.getElementById('authAlert');
+          if (alertBox) {
+            alertBox.textContent = 'Your session has expired or requires authentication. Please sign in.';
+            alertBox.style.display = 'block';
+          }
+        }
+
+        const user = localStorage.getItem('medpulse_user');
+        if (user && currentAuthMode === 'login') {
+          try {
+            const parsed = JSON.parse(user);
+            if (parsed && parsed.roll_number) {
+              document.getElementById('rollInput').value = parsed.roll_number;
+            }
+          } catch (e) {}
+        }
+      });
+    });
+  </script>
+
+  <script src="/validation.js"></script>
+  <script src="/nav-glider.js"></script>
+</body>
+</html>

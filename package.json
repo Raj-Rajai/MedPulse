@@ -1,0 +1,21 @@
+{
+  "name": "medpulse",
+  "version": "2.0.0",
+  "description": "MedPulse • Clinical Health Survey & Epidemiological Surveillance Platform for Medical Colleges",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "seed": "node server/seed-roll235.js",
+    "verify": "node server/verify-admin.js",
+    "test": "node server/verify-admin.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "pdfkit": "^0.20.2"
+  }
+}
