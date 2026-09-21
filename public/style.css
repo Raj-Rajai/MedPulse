@@ -820,10 +820,12 @@ body.sidebar-collapsed .sidebar-login-link .login-label {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .sidebar {
     transform: translateX(-100%) !important;
     width: var(--sidebar-w) !important;
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
   .sidebar.open {
     transform: translateX(0) !important;
@@ -842,25 +844,28 @@ body.sidebar-collapsed .sidebar-login-link .login-label {
   body.sidebar-collapsed .main-content,
   .main-content {
     margin-left: 0 !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
+    padding-left: max(16px, calc(12px + env(safe-area-inset-left))) !important;
+    padding-right: max(16px, calc(12px + env(safe-area-inset-right))) !important;
+    padding-top: max(64px, calc(48px + env(safe-area-inset-top))) !important;
+    padding-bottom: max(36px, calc(24px + env(safe-area-inset-bottom))) !important;
   }
   .mobile-nav-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
     position: fixed;
-    top: 14px;
-    left: 14px;
+    top: max(14px, calc(8px + env(safe-area-inset-top)));
+    left: max(14px, calc(8px + env(safe-area-inset-left)));
     z-index: 250;
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: var(--radius-md);
     background: #ffffff;
     border: 1.5px solid var(--border);
     color: var(--accent);
     box-shadow: 0 4px 14px rgba(109, 40, 217, 0.18);
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -1395,17 +1400,21 @@ body.sidebar-collapsed .sidebar-login-link .login-label {
 /* ── 11. Tables ──────────────────────────────────────────── */
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   margin-top: 12px;
   background: #fff;
   padding: 4px;
+  max-width: 100%;
 }
 
 table {
-  width: 100%; border-collapse: separate;
+  width: 100%;
+  border-collapse: separate;
   border-spacing: 0;
-  text-align: left; font-size: 0.85rem;
+  text-align: left;
+  font-size: 0.85rem;
 }
 
 th, td {
@@ -1413,6 +1422,12 @@ th, td {
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   overflow: visible;
+  white-space: nowrap;
+}
+
+table td:nth-child(2),
+table td:first-child {
+  white-space: normal;
 }
 
 th {
@@ -1952,9 +1967,13 @@ tbody tr:last-child td { border-bottom: none; }
 
 /* ── 19. Toasts ──────────────────────────────────────────── */
 .toast-container {
-  position: fixed; bottom: 20px; right: 20px;
+  position: fixed;
+  bottom: max(20px, calc(14px + env(safe-area-inset-bottom)));
+  right: max(20px, calc(14px + env(safe-area-inset-right)));
   z-index: 9999;
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   pointer-events: none;
 }
 
@@ -2455,30 +2474,66 @@ tbody tr:last-child td { border-bottom: none; }
   height: 290px;
 }
 
-/* ── 24. Responsive ──────────────────────────────────────── */
-@media (max-width: 992px) {
+/* ── 24. Responsive Architecture (iPhone & iPad Optimized) ── */
+
+/* 1. Universal iOS WebKit Auto-Zoom Prevention */
+@media (max-width: 860px), (max-width: 1024px) and (hover: none) {
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 2. Tablets & iPads (<= 1024px) */
+@media (max-width: 1024px) {
   .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+  .profile-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .fm-top-grid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 768px) {
+/* 3. iPad Portrait & Large Mobile (<= 860px) */
+@media (max-width: 860px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-xl); }
   .sidebar-close { display: block; }
   .sidebar-toggle { display: block; }
 
-  .main-content {
-    margin-left: 0;
-    padding: 56px 16px 48px;
-  }
-
   .hero { padding: 28px 20px; }
-  .hero-text h1 { font-size: 1.35rem; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .hero-text h1 { font-size: 1.45rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .features-grid { grid-template-columns: 1fr; }
-  .modal-content { padding: 20px; }
-  .survey-stepper { flex-direction: column; align-items: flex-start; gap: 10px; }
+  
+  .survey-stepper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    scrollbar-width: none;
+  }
+  .survey-stepper::-webkit-scrollbar {
+    display: none;
+  }
+  .step-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 
   .page-title {
     background: none; -webkit-background-clip: unset;
@@ -2488,18 +2543,209 @@ tbody tr:last-child td { border-bottom: none; }
   .analytics-filter-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
   .filter-controls {
     flex-direction: column;
     align-items: stretch;
   }
+  .filter-controls .filter-item {
+    width: 100%;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    border-radius: var(--radius-md);
+  }
+  .table-wrapper table {
+    min-width: 640px;
+  }
+
+  .modal-overlay {
+    padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  .modal-content {
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 580px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .kpi-grid { grid-template-columns: 1fr; }
-  .hero-actions { flex-direction: column; }
-  .hero-actions .btn { width: 100%; }
+/* 4. iPhones & Mobile Devices (<= 640px) */
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .page-header > div:last-child {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px !important;
+  }
+  .page-header > div:last-child .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 10px;
+    font-size: 0.8rem;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+  .kpi-card {
+    padding: 16px 14px;
+  }
+  .kpi-value {
+    font-size: 1.5rem;
+  }
+
+  .burden-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .burden-card {
+    padding: 12px 10px !important;
+  }
+  .burden-card .burden-num {
+    font-size: 1.35rem !important;
+  }
+
+  .chart-canvas-wrap {
+    height: 250px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .reg-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .family-horizontal-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .family-horizontal-header > div:last-child {
+    max-width: 100% !important;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .family-horizontal-header > div:last-child .btn {
+    width: 100%;
+  }
+
+  .fm-household-meta-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .profile-hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .profile-hero-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .profile-hero-actions .btn {
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+  .profile-kpis-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* 5. Small iPhones & Compact Viewports (<= 420px) */
+@media (max-width: 420px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .burden-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .fm-household-meta-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-kpis-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-actions {
+    flex-direction: column;
+  }
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .auth-mode-nav {
+    padding: 3px;
+    margin-bottom: 18px;
+  }
+  .auth-mode-btn {
+    padding: 7px 4px;
+    font-size: 0.74rem;
+    gap: 3px;
+  }
+  .auth-mode-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+  .login-card {
+    padding: 22px 16px;
+  }
+
+  .toast-container {
+    left: max(14px, calc(10px + env(safe-area-inset-left)));
+    right: max(14px, calc(10px + env(safe-area-inset-right)));
+    bottom: max(16px, calc(8px + env(safe-area-inset-bottom)));
+  }
+  .toast {
+    min-width: 0;
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+  }
+}
+
+/* 6. Touch Device Hardware Micro-Interactions (No Sticky Hover) */
+@media (hover: none) and (pointer: coarse) {
+  .btn:active,
+  .table-act-btn:active,
+  .feature-card:active,
+  .family-strip-card:active,
+  .roster-card:active {
+    transform: scale(0.96) !important;
+  }
+  .feature-card:hover,
+  .kpi-card:hover,
+  .burden-card:hover,
+  .export-card:hover,
+  .stat-box:hover {
+    transform: none !important;
+  }
+  .table-act-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 0.88rem;
+  }
 }
 
 /* ==========================================================================

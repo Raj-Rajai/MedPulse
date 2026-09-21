@@ -2,7 +2,10 @@
 <html lang="en" class="preload-transitions">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
   <title>Student Profile & Field Portfolio | MedPulse</title>
   <script src="/auth-guard.js"></script>
   <script>
@@ -441,7 +444,7 @@
     function toggleSidebar() {
       const sb = document.getElementById('sidebar');
       const ov = document.getElementById('sidebarOverlay');
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 860) {
         const isOpen = sb.classList.toggle('open');
         if (ov) ov.classList.toggle('active', isOpen);
       } else {
@@ -454,7 +457,7 @@
     function closeSidebar() {
       const sb = document.getElementById('sidebar');
       const ov = document.getElementById('sidebarOverlay');
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 860) {
         if (sb) sb.classList.remove('open');
         if (ov) ov.classList.remove('active');
       } else {
@@ -465,7 +468,7 @@
     }
 
     function initSidebar() {
-      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 768;
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
       if (isCollapsed) {
         document.documentElement.classList.add('sidebar-collapsed');
         document.body.classList.add('sidebar-collapsed');

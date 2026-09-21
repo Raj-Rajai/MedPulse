@@ -260,7 +260,7 @@ function generatePdfStream(studentId, outputStream) {
 
     const pageWidth = 841.89;
     const pageHeight = 595.28;
-    const contentWidth = pageWidth - 56; // 785.89 pt
+    const contentWidth = 785; // Calibrated to 785 pt to fit within margins perfectly
 
     // Colors
     const primaryNavy = '#0f172a';
@@ -338,24 +338,24 @@ function generatePdfStream(studentId, outputStream) {
             .text('1. SOCIO-DEMOGRAPHICS, NCD SCREENING & MONITORED VITALS (BASELINE + LATEST FOLLOW-UP)', 28, currentY);
         currentY += 12;
 
-        // Columns definition for Table 1
+        // Columns definition for Table 1 (Sum = Exactly 785 pt = contentWidth)
         const t1Cols = [
-            { id: 'num', label: '#', w: 18, align: 'center' },
-            { id: 'name', label: 'Name of Member', w: 120, align: 'left' },
-            { id: 'rel', label: 'Relation', w: 45, align: 'left' },
-            { id: 'age', label: 'Age', w: 32, align: 'center' },
-            { id: 'work', label: 'Work', w: 30, align: 'center' },
-            { id: 'cu', label: 'CU', w: 26, align: 'center' },
-            { id: 'htn', label: 'HTN', w: 28, align: 'center' },
-            { id: 'sbp_dbp', label: 'SBP/DBP (mmHg)', w: 75, align: 'center' },
-            { id: 'dm', label: 'DM', w: 26, align: 'center' },
-            { id: 'rbs', label: 'RBS (mg/dl)', w: 58, align: 'center' },
-            { id: 'pallor', label: 'Pallor', w: 32, align: 'center' },
-            { id: 'hb', label: 'Hb (g/dl)', w: 50, align: 'center' },
-            { id: 'anaemia', label: 'Anaemia', w: 42, align: 'center' },
+            { id: 'num', label: '#', w: 16, align: 'center' },
+            { id: 'name', label: 'Name of Member', w: 116, align: 'left' },
+            { id: 'rel', label: 'Relation', w: 44, align: 'left' },
+            { id: 'age', label: 'Age', w: 30, align: 'center' },
+            { id: 'work', label: 'Work', w: 26, align: 'center' },
+            { id: 'cu', label: 'CU', w: 24, align: 'center' },
+            { id: 'htn', label: 'HTN', w: 25, align: 'center' },
+            { id: 'sbp_dbp', label: 'SBP/DBP (mmHg)', w: 72, align: 'center' },
+            { id: 'dm', label: 'DM', w: 25, align: 'center' },
+            { id: 'rbs', label: 'RBS (mg/dl)', w: 54, align: 'center' },
+            { id: 'pallor', label: 'Pallor', w: 28, align: 'center' },
+            { id: 'hb', label: 'Hb (g/dl)', w: 48, align: 'center' },
+            { id: 'anaemia', label: 'Anaemia', w: 40, align: 'center' },
             { id: 'diag', label: 'Diagnosis (If Known)', w: 85, align: 'left' },
-            { id: 'rx', label: 'Treatment (Source)', w: 70, align: 'left' },
-            { id: 'fu_badge', label: 'Follow-up Status', w: 68, align: 'center' }
+            { id: 'rx', label: 'Treatment (Source)', w: 72, align: 'left' },
+            { id: 'fu_badge', label: 'Follow-up Status', w: 80, align: 'center' }
         ];
 
         // Draw Table 1 Header
@@ -390,16 +390,26 @@ function generatePdfStream(studentId, outputStream) {
             let rbsStr = m.effective_rbs ? `${m.effective_rbs}` + (m.has_followup && m.fu_rbs ? ' *' : '') : '-';
             let hbStr = m.effective_hb ? `${m.effective_hb}` + (m.has_followup && m.fu_hb ? ' *' : '') : '-';
             
+            let nameStr = m.name || '';
+            if (nameStr.length > 22) nameStr = nameStr.substring(0, 20) + '..';
+
+            let relStr = m.relation_to_hof || 'Other';
+            if (relStr.length > 10) relStr = relStr.substring(0, 8) + '..';
+
+            let diagStr = m.diagnosis || '-';
+            if (diagStr.length > 18) diagStr = diagStr.substring(0, 16) + '..';
+
             let rxStr = m.treatment_taken === 'Y' ? `Yes (${m.treatment_source || 'PHC'})` : (m.treatment_taken || 'NA');
-            if (rxStr.length > 18) rxStr = rxStr.substring(0, 16) + '..';
+            if (rxStr.length > 16) rxStr = rxStr.substring(0, 14) + '..';
 
             let fuStatus = m.has_followup ? `Visit ${m.latest_visit_number} (${m.latest_progress || 'Stable'})` : 'Baseline Only';
+            if (fuStatus.length > 20) fuStatus = fuStatus.substring(0, 18) + '..';
 
             colX = 28;
             const vals = [
                 { t: `${mIdx + 1}`, align: 'center', c: textMuted },
-                { t: m.name, align: 'left', c: textDark, bold: true },
-                { t: m.relation_to_hof || 'Other', align: 'left', c: textDark },
+                { t: nameStr, align: 'left', c: textDark, bold: true },
+                { t: relStr, align: 'left', c: textDark },
                 { t: ageStr, align: 'center', c: textDark },
                 { t: m.work_type || 'S', align: 'center', c: textMuted },
                 { t: `${m.consumption_unit || 1}`, align: 'center', c: textMuted },
@@ -410,7 +420,7 @@ function generatePdfStream(studentId, outputStream) {
                 { t: m.has_pallor || 'N', align: 'center', c: m.has_pallor === 'Y' ? '#ea580c' : textMuted },
                 { t: hbStr, align: 'center', c: m.effective_hb < 10 ? '#dc2626' : textDark, bold: m.effective_hb < 10 },
                 { t: m.has_anaemia || 'N', align: 'center', c: m.has_anaemia === 'Y' ? '#dc2626' : textMuted, bold: m.has_anaemia === 'Y' },
-                { t: m.diagnosis || '-', align: 'left', c: textDark },
+                { t: diagStr, align: 'left', c: textDark },
                 { t: rxStr, align: 'left', c: textMuted },
                 { t: fuStatus, align: 'center', c: m.has_followup ? '#059669' : textMuted, bold: m.has_followup }
             ];
@@ -434,27 +444,28 @@ function generatePdfStream(studentId, outputStream) {
             .text('2. ANTHROPOMETRY, PEDIATRIC GROWTH SCREENING & MATERNAL HEALTH (RCH)', 28, currentY);
         currentY += 12;
 
+        // Columns definition for Table 2 (Sum = Exactly 785 pt = contentWidth)
         const t2Cols = [
-            { id: 'name', label: 'Member Name', w: 120, align: 'left' },
-            { id: 'ht', label: 'Ht (m)', w: 34, align: 'center' },
-            { id: 'wt', label: 'Wt (kg)', w: 38, align: 'center' },
-            { id: 'bmi', label: 'BMI', w: 34, align: 'center' },
-            { id: 'waist', label: 'Waist', w: 34, align: 'center' },
-            { id: 'hip', label: 'Hip', w: 34, align: 'center' },
-            { id: 'whr', label: 'WHR', w: 32, align: 'center' },
-            { id: 'hc', label: 'HC (cm)', w: 36, align: 'center' },
-            { id: 'cc', label: 'CC (cm)', w: 36, align: 'center' },
-            { id: 'muac', label: 'MUAC', w: 38, align: 'center' },
-            { id: 'underwt', label: 'Underwt', w: 38, align: 'center' },
-            { id: 'overwt', label: 'Overwt', w: 38, align: 'center' },
-            { id: 'stunt', label: 'Stunting', w: 36, align: 'center' },
-            { id: 'waste', label: 'Wasting', w: 36, align: 'center' },
-            { id: 'hyg', label: 'Oral/Gen Hyg', w: 56, align: 'center' },
+            { id: 'name', label: 'Member Name', w: 121, align: 'left' },
+            { id: 'ht', label: 'Ht (m)', w: 32, align: 'center' },
+            { id: 'wt', label: 'Wt (kg)', w: 34, align: 'center' },
+            { id: 'bmi', label: 'BMI', w: 32, align: 'center' },
+            { id: 'waist', label: 'Waist', w: 32, align: 'center' },
+            { id: 'hip', label: 'Hip', w: 32, align: 'center' },
+            { id: 'whr', label: 'WHR', w: 30, align: 'center' },
+            { id: 'hc', label: 'HC (cm)', w: 34, align: 'center' },
+            { id: 'cc', label: 'CC (cm)', w: 34, align: 'center' },
+            { id: 'muac', label: 'MUAC', w: 34, align: 'center' },
+            { id: 'underwt', label: 'Underwt', w: 36, align: 'center' },
+            { id: 'overwt', label: 'Overwt', w: 36, align: 'center' },
+            { id: 'stunt', label: 'Stunting', w: 35, align: 'center' },
+            { id: 'waste', label: 'Wasting', w: 35, align: 'center' },
+            { id: 'hyg', label: 'Oral/Gen Hyg', w: 54, align: 'center' },
             { id: 'anc', label: 'ANC (Place)', w: 50, align: 'center' },
             { id: 'pnc', label: 'PNC', w: 28, align: 'center' },
-            { id: 'fp', label: 'FP', w: 26, align: 'center' },
-            { id: 'mamta', label: 'Mamta', w: 28, align: 'center' },
-            { id: 'imm', label: 'Immun.', w: 29, align: 'center' }
+            { id: 'fp', label: 'FP', w: 28, align: 'center' },
+            { id: 'mamta', label: 'Mamta', w: 34, align: 'center' },
+            { id: 'imm', label: 'Immun.', w: 34, align: 'center' }
         ];
 
         // Draw Table 2 Header
@@ -475,12 +486,17 @@ function generatePdfStream(studentId, outputStream) {
 
             doc.rect(28, currentY, contentWidth, rowH).fillAndStroke(rowBg, '#e2e8f0');
 
-            const ancStr = m.anc_taken === 'Y' ? `Y (${m.delivery_place || 'Hosp'})` : (m.anc_taken || 'NA');
+            let nameStr2 = m.name || '';
+            if (nameStr2.length > 22) nameStr2 = nameStr2.substring(0, 20) + '..';
+
+            let ancStr = m.anc_taken === 'Y' ? `Y (${m.delivery_place || 'Hosp'})` : (m.anc_taken || 'NA');
+            if (ancStr.length > 12) ancStr = ancStr.substring(0, 10) + '..';
+
             const hygStr = `${m.oral_hygiene || 'Y'} / ${m.general_hygiene || 'Y'}`;
 
             colX = 28;
             const vals2 = [
-                { t: m.name, align: 'left', c: textDark, bold: true },
+                { t: nameStr2, align: 'left', c: textDark, bold: true },
                 { t: m.height_m ? `${m.height_m}` : '-', align: 'center', c: textDark },
                 { t: m.effective_weight ? `${m.effective_weight}` : '-', align: 'center', c: textDark },
                 { t: m.bmi ? `${m.bmi}` : '-', align: 'center', c: m.bmi >= 25 ? '#b91c1c' : textDark, bold: m.bmi >= 25 },
@@ -562,14 +578,20 @@ function generatePdfStream(studentId, outputStream) {
                     vitalsTrajectory.push(`Wt: ${fm.weight_kg || '-'} -> ${fm.fu_weight_kg || '-'} kg`);
                 }
 
+                let fmName = `${fm.name} (${fm.age_years}y)`;
+                if (fmName.length > 25) fmName = fmName.substring(0, 23) + '..';
+
+                let fmNotes = fm.latest_notes || 'Regular follow-up maintained. Patient stabilized.';
+                if (fmNotes.length > 55) fmNotes = fmNotes.substring(0, 52) + '...';
+
                 colX = 28;
                 const fuVals = [
-                    { t: `${fm.name} (${fm.age_years}y)`, align: 'left', c: textDark, bold: true },
+                    { t: fmName, align: 'left', c: textDark, bold: true },
                     { t: `Visit ${fm.latest_visit_number} • ${fm.latest_visit_date}`, align: 'center', c: '#065f46', bold: true },
                     { t: vitalsTrajectory.join(' | '), align: 'left', c: '#0f172a', bold: true },
                     { t: fm.latest_compliance || 'Good', align: 'center', c: fm.latest_compliance === 'Irregular' ? '#b45309' : '#047857', bold: true },
                     { t: fm.latest_progress || 'Improved', align: 'center', c: fm.latest_progress === 'Improved' ? '#047857' : '#0369a1', bold: true },
-                    { t: fm.latest_notes || 'Regular follow-up maintained. Patient stabilized.', align: 'left', c: '#334155' }
+                    { t: fmNotes, align: 'left', c: '#334155' }
                 ];
 
                 for (let c = 0; c < fuCols.length; c++) {
