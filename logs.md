@@ -870,3 +870,28 @@
     - `GET /api/admin/stats` -> 200 OK (3,401 bytes JSON)
     - `GET /api/admin/export/all-csv` -> 200 OK (`text/csv; charset=utf-8`, 8,323 bytes)
     - `GET /api/admin/export/audit-pdf` -> 200 OK (`application/pdf`)
+
+---
+
+## [Log 028] — Git Repository Initialization & Remote Push to GitHub
+- **Date**: 2026-09-21
+- **Files Touched**:
+  - `.gitignore` (Updated to include `.vscode/`, `scratch/`, and runtime SQLite artifacts `database/*.db*`)
+  - `database/roll235_parsed.json` (Copied parsed field dataset into project database directory for self-contained seeding)
+  - `server/seed-roll235.js` (Updated parsed JSON file path to relative path `../database/roll235_parsed.json`)
+  - `package.json` (Updated name to `medpulse`, version `2.0.0`, description, and added `seed` and `verify` scripts)
+  - `memory.md` (Appended Prompt 33 summary and implementation)
+  - `logs.md` (Appended Log 028 technical execution report)
+- **Technical Actions**:
+  - **Local Repository Isolation**:
+    - Discovered that previous `git status` detected parent directory `c:\Users\rajai\.git`.
+    - Executed `git init` locally inside `c:\Users\rajai\OneDrive\Desktop\Project X` to isolate repository boundaries.
+    - Set default branch to `main` via `git branch -M main`.
+  - **Staging & Commit**:
+    - Staged all 34 core project files (`.gitignore`, `README.md`, `Roll235.pdf`, `database/`, `public/`, `server/`, `package.json`, `package-lock.json`, `memory.md`, `logs.md`).
+    - Verified untracked temporary files and logs were excluded by `.gitignore`.
+    - Created root commit: `951a33d` (`feat: initial release of MedPulse community health survey and surveillance platform`).
+  - **Remote Synchronization & Push**:
+    - Added remote origin: `https://github.com/Raj-Rajai/MedPulse.git`.
+    - Executed `git push -u origin main`.
+    - Verified upstream branch tracking and zero pending commits.
