@@ -123,10 +123,10 @@
           <div class="auth-mode-glider" id="authModeGlider"></div>
           <button type="button" class="auth-mode-btn active" id="tabSignIn" onclick="setAuthMode('login')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
             </svg>
-            Student
+            <span>Student</span>
           </button>
           <button type="button" class="auth-mode-btn" id="tabRegister" onclick="setAuthMode('register')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -135,19 +135,27 @@
               <line x1="19" y1="8" x2="19" y2="14"/>
               <line x1="22" y1="11" x2="16" y2="11"/>
             </svg>
-            Register
+            <span>Register</span>
           </button>
           <button type="button" class="auth-mode-btn" id="tabAdmin" onclick="setAuthMode('admin')">
-            <span style="font-size: 0.95rem; line-height: 1;">👑</span>
-            Admin
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Admin</span>
           </button>
           <button type="button" class="auth-mode-btn" id="tabPatient" onclick="setAuthMode('patient')">
-            <span style="font-size: 0.95rem; line-height: 1;">🏥</span>
-            Patient
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            </svg>
+            <span>Patient</span>
           </button>
           <button type="button" class="auth-mode-btn" id="tabHospital" onclick="setAuthMode('hospital')">
-            <span style="font-size: 0.95rem; line-height: 1;">🏨</span>
-            Hospital
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M12 8v8"/>
+              <path d="M8 12h8"/>
+            </svg>
+            <span>Hospital</span>
           </button>
         </div>
 
@@ -345,6 +353,15 @@
             <button type="submit" id="patientLoginBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #0284c7; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
               🏥 Sign In to Patient Portal &rarr;
             </button>
+
+            <div style="text-align: center; margin-top: 14px;">
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.55rem;">
+                Need immediate patient testing access?
+              </p>
+              <button type="button" class="btn btn-secondary" style="width: 100%; border-color: #0284c7; background: rgba(2, 132, 199, 0.08); color: #0369a1; font-weight: 700;" onclick="quickDemoPatientLogin()">
+                ⚡ Quick Demo Patient Sign-In (9876543210 / 1234)
+              </button>
+            </div>
           </form>
 
           <!-- Patient Registration Subform -->
@@ -416,7 +433,7 @@
         </div>
 
         <!-- PANE 5: Hospital Staff & Administrative Console Login -->
-        <div id="hospitalPane" class="auth-pane slide-right" style="display: none;">
+        <div id="hospitalPane" class="auth-pane slide-right">
           <form id="hospitalLoginForm" onsubmit="handleHospitalLogin(event)">
             <div style="background: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.25); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 0.65rem;">
               <span style="font-size: 1.25rem;">🏥</span>
@@ -444,6 +461,13 @@
           <div class="section-divider"></div>
 
           <div style="text-align: center;">
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+              Need immediate surveillance testing access?
+            </p>
+            <button type="button" class="btn btn-secondary" style="width: 100%; margin-bottom: 16px; border-color: #0d9488; background: rgba(13, 148, 136, 0.08); color: #0f766e; font-weight: 700;" onclick="quickDemoHospitalLogin()">
+              ⚡ Quick Demo Hospital Sign-In (hosp_superadmin / 8888)
+            </button>
+
             <p style="font-size: 0.82rem; color: var(--text-secondary);">
               Medical Trainee or Patient? <a href="javascript:void(0)" onclick="setAuthMode('login')" style="color: var(--accent); font-weight: 650; text-decoration: underline;">Return to Student Portal &rarr;</a>
             </p>
@@ -571,6 +595,49 @@
 
     let currentAuthMode = 'login';
 
+    function updateAuthGlider() {
+      const nav = document.getElementById('authModeNav');
+      const glider = document.getElementById('authModeGlider');
+      if (!nav || !glider) return;
+      const activeBtn = nav.querySelector('.auth-mode-btn.active');
+      if (!activeBtn) return;
+
+      const navRect = nav.getBoundingClientRect();
+      const btnRect = activeBtn.getBoundingClientRect();
+
+      if (btnRect.width > 0 && btnRect.height > 0) {
+        glider.style.width = `${btnRect.width}px`;
+        glider.style.height = `${btnRect.height}px`;
+        glider.style.transform = `translate(${btnRect.left - navRect.left}px, ${btnRect.top - navRect.top}px)`;
+        glider.style.opacity = '1';
+
+        if (activeBtn.id === 'tabAdmin') {
+          glider.style.background = 'linear-gradient(135deg, #d97706, #b45309, #92400e)';
+          glider.style.boxShadow = '0 3px 14px rgba(217, 119, 6, 0.45)';
+        } else if (activeBtn.id === 'tabPatient') {
+          glider.style.background = 'linear-gradient(135deg, #0284c7, #0369a1, #075985)';
+          glider.style.boxShadow = '0 3px 14px rgba(2, 132, 199, 0.45)';
+        } else if (activeBtn.id === 'tabHospital') {
+          glider.style.background = 'linear-gradient(135deg, #0d9488, #0f766e, #115e59)';
+          glider.style.boxShadow = '0 3px 14px rgba(13, 148, 136, 0.45)';
+        } else {
+          glider.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5)';
+          glider.style.boxShadow = '0 3px 14px rgba(109, 40, 217, 0.45)';
+        }
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      requestAnimationFrame(updateAuthGlider);
+    });
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => {
+        requestAnimationFrame(updateAuthGlider);
+      });
+      const navEl = document.getElementById('authModeNav');
+      if (navEl) ro.observe(navEl);
+    }
+
     function setAuthMode(mode) {
       currentAuthMode = mode;
       const nav = document.getElementById('authModeNav');
@@ -642,7 +709,7 @@
       } else if (mode === 'patient') {
         nav.className = 'auth-mode-nav five-items state-patient';
         if (tabPatient) tabPatient.classList.add('active');
-        wrapper.classList.remove('mode-register');
+        wrapper.classList.toggle('mode-register', currentPatientSubMode === 'register');
 
         if (patientPane) {
           void patientPane.offsetWidth;
@@ -676,7 +743,7 @@
         const hInput = document.getElementById('hospUsernameInput');
         if (hInput) hInput.focus();
       } else {
-        nav.className = 'auth-mode-nav five-items';
+        nav.className = 'auth-mode-nav five-items state-login';
         tabSignIn.classList.add('active');
         wrapper.classList.remove('mode-register');
 
@@ -691,6 +758,8 @@
         history.replaceState(null, '', '#login');
         document.getElementById('rollInput').focus();
       }
+
+      requestAnimationFrame(updateAuthGlider);
     }
 
     /* ---- Patient Sub-Mode Switcher ---- */
@@ -701,6 +770,7 @@
       const btnReg = document.getElementById('btnPatientRegisterMode');
       const formIn = document.getElementById('patientLoginForm');
       const formReg = document.getElementById('patientRegisterForm');
+      const wrapper = document.getElementById('loginWrapper');
       const alertBox = document.getElementById('authAlert');
       const successBox = document.getElementById('authSuccess');
       if (alertBox) alertBox.style.display = 'none';
@@ -719,6 +789,7 @@
 
         formIn.style.display = 'none';
         formReg.style.display = 'block';
+        if (wrapper) wrapper.classList.add('mode-register');
         document.getElementById('patientRegName').focus();
       } else {
         btnIn.style.background = '#fff';
@@ -733,8 +804,10 @@
 
         formIn.style.display = 'block';
         formReg.style.display = 'none';
+        if (wrapper) wrapper.classList.remove('mode-register');
         document.getElementById('patientLoginId').focus();
       }
+      requestAnimationFrame(updateAuthGlider);
     }
 
     function togglePatientReferralInput() {
@@ -1171,6 +1244,21 @@
       handleAdminLogin();
     }
 
+    function quickDemoPatientLogin() {
+      setAuthMode('patient');
+      switchPatientSubMode('login');
+      document.getElementById('patientLoginId').value = '9876543210';
+      document.getElementById('patientLoginPin').value = '1234';
+      handlePatientLogin();
+    }
+
+    function quickDemoHospitalLogin() {
+      setAuthMode('hospital');
+      document.getElementById('hospUsernameInput').value = 'hosp_superadmin';
+      document.getElementById('hospPinInput').value = '8888';
+      handleHospitalLogin();
+    }
+
     async function handleHospitalLogin(event) {
       if (event) event.preventDefault();
       const alertBox = document.getElementById('authAlert');
@@ -1243,6 +1331,8 @@
           setAuthMode('patient');
         } else if (hash === '#hospital' || params.get('hospital') === '1') {
           setAuthMode('hospital');
+        } else {
+          setAuthMode('login');
         }
 
         if (params.get('session_expired')) {
