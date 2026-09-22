@@ -57,16 +57,32 @@
     }
   }
 
+  function getStoredHospitalAdmin() {
+    try {
+      var raw = localStorage.getItem('medpulse_hospital_admin');
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (parsed && (parsed.id || parsed.username)) {
+        return parsed;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   var currentPath = normalizePath(window.location.pathname);
   var isPublicPage = PUBLIC_PATHS.indexOf(currentPath) !== -1;
   var isAdminPage = currentPath === '/admin.html';
   var isPatientPage = currentPath === '/patient.html';
+  var isHospitalPage = currentPath === '/hospital.html';
   var user = getStoredUser();
   var admin = getStoredAdmin();
   var patient = getStoredPatient();
+  var hospitalAdmin = getStoredHospitalAdmin();
 
   // 1. Anti-FOUC Route Protection
-  // A) Admin page protection: requires active admin session
+  // A) Admin page protection: requires active university faculty admin session
   if (isAdminPage && !admin) {
     var style = document.createElement('style');
     style.id = 'medpulse-auth-block';
@@ -92,8 +108,21 @@
     return;
   }
 
-  // C) Standard cadet portal pages protection: requires student user OR faculty admin
-  if (!isPublicPage && !isAdminPage && !isPatientPage && !user && !admin) {
+  // C) Hospital Command Center protection: requires active hospital staff session
+  if (isHospitalPage && !hospitalAdmin && !admin) {
+    var style = document.createElement('style');
+    style.id = 'medpulse-auth-block';
+    style.textContent = 'html, body { display: none !important; visibility: hidden !important; opacity: 0 !important; }';
+    if (document.head) document.head.appendChild(style);
+    else document.documentElement.appendChild(style);
+
+    var hospRedirect = '/login.html?hospital=1&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.replace(hospRedirect);
+    return;
+  }
+
+  // D) Standard cadet portal pages protection: requires student user OR faculty admin
+  if (!isPublicPage && !isAdminPage && !isPatientPage && !isHospitalPage && !user && !admin) {
     var style = document.createElement('style');
     style.id = 'medpulse-auth-block';
     style.textContent = 'html, body { display: none !important; visibility: hidden !important; opacity: 0 !important; }';
@@ -157,6 +186,23 @@
     },
     isPatientAuthenticated: function() {
       return !!getStoredPatient();
+    },
+    getHospitalAdmin: function() {
+      return getStoredHospitalAdmin();
+    },
+    setHospitalAdmin: function(hospData) {
+      if (hospData) {
+        localStorage.setItem('medpulse_hospital_admin', JSON.stringify(hospData));
+      } else {
+        localStorage.removeItem('medpulse_hospital_admin');
+      }
+    },
+    logoutHospitalAdmin: function() {
+      localStorage.removeItem('medpulse_hospital_admin');
+      window.location.replace('/login.html?hospital=1');
+    },
+    isHospitalAdminAuthenticated: function() {
+      return !!getStoredHospitalAdmin();
     }
   };
 
@@ -166,6 +212,8 @@
   window.logoutAdmin = window.MedPulseAuth.logoutAdmin;
   window.getMedPulsePatient = window.MedPulseAuth.getPatient;
   window.logoutPatient = window.MedPulseAuth.logoutPatient;
+  window.getMedPulseHospitalAdmin = window.MedPulseAuth.getHospitalAdmin;
+  window.logoutHospitalAdmin = window.MedPulseAuth.logoutHospitalAdmin;
 
   // 3. Intercept window.fetch to automatically inject authentication headers
   if (typeof window.fetch === 'function') {
@@ -176,6 +224,7 @@
       var activeUser = getStoredUser();
       var activeAdmin = getStoredAdmin();
       var activePatient = getStoredPatient();
+      var activeHospitalAdmin = getStoredHospitalAdmin();
 
       // Create or copy headers
       var headers;
@@ -197,6 +246,16 @@
         }
         init.headers = headers;
       }
+      // Inject Hospital Admin headers for /api/hospital/ calls
+      else if (activeHospitalAdmin && url.indexOf('/api/hospital/') !== -1) {
+        if (!headers.has('X-Hospital-Admin-Id') && activeHospitalAdmin.id) {
+          headers.set('X-Hospital-Admin-Id', String(activeHospitalAdmin.id));
+        }
+        if (!headers.has('Authorization')) {
+          headers.set('Authorization', 'Bearer hosp-' + activeHospitalAdmin.id);
+        }
+        init.headers = headers;
+      }
       // Inject Student headers for standard /api/ calls
       else if (activeUser && (url.indexOf('/api/') !== -1 || (typeof input === 'string' && input.indexOf('/api/') !== -1))) {
         if (!headers.has('X-Student-Id') && activeUser.id) {
@@ -208,7 +267,7 @@
         init.headers = headers;
       }
       // Inject Patient headers for /api/patient/ or patient session calls
-      else if (activePatient && (url.indexOf('/api/patient/') !== -1 || (!activeAdmin && !activeUser && url.indexOf('/api/') !== -1))) {
+      else if (activePatient && (url.indexOf('/api/patient/') !== -1 || (!activeAdmin && !activeUser && !activeHospitalAdmin && url.indexOf('/api/') !== -1))) {
         if (!headers.has('X-Patient-Id') && activePatient.id) {
           headers.set('X-Patient-Id', String(activePatient.id));
         }
@@ -224,6 +283,12 @@
             window.location.replace('/login.html?admin=1&session_expired=1');
           }
         }
+        // Handle 401 on hospital requests
+        else if (response.status === 401 && isHospitalPage) {
+          console.warn('[MedPulse Auth] Hospital session expired. Redirecting to hospital login.');
+          localStorage.removeItem('medpulse_hospital_admin');
+          window.location.replace('/login.html?hospital=1&session_expired=1');
+        }
         // Handle 401 on patient requests
         else if (response.status === 401 && isPatientPage) {
           console.warn('[MedPulse Auth] Patient session expired. Redirecting to patient login.');
@@ -231,7 +296,7 @@
           window.location.replace('/login.html?patient=1&session_expired=1');
         }
         // Handle 401 on student requests
-        else if (response.status === 401 && !isPublicPage && !isAdminPage && !isPatientPage && url.indexOf('/api/auth/login') === -1) {
+        else if (response.status === 401 && !isPublicPage && !isAdminPage && !isPatientPage && !isHospitalPage && url.indexOf('/api/auth/login') === -1) {
           console.warn('[MedPulse Auth] Session invalidated or unauthorized. Redirecting to login.');
           localStorage.removeItem('medpulse_user');
           window.location.replace('/login.html?session_expired=1');
@@ -272,6 +337,46 @@
     var currentAdmin = getStoredAdmin();
     var currentUser = getStoredUser();
     var currentPatient = getStoredPatient();
+    var currentHospitalAdmin = getStoredHospitalAdmin();
+
+    // If on hospital.html or if only hospital admin is logged in
+    if (isHospitalPage || (currentHospitalAdmin && !currentUser && !currentAdmin && !currentPatient)) {
+      if (currentHospitalAdmin) {
+        var hName = currentHospitalAdmin.name || currentHospitalAdmin.username;
+        var hRole = currentHospitalAdmin.role || 'Hospital Staff';
+        var hHosp = currentHospitalAdmin.hospital_name || 'Civil Hospital';
+        authArea.innerHTML = [
+          '<div class="sidebar-user" style="border-color: rgba(13, 148, 136, 0.35); background: rgba(13, 148, 136, 0.08);" data-tooltip="' + hName + '" onclick="if(document.documentElement.classList.contains(\'sidebar-collapsed\')||document.body.classList.contains(\'sidebar-collapsed\')) window.logoutHospitalAdmin(); else window.location.href=\'/hospital.html\';" title="' + hName + ' (' + hRole + ' - ' + hHosp + ')">',
+          '  <div class="user-avatar-badge" style="background: linear-gradient(135deg, #0d9488, #0f766e); color: #fff;">',
+          '    🏥',
+          '    <span class="role-dot" style="background: #2dd4bf; box-shadow: 0 0 8px #2dd4bf;" title="Active Hospital Session"></span>',
+          '  </div>',
+          '  <div class="user-info-text">',
+          '    <span style="font-size: 0.72rem; color: #5eead4; font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">' + hRole + '</span>',
+          '    <span style="font-weight: 750; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;" title="' + hName + '">' + hName + '</span>',
+          '  </div>',
+          '  <button class="logout-btn" onclick="event.stopPropagation(); window.logoutHospitalAdmin();" title="Sign Out Hospital Staff">',
+          '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">',
+          '      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>',
+          '      <polyline points="16 17 21 12 16 7"/>',
+          '      <line x1="21" y1="12" x2="9" y2="12"/>',
+          '    </svg>',
+          '  </button>',
+          '</div>'
+        ].join('\n');
+      } else {
+        authArea.innerHTML = [
+          '<a href="/login.html?hospital=1" class="sidebar-login-link" title="Hospital Sign In">',
+          '  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">',
+          '    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>',
+          '    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+          '  </svg>',
+          '  <span class="login-label">Hospital Sign In</span>',
+          '</a>'
+        ].join('\n');
+      }
+      return;
+    }
 
     // If on patient.html or if only patient is logged in
     if (isPatientPage || (currentPatient && !currentUser && !currentAdmin)) {

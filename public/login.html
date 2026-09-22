@@ -119,7 +119,7 @@
 
       <div class="login-card">
         <!-- Auth Mode Switcher -->
-        <div class="auth-mode-nav four-items" id="authModeNav">
+        <div class="auth-mode-nav five-items" id="authModeNav">
           <div class="auth-mode-glider" id="authModeGlider"></div>
           <button type="button" class="auth-mode-btn active" id="tabSignIn" onclick="setAuthMode('login')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -144,6 +144,10 @@
           <button type="button" class="auth-mode-btn" id="tabPatient" onclick="setAuthMode('patient')">
             <span style="font-size: 0.95rem; line-height: 1;">🏥</span>
             Patient
+          </button>
+          <button type="button" class="auth-mode-btn" id="tabHospital" onclick="setAuthMode('hospital')">
+            <span style="font-size: 0.95rem; line-height: 1;">🏨</span>
+            Hospital
           </button>
         </div>
 
@@ -410,6 +414,41 @@
             </p>
           </div>
         </div>
+
+        <!-- PANE 5: Hospital Staff & Administrative Console Login -->
+        <div id="hospitalPane" class="auth-pane slide-right" style="display: none;">
+          <form id="hospitalLoginForm" onsubmit="handleHospitalLogin(event)">
+            <div style="background: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.25); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 0.65rem;">
+              <span style="font-size: 1.25rem;">🏥</span>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.35;">
+                <strong style="color: #0f766e;">Independent Hospital Network</strong><br>
+                Hospital Super Admins (1~3) &amp; Admins (up to 20) with cross-institutional patient surveillance.
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="hospUsernameInput">Hospital Staff Username / ID</label>
+              <input type="text" id="hospUsernameInput" placeholder="e.g. hosp_superadmin or phone" value="hosp_superadmin" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label for="hospPinInput">Staff Security PIN</label>
+              <input type="password" id="hospPinInput" placeholder="Default: 8888" value="8888" required>
+            </div>
+
+            <button type="submit" id="hospSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; background: linear-gradient(135deg, #0d9488, #0f766e, #115e59); border: none; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);">
+              🏨 Sign In to Hospital Console &rarr;
+            </button>
+          </form>
+
+          <div class="section-divider"></div>
+
+          <div style="text-align: center;">
+            <p style="font-size: 0.82rem; color: var(--text-secondary);">
+              Medical Trainee or Patient? <a href="javascript:void(0)" onclick="setAuthMode('login')" style="color: var(--accent); font-weight: 650; text-decoration: underline;">Return to Student Portal &rarr;</a>
+            </p>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -539,10 +578,12 @@
       const tabRegister = document.getElementById('tabRegister');
       const tabAdmin = document.getElementById('tabAdmin');
       const tabPatient = document.getElementById('tabPatient');
+      const tabHospital = document.getElementById('tabHospital');
       const loginPane = document.getElementById('loginPane');
       const registerPane = document.getElementById('registerPane');
       const adminPane = document.getElementById('adminPane');
       const patientPane = document.getElementById('patientPane');
+      const hospitalPane = document.getElementById('hospitalPane');
       const wrapper = document.getElementById('loginWrapper');
       const title = document.getElementById('authTitle');
       const subtitle = document.getElementById('authSubtitle');
@@ -557,14 +598,16 @@
       tabRegister.classList.remove('active');
       if (tabAdmin) tabAdmin.classList.remove('active');
       if (tabPatient) tabPatient.classList.remove('active');
+      if (tabHospital) tabHospital.classList.remove('active');
 
       loginPane.classList.remove('active', 'slide-left', 'slide-right');
       registerPane.classList.remove('active', 'slide-left', 'slide-right');
       if (adminPane) adminPane.classList.remove('active', 'slide-left', 'slide-right');
       if (patientPane) patientPane.classList.remove('active', 'slide-left', 'slide-right');
+      if (hospitalPane) hospitalPane.classList.remove('active', 'slide-left', 'slide-right');
 
       if (mode === 'register') {
-        nav.className = 'auth-mode-nav four-items state-register';
+        nav.className = 'auth-mode-nav five-items state-register';
         tabRegister.classList.add('active');
         wrapper.classList.add('mode-register');
 
@@ -579,7 +622,7 @@
         history.replaceState(null, '', '#register');
         document.getElementById('regName').focus();
       } else if (mode === 'admin') {
-        nav.className = 'auth-mode-nav four-items state-admin';
+        nav.className = 'auth-mode-nav five-items state-admin';
         if (tabAdmin) tabAdmin.classList.add('active');
         wrapper.classList.remove('mode-register');
 
@@ -597,7 +640,7 @@
         const adminInput = document.getElementById('adminUserInput');
         if (adminInput) adminInput.focus();
       } else if (mode === 'patient') {
-        nav.className = 'auth-mode-nav four-items state-patient';
+        nav.className = 'auth-mode-nav five-items state-patient';
         if (tabPatient) tabPatient.classList.add('active');
         wrapper.classList.remove('mode-register');
 
@@ -614,8 +657,26 @@
         history.replaceState(null, '', '#patient');
         const pInput = document.getElementById('patientLoginId');
         if (pInput) pInput.focus();
+      } else if (mode === 'hospital') {
+        nav.className = 'auth-mode-nav five-items state-hospital';
+        if (tabHospital) tabHospital.classList.add('active');
+        wrapper.classList.remove('mode-register');
+
+        if (hospitalPane) {
+          void hospitalPane.offsetWidth;
+          hospitalPane.classList.add('active', 'slide-right');
+        }
+
+        icon.textContent = '🏨';
+        icon.style.background = 'linear-gradient(135deg, #0d9488, #0f766e, #115e59)';
+        icon.style.boxShadow = '0 8px 24px rgba(13, 148, 136, 0.45)';
+        title.textContent = 'Hospital Command Center';
+        subtitle.textContent = 'Cross-institutional patient records, university cadet surveillance, and clinical supervision.';
+        history.replaceState(null, '', '#hospital');
+        const hInput = document.getElementById('hospUsernameInput');
+        if (hInput) hInput.focus();
       } else {
-        nav.className = 'auth-mode-nav four-items';
+        nav.className = 'auth-mode-nav five-items';
         tabSignIn.classList.add('active');
         wrapper.classList.remove('mode-register');
 
@@ -1110,6 +1171,56 @@
       handleAdminLogin();
     }
 
+    async function handleHospitalLogin(event) {
+      if (event) event.preventDefault();
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      const btn = document.getElementById('hospSubmitBtn');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      const username = document.getElementById('hospUsernameInput').value.trim();
+      const pin = document.getElementById('hospPinInput').value.trim();
+
+      if (!username || !pin) {
+        alertBox.textContent = 'Please enter your hospital staff username and security PIN.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Authenticating...';
+
+      try {
+        const res = await fetch('/api/hospital/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, pin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Hospital sign in failed');
+
+        successBox.textContent = `🎉 Welcome, ${data.admin.name}! Entering Hospital Surveillance Console...`;
+        successBox.style.display = 'block';
+
+        localStorage.setItem('medpulse_hospital_admin', JSON.stringify(data.admin));
+
+        setTimeout(() => {
+          const params = new URLSearchParams(window.location.search);
+          const target = params.get('redirect') || '/hospital.html';
+          window.location.href = target;
+        }, 900);
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🏨 Sign In to Hospital Console &rarr;';
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       initSidebar();
       initAuth();
@@ -1121,7 +1232,7 @@
       }
 
       runWhenActive(() => {
-        // Check URL hash or search params for admin, register or patient mode
+        // Check URL hash or search params for admin, register, patient or hospital mode
         const hash = window.location.hash;
         const params = new URLSearchParams(window.location.search);
         if (hash === '#admin' || params.get('admin') === '1') {
@@ -1130,6 +1241,8 @@
           setAuthMode('register');
         } else if (hash === '#patient' || params.get('patient') === '1') {
           setAuthMode('patient');
+        } else if (hash === '#hospital' || params.get('hospital') === '1') {
+          setAuthMode('hospital');
         }
 
         if (params.get('session_expired')) {

@@ -273,3 +273,41 @@ CREATE INDEX IF NOT EXISTS idx_patients_student ON patients(student_id);
 CREATE INDEX IF NOT EXISTS idx_patients_model ON patients(model_type);
 CREATE INDEX IF NOT EXISTS idx_patients_member ON patients(family_member_id);
 
+-- 13. Hospitals (Independent Medium) & Staff Quota Subsystem (Phase 5)
+CREATE TABLE IF NOT EXISTS hospitals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    code TEXT UNIQUE NOT NULL,                       -- Standardized Hospital Code (e.g. HOSP-CIVIL-01)
+    type TEXT DEFAULT 'Civil / General Hospital',
+    city TEXT,
+    district TEXT,
+    state TEXT,
+    bed_capacity INTEGER DEFAULT 500,
+    contact_email TEXT,
+    contact_phone TEXT,
+    max_super_admins INTEGER DEFAULT 3,             -- Strict Quota: 1 to 3 Super Admins per hospital
+    max_admins INTEGER DEFAULT 20,                   -- Strict Quota: Maximum 20 Admins per hospital
+    status TEXT DEFAULT 'Active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS hospital_admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hospital_id INTEGER NOT NULL REFERENCES hospitals(id) ON DELETE CASCADE,
+    username TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT,
+    pin TEXT NOT NULL DEFAULT '8888',
+    role TEXT CHECK(role IN ('Hospital Super Admin', 'Hospital Admin')) DEFAULT 'Hospital Admin',
+    department TEXT DEFAULT 'General Medicine',
+    status TEXT DEFAULT 'Active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_hosp_code ON hospitals(code);
+CREATE INDEX IF NOT EXISTS idx_hosp_admins_hosp ON hospital_admins(hospital_id);
+CREATE INDEX IF NOT EXISTS idx_hosp_admins_user ON hospital_admins(username);
+CREATE INDEX IF NOT EXISTS idx_hosp_admins_role ON hospital_admins(role);
+
+
