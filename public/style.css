@@ -2121,6 +2121,26 @@ tbody tr:last-child td { border-bottom: none; }
   box-shadow: 0 2px 14px rgba(217, 119, 6, 0.5);
 }
 
+.auth-mode-nav.four-items .auth-mode-glider {
+  width: calc(25% - 4px);
+}
+
+.auth-mode-nav.four-items.state-register .auth-mode-glider {
+  transform: translateX(100%);
+}
+
+.auth-mode-nav.four-items.state-admin .auth-mode-glider {
+  transform: translateX(200%);
+  background: linear-gradient(135deg, #d97706, #b45309, #92400e);
+  box-shadow: 0 2px 14px rgba(217, 119, 6, 0.5);
+}
+
+.auth-mode-nav.four-items.state-patient .auth-mode-glider {
+  transform: translateX(300%);
+  background: linear-gradient(135deg, #0284c7, #0369a1, #075985);
+  box-shadow: 0 2px 14px rgba(2, 132, 199, 0.5);
+}
+
 /* Registration Form Grid & Controls */
 .reg-grid-2 {
   display: grid;

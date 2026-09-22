@@ -61,6 +61,18 @@ function initDatabase() {
             db.exec(schemaSql);
         }
 
+        // Migration safety for patients table
+        const patientMigrations = [
+            "ALTER TABLE patients ADD COLUMN model_type TEXT DEFAULT 'Independent';",
+            "ALTER TABLE patients ADD COLUMN student_id INTEGER REFERENCES students(id);",
+            "ALTER TABLE patients ADD COLUMN referral_code_used TEXT;",
+            "ALTER TABLE patients ADD COLUMN family_member_id INTEGER REFERENCES family_members(id);",
+            "ALTER TABLE patients ADD COLUMN hospital_id INTEGER DEFAULT 1;"
+        ];
+        for (const pm of patientMigrations) {
+            try { db.exec(pm); } catch (e) {}
+        }
+
         // Ensure default colleges exist
         db.prepare(`
             INSERT OR IGNORE INTO colleges (id, name, code, city, state, max_admins)

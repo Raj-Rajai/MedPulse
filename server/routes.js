@@ -81,6 +81,53 @@ function authenticateAdmin(req, res, next) {
     next();
 }
 
+function authenticatePatient(req, res, next) {
+    const patientIdHeader = req.headers['x-patient-id'];
+    const authHeader = req.headers['authorization'];
+    const queryPatientId = req.query.patient_id;
+
+    let patient = null;
+
+    if (patientIdHeader) {
+        patient = db.prepare(`
+            SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                   c.name as college_name, c.city as college_city
+            FROM patients p
+            LEFT JOIN students s ON p.student_id = s.id
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE p.id = ?
+        `).get(patientIdHeader);
+    } else if (authHeader && authHeader.startsWith('Bearer ')) {
+        const tokenVal = authHeader.replace('Bearer ', '').trim();
+        const idFromToken = tokenVal.replace('patient-', '').trim();
+        patient = db.prepare(`
+            SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                   c.name as college_name, c.city as college_city
+            FROM patients p
+            LEFT JOIN students s ON p.student_id = s.id
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE p.id = ? OR p.patient_uid = ?
+        `).get(idFromToken, tokenVal);
+    } else if (queryPatientId) {
+        patient = db.prepare(`
+            SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                   c.name as college_name, c.city as college_city
+            FROM patients p
+            LEFT JOIN students s ON p.student_id = s.id
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE p.id = ?
+        `).get(queryPatientId);
+    }
+
+    if (!patient) {
+        return res.status(401).json({ error: 'Patient authentication required. Please sign in to your patient account.' });
+    }
+
+    req.patient = clean(patient);
+    req.patientId = patient.id;
+    next();
+}
+
 function verifyFamilyAccess(familyId, studentId) {
     return db.prepare('SELECT id, student_id FROM families WHERE id = ? AND student_id = ?').get(familyId, studentId);
 }
@@ -3198,6 +3245,410 @@ router.delete('/admin/university-admins/:id', authenticateAdmin, (req, res) => {
         res.json({
             success: true,
             message: `University Admin ${target.name} (${target.username}) removed successfully.`
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// =============================================================
+// PATIENT SUBSYSTEM (Dual Model: Independent vs. Dependent)
+// =============================================================
+
+// Verify Medical Cadet Referral Code (Live debounced check)
+router.post('/patient/verify-referral', (req, res) => {
+    try {
+        const { referral_code } = req.body;
+        if (!referral_code || !referral_code.toString().trim()) {
+            return res.status(400).json({ valid: false, error: 'Referral code is required.' });
+        }
+
+        const student = db.prepare(`
+            SELECT s.id, s.name, s.roll_number, s.posting_unit, s.referral_code,
+                   c.name as college_name, c.city as college_city
+            FROM students s
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE UPPER(TRIM(s.referral_code)) = UPPER(TRIM(?))
+        `).get(referral_code.toString().trim());
+
+        if (!student) {
+            return res.status(404).json({ valid: false, error: 'No medical cadet found with this referral code.' });
+        }
+
+        res.json({
+            valid: true,
+            student: clean(student)
+        });
+    } catch (err) {
+        res.status(500).json({ valid: false, error: err.message });
+    }
+});
+
+// Patient Self-Registration (Supports Independent & Dependent Model)
+router.post('/patient/register', (req, res) => {
+    try {
+        const { name, phone, pin, email, gender, age_years, date_of_birth, address, is_adopted, referral_code } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Patient name is required.' });
+        }
+        if (!phone || !phone.trim()) {
+            return res.status(400).json({ error: 'Contact phone number is required.' });
+        }
+
+        // Clean phone (digits only)
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        if (cleanPhone.length < 10) {
+            return res.status(400).json({ error: 'Please provide a valid 10-digit mobile phone number.' });
+        }
+
+        const cleanPin = (pin && pin.trim().length >= 4) ? pin.trim() : '1234';
+
+        // Check if phone already registered
+        const existing = db.prepare('SELECT id, phone, patient_uid FROM patients WHERE phone = ?').get(cleanPhone);
+        if (existing) {
+            return res.status(409).json({ error: 'This phone number is already registered. Please sign in.' });
+        }
+
+        // Determine Model Type & Linkage
+        let modelType = 'Independent';
+        let studentId = null;
+        let referralCodeUsed = null;
+
+        const hasReferral = (is_adopted || (referral_code && referral_code.trim().length > 0));
+        if (hasReferral) {
+            if (!referral_code || !referral_code.trim()) {
+                return res.status(400).json({ error: "Please enter your cadet's referral code to complete dependent registration." });
+            }
+            const student = db.prepare(`
+                SELECT s.id, s.referral_code 
+                FROM students s 
+                WHERE UPPER(TRIM(s.referral_code)) = UPPER(TRIM(?))
+            `).get(referral_code.trim());
+
+            if (!student) {
+                return res.status(400).json({ error: 'Invalid medical cadet referral code provided.' });
+            }
+
+            modelType = 'Dependent';
+            studentId = student.id;
+            referralCodeUsed = student.referral_code;
+        }
+
+        // Generate Collision-Free Patient UID (e.g. PAT-2026-XXXXX)
+        let patientUid = '';
+        while (true) {
+            const randSuffix = Math.floor(10000 + Math.random() * 90000);
+            patientUid = `PAT-${new Date().getFullYear()}-${randSuffix}`;
+            const collision = db.prepare('SELECT id FROM patients WHERE patient_uid = ?').get(patientUid);
+            if (!collision) break;
+        }
+
+        // Attempt to auto-link with family_members record by contact_number
+        let familyMemberId = null;
+        const matchingMember = db.prepare('SELECT id FROM family_members WHERE contact_number = ? LIMIT 1').get(cleanPhone);
+        if (matchingMember) {
+            familyMemberId = matchingMember.id;
+        }
+
+        const insertStmt = db.prepare(`
+            INSERT INTO patients (patient_uid, name, phone, email, pin, date_of_birth, age_years, gender, address, model_type, student_id, referral_code_used, family_member_id, hospital_id, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'Active')
+        `);
+
+        const result = insertStmt.run(
+            patientUid,
+            name.trim(),
+            cleanPhone,
+            email ? email.trim() : null,
+            cleanPin,
+            date_of_birth || null,
+            age_years ? parseInt(age_years, 10) : null,
+            gender || 'Other',
+            address ? address.trim() : null,
+            modelType,
+            studentId,
+            referralCodeUsed,
+            familyMemberId
+        );
+
+        const newPatient = db.prepare(`
+            SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                   c.name as college_name, c.city as college_city
+            FROM patients p
+            LEFT JOIN students s ON p.student_id = s.id
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE p.id = ?
+        `).get(Number(result.lastInsertRowid));
+
+        res.status(201).json({
+            success: true,
+            message: `Patient account registered successfully as ${modelType}.`,
+            patient: clean(newPatient),
+            token: `patient-${newPatient.id}`
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Patient Login
+router.post('/patient/login', (req, res) => {
+    try {
+        const { identifier, pin } = req.body;
+        if (!identifier || !identifier.trim()) {
+            return res.status(400).json({ error: 'Phone number or Patient ID is required.' });
+        }
+        if (!pin || !pin.trim()) {
+            return res.status(400).json({ error: 'PIN / Passcode is required.' });
+        }
+
+        const cleanId = identifier.trim();
+        const digitsOnly = cleanId.replace(/[^0-9]/g, '');
+
+        let patient = null;
+        if (digitsOnly.length === 10) {
+            patient = db.prepare(`
+                SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                       c.name as college_name, c.city as college_city
+                FROM patients p
+                LEFT JOIN students s ON p.student_id = s.id
+                LEFT JOIN colleges c ON s.college_id = c.id
+                WHERE p.phone = ? OR p.phone = ?
+            `).get(cleanId, digitsOnly);
+        }
+
+        if (!patient) {
+            patient = db.prepare(`
+                SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                       c.name as college_name, c.city as college_city
+                FROM patients p
+                LEFT JOIN students s ON p.student_id = s.id
+                LEFT JOIN colleges c ON s.college_id = c.id
+                WHERE UPPER(p.patient_uid) = UPPER(?) OR p.phone = ?
+            `).get(cleanId, cleanId);
+        }
+
+        if (!patient) {
+            return res.status(404).json({ error: 'No patient record found matching this Phone number or Patient ID.' });
+        }
+
+        const expectedPin = patient.pin || '1234';
+        if (pin.trim() !== expectedPin) {
+            return res.status(401).json({ error: 'Invalid PIN / Passcode.' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Signed in successfully.',
+            patient: clean(patient),
+            token: `patient-${patient.id}`
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Patient Profile
+router.get('/patient/profile', authenticatePatient, (req, res) => {
+    res.json(req.patient);
+});
+
+// Link Referral Code to Existing Independent Patient (Late Linking)
+router.post('/patient/link-referral', authenticatePatient, (req, res) => {
+    try {
+        const { referral_code } = req.body;
+        if (!referral_code || !referral_code.trim()) {
+            return res.status(400).json({ error: 'Referral code is required.' });
+        }
+
+        const student = db.prepare(`
+            SELECT s.id, s.referral_code, s.name, s.roll_number, c.name as college_name
+            FROM students s
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE UPPER(TRIM(s.referral_code)) = UPPER(TRIM(?))
+        `).get(referral_code.trim());
+
+        if (!student) {
+            return res.status(404).json({ error: 'Invalid medical cadet referral code.' });
+        }
+
+        // Check if there is an unlinked member record under this student matching the patient's phone
+        let familyMemberId = req.patient.family_member_id;
+        if (!familyMemberId) {
+            const memberMatch = db.prepare(`
+                SELECT m.id 
+                FROM family_members m 
+                JOIN families f ON m.family_id = f.id 
+                WHERE f.student_id = ? AND (m.contact_number = ? OR m.name LIKE ?)
+                LIMIT 1
+            `).get(student.id, req.patient.phone, `%${req.patient.name}%`);
+            if (memberMatch) familyMemberId = memberMatch.id;
+        }
+
+        db.prepare(`
+            UPDATE patients
+            SET model_type = 'Dependent',
+                student_id = ?,
+                referral_code_used = ?,
+                family_member_id = COALESCE(family_member_id, ?),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(student.id, student.referral_code, familyMemberId, req.patientId);
+
+        const updated = db.prepare(`
+            SELECT p.*, s.name as cadet_name, s.roll_number as cadet_roll, s.phone as cadet_phone, s.posting_unit as cadet_posting,
+                   c.name as college_name, c.city as college_city
+            FROM patients p
+            LEFT JOIN students s ON p.student_id = s.id
+            LEFT JOIN colleges c ON s.college_id = c.id
+            WHERE p.id = ?
+        `).get(req.patientId);
+
+        res.json({
+            success: true,
+            message: `Successfully linked to Medical Cadet ${student.name} (${student.college_name})!`,
+            patient: clean(updated)
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Patient Comprehensive Medical Records
+router.get('/patient/records', authenticatePatient, (req, res) => {
+    try {
+        const patient = req.patient;
+        let memberId = patient.family_member_id;
+
+        // Auto-match member by phone if not linked yet
+        if (!memberId && patient.phone) {
+            const match = db.prepare('SELECT id FROM family_members WHERE contact_number = ? LIMIT 1').get(patient.phone);
+            if (match) {
+                memberId = match.id;
+                db.prepare('UPDATE patients SET family_member_id = ? WHERE id = ?').run(memberId, patient.id);
+            }
+        }
+
+        let member = null;
+        let conditions = [];
+        let medications = [];
+        let allergies = [];
+        let medicalHistory = [];
+        let lifestyle = null;
+        let followUps = [];
+
+        if (memberId) {
+            member = db.prepare(`
+                SELECT m.*, f.family_no, f.family_code, f.head_of_family, f.village, f.city, f.district
+                FROM family_members m
+                JOIN families f ON m.family_id = f.id
+                WHERE m.id = ?
+            `).get(memberId);
+
+            conditions = db.prepare('SELECT * FROM member_conditions WHERE member_id = ? ORDER BY id DESC').all(memberId);
+            medications = db.prepare('SELECT * FROM member_medications WHERE member_id = ? ORDER BY id DESC').all(memberId);
+            allergies = db.prepare('SELECT * FROM member_allergies WHERE member_id = ? ORDER BY id DESC').all(memberId);
+            medicalHistory = db.prepare('SELECT * FROM member_medical_history WHERE member_id = ? ORDER BY year DESC, id DESC').all(memberId);
+            lifestyle = db.prepare('SELECT * FROM member_lifestyle WHERE member_id = ?').get(memberId);
+            followUps = db.prepare('SELECT * FROM follow_ups WHERE member_id = ? ORDER BY visit_date DESC, id DESC').all(memberId);
+        }
+
+        res.json({
+            profile: clean(patient),
+            member: clean(member),
+            conditions: cleanList(conditions),
+            medications: cleanList(medications),
+            allergies: cleanList(allergies),
+            medicalHistory: cleanList(medicalHistory),
+            lifestyle: clean(lifestyle),
+            follow_ups: cleanList(followUps),
+            followUps: cleanList(followUps)
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Student Cadet: Provision Patient Portal Account for Adopted Family Member
+router.post('/students/provision-patient', authenticateStudent, (req, res) => {
+    try {
+        const { member_id, phone, pin, name } = req.body;
+        if (!member_id) {
+            return res.status(400).json({ error: 'Family member ID is required.' });
+        }
+
+        // Validate that member belongs to this student cadet
+        const member = db.prepare(`
+            SELECT m.*, f.student_id, f.head_of_family
+            FROM family_members m
+            JOIN families f ON m.family_id = f.id
+            WHERE m.id = ? AND f.student_id = ?
+        `).get(member_id, req.studentId);
+
+        if (!member) {
+            return res.status(403).json({ error: 'Family member not found in your assigned households.' });
+        }
+
+        const patientName = (name && name.trim()) ? name.trim() : member.name;
+        let patientPhone = (phone && phone.trim()) ? phone.replace(/[^0-9]/g, '') : (member.contact_number ? member.contact_number.replace(/[^0-9]/g, '') : '');
+
+        // If no phone provided, generate unique 10-digit mobile number starting with 98
+        if (patientPhone.length < 10) {
+            patientPhone = `98${String(member.id).padStart(8, '0')}`;
+        }
+
+        const patientPin = (pin && pin.trim().length >= 4) ? pin.trim() : '1234';
+
+        // Check if patient already exists for this member
+        const existing = db.prepare('SELECT * FROM patients WHERE family_member_id = ? OR phone = ?').get(member.id, patientPhone);
+        if (existing) {
+            // Update PIN if provided
+            if (pin && pin.trim().length >= 4) {
+                db.prepare('UPDATE patients SET pin = ? WHERE id = ?').run(patientPin, existing.id);
+            }
+            return res.json({
+                success: true,
+                message: `Patient account already exists for ${existing.name}.`,
+                patient_uid: existing.patient_uid,
+                phone: existing.phone,
+                pin: patientPin,
+                name: existing.name
+            });
+        }
+
+        // Generate Unique Patient UID
+        let patientUid = '';
+        while (true) {
+            const randSuffix = Math.floor(10000 + Math.random() * 90000);
+            patientUid = `PAT-${new Date().getFullYear()}-${randSuffix}`;
+            const collision = db.prepare('SELECT id FROM patients WHERE patient_uid = ?').get(patientUid);
+            if (!collision) break;
+        }
+
+        db.prepare(`
+            INSERT INTO patients (patient_uid, name, phone, pin, date_of_birth, age_years, gender, model_type, student_id, referral_code_used, family_member_id, hospital_id, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'Dependent', ?, ?, ?, 1, 'Active')
+        `).run(
+            patientUid,
+            patientName,
+            patientPhone,
+            patientPin,
+            member.date_of_birth,
+            member.age_years,
+            member.gender,
+            req.studentId,
+            req.student.referral_code,
+            member.id
+        );
+
+        res.status(201).json({
+            success: true,
+            message: `Patient account created successfully for ${patientName}!`,
+            patient_uid: patientUid,
+            phone: patientPhone,
+            pin: patientPin,
+            name: patientName
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

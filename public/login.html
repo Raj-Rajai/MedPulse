@@ -119,14 +119,14 @@
 
       <div class="login-card">
         <!-- Auth Mode Switcher -->
-        <div class="auth-mode-nav three-items" id="authModeNav">
+        <div class="auth-mode-nav four-items" id="authModeNav">
           <div class="auth-mode-glider" id="authModeGlider"></div>
           <button type="button" class="auth-mode-btn active" id="tabSignIn" onclick="setAuthMode('login')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            Sign In
+            Student
           </button>
           <button type="button" class="auth-mode-btn" id="tabRegister" onclick="setAuthMode('register')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -139,7 +139,11 @@
           </button>
           <button type="button" class="auth-mode-btn" id="tabAdmin" onclick="setAuthMode('admin')">
             <span style="font-size: 0.95rem; line-height: 1;">👑</span>
-            Faculty Admin
+            Admin
+          </button>
+          <button type="button" class="auth-mode-btn" id="tabPatient" onclick="setAuthMode('patient')">
+            <span style="font-size: 0.95rem; line-height: 1;">🏥</span>
+            Patient
           </button>
         </div>
 
@@ -309,6 +313,103 @@
             </p>
           </div>
         </div>
+
+        <!-- PANE 4: Patient Portal (Dual Model: Independent vs. Dependent) -->
+        <div id="patientPane" class="auth-pane slide-right">
+          <!-- Patient Sub-Mode Switcher -->
+          <div style="display: flex; background: #f1f5f9; border-radius: var(--radius-md); padding: 4px; margin-bottom: 1.25rem;">
+            <button type="button" id="btnPatientSignInMode" class="btn btn-secondary" onclick="switchPatientSubMode('login')" style="flex: 1; justify-content: center; padding: 6px; font-size: 0.84rem; background: #fff; border: none; font-weight: 700; color: #0284c7; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              Patient Sign In
+            </button>
+            <button type="button" id="btnPatientRegisterMode" class="btn btn-secondary" onclick="switchPatientSubMode('register')" style="flex: 1; justify-content: center; padding: 6px; font-size: 0.84rem; background: transparent; border: none; font-weight: 600; color: var(--text-muted);">
+              New Patient Registration
+            </button>
+          </div>
+
+          <!-- Patient Sign-In Subform -->
+          <form id="patientLoginForm" onsubmit="handlePatientLogin(event)">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="patientLoginId">10-Digit Mobile Phone or Patient UID <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="patientLoginId" placeholder="e.g. 9876543210 or PAT-2026-XXXXX" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.35rem;">
+              <label for="patientLoginPin">Access PIN (4 Digits) <span style="color: #ef4444;">*</span></label>
+              <input type="password" id="patientLoginPin" placeholder="Default: 1234" value="1234" required>
+            </div>
+
+            <button type="submit" id="patientLoginBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem; background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #0284c7; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
+              🏥 Sign In to Patient Portal &rarr;
+            </button>
+          </form>
+
+          <!-- Patient Registration Subform -->
+          <form id="patientRegisterForm" onsubmit="handlePatientRegister(event)" style="display: none;">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label for="patientRegName">Full Patient Name <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="patientRegName" placeholder="e.g. Rajeshbhai Vora" required>
+            </div>
+
+            <div class="reg-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label for="patientRegPhone">Mobile Phone (10 Digits) <span style="color: #ef4444;">*</span></label>
+                <input type="tel" id="patientRegPhone" placeholder="e.g. 9876543210" required maxlength="10">
+              </div>
+
+              <div class="form-group">
+                <label for="patientRegPin">4-Digit Access PIN <span style="color: #ef4444;">*</span></label>
+                <input type="password" id="patientRegPin" placeholder="e.g. 1234" minlength="4" maxlength="6" required value="1234">
+              </div>
+            </div>
+
+            <div class="reg-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label for="patientRegAge">Age (Years)</label>
+                <input type="number" id="patientRegAge" placeholder="e.g. 48" min="0" max="120">
+              </div>
+
+              <div class="form-group">
+                <label for="patientRegGender">Gender</label>
+                <select id="patientRegGender">
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Adopted by Cadet Checkbox & Dynamic Referral Input -->
+            <div style="margin-top: 12px; margin-bottom: 14px; background: rgba(14, 165, 233, 0.07); border: 1.5px solid rgba(14, 165, 233, 0.35); border-radius: var(--radius-md); padding: 12px 14px;">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; color: #0369a1; margin: 0; font-size: 0.88rem;">
+                <input type="checkbox" id="patientIsAdopted" onchange="togglePatientReferralInput()" style="width: 18px; height: 18px; accent-color: #0284c7; cursor: pointer;">
+                <span>Adopted by a Medical Cadet? / Link to Medical Student</span>
+              </label>
+
+              <div id="patientReferralArea" style="display: none; margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(14, 165, 233, 0.35);">
+                <label for="patientReferralCode" style="font-size: 0.8rem; font-weight: 700; color: #0369a1; margin-bottom: 5px; display: block;">
+                  Cadet Referral Code *
+                </label>
+                <div style="position: relative;">
+                  <input type="text" id="patientReferralCode" placeholder="e.g. GMERS-235-DA9B" oninput="debounceVerifyReferral()" style="font-family: monospace; font-weight: 750; text-transform: uppercase; letter-spacing: 0.04em; padding-right: 36px;">
+                  <span id="patientRefStatusIcon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; display: none;"></span>
+                </div>
+                <div id="patientRefFeedback" style="font-size: 0.78rem; margin-top: 6px; display: none;"></div>
+              </div>
+            </div>
+
+            <button type="submit" id="patientRegBtn" class="btn btn-primary" style="width: 100%; padding: 0.82rem; font-size: 0.95rem; background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #0284c7; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
+              ✨ Register Patient &amp; Access Dashboard &rarr;
+            </button>
+          </form>
+
+          <div class="section-divider"></div>
+
+          <div style="text-align: center;">
+            <p style="font-size: 0.82rem; color: var(--text-secondary);">
+              Medical Trainee or Faculty? <a href="javascript:void(0)" onclick="setAuthMode('login')" style="color: var(--accent); font-weight: 650; text-decoration: underline;">Return to Student Portal &rarr;</a>
+            </p>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -437,9 +538,11 @@
       const tabSignIn = document.getElementById('tabSignIn');
       const tabRegister = document.getElementById('tabRegister');
       const tabAdmin = document.getElementById('tabAdmin');
+      const tabPatient = document.getElementById('tabPatient');
       const loginPane = document.getElementById('loginPane');
       const registerPane = document.getElementById('registerPane');
       const adminPane = document.getElementById('adminPane');
+      const patientPane = document.getElementById('patientPane');
       const wrapper = document.getElementById('loginWrapper');
       const title = document.getElementById('authTitle');
       const subtitle = document.getElementById('authSubtitle');
@@ -453,12 +556,15 @@
       tabSignIn.classList.remove('active');
       tabRegister.classList.remove('active');
       if (tabAdmin) tabAdmin.classList.remove('active');
+      if (tabPatient) tabPatient.classList.remove('active');
+
       loginPane.classList.remove('active', 'slide-left', 'slide-right');
       registerPane.classList.remove('active', 'slide-left', 'slide-right');
       if (adminPane) adminPane.classList.remove('active', 'slide-left', 'slide-right');
+      if (patientPane) patientPane.classList.remove('active', 'slide-left', 'slide-right');
 
       if (mode === 'register') {
-        nav.className = 'auth-mode-nav three-items state-register';
+        nav.className = 'auth-mode-nav four-items state-register';
         tabRegister.classList.add('active');
         wrapper.classList.add('mode-register');
 
@@ -473,7 +579,7 @@
         history.replaceState(null, '', '#register');
         document.getElementById('regName').focus();
       } else if (mode === 'admin') {
-        nav.className = 'auth-mode-nav three-items state-admin';
+        nav.className = 'auth-mode-nav four-items state-admin';
         if (tabAdmin) tabAdmin.classList.add('active');
         wrapper.classList.remove('mode-register');
 
@@ -490,8 +596,26 @@
         history.replaceState(null, '', '#admin');
         const adminInput = document.getElementById('adminUserInput');
         if (adminInput) adminInput.focus();
+      } else if (mode === 'patient') {
+        nav.className = 'auth-mode-nav four-items state-patient';
+        if (tabPatient) tabPatient.classList.add('active');
+        wrapper.classList.remove('mode-register');
+
+        if (patientPane) {
+          void patientPane.offsetWidth;
+          patientPane.classList.add('active', 'slide-right');
+        }
+
+        icon.textContent = '🏥';
+        icon.style.background = 'linear-gradient(135deg, #0284c7, #0369a1, #075985)';
+        icon.style.boxShadow = '0 8px 24px rgba(2, 132, 199, 0.45)';
+        title.textContent = 'Patient Health Portal';
+        subtitle.textContent = 'Access your personal health records, clinical vitals, prescriptions, and cadet consultations.';
+        history.replaceState(null, '', '#patient');
+        const pInput = document.getElementById('patientLoginId');
+        if (pInput) pInput.focus();
       } else {
-        nav.className = 'auth-mode-nav three-items';
+        nav.className = 'auth-mode-nav four-items';
         tabSignIn.classList.add('active');
         wrapper.classList.remove('mode-register');
 
@@ -505,6 +629,240 @@
         subtitle.textContent = 'Access your assigned field families, survey metrics, and longitudinal care.';
         history.replaceState(null, '', '#login');
         document.getElementById('rollInput').focus();
+      }
+    }
+
+    /* ---- Patient Sub-Mode Switcher ---- */
+    let currentPatientSubMode = 'login';
+    function switchPatientSubMode(subMode) {
+      currentPatientSubMode = subMode;
+      const btnIn = document.getElementById('btnPatientSignInMode');
+      const btnReg = document.getElementById('btnPatientRegisterMode');
+      const formIn = document.getElementById('patientLoginForm');
+      const formReg = document.getElementById('patientRegisterForm');
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      if (alertBox) alertBox.style.display = 'none';
+      if (successBox) successBox.style.display = 'none';
+
+      if (subMode === 'register') {
+        btnReg.style.background = '#fff';
+        btnReg.style.color = '#0284c7';
+        btnReg.style.fontWeight = '700';
+        btnReg.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+        btnIn.style.background = 'transparent';
+        btnIn.style.color = 'var(--text-muted)';
+        btnIn.style.fontWeight = '600';
+        btnIn.style.boxShadow = 'none';
+
+        formIn.style.display = 'none';
+        formReg.style.display = 'block';
+        document.getElementById('patientRegName').focus();
+      } else {
+        btnIn.style.background = '#fff';
+        btnIn.style.color = '#0284c7';
+        btnIn.style.fontWeight = '700';
+        btnIn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+        btnReg.style.background = 'transparent';
+        btnReg.style.color = 'var(--text-muted)';
+        btnReg.style.fontWeight = '600';
+        btnReg.style.boxShadow = 'none';
+
+        formIn.style.display = 'block';
+        formReg.style.display = 'none';
+        document.getElementById('patientLoginId').focus();
+      }
+    }
+
+    function togglePatientReferralInput() {
+      const isAdopted = document.getElementById('patientIsAdopted').checked;
+      const refArea = document.getElementById('patientReferralArea');
+      refArea.style.display = isAdopted ? 'block' : 'none';
+      if (isAdopted) {
+        document.getElementById('patientReferralCode').focus();
+      } else {
+        document.getElementById('patientReferralCode').value = '';
+        document.getElementById('patientRefFeedback').style.display = 'none';
+        document.getElementById('patientRefStatusIcon').style.display = 'none';
+      }
+    }
+
+    let referralCheckTimer = null;
+    function debounceVerifyReferral() {
+      clearTimeout(referralCheckTimer);
+      referralCheckTimer = setTimeout(verifyPatientReferralCode, 350);
+    }
+
+    async function verifyPatientReferralCode() {
+      const codeInput = document.getElementById('patientReferralCode');
+      const icon = document.getElementById('patientRefStatusIcon');
+      const feedback = document.getElementById('patientRefFeedback');
+      const code = codeInput.value.trim().toUpperCase();
+
+      if (code.length < 4) {
+        icon.style.display = 'none';
+        feedback.style.display = 'none';
+        return;
+      }
+
+      icon.style.display = 'block';
+      icon.textContent = '⏳';
+
+      try {
+        const res = await fetch('/api/patient/verify-referral', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referral_code: code })
+        });
+        const data = await res.json();
+        if (res.ok && data.valid && data.student) {
+          icon.textContent = '✅';
+          feedback.style.display = 'block';
+          feedback.style.color = '#065f46';
+          feedback.style.background = '#ecfdf5';
+          feedback.style.border = '1px solid #a7f3d0';
+          feedback.style.padding = '6px 10px';
+          feedback.style.borderRadius = '6px';
+          feedback.innerHTML = `<strong>Linked Cadet:</strong> ${data.student.name} • Roll ${data.student.roll_number} • ${data.student.college_name || 'Medical College'}`;
+        } else {
+          icon.textContent = '❌';
+          feedback.style.display = 'block';
+          feedback.style.color = '#b91c1c';
+          feedback.style.background = '#fef2f2';
+          feedback.style.border = '1px solid #fecaca';
+          feedback.style.padding = '6px 10px';
+          feedback.style.borderRadius = '6px';
+          feedback.textContent = data.error || 'Invalid cadet referral code. Please verify with your medical student.';
+        }
+      } catch (err) {
+        icon.textContent = '⚠️';
+      }
+    }
+
+    async function handlePatientLogin(event) {
+      if (event) event.preventDefault();
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      const btn = document.getElementById('patientLoginBtn');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      const identifier = document.getElementById('patientLoginId').value.trim();
+      const pin = document.getElementById('patientLoginPin').value.trim();
+
+      if (!identifier) {
+        alertBox.textContent = 'Please enter your phone number or Patient UID.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Signing In...';
+
+      try {
+        const res = await fetch('/api/patient/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, pin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Patient login failed');
+
+        successBox.textContent = `🎉 Welcome back, ${data.patient.name}! Accessing medical portfolio...`;
+        successBox.style.display = 'block';
+
+        localStorage.setItem('medpulse_patient', JSON.stringify(data.patient));
+
+        setTimeout(() => {
+          const params = new URLSearchParams(window.location.search);
+          const target = params.get('redirect') || '/patient.html';
+          window.location.href = target;
+        }, 900);
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🏥 Sign In to Patient Portal &rarr;';
+      }
+    }
+
+    async function handlePatientRegister(event) {
+      if (event) event.preventDefault();
+      const alertBox = document.getElementById('authAlert');
+      const successBox = document.getElementById('authSuccess');
+      const btn = document.getElementById('patientRegBtn');
+
+      alertBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      const name = document.getElementById('patientRegName').value.trim();
+      const phoneInput = document.getElementById('patientRegPhone');
+      const phone = phoneInput.value.trim().replace(/[^0-9]/g, '');
+      const pin = document.getElementById('patientRegPin').value.trim();
+      const age = document.getElementById('patientRegAge').value.trim();
+      const gender = document.getElementById('patientRegGender').value;
+      const isAdopted = document.getElementById('patientIsAdopted').checked;
+      const refCode = document.getElementById('patientReferralCode').value.trim();
+
+      if (!name) {
+        alertBox.textContent = 'Please enter patient full name.';
+        alertBox.style.display = 'block';
+        return;
+      }
+      if (phone.length < 10) {
+        alertBox.textContent = 'Please enter a valid 10-digit mobile phone number.';
+        alertBox.style.display = 'block';
+        return;
+      }
+      if (isAdopted && !refCode) {
+        alertBox.textContent = 'Please enter the cadet referral code or uncheck the adoption box.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Registering Patient...';
+
+      try {
+        const res = await fetch('/api/patient/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            phone,
+            pin,
+            age_years: age ? parseInt(age, 10) : null,
+            gender,
+            is_adopted: isAdopted,
+            referral_code: refCode
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Patient registration failed');
+
+        successBox.textContent = `🎉 Registration successful! Welcome, ${data.patient.name}. Launching health dashboard...`;
+        successBox.style.display = 'block';
+
+        localStorage.setItem('medpulse_patient', JSON.stringify(data.patient));
+
+        setTimeout(() => {
+          const params = new URLSearchParams(window.location.search);
+          const target = params.get('redirect') || '/patient.html';
+          window.location.href = target;
+        }, 1100);
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '✨ Register Patient &amp; Access Dashboard &rarr;';
       }
     }
 
@@ -763,13 +1121,15 @@
       }
 
       runWhenActive(() => {
-        // Check URL hash or search params for admin or register mode
+        // Check URL hash or search params for admin, register or patient mode
         const hash = window.location.hash;
         const params = new URLSearchParams(window.location.search);
         if (hash === '#admin' || params.get('admin') === '1') {
           setAuthMode('admin');
         } else if (hash === '#register' || params.get('mode') === 'register') {
           setAuthMode('register');
+        } else if (hash === '#patient' || params.get('patient') === '1') {
+          setAuthMode('patient');
         }
 
         if (params.get('session_expired')) {

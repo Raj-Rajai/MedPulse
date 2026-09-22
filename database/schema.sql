@@ -244,3 +244,32 @@ CREATE TABLE IF NOT EXISTS admins (
 CREATE INDEX IF NOT EXISTS idx_admins_username ON admins(username);
 CREATE INDEX IF NOT EXISTS idx_admins_uni ON admins(university_id);
 CREATE INDEX IF NOT EXISTS idx_students_referral ON students(referral_code);
+
+-- 12. Patients Subsystem (Dual Model: Independent vs. Dependent)
+CREATE TABLE IF NOT EXISTS patients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_uid TEXT UNIQUE NOT NULL,               -- e.g. PAT-2026-XXXX
+    name TEXT NOT NULL,
+    phone TEXT UNIQUE NOT NULL,
+    email TEXT,
+    pin TEXT NOT NULL DEFAULT '1234',
+    date_of_birth DATE,
+    age_years INTEGER,
+    gender TEXT CHECK(gender IN ('M', 'F', 'Other')),
+    address TEXT,
+    model_type TEXT CHECK(model_type IN ('Independent', 'Dependent')) DEFAULT 'Independent',
+    student_id INTEGER REFERENCES students(id) ON DELETE SET NULL,
+    referral_code_used TEXT,
+    family_member_id INTEGER REFERENCES family_members(id) ON DELETE SET NULL,
+    hospital_id INTEGER DEFAULT 1,
+    status TEXT DEFAULT 'Active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_patients_phone ON patients(phone);
+CREATE INDEX IF NOT EXISTS idx_patients_uid ON patients(patient_uid);
+CREATE INDEX IF NOT EXISTS idx_patients_student ON patients(student_id);
+CREATE INDEX IF NOT EXISTS idx_patients_model ON patients(model_type);
+CREATE INDEX IF NOT EXISTS idx_patients_member ON patients(family_member_id);
+
