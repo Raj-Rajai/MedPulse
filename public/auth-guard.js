@@ -241,6 +241,29 @@
     };
   }
 
+  // Gracefully handle HTML error responses for all res.json() calls across the entire app
+  if (typeof Response !== 'undefined' && Response.prototype && Response.prototype.json) {
+    var nativeJson = Response.prototype.json;
+    Response.prototype.json = async function() {
+      try {
+        return await nativeJson.call(this);
+      } catch (err) {
+        if (err && err.name === 'SyntaxError' && (err.message.indexOf('Unexpected token') !== -1 || err.message.indexOf('is not valid JSON') !== -1)) {
+          var status = this.status;
+          var statusText = this.statusText || '';
+          if (status === 404) {
+            throw new Error('API endpoint not found (HTTP 404). If you just added new routes or features, please restart your server process.');
+          } else if (status >= 500) {
+            throw new Error('Server error (HTTP ' + status + '). The server returned an HTML error page instead of JSON.');
+          } else {
+            throw new Error('Server returned an unexpected HTML page instead of JSON (HTTP ' + status + ' ' + statusText + '). Please restart your server process.');
+          }
+        }
+        throw err;
+      }
+    };
+  }
+
   // 4. Universal Sidebar User Badge Initializer
   function renderSidebarUserBadge() {
     var authArea = document.getElementById('authNavArea');

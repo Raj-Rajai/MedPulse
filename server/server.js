@@ -19,7 +19,27 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Mount API routes
 app.use('/api', apiRoutes);
 
-// Fallback catch-all route
+// Strict 404 Handler for Unmatched API Endpoints (NEVER return HTML for API requests!)
+app.use('/api', (req, res) => {
+    res.status(404).json({
+        error: `API endpoint not found: ${req.method} ${req.originalUrl}. If this is a newly added route, please restart the server.`,
+        status: 404
+    });
+});
+
+// Centralized Express Error Handling Middleware for APIs
+app.use((err, req, res, next) => {
+    console.error('Unhandled server error:', err);
+    if (req.originalUrl && req.originalUrl.startsWith('/api')) {
+        return res.status(err.status || 500).json({
+            error: err.message || 'Internal server error',
+            status: err.status || 500
+        });
+    }
+    next(err);
+});
+
+// Fallback catch-all route ONLY for frontend Single Page Application HTML navigation
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });

@@ -5,7 +5,7 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "node server/server.js",
+    "dev": "node --watch server/server.js",
     "seed": "node server/seed-roll235.js",
     "verify": "node server/verify-admin.js",
     "test": "node server/verify-admin.js"
