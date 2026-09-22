@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('./db');
 const { generateCsv, generatePdfStream, getStudentExportData, generateMasterCsv, generateFacultyAuditPdfStream } = require('./export-service');
+const { generateUniqueReferralCode } = require('./referral-service');
 
 // Helper to convert SQLite object prototype results to clean objects
 const clean = (row) => (row ? { ...row } : null);
@@ -167,10 +168,11 @@ router.post('/students', authenticateStudent, (req, res) => {
         const cleanUnit = posting_unit && posting_unit.trim() ? posting_unit.trim() : 'RHTC - Rural Health Training Center';
         const cleanCollege = college_id ? Number(college_id) : 1;
         const cleanStatus = status && status.trim() ? status.trim() : 'Active';
+        const referralCode = generateUniqueReferralCode(db, cleanCollege, cleanRoll);
 
         const stmt = db.prepare(`
-            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const result = stmt.run(
             cleanRoll,
@@ -181,6 +183,7 @@ router.post('/students', authenticateStudent, (req, res) => {
             cleanBatch,
             cleanUnit,
             cleanCollege,
+            referralCode,
             cleanStatus
         );
 
@@ -231,6 +234,7 @@ router.post('/auth/register', (req, res) => {
         const cleanUnit = posting_unit && posting_unit.trim() ? posting_unit.trim() : 'RHTC - Rural Health Training Center';
         const cleanCollege = college_id ? Number(college_id) : 1;
         const cleanStatus = status && status.trim() ? status.trim() : 'Active';
+        const referralCode = generateUniqueReferralCode(db, cleanCollege, cleanRoll);
 
         if (cleanPin.length < 4) {
             return res.status(400).json({ error: 'PIN / Passcode must be at least 4 characters' });
@@ -243,8 +247,8 @@ router.post('/auth/register', (req, res) => {
         }
 
         const stmt = db.prepare(`
-            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const result = stmt.run(
             cleanRoll,
@@ -255,6 +259,7 @@ router.post('/auth/register', (req, res) => {
             cleanBatch,
             cleanUnit,
             cleanCollege,
+            referralCode,
             cleanStatus
         );
 
@@ -2690,9 +2695,12 @@ router.post('/admin/students', authenticateAdmin, (req, res) => {
             return res.status(409).json({ error: `Cadet with Roll Number "${cleanRoll}" is already registered.` });
         }
 
+        const targetCollegeId = college_id ? Number(college_id) : (req.admin.university_id || 1);
+        const referralCode = generateUniqueReferralCode(db, targetCollegeId, cleanRoll);
+
         const stmt = db.prepare(`
-            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const result = stmt.run(
             cleanRoll,
@@ -2702,7 +2710,8 @@ router.post('/admin/students', authenticateAdmin, (req, res) => {
             phone ? phone.trim() : null,
             batch_year ? batch_year.trim() : '3rd Year MBBS (Community Medicine)',
             posting_unit ? posting_unit.trim() : 'RHTC - Rural Health Training Center',
-            college_id ? Number(college_id) : 1,
+            targetCollegeId,
+            referralCode,
             status ? status.trim() : 'Active'
         );
 
@@ -2991,6 +3000,207 @@ router.get('/admin/export/audit-pdf', authenticateAdmin, (req, res) => {
     } catch (err) {
         console.error('Faculty Audit PDF Error:', err);
         res.status(500).json({ error: 'Failed to generate Audit PDF: ' + err.message });
+    }
+});
+
+// 7. University Admins & Quota Enforcement Hierarchy
+router.get('/admin/university-admins', authenticateAdmin, (req, res) => {
+    try {
+        const uniId = req.query.university_id ? Number(req.query.university_id) : (req.admin.university_id || 1);
+        const college = db.prepare('SELECT * FROM colleges WHERE id = ?').get(uniId);
+        const maxQuota = (college && college.max_admins) ? college.max_admins : 10;
+
+        const admins = db.prepare(`
+            SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
+                   c.name as university_name, c.code as university_code
+            FROM admins a
+            LEFT JOIN colleges c ON a.university_id = c.id
+            WHERE a.university_id = ?
+            ORDER BY CASE WHEN a.role LIKE '%Super Admin%' THEN 1 ELSE 2 END, a.id ASC
+        `).all(uniId);
+
+        const superAdminCount = admins.filter(a => a.role === 'University Super Admin' || a.role === 'Super Admin').length;
+        const regularAdmins = admins.filter(a => a.role !== 'University Super Admin' && a.role !== 'Super Admin');
+        const adminCount = regularAdmins.length;
+
+        res.json({
+            university: clean(college),
+            quota: {
+                max_admins: maxQuota,
+                current_admins: adminCount,
+                remaining_seats: Math.max(0, maxQuota - adminCount),
+                super_admin_count: superAdminCount,
+                is_at_capacity: adminCount >= maxQuota
+            },
+            admins: cleanList(admins)
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/admin/university-admins', authenticateAdmin, (req, res) => {
+    try {
+        const { username, name, pin, email, phone, role, university_id, status } = req.body;
+        if (!username || !name) {
+            return res.status(400).json({ error: 'Admin username and full name are required' });
+        }
+
+        const targetUniId = university_id ? Number(university_id) : (req.admin.university_id || 1);
+        const college = db.prepare('SELECT * FROM colleges WHERE id = ?').get(targetUniId);
+        if (!college) {
+            return res.status(404).json({ error: 'Target university institution not found' });
+        }
+
+        const maxQuota = college.max_admins || 10;
+        const targetRole = (role && role.includes('Super Admin')) ? 'University Super Admin' : 'University Admin';
+
+        // 1. Enforce 1 Super Admin constraint
+        if (targetRole === 'University Super Admin') {
+            const existingSuper = db.prepare(`
+                SELECT id, name, username FROM admins 
+                WHERE university_id = ? AND (role = 'University Super Admin' OR role = 'Super Admin')
+            `).get(targetUniId);
+            if (existingSuper) {
+                return res.status(409).json({
+                    error: `University "${college.name}" already has an appointed Super Admin: ${existingSuper.name} (${existingSuper.username}). Each university can have only 1 Super Admin.`
+                });
+            }
+        } else {
+            // 2. Enforce strict 10 University Admins quota constraint
+            const currentCount = db.prepare(`
+                SELECT COUNT(*) as c FROM admins 
+                WHERE university_id = ? AND role != 'University Super Admin' AND role != 'Super Admin'
+            `).get(targetUniId)?.c || 0;
+
+            if (currentCount >= maxQuota) {
+                return res.status(403).json({
+                    error: `University Admin quota exceeded for "${college.name}". Maximum ${maxQuota} University Admins allowed (Current: ${currentCount}/${maxQuota} seats used).`
+                });
+            }
+        }
+
+        // 3. Username uniqueness
+        const cleanUser = username.toString().trim();
+        const existingUser = db.prepare('SELECT id FROM admins WHERE LOWER(username) = LOWER(?)').get(cleanUser);
+        if (existingUser) {
+            return res.status(409).json({ error: `Admin username "${cleanUser}" is already taken.` });
+        }
+
+        const stmt = db.prepare(`
+            INSERT INTO admins (username, name, pin, email, phone, role, university_id, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const result = stmt.run(
+            cleanUser,
+            name.trim(),
+            pin && pin.toString().trim() ? pin.toString().trim() : '9999',
+            email ? email.trim() : null,
+            phone ? phone.trim() : null,
+            targetRole,
+            targetUniId,
+            status || 'Active'
+        );
+
+        const newAdmin = db.prepare(`
+            SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
+                   c.name as university_name, c.code as university_code
+            FROM admins a
+            LEFT JOIN colleges c ON a.university_id = c.id
+            WHERE a.id = ?
+        `).get(Number(result.lastInsertRowid));
+
+        res.status(201).json({
+            success: true,
+            message: `University Admin "${name.trim()}" registered successfully under ${college.name}.`,
+            admin: clean(newAdmin)
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.put('/admin/university-admins/:id', authenticateAdmin, (req, res) => {
+    try {
+        const adminId = req.params.id;
+        const { name, email, phone, status } = req.body;
+
+        const current = db.prepare('SELECT * FROM admins WHERE id = ?').get(adminId);
+        if (!current) {
+            return res.status(404).json({ error: 'University Admin record not found' });
+        }
+
+        db.prepare(`
+            UPDATE admins
+            SET name = COALESCE(?, name),
+                email = ?,
+                phone = ?,
+                status = COALESCE(?, status)
+            WHERE id = ?
+        `).run(
+            name ? name.trim() : null,
+            email !== undefined ? (email ? email.trim() : null) : current.email,
+            phone !== undefined ? (phone ? phone.trim() : null) : current.phone,
+            status ? status.trim() : null,
+            adminId
+        );
+
+        const updated = db.prepare(`
+            SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
+                   c.name as university_name, c.code as university_code
+            FROM admins a
+            LEFT JOIN colleges c ON a.university_id = c.id
+            WHERE a.id = ?
+        `).get(adminId);
+
+        res.json({ success: true, admin: clean(updated) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/admin/university-admins/:id/reset-pin', authenticateAdmin, (req, res) => {
+    try {
+        const adminId = req.params.id;
+        const newPin = req.body.new_pin ? req.body.new_pin.toString().trim() : '9999';
+        if (newPin.length < 4) {
+            return res.status(400).json({ error: 'Admin PIN must be at least 4 digits' });
+        }
+
+        const target = db.prepare('SELECT id, name, username FROM admins WHERE id = ?').get(adminId);
+        if (!target) {
+            return res.status(404).json({ error: 'University Admin record not found' });
+        }
+
+        db.prepare('UPDATE admins SET pin = ? WHERE id = ?').run(newPin, adminId);
+        res.json({
+            success: true,
+            message: `PIN for Administrator ${target.name} (${target.username}) has been reset to "${newPin}".`
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.delete('/admin/university-admins/:id', authenticateAdmin, (req, res) => {
+    try {
+        const adminId = req.params.id;
+        const target = db.prepare('SELECT id, name, username, role, university_id FROM admins WHERE id = ?').get(adminId);
+        if (!target) {
+            return res.status(404).json({ error: 'University Admin record not found' });
+        }
+
+        if (target.role === 'University Super Admin' || target.role === 'Super Admin') {
+            return res.status(400).json({ error: 'Cannot delete the designated University Super Admin account.' });
+        }
+
+        db.prepare('DELETE FROM admins WHERE id = ?').run(adminId);
+        res.json({
+            success: true,
+            message: `University Admin ${target.name} (${target.username}) removed successfully.`
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

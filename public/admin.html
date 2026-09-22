@@ -115,6 +115,35 @@
       font-weight: 750;
     }
 
+    /* Patient Adoption Referral Code Badge */
+    .referral-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(37, 99, 235, 0.08);
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      color: #1d4ed8;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .referral-pill:hover {
+      background: rgba(37, 99, 235, 0.16);
+      border-color: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+    }
+    .referral-pill code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+      font-family: inherit;
+    }
+
     /* Executive KPI Cards Glowing Lift */
     .kpi-card {
       position: relative;
@@ -421,6 +450,17 @@
         <span class="link-label">Institutions &amp; Postings</span>
       </a>
 
+      <a href="javascript:void(0)" class="sidebar-link" data-tab="uniAdmins" onclick="switchAdminTab('uniAdmins')" data-title="University Admins">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
+            <path d="m2 17 10 5 10-5"/>
+            <path d="m2 12 10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="link-label">University Admins</span>
+      </a>
+
       <a href="javascript:void(0)" class="sidebar-link" data-tab="exports" onclick="switchAdminTab('exports')" data-title="Master Exports">
         <div class="nav-icon-box">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -663,6 +703,7 @@
                 <th style="width: 70px;">Roll</th>
                 <th>Cadet Full Name</th>
                 <th>Institution</th>
+                <th>Referral Code</th>
                 <th>Batch Year</th>
                 <th>Posting Unit</th>
                 <th style="text-align: center;">Families</th>
@@ -673,7 +714,7 @@
               </tr>
             </thead>
             <tbody id="cadetsTbody">
-              <tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading student cadre roster...</td></tr>
+              <tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading student cadre roster...</td></tr>
             </tbody>
           </table>
         </div>
@@ -797,6 +838,115 @@
               Government primary healthcare clinics, maternal &amp; child health (RCH) immunization hubs.
             </p>
           </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================
+         VIEW: UNIVERSITY ADMINS & QUOTA MANAGEMENT
+         ========================================================== -->
+    <div id="viewUniAdmins" class="admin-view-pane">
+
+      <!-- Quota Meter Card -->
+      <div class="card anim-fade-up" style="margin-bottom: 20px; border-left: 5px solid #f59e0b; background: linear-gradient(180deg, rgba(245, 158, 11, 0.04) 0%, rgba(255,255,255,0.95) 100%);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <h2 style="font-size: 1.25rem; font-weight: 750; color: var(--text-primary); margin: 0;">
+                🏛️ University Admins &amp; Faculty Oversight
+              </h2>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.72rem; font-weight: 750;">
+                Strict Quota Engine
+              </span>
+            </div>
+            <p class="card-desc" style="margin: 0;">
+              Scale university administration with a strict ceiling of <strong>1 Super Admin</strong> and up to <strong>10 University Admins</strong> per institution.
+            </p>
+          </div>
+
+          <!-- University Selector -->
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="font-size: 0.8rem; font-weight: 650; color: var(--text-secondary); white-space: nowrap;">Institution:</label>
+            <select id="uniAdminCollegeSelect" onchange="loadUniversityAdmins(this.value)" style="padding: 0.45rem 0.85rem; font-size: 0.84rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: #fff; min-width: 220px; font-weight: 600;">
+              <option value="1">GMERS Medical College &amp; Hospital</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Quota Progress & KPI Pills -->
+        <div style="margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+          
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Dean / Super Admin</div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+              <span style="font-size: 1.2rem;">👑</span>
+              <span style="font-size: 1.15rem; font-weight: 800; color: #b45309;" id="quotaSuperAdminText">1 / 1 Appointed</span>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;">Fixed 1 Super Admin quota</div>
+          </div>
+
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">University Admin Seats</div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+              <span style="font-size: 1.2rem;">👥</span>
+              <span style="font-size: 1.15rem; font-weight: 800; color: #0284c7;" id="quotaAdminsCountText">0 / 10 Used</span>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;">
+              <span id="quotaRemainingText">10 seats remaining</span>
+            </div>
+          </div>
+
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Quota Capacity Bar</div>
+            <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 10px;">
+              <div id="quotaProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #0284c7); transition: width 0.4s ease;"></div>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; margin-top: 6px; display: flex; justify-content: space-between;">
+              <span>0</span>
+              <span id="quotaCapacityPct">0% Full</span>
+              <span>10 Cap</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- University Admins Roster Table Card -->
+      <div class="card anim-fade-up anim-delay-1">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 class="card-title" style="margin-bottom: 4px; font-size: 1.2rem;">
+              Appointed University Administrators (<span id="uniAdminCount">0</span>)
+            </h2>
+            <p class="card-desc" style="margin: 0;">
+              Faculty and unit coordinators authorized to register and supervise medical cadets under this institution.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" id="btnAppointAdmin" onclick="openAppointAdminModal()" style="font-size: 0.82rem; padding: 0.45rem 0.95rem; gap: 6px; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);">
+            ➕ Appoint University Admin
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="uniAdminsTable">
+            <thead>
+              <tr>
+                <th style="width: 45px; text-align: center;">#</th>
+                <th>Administrator Name</th>
+                <th>Username</th>
+                <th>Institutional Role</th>
+                <th>University</th>
+                <th>Contact</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: right; width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="uniAdminsTbody">
+              <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading university administrators...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -1062,6 +1212,132 @@
     </div>
   </div>
 
+  <!-- MODAL: APPOINT UNIVERSITY ADMIN -->
+  <div id="appointUniAdminModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeAppointAdminModal();">
+    <div class="modal-content" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div>
+          <h2 style="color: var(--primary); font-size: 1.3rem; margin: 0;">➕ Appoint University Administrator</h2>
+          <span style="font-size: 0.8rem; color: #d97706; font-weight: 650;" id="modalQuotaNote">Strict Quota: Max 10 University Admins</span>
+        </div>
+        <button class="btn btn-secondary" onclick="closeAppointAdminModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="appointUniAdminForm" onsubmit="event.preventDefault(); submitAppointUniAdmin();">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="auaUsername">Admin Username *</label>
+              <input type="text" id="auaUsername" required placeholder="e.g. dr.mehta">
+            </div>
+            <div class="form-group">
+              <label for="auaPin">Access PIN *</label>
+              <input type="password" id="auaPin" required minlength="4" value="9999">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="auaName">Full Name &amp; Title *</label>
+            <input type="text" id="auaName" required placeholder="e.g. Dr. Alok Verma (Associate Prof)">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="auaEmail">Email Address</label>
+              <input type="email" id="auaEmail" placeholder="faculty@institution.edu">
+            </div>
+            <div class="form-group">
+              <label for="auaPhone">Mobile Phone</label>
+              <input type="tel" id="auaPhone" placeholder="10-digit number">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="auaUniversity">Affiliated Institution *</label>
+              <select id="auaUniversity" required></select>
+            </div>
+            <div class="form-group">
+              <label for="auaRole">Institutional Role *</label>
+              <select id="auaRole" required>
+                <option value="University Admin" selected>University Admin (Faculty)</option>
+                <option value="University Super Admin">University Super Admin (Dean)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeAppointAdminModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnAppointAdminSubmit" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none;">💾 Appoint Administrator</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT UNIVERSITY ADMIN -->
+  <div id="editUniAdminModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeEditUniAdminModal();">
+    <div class="modal-content" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="color: var(--primary); font-size: 1.3rem;">✏️ Edit Administrator Details</h2>
+        <button class="btn btn-secondary" onclick="closeEditUniAdminModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="editUniAdminForm" onsubmit="event.preventDefault(); submitEditUniAdmin();">
+        <input type="hidden" id="euaId">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label>Username (Permanent)</label>
+            <input type="text" id="euaUsername" readonly style="background: #f1f5f9; cursor: not-allowed; font-weight: 700;">
+          </div>
+          <div class="form-group">
+            <label for="euaName">Administrator Full Name *</label>
+            <input type="text" id="euaName" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="euaEmail">Email Address</label>
+              <input type="email" id="euaEmail">
+            </div>
+            <div class="form-group">
+              <label for="euaPhone">Phone Number</label>
+              <input type="tel" id="euaPhone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="euaStatus">Account Status</label>
+            <select id="euaStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditUniAdminModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnEditUniAdminSubmit">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET UNIVERSITY ADMIN PIN -->
+  <div id="resetUniAdminPinModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) closeResetUniAdminPinModal();">
+    <div class="modal-content" style="max-width: 420px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="color: var(--primary); font-size: 1.25rem;">🔒 Reset Administrator PIN</h2>
+        <button class="btn btn-secondary" onclick="closeResetUniAdminPinModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="resetUniAdminPinForm" onsubmit="event.preventDefault(); submitResetUniAdminPin();">
+        <input type="hidden" id="ruaId">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Set a new access PIN / passcode for administrator <strong id="ruaAdminName" style="color: var(--text-primary);">-</strong>:
+        </p>
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="ruaNewPin">New 4+ Digit PIN *</label>
+          <input type="password" id="ruaNewPin" required minlength="4" value="9999" style="font-size: 1.1rem; letter-spacing: 2px; text-align: center;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeResetUniAdminPinModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnResetUniAdminPinSubmit">🔑 Update PIN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
@@ -1130,6 +1406,7 @@
       students: { title: 'Student Cadre Roster & Assignments', sub: 'Manage medical trainees, track survey submission completion, and adjust institutional credentials' },
       households: { title: 'Global Household Surveillance Registry', sub: 'Comprehensive roster of all families surveyed across all student cohorts' },
       colleges: { title: 'Institutions & Field Postings', sub: 'Affiliated medical colleges, hospital blocks, and rural/urban health training centers' },
+      uniAdmins: { title: 'University Admins & Faculty Oversight', sub: 'Manage Super Admin and up to 10 departmental faculty administrators per university institution' },
       exports: { title: 'Master Data & Administrative Exports', sub: 'Download complete 43-column master survey proforma CSVs and polished faculty clinical audit reports' }
     };
 
@@ -1168,6 +1445,7 @@
       else if (tabId === 'students') loadCadetsRoster();
       else if (tabId === 'households') loadGlobalHouseholds();
       else if (tabId === 'colleges') loadCollegesMaster();
+      else if (tabId === 'uniAdmins') loadUniversityAdmins();
     }
 
     function reloadActiveAdminView() {
@@ -1295,6 +1573,12 @@
               <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(s.email || 'No email')}</div>
             </td>
             <td>${escapeHtml(s.college_name || 'GMERS Medical College')}</td>
+            <td>
+              <span class="referral-pill" onclick="copyReferralCode('${escapeHtml(s.referral_code || '')}')" title="Click to copy Patient Adoption Referral Code">
+                <code>${escapeHtml(s.referral_code || 'N/A')}</code>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px; opacity: 0.7;"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </span>
+            </td>
             <td>${escapeHtml(s.batch_year || '3rd Year MBBS')}</td>
             <td>${escapeHtml(s.posting_unit || 'RHTC')}</td>
             <td style="text-align: center;"><span class="badge badge-primary">${s.families_count}</span></td>
@@ -1440,6 +1724,16 @@
       const expSel = document.getElementById('exportCsvCollegeSelect');
       if (expSel) {
         expSel.innerHTML = '<option value="">All Medical Colleges Combined</option>' + opts;
+      }
+
+      const uniAdminSel = document.getElementById('uniAdminCollegeSelect');
+      if (uniAdminSel && opts) {
+        uniAdminSel.innerHTML = opts;
+      }
+
+      const auaUniSel = document.getElementById('auaUniversity');
+      if (auaUniSel && opts) {
+        auaUniSel.innerHTML = opts;
       }
     }
 
@@ -1755,6 +2049,315 @@
       } finally {
         btn.disabled = false;
         btn.textContent = '💾 Save College';
+      }
+    }
+
+    /* ---- 6. University Admins & Quota Hierarchy ---- */
+    let cachedUniAdmins = [];
+    let currentUniQuota = null;
+
+    async function loadUniversityAdmins(uniId) {
+      const selUniId = uniId || document.getElementById('uniAdminCollegeSelect')?.value || 1;
+      try {
+        const res = await fetch(`/api/admin/university-admins?university_id=${selUniId}`);
+        if (!res.ok) throw new Error('Failed to load university administrators');
+        const data = await res.json();
+        cachedUniAdmins = data.admins || [];
+        currentUniQuota = data.quota || {};
+
+        // Update KPI strip
+        const superAdmin = data.admins.find(a => a.role === 'University Super Admin' || a.role === 'Super Admin');
+        const superText = document.getElementById('quotaSuperAdminText');
+        if (superText) {
+          superText.textContent = superAdmin 
+            ? `1 / 1 Appointed (${superAdmin.name.split(' ')[0]})` 
+            : '0 / 1 Appointed';
+        }
+        
+        const maxQ = currentUniQuota.max_admins || 10;
+        const curA = currentUniQuota.current_admins || 0;
+        const rem = currentUniQuota.remaining_seats !== undefined ? currentUniQuota.remaining_seats : (maxQ - curA);
+        const pct = Math.min(100, Math.round((curA / maxQ) * 100));
+
+        const adminsCountEl = document.getElementById('quotaAdminsCountText');
+        if (adminsCountEl) adminsCountEl.textContent = `${curA} / ${maxQ} Used`;
+
+        const remEl = document.getElementById('quotaRemainingText');
+        if (remEl) remEl.textContent = `${rem} seat${rem === 1 ? '' : 's'} remaining`;
+
+        const progEl = document.getElementById('quotaProgressBar');
+        if (progEl) {
+          progEl.style.width = `${pct}%`;
+          progEl.style.background = pct >= 100 ? '#ef4444' : (pct >= 80 ? '#f59e0b' : 'linear-gradient(90deg, #10b981, #0284c7)');
+        }
+
+        const pctEl = document.getElementById('quotaCapacityPct');
+        if (pctEl) pctEl.textContent = `${pct}% Full`;
+
+        const countEl = document.getElementById('uniAdminCount');
+        if (countEl) countEl.textContent = data.admins.length;
+
+        // Visual notice in modal
+        const modalNote = document.getElementById('modalQuotaNote');
+        if (modalNote) {
+          modalNote.textContent = curA >= maxQ 
+            ? `⚠️ Quota Full: ${curA}/${maxQ} seats used` 
+            : `Seats: ${curA}/${maxQ} used (${rem} available)`;
+          modalNote.style.color = curA >= maxQ ? '#dc2626' : '#d97706';
+        }
+
+        // Disable / enable Appoint button if quota reached
+        const btnAppoint = document.getElementById('btnAppointAdmin');
+        if (btnAppoint) {
+          if (curA >= maxQ) {
+            btnAppoint.disabled = true;
+            btnAppoint.title = `University Admin quota reached (${curA}/${maxQ} seats used). Remove an admin to appoint another.`;
+            btnAppoint.style.opacity = '0.6';
+            btnAppoint.style.cursor = 'not-allowed';
+          } else {
+            btnAppoint.disabled = false;
+            btnAppoint.title = 'Appoint a new faculty administrator under this university';
+            btnAppoint.style.opacity = '1';
+            btnAppoint.style.cursor = 'pointer';
+          }
+        }
+
+        renderUniAdminsTable(data.admins);
+      } catch (err) {
+        showToast('Error loading university admins: ' + err.message, 'error');
+      }
+    }
+
+    function renderUniAdminsTable(admins) {
+      const tbody = document.getElementById('uniAdminsTbody');
+      if (!tbody) return;
+      if (!admins || admins.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">No administrators appointed yet for this institution</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = admins.map((a, idx) => {
+        const isSuper = a.role === 'University Super Admin' || a.role === 'Super Admin';
+        const roleBadge = isSuper
+          ? '<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 750;">👑 Super Admin</span>'
+          : '<span class="badge badge-primary" style="font-weight: 650;">👔 University Admin</span>';
+
+        const statusBadge = a.status === 'Active'
+          ? '<span class="stat-badge-active">Active</span>'
+          : '<span class="stat-badge-inactive">Inactive</span>';
+
+        return `
+          <tr>
+            <td style="text-align: center; font-weight: 600; color: var(--text-muted);">${idx + 1}</td>
+            <td>
+              <div style="font-weight: 750; color: var(--text-primary); font-size: 0.9rem;">${escapeHtml(a.name)}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px;">ID #${a.id} • ${a.created_at ? a.created_at.split(' ')[0] : ''}</div>
+            </td>
+            <td><code>${escapeHtml(a.username)}</code></td>
+            <td>${roleBadge}</td>
+            <td><span style="font-weight: 600; font-size: 0.82rem; color: var(--text-secondary);">${escapeHtml(a.university_name || 'GMERS')}</span></td>
+            <td>
+              <div style="font-size: 0.8rem; color: var(--text-primary);">${escapeHtml(a.email || '—')}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(a.phone || '')}</div>
+            </td>
+            <td style="text-align: center;">${statusBadge}</td>
+            <td style="text-align: right;">
+              <div class="table-actions-cell">
+                <button class="table-act-btn" onclick="openEditUniAdminModal(${a.id})" title="Edit Admin">✏️</button>
+                <button class="table-act-btn" onclick="openResetUniAdminPinModal(${a.id}, '${escapeHtml(a.name)}')" title="Reset Passcode">🔒</button>
+                ${isSuper ? '' : `<button class="table-act-btn act-delete" onclick="deleteUniAdmin(${a.id}, '${escapeHtml(a.name)}')" title="Remove Admin">🗑️</button>`}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openAppointAdminModal() {
+      document.getElementById('appointUniAdminForm').reset();
+      const currentUni = document.getElementById('uniAdminCollegeSelect')?.value || 1;
+      const uniSelect = document.getElementById('auaUniversity');
+      if (uniSelect) uniSelect.value = currentUni;
+
+      // Update remaining seats notice
+      if (currentUniQuota) {
+        const curA = currentUniQuota.current_admins || 0;
+        const maxQ = currentUniQuota.max_admins || 10;
+        const rem = maxQ - curA;
+        const note = document.getElementById('modalQuotaNote');
+        if (note) {
+          note.textContent = `Quota Status: ${curA}/${maxQ} seats used (${rem} available)`;
+        }
+      }
+
+      document.getElementById('appointUniAdminModal').style.display = 'flex';
+      document.getElementById('auaUsername').focus();
+    }
+
+    function closeAppointAdminModal() {
+      document.getElementById('appointUniAdminModal').style.display = 'none';
+    }
+
+    async function submitAppointUniAdmin() {
+      const btn = document.getElementById('btnAppointAdminSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Appointing...';
+
+      try {
+        const payload = {
+          username: document.getElementById('auaUsername').value.trim(),
+          pin: document.getElementById('auaPin').value.trim(),
+          name: document.getElementById('auaName').value.trim(),
+          email: document.getElementById('auaEmail').value.trim() || null,
+          phone: document.getElementById('auaPhone').value.trim() || null,
+          university_id: document.getElementById('auaUniversity').value,
+          role: document.getElementById('auaRole').value,
+          status: 'Active'
+        };
+
+        const res = await fetch('/api/admin/university-admins', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to appoint university admin');
+
+        showToast(data.message || 'University Administrator appointed successfully!', 'success');
+        closeAppointAdminModal();
+        loadUniversityAdmins(payload.university_id);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Appoint Administrator';
+      }
+    }
+
+    function openEditUniAdminModal(adminId) {
+      const admin = cachedUniAdmins.find(a => a.id === adminId);
+      if (!admin) return;
+
+      document.getElementById('euaId').value = admin.id;
+      document.getElementById('euaUsername').value = admin.username;
+      document.getElementById('euaName').value = admin.name;
+      document.getElementById('euaEmail').value = admin.email || '';
+      document.getElementById('euaPhone').value = admin.phone || '';
+      document.getElementById('euaStatus').value = admin.status || 'Active';
+
+      document.getElementById('editUniAdminModal').style.display = 'flex';
+      document.getElementById('euaName').focus();
+    }
+
+    function closeEditUniAdminModal() {
+      document.getElementById('editUniAdminModal').style.display = 'none';
+    }
+
+    async function submitEditUniAdmin() {
+      const btn = document.getElementById('btnEditUniAdminSubmit');
+      const adminId = document.getElementById('euaId').value;
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const payload = {
+          name: document.getElementById('euaName').value.trim(),
+          email: document.getElementById('euaEmail').value.trim() || null,
+          phone: document.getElementById('euaPhone').value.trim() || null,
+          status: document.getElementById('euaStatus').value
+        };
+
+        const res = await fetch(`/api/admin/university-admins/${adminId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update administrator details');
+
+        showToast(`Administrator "${data.admin.name}" updated!`, 'success');
+        closeEditUniAdminModal();
+        loadUniversityAdmins(data.admin.university_id);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Changes';
+      }
+    }
+
+    function openResetUniAdminPinModal(adminId, adminName) {
+      document.getElementById('ruaId').value = adminId;
+      document.getElementById('ruaAdminName').textContent = adminName;
+      document.getElementById('ruaNewPin').value = '9999';
+      document.getElementById('resetUniAdminPinModal').style.display = 'flex';
+      document.getElementById('ruaNewPin').focus();
+    }
+
+    function closeResetUniAdminPinModal() {
+      document.getElementById('resetUniAdminPinModal').style.display = 'none';
+    }
+
+    async function submitResetUniAdminPin() {
+      const btn = document.getElementById('btnResetUniAdminPinSubmit');
+      const adminId = document.getElementById('ruaId').value;
+      const newPin = document.getElementById('ruaNewPin').value.trim();
+
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      try {
+        const res = await fetch(`/api/admin/university-admins/${adminId}/reset-pin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_pin: newPin })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to reset PIN');
+
+        showToast(data.message, 'success');
+        closeResetUniAdminPinModal();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔑 Update PIN';
+      }
+    }
+
+    async function deleteUniAdmin(adminId, adminName) {
+      const confirmed = confirm(`Are you sure you want to remove University Administrator "${adminName}"?\n\nThis will revoke their access and free up 1 administrative seat for this university.`);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/admin/university-admins/${adminId}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to remove administrator');
+
+        showToast(data.message, 'success');
+        const selUni = document.getElementById('uniAdminCollegeSelect')?.value || 1;
+        loadUniversityAdmins(selUni);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ---- 1-Click Referral Code Clipboard Copy ---- */
+    function copyReferralCode(code) {
+      if (!code || code === 'N/A') return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+          showToast(`📋 Referral Code "${code}" copied to clipboard!`, 'success');
+        }).catch(() => {
+          showToast(`Referral Code: ${code}`, 'info');
+        });
+      } else {
+        showToast(`Referral Code: ${code}`, 'info');
       }
     }
 

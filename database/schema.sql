@@ -5,13 +5,14 @@
 
 PRAGMA foreign_keys = ON;
 
--- 1. Colleges / Medical Institutions
+-- 1. Colleges / Medical Institutions & Universities
 CREATE TABLE IF NOT EXISTS colleges (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     code TEXT UNIQUE NOT NULL,
     city TEXT,
     state TEXT,
+    max_admins INTEGER DEFAULT 10,                 -- Strict quota: max 10 university admins per university
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -26,6 +27,7 @@ CREATE TABLE IF NOT EXISTS students (
     phone TEXT,
     posting_unit TEXT DEFAULT 'RHTC - Rural Health Training Center',
     college_id INTEGER REFERENCES colleges(id) ON DELETE SET NULL,
+    referral_code TEXT UNIQUE,                      -- Unique Patient Adoption Referral Code (e.g. GMERS-235-9B2D)
     status TEXT DEFAULT 'Active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -232,8 +234,13 @@ CREATE TABLE IF NOT EXISTS admins (
     name TEXT NOT NULL,
     pin TEXT NOT NULL DEFAULT '9999',
     email TEXT,
-    role TEXT DEFAULT 'Faculty Supervisor',
+    phone TEXT,
+    role TEXT DEFAULT 'University Admin',           -- 'University Super Admin' (max 1/uni) or 'University Admin' (max 10/uni)
+    university_id INTEGER REFERENCES colleges(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'Active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_admins_username ON admins(username);
+CREATE INDEX IF NOT EXISTS idx_admins_uni ON admins(university_id);
+CREATE INDEX IF NOT EXISTS idx_students_referral ON students(referral_code);

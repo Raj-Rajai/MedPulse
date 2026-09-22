@@ -94,7 +94,7 @@ async function runVerification() {
     const goodLogin = await makeRequest('/api/admin/login', { method: 'POST' }, JSON.stringify({ username: 'admin', pin: '9999' }));
     assert(goodLogin.statusCode === 200, 'POST /api/admin/login with valid credentials returns 200 OK');
     assert(goodLogin.body && goodLogin.body.token, 'Response contains admin session token');
-    assert(goodLogin.body.admin && goodLogin.body.admin.role === 'Super Admin', 'Admin role is Super Admin');
+    assert(goodLogin.body.admin && (goodLogin.body.admin.role === 'Super Admin' || goodLogin.body.admin.role === 'University Super Admin'), 'Admin role is Super Admin or University Super Admin');
 
     const adminToken = goodLogin.body.token;
     const authHeaders = {

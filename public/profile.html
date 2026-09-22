@@ -141,6 +141,8 @@
               <span id="heroPostingUnit">RHTC - Rural Health Training Center</span>
               <span>&bull;</span>
               <span style="color: #6ee7b7; font-weight: 650;">Active Field Posting</span>
+              <span>&bull;</span>
+              <span class="referral-pill" id="heroReferralBadge" onclick="copyCadetReferralCode()" title="Click to copy Patient Adoption Referral Code" style="cursor: pointer; background: rgba(14, 165, 233, 0.25); border: 1px solid rgba(14, 165, 233, 0.4); color: #bae6fd; font-family: monospace; font-weight: 700; padding: 2px 8px; border-radius: 6px;">Ref: Pending</span>
             </div>
           </div>
         </div>
@@ -202,6 +204,37 @@
       <!-- Left Column: Academic Credentials & Account Security -->
       <div class="profile-col-left">
 
+        <!-- Patient Adoption Referral Code Card -->
+        <div class="profile-info-card" style="border: 1px solid rgba(14, 165, 233, 0.35); background: linear-gradient(135deg, rgba(14, 165, 233, 0.06), rgba(99, 102, 241, 0.04)); position: relative; overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 style="font-size: 1.15rem; font-weight: 750; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+              <span>🏷️ Patient Adoption Referral Code</span>
+            </h2>
+            <span class="badge badge-info" style="font-size: 0.72rem; letter-spacing: 0.03em;">Cadet Key</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
+            Share this unique referral code with your adopted families. When they sign up or log in, they enter this code under <strong>"Adopted by a Medical Cadet?"</strong> to link their patient account to your survey records.
+          </p>
+          <div style="background: #ffffff; border: 1.5px dashed #0284c7; border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Your Adoption Code</div>
+              <div id="cadetReferralCode" style="font-family: monospace; font-size: 1.25rem; font-weight: 800; color: #0284c7; letter-spacing: 0.06em;">
+                Loading...
+              </div>
+            </div>
+            <button class="btn btn-secondary" id="copyReferralBtn" onclick="copyCadetReferralCode()" style="background: #f0f9ff; border-color: #bae6fd; color: #0284c7; font-weight: 700; font-size: 0.82rem; padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px;" title="Copy code to clipboard">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copyReferralText">Copy</span>
+            </button>
+          </div>
+          <div style="font-size: 0.76rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+            <span>💡 Automatically routes the patient's vitals &amp; consultations to your portfolio and institutional hospital.</span>
+          </div>
+        </div>
+
         <!-- Personal & Academic Details Card -->
         <div class="profile-info-card">
           <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
@@ -216,6 +249,10 @@
             <div class="profile-info-row">
               <span class="profile-info-label">Survey Roll Number</span>
               <span class="profile-info-val" id="valRollNumber" style="font-family: monospace; font-size: 1rem; color: var(--accent);">-</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">Adoption Referral Code</span>
+              <span class="profile-info-val" id="valReferralCode" style="font-family: monospace; font-size: 0.95rem; font-weight: 750; color: #0284c7;">-</span>
             </div>
             <div class="profile-info-row">
               <span class="profile-info-label">Medical Degree &amp; Batch</span>
@@ -550,10 +587,31 @@
       window.location.href = '/login.html';
     }
 
+    /* ---- Copy Cadet Referral Code ---- */
+    function copyCadetReferralCode() {
+      const code = document.getElementById('cadetReferralCode')?.textContent?.trim() || profileData?.student?.referral_code;
+      if (!code || code === 'Pending' || code === 'Loading...') {
+        showToast('No referral code available to copy', 'warning');
+        return;
+      }
+      navigator.clipboard.writeText(code).then(() => {
+        showToast(`Copied referral code ${code} to clipboard!`, 'success');
+        const btnText = document.getElementById('copyReferralText');
+        if (btnText) {
+          btnText.textContent = 'Copied!';
+          setTimeout(() => { btnText.textContent = 'Copy'; }, 2000);
+        }
+      }).catch(err => {
+        console.error('Clipboard copy failed:', err);
+        showToast(`Referral code: ${code}`, 'info');
+      });
+    }
+
     /* ---- Load Full Student Profile Data ---- */
     async function loadStudentProfile() {
       try {
-        const res = await fetch('/api/students/profile');
+        const query = loggedInUser?.roll_number ? `?roll_number=${encodeURIComponent(loggedInUser.roll_number)}` : '';
+        const res = await fetch(`/api/students/profile${query}`);
         if (!res.ok) throw new Error('Failed to load student profile');
         profileData = await res.json();
         renderProfile(profileData);
@@ -573,6 +631,15 @@
       document.getElementById('heroRollBadge').textContent = `Roll ${s.roll_number}`;
       document.getElementById('heroCollegeName').textContent = s.college_name || 'GMERS Medical College & Hospital';
       document.getElementById('heroPostingUnit').textContent = s.posting_unit || 'RHTC - Community Health Posting';
+
+      // Patient Adoption Referral Code
+      const refCode = s.referral_code || 'Pending';
+      const refEl = document.getElementById('cadetReferralCode');
+      if (refEl) refEl.textContent = refCode;
+      const heroRefEl = document.getElementById('heroReferralBadge');
+      if (heroRefEl) heroRefEl.textContent = `Ref: ${refCode}`;
+      const valRefEl = document.getElementById('valReferralCode');
+      if (valRefEl) valRefEl.textContent = refCode;
 
       // KPI Metrics Cards
       document.getElementById('kpiFamilies').textContent = st.total_families || 0;
