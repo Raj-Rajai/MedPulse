@@ -79,6 +79,8 @@ async function runTests() {
 
     // Clean up any previous test patients
     db.prepare("DELETE FROM patients WHERE phone IN ('9898980001', '9898980002', '9898980003', '9898980099')").run();
+    // Registration auto-creates a household (FAM-PAT-*); drop the ones left without an account
+    db.prepare("DELETE FROM families WHERE family_code LIKE 'FAM-PAT-%' AND id NOT IN (SELECT family_id FROM patients WHERE family_id IS NOT NULL)").run();
 
     // 1. Referral Code Verification Tests
     console.log('1. Testing Referral Code Verification (/api/patient/verify-referral):');
@@ -187,7 +189,7 @@ async function runTests() {
         SELECT m.id, m.name, m.gender, m.age_years
         FROM family_members m
         JOIN families f ON m.family_id = f.id
-        WHERE f.student_id = 1
+        WHERE f.student_id = 1 AND LOWER(m.name) NOT LIKE '%radhuji%'
         LIMIT 1
     `).get();
 
@@ -241,6 +243,8 @@ async function runTests() {
 
     // Cleanup test records
     db.prepare("DELETE FROM patients WHERE phone IN ('9898980001', '9898980002', '9898980003', '9898980099')").run();
+    // Registration auto-creates a household (FAM-PAT-*); drop the ones left without an account
+    db.prepare("DELETE FROM families WHERE family_code LIKE 'FAM-PAT-%' AND id NOT IN (SELECT family_id FROM patients WHERE family_id IS NOT NULL)").run();
 
     console.log('\n====================================================');
     console.log(`🏁 TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);

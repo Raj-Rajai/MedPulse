@@ -242,6 +242,40 @@
       </div>
     </div>
 
+    <!-- ==========================================================
+         CADET CAMPAIGN ACTION TASKS (DECISION-DIAMOND OUTREACH)
+         ========================================================== -->
+    <div id="cadetCampaignSection" class="card anim-fade-up anim-delay-1" style="display: none; border-top: 4px solid #0284c7; margin-bottom: 1.5rem; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            🎯
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h2 style="font-size: 1.1rem; font-weight: 750; margin: 0; color: var(--text-primary);">
+                Targeted Campaign Follow-Ups
+              </h2>
+              <span id="cadetPendingTasksBadge" class="badge badge-warning" style="font-size: 0.72rem; font-weight: 700;">
+                0 Pending Calls
+              </span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
+              Patients in your adopted households qualifying for active university health drives. Call to coordinate attendance!
+            </p>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="loadCadetCampaignTasks()" style="font-size: 0.78rem; padding: 4px 10px; gap: 4px;">
+          🔄 Refresh Tasks
+        </button>
+      </div>
+
+      <div id="cadetCampaignTasksList" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Dynamic task cards injected here -->
+      </div>
+    </div>
+
     <!-- No Family Selected Placeholder -->
     <div class="card" id="noFamilySelectedCard" style="display: none; text-align: center; padding: 4rem 2rem; margin-bottom: 1.5rem;">
       <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 0.75rem;">📋</div>
@@ -1354,6 +1388,7 @@
 
       setupDraftAutosave();
       runWhenActive(loadFamilies);
+      runWhenActive(loadCadetCampaignTasks);
     });
 
     /* ---- Authentication State ---- */
@@ -1834,6 +1869,8 @@
                 <div>
                   <div class="member-name">${m.name}</div>
                   <div class="member-relation">${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}</div>
+                  ${m.added_by_patient_id ? '<span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:0.68rem;margin-top:4px;" title="Added by the family from the patient portal">✍️ Added by family</span>'
+                    : (m.patient_updated_at ? '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:0.68rem;margin-top:4px;" title="Basic details were updated by the family from the patient portal">✍️ Updated by family</span>' : '')}
                 </div>
                 <span class="badge badge-info">#${m.member_order}</span>
               </div>
@@ -3084,6 +3121,129 @@
       }).catch(() => {
         showToast('Unable to copy automatically. Please copy manually.', 'info');
       });
+    }
+
+    /* ==========================================================
+       CADET CAMPAIGN OUTREACH TASKS (DECISION DIAMOND ENGINE)
+       ========================================================== */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    async function loadCadetCampaignTasks() {
+      const section = document.getElementById('cadetCampaignSection');
+      const listEl = document.getElementById('cadetCampaignTasksList');
+      const badge = document.getElementById('cadetPendingTasksBadge');
+      if (!section || !listEl) return;
+
+      try {
+        const res = await fetch('/api/student/campaign-tasks');
+        if (!res.ok) {
+          section.style.display = 'none';
+          return;
+        }
+        const data = await res.json();
+        const tasks = data.tasks || [];
+
+        if (tasks.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
+
+        section.style.display = 'block';
+        const pendingCount = tasks.filter(t => t.cadet_call_status === 'Pending').length;
+        if (badge) {
+          badge.textContent = `${pendingCount} Pending Call${pendingCount === 1 ? '' : 's'}`;
+          badge.className = pendingCount > 0 ? 'badge badge-warning' : 'badge badge-success';
+        }
+
+        listEl.innerHTML = tasks.map(t => {
+          const kwColor = t.matched_keyword === 'HTN' ? '#dc2626' : (t.matched_keyword === 'DM' ? '#9333ea' : (t.matched_keyword === 'ANAEMIA' ? '#d97706' : '#0284c7'));
+          
+          const rsvpVal = (t.rsvp && t.rsvp !== 'Pending') ? t.rsvp
+            : (t.notification_status === 'Acknowledged' ? 'Attending' : (t.notification_status === 'Declined' ? 'Not Attending' : 'Pending'));
+          const rsvpBadge = {
+            'Attending': `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient: Attending</span>`,
+            'Not Attending': `<span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700;">❌ Patient: Can't attend</span>`,
+            'Need Help': `<span class="badge" style="background: #fef3c7; color: #92400e; font-weight: 700;">🙋 Patient needs help</span>`,
+            'Pending': `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`
+          }[rsvpVal];
+          const verifyBadge = t.patient_contact_confirmation === 'Confirmed'
+            ? `<span class="badge" style="background: #ecfdf5; color: #065f46; font-weight: 700;" title="Patient confirmed you contacted them">✔ Patient verified</span>`
+            : (t.patient_contact_confirmation === 'Disputed'
+              ? `<span class="badge" style="background: #fef2f2; color: #b91c1c; font-weight: 700;" title="Patient says they were not contacted">⚠ Patient disputes call</span>`
+              : ((t.contacted_at || currentStatusRaw(t) !== 'Pending') ? `<span class="badge" style="background: #f8fafc; color: #64748b;">Awaiting patient confirmation</span>` : ''));
+
+          const currentStatus = t.cadet_call_status || 'Pending';
+          const statusBadge = currentStatus === 'Assisted'
+            ? `<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700;">🌟 Assisted</span>`
+            : (currentStatus === 'Contacted'
+              ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">📞 Contacted</span>`
+              : `<span class="badge" style="background: #fffbeb; color: #b45309; font-weight: 700;">⏳ Pending Call</span>`);
+
+          return `
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div style="flex: 1; min-width: 260px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span class="badge" style="background: ${kwColor}; color: #fff; font-weight: 700; font-size: 0.72rem;">${escapeHtml(t.matched_keyword)}</span>
+                  <span style="font-weight: 750; font-size: 0.95rem; color: var(--text-primary);">${escapeHtml(t.campaign_title)}</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 3px;">
+                  <strong>Patient:</strong> ${escapeHtml(t.patient_name || '-')} 
+                  ${t.patient_phone ? `(📞 <a href="tel:${escapeHtml(t.patient_phone)}" style="color: var(--primary); font-weight: 600;">${escapeHtml(t.patient_phone)}</a>)` : ''}
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span>🔍 ${escapeHtml(t.matched_condition_detail || 'Condition matched')}</span>
+                  <span>•</span>
+                  <span>📅 Camp: ${t.event_date || 'Upcoming'} (${escapeHtml(t.venue || 'Clinic')})</span>
+                </div>
+                ${t.patient_response_note ? `<div style="font-size: 0.76rem; color: #047857; margin-top: 4px; font-style: italic; background: #f0fdf4; padding: 2px 8px; border-radius: 4px; display: inline-block;">Patient Note: "${escapeHtml(t.patient_response_note)}"</div>` : ''}
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                ${rsvpBadge}
+                ${statusBadge}
+                ${verifyBadge}
+                
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-secondary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Contacted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Contacted' ? 'disabled' : ''}>
+                    📞 Contacted
+                  </button>
+                  <button class="btn btn-primary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Assisted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Assisted' ? 'disabled' : ''}>
+                    🌟 Assisted
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Error fetching cadet campaign tasks:', err);
+      }
+    }
+
+
+    function currentStatusRaw(t) { return t.cadet_call_status || 'Pending'; }
+
+    async function updateCadetTaskStatus(notifId, status) {
+      try {
+        const res = await fetch(`/api/student/campaign-tasks/${notifId}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callStatus: status })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update status');
+
+        showToast(`Outreach updated: ${status}`, 'success');
+        await loadCadetCampaignTasks();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
     }
   </script>
 

@@ -12,7 +12,11 @@
     "test:patient": "node server/verify-patient-system.js",
     "test:hospital": "node server/verify-hospital-system.js",
     "test:export": "node server/verify-export.js",
-    "test:all": "node server/verify-patient-system.js && node server/verify-hospital-system.js && node server/verify-export.js"
+    "test:campaign": "node server/verify-campaign-crm.js",
+    "test:routes": "node server/verify-route-redirection.js",
+    "test:all": "node server/verify-patient-system.js && node server/verify-hospital-system.js && node server/verify-export.js && node server/verify-campaign-crm.js && node server/verify-patient-engagement.js && node server/verify-patient-family.js && node server/verify-route-redirection.js",
+    "test:engagement": "node server/verify-patient-engagement.js",
+    "test:family": "node server/verify-patient-family.js"
   },
   "keywords": [],
   "author": "",
