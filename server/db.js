@@ -1,6 +1,15 @@
-const { DatabaseSync } = require('node:sqlite');
 const path = require('node:path');
 const fs = require('node:fs');
+
+let DatabaseSync;
+try {
+    ({ DatabaseSync } = require('node:sqlite'));
+} catch (err) {
+    if (err && err.code !== 'ERR_UNKNOWN_BUILTIN_MODULE') {
+        throw err;
+    }
+    DatabaseSync = require('better-sqlite3');
+}
 
 const dbDir = path.join(__dirname, '..', 'database');
 if (!fs.existsSync(dbDir)) {

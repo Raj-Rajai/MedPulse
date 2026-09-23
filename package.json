@@ -15,10 +15,11 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
     "express": "^5.2.1",
     "pdfkit": "^0.20.2"
   },
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=20.17.0"
   }
 }
