@@ -1,4 +1,5 @@
 const HospitalModel = require('../models/hospital.model');
+const HospitalVisitModel = require('../models/hospital-visit.model');
 
 const HospitalController = {
     login(req, res) {
@@ -91,8 +92,8 @@ const HospitalController = {
     getPatientDossier(req, res) {
         try {
             const patientId = req.params.id;
-            const dossier = HospitalModel.getPatientDossier(patientId);
-            if (!dossier) {
+            const dossier = HospitalModel.getPatientDossier(patientId, req.hospitalId);
+            if (!dossier || dossier.patient.hospital_id !== req.hospitalId) {
                 return res.status(404).json({ error: 'Patient record not found.' });
             }
             res.json(dossier);
@@ -209,7 +210,59 @@ const HospitalController = {
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
+    },
+
+    getVisits(req, res) {
+        try {
+            const { search, department, disposition, date, limit = 25, offset = 0 } = req.query;
+            const result = HospitalVisitModel.listVisits(req.hospitalId, {
+                search,
+                department,
+                disposition,
+                date,
+                limit,
+                offset
+            });
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    },
+
+    getVisitsSummary(req, res) {
+        try {
+            const summary = HospitalVisitModel.getSummary(req.hospitalId);
+            res.json(summary);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    },
+
+    createVisit(req, res) {
+        try {
+            const visit = HospitalVisitModel.createVisit(req.hospitalId, req.body, req.hospitalAdmin);
+            res.status(201).json({
+                success: true,
+                message: `Patient ${visit.patient_name} registered successfully with ID ${visit.visit_uid}.`,
+                visit
+            });
+        } catch (err) {
+            res.status(400).json({ error: err.message });
+        }
+    },
+
+    getVisitDetails(req, res) {
+        try {
+            const visit = HospitalVisitModel.getVisitById(req.hospitalId, req.params.id);
+            if (!visit) {
+                return res.status(404).json({ error: 'Hospital visit record not found.' });
+            }
+            res.json(visit);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     }
 };
 
 module.exports = HospitalController;
+

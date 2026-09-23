@@ -35,7 +35,6 @@ function initDatabase() {
             .sort()
             .forEach((f) => require(path.join(schemaDir, f)).apply(db));
 
-
         // Auto-seed survey data (Roll 235) if families table is empty
         const familyCountRow = db.prepare('SELECT COUNT(*) as count FROM families').get();
         if (!familyCountRow || familyCountRow.count === 0) {

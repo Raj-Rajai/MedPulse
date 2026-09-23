@@ -15,4 +15,10 @@ router.put('/hospital/staff/:id', authenticateHospitalAdmin, HospitalController.
 router.post('/hospital/staff/:id/reset-pin', authenticateHospitalAdmin, HospitalController.resetStaffPin);
 router.delete('/hospital/staff/:id', authenticateHospitalAdmin, HospitalController.deleteStaff);
 
+// Hospital Patient Visits & Registrations
+router.get('/hospital/visits', authenticateHospitalAdmin, HospitalController.getVisits);
+router.get('/hospital/visits/summary', authenticateHospitalAdmin, HospitalController.getVisitsSummary);
+router.post('/hospital/visits', authenticateHospitalAdmin, HospitalController.createVisit);
+router.get('/hospital/visits/:id', authenticateHospitalAdmin, HospitalController.getVisitDetails);
+
 module.exports = router;
