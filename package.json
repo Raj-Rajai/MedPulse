@@ -1,0 +1,12 @@
+{
+  "name": "medpulse-root",
+  "version": "2.0.0",
+  "private": true,
+  "description": "MedPulse root workspace wrapper",
+  "scripts": {
+    "dev": "npm --prefix MedPulse run dev",
+    "start": "npm --prefix MedPulse start",
+    "test": "npm --prefix MedPulse test",
+    "seed": "npm --prefix MedPulse run seed"
+  }
+}

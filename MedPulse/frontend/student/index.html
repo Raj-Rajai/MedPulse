@@ -1,0 +1,3253 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
+  <title>Family &amp; Member Management | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sleek Left Sliding Sidebar Navigation -->
+  <!-- Sidebar Navigation (Collapsible Icon Dock) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="link-label">Home</span>
+      </a>
+      <a href="/family-manage.html" class="sidebar-link active" data-route="families" data-title="Families">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="link-label">Families</span>
+      </a>
+      <a href="/entry.html" class="sidebar-link" data-route="entry" data-title="Data Entry">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h4"/>
+            <path d="M12 10h.01"/>
+          </svg>
+        </div>
+        <span class="link-label">Data Entry</span>
+      </a>
+      <a href="/analytics.html" class="sidebar-link" data-route="analytics" data-title="Analytics">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+        </div>
+        <span class="link-label">Analytics</span>
+      </a>
+      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="link-label">Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+  <!-- Mobile Drawer Toggle -->
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Global Alert Banner (if needed) -->
+    <div id="globalAlert" style="display: none;"></div>
+
+    <!-- Page Header -->
+    <div class="page-header anim-fade-up">
+      <div>
+        <h1 class="page-title page-title-animated">Family &amp; Member Management</h1>
+        <p class="page-subtitle">Survey households, record structured clinical profiles, and track longitudinal patient care</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="showCreateFamilyForm()">➕ Add New Family</button>
+      </div>
+    </div>
+
+    <!-- Create Family Form Card (Collapsible) -->
+    <div class="card" id="createFamilyCard" style="display: none; border: 1px solid var(--primary-border); box-shadow: var(--shadow-md);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <h2 class="card-title" style="color: var(--primary); margin-bottom: 0;">➕ Register New Household</h2>
+        <button class="btn btn-secondary" onclick="hideCreateFamilyForm()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕ Close</button>
+      </div>
+      <p class="card-desc">Enter identification and geographic details for the household. Once created, you can immediately add individual members and structured health profiles.</p>
+
+      <form id="createFamilyForm" onsubmit="event.preventDefault(); submitCreateFamily();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="cfRoll">Cadet Roll Number (Authenticated) *</label>
+            <input type="text" id="cfRoll" value="235" readonly style="background: rgba(109, 40, 217, 0.05); color: var(--accent); font-weight: 700; cursor: not-allowed;" title="Locked to authenticated student account">
+          </div>
+          <div class="form-group">
+            <label for="cfFamilyNo">Family Number *</label>
+            <input type="number" id="cfFamilyNo" min="1" required placeholder="e.g. 1">
+          </div>
+          <div class="form-group">
+            <label for="cfHof">Head of Family (HOF) Name *</label>
+            <input type="text" id="cfHof" required placeholder="Full name of HOF">
+          </div>
+          <div class="form-group">
+            <label for="cfFamilyName">Family Name / Household Label</label>
+            <input type="text" id="cfFamilyName" placeholder="e.g. Patel Household">
+          </div>
+          <div class="form-group">
+            <label for="cfContactPhone">Contact Phone Number</label>
+            <input type="tel" id="cfContactPhone" placeholder="e.g. 9876543210">
+          </div>
+          <div class="form-group">
+            <label for="cfVillage">Village / Ward Area *</label>
+            <input type="text" id="cfVillage" required placeholder="e.g. RHTC Field Area - Ward 4" value="RHTC Field Area - Ward 4">
+          </div>
+          <div class="form-group">
+            <label for="cfAddress">House / Street Address</label>
+            <input type="text" id="cfAddress" placeholder="e.g. Plot 12, Main Vas">
+          </div>
+          <div class="form-group">
+            <label for="cfCity">City / Town</label>
+            <input type="text" id="cfCity" placeholder="e.g. Ahmedabad">
+          </div>
+          <div class="form-group">
+            <label for="cfPincode">Pincode</label>
+            <input type="text" id="cfPincode" placeholder="e.g. 380001">
+          </div>
+          <div class="form-group">
+            <label for="cfTotalCu">Total Family CU</label>
+            <input type="number" step="0.1" id="cfTotalCu" value="4.0" placeholder="e.g. 4.0">
+          </div>
+          <div class="form-group">
+            <label for="cfCalorie">Daily Calorie Intake (kcal/CU/Day)</label>
+            <input type="number" id="cfCalorie" value="12000" placeholder="e.g. 12000">
+          </div>
+          <div class="form-group">
+            <label for="cfCalorieStatus">Calorie Adequacy Status</label>
+            <select id="cfCalorieStatus">
+              <option value="Normal" selected>Normal</option>
+              <option value="Deficient">Deficient (D)</option>
+              <option value="Excess">Excess (E)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cfAdvice">Dietary Advice Given?</label>
+            <select id="cfAdvice">
+              <option value="N" selected>No (N)</option>
+              <option value="Y">Yes (Y)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="hideCreateFamilyForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="createFamilyBtn">💾 Save Household Record</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TOP SECTION: Surveyed Families Horizontal Bar -->
+    <div class="family-horizontal-bar anim-fade-up anim-delay-1">
+      <div class="family-horizontal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.25rem;">🏘️</span>
+          <div>
+            <h2 class="card-title" style="margin-bottom: 0.1rem; font-size: 1.05rem;">Surveyed Households</h2>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Select any household to inspect members and clinical records</div>
+          </div>
+          <span class="badge badge-info" id="familiesBadge">0</span>
+        </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center; flex: 1; max-width: 480px;">
+          <div class="search-wrapper" style="margin-bottom: 0; flex: 1;">
+            <input type="text" id="familySearchInput" class="search-input" placeholder="🔍 Search family code, head of family, phone, village..." oninput="onFamilySearchInput()">
+            <button class="search-clear-btn" id="familySearchClear" onclick="clearFamilySearch()">✕</button>
+          </div>
+          <button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.45rem 0.85rem;" onclick="showCreateFamilyForm()">+ Add Family</button>
+        </div>
+      </div>
+
+      <!-- Horizontal scrollable strip of surveyed families -->
+      <div id="familyListContainer" class="family-horizontal-strip">
+        <div class="empty-state" style="padding: 1.5rem 0.5rem; width: 100%;">
+          <div class="empty-state-icon">📂</div>
+          <h3>No Families Yet</h3>
+          <p style="margin-bottom: 0.75rem;">No families recorded. Click "+ Add New Family" to create your first household.</p>
+          <button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="showCreateFamilyForm()">+ Add New Family</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         CADET CAMPAIGN ACTION TASKS (DECISION-DIAMOND OUTREACH)
+         ========================================================== -->
+    <div id="cadetCampaignSection" class="card anim-fade-up anim-delay-1" style="display: none; border-top: 4px solid #0284c7; margin-bottom: 1.5rem; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            🎯
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h2 style="font-size: 1.1rem; font-weight: 750; margin: 0; color: var(--text-primary);">
+                Targeted Campaign Follow-Ups
+              </h2>
+              <span id="cadetPendingTasksBadge" class="badge badge-warning" style="font-size: 0.72rem; font-weight: 700;">
+                0 Pending Calls
+              </span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
+              Patients in your adopted households qualifying for active university health drives. Call to coordinate attendance!
+            </p>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="loadCadetCampaignTasks()" style="font-size: 0.78rem; padding: 4px 10px; gap: 4px;">
+          🔄 Refresh Tasks
+        </button>
+      </div>
+
+      <div id="cadetCampaignTasksList" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Dynamic task cards injected here -->
+      </div>
+    </div>
+
+    <!-- No Family Selected Placeholder -->
+    <div class="card" id="noFamilySelectedCard" style="display: none; text-align: center; padding: 4rem 2rem; margin-bottom: 1.5rem;">
+      <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 0.75rem;">📋</div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">No Household Selected</h3>
+      <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.25rem; font-size: 0.875rem;">
+        Click on any surveyed household in the horizontal strip above, or click "+ Add New Family" to register a new household.
+      </p>
+      <button class="btn btn-primary" onclick="showCreateFamilyForm()">➕ Register New Family</button>
+    </div>
+
+    <!-- ACTIVE FAMILY WORKSPACE (Shown when a family is selected) -->
+    <div id="familyWorkspace" style="display: none;">
+
+      <!-- TOP 2-COLUMN GRID (Household Data Box on Left, Members Roster on Right) -->
+      <div class="fm-top-grid anim-fade-up anim-delay-2">
+
+        <!-- LEFT COLUMN: Household Profile Data Box (Image 1) -->
+        <div class="card fm-household-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <span class="badge badge-info" id="fWorkspaceCode" style="font-size: 0.85rem; padding: 0.35rem 0.65rem;">FAM-0001</span>
+              <div>
+                <h2 id="fWorkspaceTitle" class="card-title" style="color: var(--primary); font-size: 1.3rem; margin-bottom: 0.15rem;">-</h2>
+                <div id="fSubhead" style="font-size: 0.825rem; color: var(--text-muted);"></div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-secondary" onclick="openEditFamilyModal()" title="Edit household identification and address" style="font-size: 0.8rem; padding: 0.4rem 0.7rem;">✏️ Edit Household</button>
+              <button class="btn btn-primary" onclick="openAddMemberModal()" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">➕ Add Member</button>
+              <button class="btn btn-danger" onclick="confirmDeleteFamily()" title="Delete this family and all its members" style="padding: 0.4rem 0.65rem; font-size: 0.8rem;">🗑️ Delete</button>
+            </div>
+          </div>
+
+          <!-- Household Metadata Summary Banner (Image 1 Data Grid) -->
+          <div class="fm-household-meta-grid">
+            <div><span class="fm-meta-label">Head of Family</span><strong id="fHead">-</strong></div>
+            <div><span class="fm-meta-label">Contact Phone</span><span id="fPhone">-</span></div>
+            <div><span class="fm-meta-label">Location</span><span id="fLocation">-</span></div>
+            <div><span class="fm-meta-label">Surveyed By</span><span id="fStudent">-</span></div>
+            <div><span class="fm-meta-label">Total Family CU</span><strong id="fCu">-</strong></div>
+            <div><span class="fm-meta-label">Caloric Status</span><span id="fCalorie">-</span></div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Household Members Roster Card (Image 1 & 2 Layout) -->
+        <div class="card fm-members-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <h2 class="card-title" style="margin-bottom: 0; font-size: 1.15rem;">Members (<span id="memberCountHeader">0</span>)</h2>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Select a member to view profile below</span>
+            </div>
+            <button class="btn btn-primary" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;" onclick="openAddMemberModal()">+ Add Member</button>
+          </div>
+
+          <!-- Member Search/Filter in Household -->
+          <div class="search-wrapper" style="margin-bottom: 0.6rem;">
+            <input type="text" id="memberSearchInput" class="search-input" placeholder="🔍 Filter members by name, relation..." oninput="filterHouseholdMembers()">
+            <button class="search-clear-btn" id="memberSearchClear" onclick="clearMemberSearch()">✕</button>
+          </div>
+
+          <div id="membersListContainer" class="member-cards-grid">
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No members in this family yet. Click "➕ Add Member" above to add one.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM FULL-WIDTH WORKSPACE: Selected Member's Profile & Details -->
+      <div class="fm-bottom-section anim-fade-up anim-delay-3">
+
+        <!-- No Member Selected Placeholder (Full Width) -->
+        <div class="card fm-no-member-card" id="noMemberSelectedCard">
+          <div class="empty-state" style="padding: 3rem 1.5rem;">
+            <div class="empty-state-icon" style="font-size: 2.75rem; margin-bottom: 0.75rem;">👤</div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">No Member Selected</h3>
+            <p style="color: var(--text-muted); max-width: 560px; margin: 0 auto 1.25rem; font-size: 0.875rem; line-height: 1.5;">
+              Click on any member card in the household roster above to inspect their clinical profile, recorded medical conditions, active prescriptions, allergies, past history, and longitudinal follow-up examination visits.
+            </p>
+            <button class="btn btn-primary" onclick="openAddMemberModal()">➕ Add Member to Household</button>
+          </div>
+        </div>
+
+        <!-- Selected Member Segmented Profile Card (Image 2 - Full Width & Responsive) -->
+        <div class="card fm-member-detail-card" id="memberDetailCard" style="display: none;">
+          
+          <!-- Member Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h2 id="detailMemberName" style="color: var(--primary); font-size: 1.35rem; font-weight: 800; margin-bottom: 0.2rem;">-</h2>
+              <div id="detailMemberMeta" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">-</div>
+            </div>
+            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-secondary" onclick="openEditMemberModal()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">✏️ Edit Info</button>
+              <button class="btn btn-primary" onclick="openProvisionModalForCurrentMember()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem; background: linear-gradient(135deg, #0d9488, #2563eb); border: none; color: white;" title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
+              <button class="btn btn-danger" onclick="confirmDeleteMember()" title="Delete this member record" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">🗑️ Delete</button>
+              <button class="btn btn-secondary" onclick="closeMemberDetail()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">✕ Close</button>
+            </div>
+          </div>
+
+          <!-- Health Summary Counter Chips -->
+          <div class="summary-chips-row">
+            <div class="summary-chip" id="chipConditions">🏷️ Conditions: <strong>0</strong></div>
+            <div class="summary-chip" id="chipMedications">💊 Medications: <strong>0</strong></div>
+            <div class="summary-chip" id="chipAllergies">⚠️ Allergies: <strong>0</strong></div>
+            <div class="summary-chip" id="chipHistory">📜 History: <strong>0</strong></div>
+            <div class="summary-chip" id="chipFollowUps">🩺 Visits: <strong>0</strong></div>
+          </div>
+
+          <!-- RESPONSIVE SUB-ENTITIES GRID (Multi-column on desktop, 1-col on mobile) -->
+          <div class="fm-subentities-grid">
+
+            <!-- SEGMENT 1: Personal Demographics Overview (Spans Full Width across top of grid) -->
+            <div class="sub-entity-card full-width">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">📋 Demographics &amp; Socio-Economic Profile</span>
+              </div>
+              <div id="detailDemographicsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.825rem;"></div>
+            </div>
+
+            <!-- SEGMENT 2: Baseline Survey Physical Examination & Data Entry Link -->
+            <div class="sub-entity-card">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">📝 Field Survey &amp; Baseline Vitals</span>
+                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;" onclick="openInDataEntry()">
+                  Open in Data Entry &rarr;
+                </button>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.65rem;">
+                Full clinical screening (NCDs, blood pressure, sugar, pediatric growth, maternal care, and ICMR units) is managed on the <strong>Data Entry</strong> page.
+              </p>
+              <div id="detailVitalsGrid" style="display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.65rem;"></div>
+              <div id="baselineDetailsContent" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; border-top: 1px solid var(--border-light); padding-top: 0.5rem;"></div>
+            </div>
+
+            <!-- SEGMENT 3: Medical Conditions -->
+            <div class="sub-entity-card">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">🩺 Medical Conditions &amp; Diagnoses</span>
+                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddConditionModal()">+ Add Condition</button>
+              </div>
+              <div id="conditionsListContainer" class="sub-entity-list">
+                <div style="font-size: 0.825rem; color: var(--text-muted);">No conditions recorded for this member.</div>
+              </div>
+            </div>
+
+            <!-- SEGMENT 4: Current Medications -->
+            <div class="sub-entity-card">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">💊 Current Medications &amp; Adherence</span>
+                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddMedicationModal()">+ Add Medication</button>
+              </div>
+              <div id="medicationsListContainer" class="sub-entity-list">
+                <div style="font-size: 0.825rem; color: var(--text-muted);">No medications recorded for this member.</div>
+              </div>
+            </div>
+
+            <!-- SEGMENT 5: Allergies & Adverse Reactions -->
+            <div class="sub-entity-card">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">⚠️ Allergies &amp; Adverse Drug Reactions</span>
+                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddAllergyModal()">+ Add Allergy</button>
+              </div>
+              <div id="allergiesListContainer" class="sub-entity-list">
+                <div style="font-size: 0.825rem; color: var(--text-muted);">No allergies recorded for this member.</div>
+              </div>
+            </div>
+
+            <!-- SEGMENT 6: Past Medical & Surgical History -->
+            <div class="sub-entity-card">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">📜 Past Medical &amp; Surgical History</span>
+                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddHistoryModal()">+ Add History</button>
+              </div>
+              <div id="historyListContainer" class="sub-entity-list">
+                <div style="font-size: 0.825rem; color: var(--text-muted);">No surgical or past medical events recorded.</div>
+              </div>
+            </div>
+
+            <!-- SEGMENT 7: Lifestyle & Habits -->
+            <div class="sub-entity-card">
+              <div class="sub-entity-header">
+                <span class="sub-entity-title">🏃 Lifestyle, Habits &amp; Risk Factors</span>
+                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openEditLifestyleModal()">✏️ Edit Lifestyle</button>
+              </div>
+              <div id="lifestyleContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; font-size: 0.825rem;">
+                <div style="color: var(--text-muted);">No lifestyle information recorded yet.</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- BOTTOM SECTION: Individual Person's Follow-up Workspace (Full Window Width!) -->
+      <div class="card fm-bottom-followup" id="followUpWorkspaceCard" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.35rem;">
+              🩺
+            </div>
+            <div>
+              <h2 class="card-title" style="margin-bottom: 0.15rem; font-size: 1.25rem;">
+                Longitudinal Follow-up Visits — <span id="fuTargetMemberName" style="color: var(--primary);">No Member Selected</span>
+              </h2>
+              <div style="font-size: 0.825rem; color: var(--text-muted);">
+                Chronological examination visits, blood pressure/sugar control, medication compliance, and clinical progress
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span class="badge badge-info" id="fuVisitsCountBadge">0 Visits Recorded</span>
+            <button class="btn btn-success" id="btnLogFollowUp" style="font-size: 0.85rem; padding: 0.45rem 0.95rem;" onclick="toggleFollowUpForm()">
+              + Log New Visit
+            </button>
+          </div>
+        </div>
+
+        <!-- Log Follow-up Form (Collapsible, Full Width) -->
+        <div id="followUpFormContainer" style="display: none; background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1rem; font-weight: 800; color: #166534; margin-bottom: 0.85rem;">
+            Record Follow-Up Examination Visit
+          </h3>
+          <form id="followUpForm" onsubmit="event.preventDefault(); submitFollowUp();">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fuDate">Visit Date *</label>
+                <input type="date" id="fuDate" required>
+              </div>
+              <div class="form-group">
+                <label for="fuSbp">Follow-up SBP (mmHg)</label>
+                <input type="number" id="fuSbp" placeholder="e.g. 130">
+              </div>
+              <div class="form-group">
+                <label for="fuDbp">Follow-up DBP (mmHg)</label>
+                <input type="number" id="fuDbp" placeholder="e.g. 80">
+              </div>
+              <div class="form-group">
+                <label for="fuRbs">Follow-up RBS (mg/dl)</label>
+                <input type="number" id="fuRbs" placeholder="e.g. 120">
+              </div>
+              <div class="form-group">
+                <label for="fuHb">Follow-up Hb (g/dl)</label>
+                <input type="number" step="0.1" id="fuHb" placeholder="e.g. 10.5">
+              </div>
+              <div class="form-group">
+                <label for="fuWeight">Follow-up Weight (kg)</label>
+                <input type="number" step="0.5" id="fuWeight" placeholder="e.g. 58.0">
+              </div>
+              <div class="form-group">
+                <label for="fuCompliance">Treatment Compliance</label>
+                <select id="fuCompliance">
+                  <option value="Good" selected>Good (Regular medicine/diet)</option>
+                  <option value="Irregular">Irregular (Misses doses)</option>
+                  <option value="Not Taking">Not Taking (Discontinued)</option>
+                  <option value="NA">NA / No Medication</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fuProgress">Clinical Health Progress</label>
+                <select id="fuProgress">
+                  <option value="Improved" selected>Improved</option>
+                  <option value="Stable">Stable</option>
+                  <option value="Deteriorated">Deteriorated</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fuNextDate">Next Scheduled Visit Date</label>
+                <input type="date" id="fuNextDate">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top: 0.85rem;">
+              <label for="fuNotes">Clinical Examination Notes &amp; Counseling Given *</label>
+              <textarea id="fuNotes" rows="2" placeholder="e.g. Adherent to antihypertensive therapy. Dietary salt restriction observed. Pallor improved." required></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+              <button type="button" class="btn btn-secondary" onclick="toggleFollowUpForm()">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="saveFuBtn">💾 Save Follow-up Visit</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Follow-up Timeline List (Full Width) -->
+        <div id="timelineContainer">
+          <div style="color: var(--text-muted); font-size: 0.85rem; padding: 2rem; text-align: center;">
+            Select a member above to view and log their longitudinal follow-up examination visits.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==========================================================
+       MODAL: EDIT HOUSEHOLD DETAILS
+       ========================================================== -->
+  <div id="editFamilyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="color: var(--primary); font-size: 1.3rem;">✏️ Edit Household Details</h2>
+        <button class="btn btn-secondary" onclick="closeEditFamilyModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="editFamilyForm" onsubmit="event.preventDefault(); submitEditFamily();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="efHof">Head of Family (HOF) Name *</label>
+            <input type="text" id="efHof" required>
+          </div>
+          <div class="form-group">
+            <label for="efFamilyName">Family Name / Household Label</label>
+            <input type="text" id="efFamilyName">
+          </div>
+          <div class="form-group">
+            <label for="efContactPhone">Contact Phone Number</label>
+            <input type="tel" id="efContactPhone">
+          </div>
+          <div class="form-group">
+            <label for="efVillage">Village / Ward Area *</label>
+            <input type="text" id="efVillage" required>
+          </div>
+          <div class="form-group">
+            <label for="efAddress">Address / House Plot</label>
+            <input type="text" id="efAddress">
+          </div>
+          <div class="form-group">
+            <label for="efCity">City / Town</label>
+            <input type="text" id="efCity">
+          </div>
+          <div class="form-group">
+            <label for="efPincode">Pincode</label>
+            <input type="text" id="efPincode">
+          </div>
+          <div class="form-group">
+            <label for="efTotalCu">Total Family CU</label>
+            <input type="number" step="0.1" id="efTotalCu">
+          </div>
+          <div class="form-group">
+            <label for="efCalorie">Daily Calorie Intake (kcal/CU/Day)</label>
+            <input type="number" id="efCalorie">
+          </div>
+          <div class="form-group">
+            <label for="efCalorieStatus">Calorie Adequacy Status</label>
+            <select id="efCalorieStatus">
+              <option value="Normal">Normal</option>
+              <option value="Deficient">Deficient (D)</option>
+              <option value="Excess">Excess (E)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="efAdvice">Dietary Advice Given?</label>
+            <select id="efAdvice">
+              <option value="N">No (N)</option>
+              <option value="Y">Yes (Y)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditFamilyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveEditFamilyBtn">💾 Update Household</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: ADD NEW MEMBER (HIGH SPEED ENTRY WITH DRAFT RECOVERY)
+       ========================================================== -->
+  <div id="addMemberModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h2 style="color: var(--primary); font-size: 1.3rem;">➕ Add Member to Family #<span id="modalFamilyNo"></span></h2>
+        <button class="btn btn-secondary" onclick="closeAddMemberModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+
+      <!-- Draft Recovery Banner -->
+      <div id="memberDraftAlert" class="draft-alert" style="display: none;">
+        <span>⚠️ Unsaved member draft found from previous session.</span>
+        <div style="display: flex; gap: 0.4rem;">
+          <button type="button" onclick="restoreMemberDraft()">Restore Draft</button>
+          <button type="button" onclick="discardMemberDraft()" style="background: #e2e8f0; color: #475569;">Discard</button>
+        </div>
+      </div>
+
+      <p class="card-desc" style="margin-bottom: 1rem;">Fill in demographics and clinical parameters. Age is automatically calculated if Date of Birth is provided.</p>
+
+      <form id="addMemberForm" onsubmit="event.preventDefault(); submitNewMember(false);">
+        <!-- Demographics -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="modalMName">Full Name *</label>
+            <input type="text" id="modalMName" required placeholder="Member name">
+          </div>
+
+          <div class="form-group">
+            <label for="modalMRelation">Relation to Head of Family *</label>
+            <select id="modalMRelation">
+              <option value="Head of Family">Head of Family</option>
+              <option value="Wife">Wife</option>
+              <option value="Husband">Husband</option>
+              <option value="Son">Son</option>
+              <option value="Daughter">Daughter</option>
+              <option value="Mother">Mother</option>
+              <option value="Father">Father</option>
+              <option value="Daughter-in-law">Daughter-in-law</option>
+              <option value="Grandson">Grandson</option>
+              <option value="Granddaughter">Granddaughter</option>
+              <option value="Brother">Brother</option>
+              <option value="Sister">Sister</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modalMGender">Gender *</label>
+            <select id="modalMGender" onchange="onModalDemographicsChange()">
+              <option value="M">Male (M)</option>
+              <option value="F">Female (F)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modalMDob">Date of Birth (DOB)</label>
+            <input type="date" id="modalMDob" onchange="calcAgeFromDob()">
+          </div>
+
+          <div class="form-group">
+            <label for="modalMAgeYears">Age (Years) *</label>
+            <input type="number" id="modalMAgeYears" min="0" max="120" required placeholder="e.g. 35" oninput="onModalDemographicsChange()">
+          </div>
+
+          <div class="form-group">
+            <label for="modalMAgeMonths">Age (Months - if &lt; 2 yrs)</label>
+            <input type="number" id="modalMAgeMonths" min="0" max="24" value="0">
+          </div>
+
+          <div class="form-group">
+            <label for="modalMMaritalStatus">Marital Status</label>
+            <select id="modalMMaritalStatus">
+              <option value="Single">Single</option>
+              <option value="Married" selected>Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Widowed">Widowed</option>
+              <option value="Separated">Separated</option>
+              <option value="NA">NA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modalMEducation">Education Level</label>
+            <select id="modalMEducation">
+              <option value="Illiterate">Illiterate</option>
+              <option value="Primary">Primary School</option>
+              <option value="Secondary" selected>Secondary School</option>
+              <option value="Higher Secondary">Higher Secondary</option>
+              <option value="Graduate">Graduate</option>
+              <option value="Post Graduate">Post Graduate</option>
+              <option value="NA">NA / Child</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modalMOccupation">Occupation</label>
+            <input type="text" id="modalMOccupation" placeholder="e.g. Farmer, Homemaker, Student">
+          </div>
+
+          <div class="form-group">
+            <label for="modalMContact">Contact Phone Number</label>
+            <input type="tel" id="modalMContact" placeholder="e.g. 9876543210">
+          </div>
+
+          <div class="form-group">
+            <label for="modalMWork">Physical Activity</label>
+            <select id="modalMWork">
+              <option value="Sedentary">Sedentary</option>
+              <option value="Moderate" selected>Moderate</option>
+              <option value="Heavy">Heavy</option>
+              <option value="NA">NA / Child</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 0.825rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>ℹ️</span>
+          <span>Member registered with basic demographics. Full clinical survey (vitals, screening, pediatric &amp; maternal records) is recorded on the <strong>Data Entry</strong> page.</span>
+        </div>
+
+        <!-- Action Buttons: Save vs Save & Add Another -->
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="closeAddMemberModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveMemberBtn">💾 Save Member</button>
+          <button type="button" class="btn btn-success" id="saveAddAnotherBtn" onclick="submitNewMember(true)">⚡ Save &amp; Add Another</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: EDIT MEMBER PERSONAL INFO
+       ========================================================== -->
+  <div id="editMemberModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="color: var(--primary); font-size: 1.3rem;">✏️ Edit Member Personal Info</h2>
+        <button class="btn btn-secondary" onclick="closeEditMemberModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="editMemberForm" onsubmit="event.preventDefault(); submitEditMember();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="emName">Full Name *</label>
+            <input type="text" id="emName" required>
+          </div>
+          <div class="form-group">
+            <label for="emRelation">Relation to Head of Family *</label>
+            <select id="emRelation">
+              <option value="Head of Family">Head of Family</option>
+              <option value="Wife">Wife</option>
+              <option value="Husband">Husband</option>
+              <option value="Son">Son</option>
+              <option value="Daughter">Daughter</option>
+              <option value="Mother">Mother</option>
+              <option value="Father">Father</option>
+              <option value="Daughter-in-law">Daughter-in-law</option>
+              <option value="Grandson">Grandson</option>
+              <option value="Granddaughter">Granddaughter</option>
+              <option value="Brother">Brother</option>
+              <option value="Sister">Sister</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emGender">Gender *</label>
+            <select id="emGender">
+              <option value="M">Male (M)</option>
+              <option value="F">Female (F)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emDob">Date of Birth</label>
+            <input type="date" id="emDob" onchange="calcEditAgeFromDob()">
+          </div>
+          <div class="form-group">
+            <label for="emAgeYears">Age (Years) *</label>
+            <input type="number" id="emAgeYears" min="0" max="120" required>
+          </div>
+          <div class="form-group">
+            <label for="emAgeMonths">Age (Months - if &lt; 2 yrs)</label>
+            <input type="number" id="emAgeMonths" min="0" max="24">
+          </div>
+          <div class="form-group">
+            <label for="emMaritalStatus">Marital Status</label>
+            <select id="emMaritalStatus">
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Widowed">Widowed</option>
+              <option value="Separated">Separated</option>
+              <option value="NA">NA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emEducation">Education Level</label>
+            <select id="emEducation">
+              <option value="Illiterate">Illiterate</option>
+              <option value="Primary">Primary School</option>
+              <option value="Secondary">Secondary School</option>
+              <option value="Higher Secondary">Higher Secondary</option>
+              <option value="Graduate">Graduate</option>
+              <option value="Post Graduate">Post Graduate</option>
+              <option value="NA">NA / Child</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emOccupation">Occupation</label>
+            <input type="text" id="emOccupation">
+          </div>
+          <div class="form-group">
+            <label for="emContact">Contact Phone Number</label>
+            <input type="tel" id="emContact">
+          </div>
+          <div class="form-group">
+            <label for="emWork">Physical Activity</label>
+            <select id="emWork">
+              <option value="Sedentary">Sedentary</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Heavy">Heavy</option>
+              <option value="NA">NA / Child</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditMemberModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveEditMemberBtn">💾 Update Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: ADD / EDIT CONDITION
+       ========================================================== -->
+  <div id="conditionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 540px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 id="conditionModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Medical Condition</h2>
+        <button class="btn btn-secondary" onclick="closeConditionModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="conditionForm" onsubmit="event.preventDefault(); submitCondition();">
+        <input type="hidden" id="condEditId" value="">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label for="condName">Condition / Disease Name *</label>
+            <input type="text" id="condName" required placeholder="e.g. Hypertension, Type 2 Diabetes, Asthma">
+          </div>
+          <div class="form-group">
+            <label for="condCategory">Category</label>
+            <select id="condCategory">
+              <option value="Cardiovascular">Cardiovascular</option>
+              <option value="Endocrine/Metabolic">Endocrine / Metabolic</option>
+              <option value="Respiratory">Respiratory</option>
+              <option value="Gastrointestinal">Gastrointestinal</option>
+              <option value="Neurological">Neurological</option>
+              <option value="Musculoskeletal">Musculoskeletal</option>
+              <option value="Infectious Disease">Infectious Disease</option>
+              <option value="Renal/Genitourinary">Renal / Genitourinary</option>
+              <option value="Mental Health">Mental Health</option>
+              <option value="Oncology">Oncology</option>
+              <option value="Other" selected>Other</option>
+            </select>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="condStatus">Status</label>
+              <select id="condStatus">
+                <option value="Active" selected>Active</option>
+                <option value="Controlled">Controlled</option>
+                <option value="In Remission">In Remission</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="condSeverity">Severity</label>
+              <select id="condSeverity">
+                <option value="Mild">Mild</option>
+                <option value="Moderate" selected>Moderate</option>
+                <option value="Severe">Severe</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="condDate">Diagnosis Date / Approximate Year</label>
+            <input type="date" id="condDate">
+          </div>
+          <div class="form-group">
+            <label for="condNotes">Clinical Notes</label>
+            <textarea id="condNotes" rows="2" placeholder="e.g. Diagnosed at Civil Hospital, on regular oral medication"></textarea>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeConditionModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveConditionBtn">💾 Save Condition</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: ADD / EDIT MEDICATION
+       ========================================================== -->
+  <div id="medicationModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 540px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 id="medicationModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Medication</h2>
+        <button class="btn btn-secondary" onclick="closeMedicationModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="medicationForm" onsubmit="event.preventDefault(); submitMedication();">
+        <input type="hidden" id="medEditId" value="">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label for="medName">Medication / Drug Name *</label>
+            <input type="text" id="medName" required placeholder="e.g. Amlodipine, Metformin, Salbutamol Inhaler">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="medDosage">Dosage</label>
+              <input type="text" id="medDosage" placeholder="e.g. 5 mg, 500 mg">
+            </div>
+            <div class="form-group">
+              <label for="medFrequency">Frequency</label>
+              <select id="medFrequency">
+                <option value="OD (Once daily)" selected>OD (Once daily)</option>
+                <option value="BD (Twice daily)">BD (Twice daily)</option>
+                <option value="TDS (Thrice daily)">TDS (Thrice daily)</option>
+                <option value="QID (4 times daily)">QID (4 times daily)</option>
+                <option value="PRN (As needed)">PRN (As needed)</option>
+                <option value="Weekly">Weekly</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="medRoute">Route</label>
+              <select id="medRoute">
+                <option value="Oral" selected>Oral</option>
+                <option value="Inhalation">Inhalation</option>
+                <option value="Topical">Topical</option>
+                <option value="Injection">Injection</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="medAdherence">Adherence Status</label>
+              <select id="medAdherence">
+                <option value="Good" selected>Good (Regular)</option>
+                <option value="Irregular">Irregular (Misses doses)</option>
+                <option value="Discontinued">Discontinued</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="medPrescribedFor">Prescribed For (Indication)</label>
+            <input type="text" id="medPrescribedFor" placeholder="e.g. High blood pressure">
+          </div>
+          <div class="form-group">
+            <label for="medStartDate">Start Date</label>
+            <input type="date" id="medStartDate">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeMedicationModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveMedicationBtn">💾 Save Medication</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: ADD / EDIT ALLERGY
+       ========================================================== -->
+  <div id="allergyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 id="allergyModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Allergy / Adverse Reaction</h2>
+        <button class="btn btn-secondary" onclick="closeAllergyModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="allergyForm" onsubmit="event.preventDefault(); submitAllergy();">
+        <input type="hidden" id="algEditId" value="">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label for="algAllergen">Allergen Substance *</label>
+            <input type="text" id="algAllergen" required placeholder="e.g. Penicillin, Sulfa drugs, Peanuts, Dust">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="algType">Allergy Type</label>
+              <select id="algType">
+                <option value="Drug" selected>Drug</option>
+                <option value="Food">Food</option>
+                <option value="Environmental">Environmental</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="algSeverity">Severity</label>
+              <select id="algSeverity">
+                <option value="Mild">Mild</option>
+                <option value="Moderate" selected>Moderate</option>
+                <option value="Severe">Severe</option>
+                <option value="Life-threatening">Life-threatening</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="algReaction">Reaction Description</label>
+            <input type="text" id="algReaction" placeholder="e.g. Skin rash, Urticaria, Bronchospasm">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeAllergyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveAllergyBtn">💾 Save Allergy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: ADD / EDIT MEDICAL HISTORY
+       ========================================================== -->
+  <div id="historyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 id="historyModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Medical / Surgical History</h2>
+        <button class="btn btn-secondary" onclick="closeHistoryModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="historyForm" onsubmit="event.preventDefault(); submitHistory();">
+        <input type="hidden" id="histEditId" value="">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label for="histType">Event Type *</label>
+            <select id="histType">
+              <option value="Surgery" selected>Surgery</option>
+              <option value="Hospitalization">Hospitalization</option>
+              <option value="Major Illness">Major Illness</option>
+              <option value="Trauma / Accident">Trauma / Accident</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="histDesc">Event Description *</label>
+            <input type="text" id="histDesc" required placeholder="e.g. Appendectomy, Cholecystectomy, Pneumonia admission">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="histDate">Event Date / Year</label>
+              <input type="text" id="histDate" placeholder="e.g. 2021 or 2021-04">
+            </div>
+            <div class="form-group">
+              <label for="histFacility">Facility / Hospital</label>
+              <input type="text" id="histFacility" placeholder="e.g. Civil Hospital">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="histNotes">Outcome / Recovery Notes</label>
+            <textarea id="histNotes" rows="2" placeholder="e.g. Full recovery, no post-op complications"></textarea>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeHistoryModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveHistoryBtn">💾 Save History</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: EDIT LIFESTYLE & HABITS
+       ========================================================== -->
+  <div id="lifestyleModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 540px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="color: var(--primary); font-size: 1.25rem;">🏃 Lifestyle &amp; Health Habits</h2>
+        <button class="btn btn-secondary" onclick="closeLifestyleModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+      <form id="lifestyleForm" onsubmit="event.preventDefault(); submitLifestyle();">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="lsSmoking">Smoking / Tobacco</label>
+              <select id="lsSmoking">
+                <option value="Never" selected>Never</option>
+                <option value="Former">Former (Quit)</option>
+                <option value="Current">Current Smoker / Chewer</option>
+                <option value="Occasional">Occasional</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="lsSmokingFreq">Tobacco Frequency</label>
+              <input type="text" id="lsSmokingFreq" placeholder="e.g. 5 bidi/day, Gutkha daily">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="lsAlcohol">Alcohol Consumption</label>
+              <select id="lsAlcohol">
+                <option value="Never" selected>Never</option>
+                <option value="Occasional">Occasional</option>
+                <option value="Regular">Regular</option>
+                <option value="Former">Former (Quit)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="lsDiet">Diet Pattern</label>
+              <select id="lsDiet">
+                <option value="Vegetarian" selected>Vegetarian</option>
+                <option value="Non-Vegetarian">Non-Vegetarian</option>
+                <option value="Eggetarian">Eggetarian</option>
+                <option value="Vegan">Vegan</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="lsPhysical">Physical Activity Level</label>
+              <select id="lsPhysical">
+                <option value="Sedentary">Sedentary</option>
+                <option value="Moderate" selected>Moderate</option>
+                <option value="Active">Active</option>
+                <option value="Very Active">Very Active</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="lsSalt">Salt Intake</label>
+              <select id="lsSalt">
+                <option value="Normal" selected>Normal</option>
+                <option value="High">High (Extra salt added)</option>
+                <option value="Restricted">Restricted (Low sodium)</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="lsSleep">Sleep Hours / Night</label>
+              <input type="number" step="0.5" id="lsSleep" min="0" max="24" placeholder="e.g. 7.5">
+            </div>
+            <div class="form-group">
+              <label for="lsNotes">Habits &amp; Counseling Notes</label>
+              <input type="text" id="lsNotes" placeholder="e.g. Tobacco cessation advised">
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeLifestyleModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveLifestyleBtn">💾 Save Lifestyle Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: PROVISION PATIENT ACCOUNT (DUAL-MODEL PORTAL ACCESS)
+       ========================================================== -->
+  <div id="provisionPatientModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+            📱
+          </div>
+          <div>
+            <h2 style="color: var(--primary); font-size: 1.25rem; font-weight: 800; margin: 0;">Patient Portal Account</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Provision 1-click self-service access for this adopted family member</p>
+          </div>
+        </div>
+        <button class="btn btn-secondary" onclick="closeProvisionPatientModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+
+      <div id="provisionFormSection">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
+          Create login credentials for <strong id="provMemberNameHeader">-</strong>. The patient will be able to log in on the Patient Portal using their phone number and 4-digit PIN.
+        </p>
+
+        <form id="provisionForm" onsubmit="event.preventDefault(); submitProvisionAccount();">
+          <input type="hidden" id="provMemberId">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="provPatientName">Patient Display Name</label>
+            <input type="text" id="provPatientName" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="provPhone">Mobile Phone (10 Digits - used for login)</label>
+            <input type="tel" id="provPhone" placeholder="e.g. 9876543210" maxlength="10">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Leave empty to auto-generate a designated health ID phone</small>
+          </div>
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="provPin">4-Digit Security PIN</label>
+            <input type="text" id="provPin" value="1234" maxlength="6" style="letter-spacing: 2px; font-weight: 700;">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Default is 1234 (Patient can change this anytime)</small>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
+            <button type="button" class="btn btn-secondary" onclick="closeProvisionPatientModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitProvision" style="background: linear-gradient(135deg, #0d9488, #2563eb); border: none;">
+              ✨ Generate Patient Access
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success / Credential Result Card -->
+      <div id="provisionSuccessSection" style="display: none;">
+        <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: #065f46; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem;">
+            <span>✅</span> Account Ready &amp; Linked!
+          </div>
+          <p id="provSuccessMessage" style="font-size: 0.825rem; color: #047857; margin-bottom: 1rem; line-height: 1.4;">
+            Patient account successfully provisioned and linked to your cadet supervision profile.
+          </p>
+
+          <div style="background: white; border: 1px solid #d1fae5; border-radius: var(--radius-sm); padding: 0.85rem; font-family: monospace; font-size: 0.85rem; line-height: 1.7;">
+            <div><strong>Patient Name:</strong> <span id="provResName">-</span></div>
+            <div><strong>Patient UID:</strong> <span id="provResUid" style="color: #0284c7; font-weight: 700;">-</span></div>
+            <div><strong>Login Phone:</strong> <span id="provResPhone" style="font-weight: 700;">-</span></div>
+            <div><strong>Login PIN:</strong> <span id="provResPin" style="color: #d97706; font-weight: 700;">1234</span></div>
+            <div><strong>Portal Link:</strong> <span id="provResUrl">/login.html?patient=1</span></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="copyProvisionCredentials()" id="btnCopyCreds">
+            📋 Copy Patient Credentials
+          </button>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="/login.html?patient=1" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; text-decoration: none;">
+              🔗 Open Portal
+            </a>
+            <button type="button" class="btn btn-primary" onclick="closeProvisionPatientModal()">
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: CUSTOM CONFIRMATION DIALOG (ACCESSIBLE & NON-BLOCKING)
+       ========================================================== -->
+  <div id="customConfirmModal" class="modal-overlay" style="display: none;">
+    <div class="confirm-box">
+      <h3 id="confirmTitle">⚠️ Confirm Action</h3>
+      <p id="confirmMessage">Are you sure you want to proceed?</p>
+      <div class="confirm-actions">
+        <button type="button" class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ==========================================================
+       JAVASCRIPT LOGIC & API INTEGRATION
+       ========================================================== -->
+  <script>
+    let currentFamilies = [];
+    let selectedFamilyId = null;
+    let selectedMemberId = null;
+    let currentFamilyData = null;
+    let currentMemberData = null;
+    let loggedInStudent = null;
+    let searchDebounceTimer = null;
+
+    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('preload-transitions');
+      });
+    });
+
+    // Execute callback only when document is active/visible, and after loading, nothing
+    function runWhenActive(callback) {
+      if (document.visibilityState === 'visible') {
+        callback();
+      } else {
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            callback();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      }
+    }
+
+    /* ---- Sliding Sidebar Controls ---- */
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    /* ---- Page Initialization ---- */
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      initAuth();
+      const today = new Date().toISOString().split('T')[0];
+      const fuDateInput = document.getElementById('fuDate');
+      if (fuDateInput) fuDateInput.value = today;
+
+      if (window.MedPulseValidation) {
+        MedPulseValidation.attachPhone('cfContactPhone', true);
+        MedPulseValidation.attachPhone('efContactPhone', true);
+        MedPulseValidation.attachPhone('modalMContact', true);
+        MedPulseValidation.attachPhone('emContact', true);
+      }
+
+      setupDraftAutosave();
+      runWhenActive(loadFamilies);
+      runWhenActive(loadCadetCampaignTasks);
+    });
+
+    /* ---- Authentication State ---- */
+    function initAuth() {
+      const userStr = localStorage.getItem('medpulse_user');
+      const authArea = document.getElementById('authNavArea');
+      if (!authArea) return;
+      if (userStr) {
+        try {
+          loggedInStudent = JSON.parse(userStr);
+          authArea.innerHTML = `
+            <div class="sidebar-user" data-tooltip="Roll ${loggedInStudent.roll_number} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logout();}else{window.location.href='/profile.html';}" title="Roll ${loggedInStudent.roll_number}">
+              <div class="user-avatar-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="role-dot"></span>
+              </div>
+              <div class="user-info-text">
+                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); display: block;">Student</span>
+                <span style="font-weight: 700; color: #fff;">Roll ${loggedInStudent.roll_number}</span>
+              </div>
+              <button class="logout-btn" onclick="event.stopPropagation(); logout();" title="Logout">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          `;
+          const rollField = document.getElementById('cfRoll');
+          if (rollField) rollField.value = loggedInStudent.roll_number;
+        } catch (e) {
+          showLoginLink();
+        }
+      } else {
+        showLoginLink();
+      }
+    }
+
+    function showLoginLink() {
+      const authArea = document.getElementById('authNavArea');
+      if (!authArea) return;
+      authArea.innerHTML = `
+        <a href="/login.html" class="sidebar-login-link" title="Sign In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span class="login-label">Sign In</span>
+        </a>
+      `;
+    }
+
+    function logout() {
+      localStorage.removeItem('medpulse_user');
+      window.location.href = '/login.html';
+    }
+
+    /* ---- Toast Notifications ---- */
+    function showToast(message, type = 'info', duration = 3200) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 200);
+      }, duration);
+    }
+
+    /* ---- Custom Confirmation Modal ---- */
+    function showConfirm(title, message, confirmText = 'Confirm', isDanger = true) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const msgEl = document.getElementById('confirmMessage');
+        const okBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        okBtn.textContent = confirmText;
+        okBtn.className = isDanger ? 'btn btn-danger' : 'btn btn-primary';
+
+        modal.style.display = 'flex';
+
+        function cleanup(confirmed) {
+          modal.style.display = 'none';
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
+          resolve(confirmed);
+        }
+
+        function onOk() { cleanup(true); }
+        function onCancel() { cleanup(false); }
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+      });
+    }
+
+    /* ---- Create Family ---- */
+    function showCreateFamilyForm() {
+      const nextNo = currentFamilies.length > 0 ? (Math.max(...currentFamilies.map(f => f.family_no || 0)) + 1) : 1;
+      document.getElementById('cfFamilyNo').value = nextNo;
+      if (loggedInStudent && document.getElementById('cfRoll')) {
+        document.getElementById('cfRoll').value = loggedInStudent.roll_number;
+      }
+      document.getElementById('createFamilyCard').style.display = 'block';
+      document.getElementById('createFamilyCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('cfHof').focus();
+    }
+
+    function hideCreateFamilyForm() {
+      document.getElementById('createFamilyCard').style.display = 'none';
+      document.getElementById('createFamilyForm').reset();
+    }
+
+    async function submitCreateFamily() {
+      const rollInput = document.getElementById('cfRoll');
+      const rollNumber = (rollInput && rollInput.value.trim()) || (loggedInStudent ? loggedInStudent.roll_number : '235');
+
+      const contactInput = document.getElementById('cfContactPhone');
+      const contactVal = contactInput ? contactInput.value.trim() : '';
+      let cleanContact = contactVal;
+      if (contactVal && window.MedPulseValidation) {
+        const check = MedPulseValidation.validatePhone(contactVal, false);
+        if (!check.valid) {
+          showToast(check.error, 'error');
+          MedPulseValidation.showError(contactInput, check.error);
+          contactInput.focus();
+          return;
+        }
+        cleanContact = check.clean;
+      }
+
+      const btn = document.getElementById('createFamilyBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        roll_number: rollNumber,
+        student_roll: rollNumber,
+        student_id: loggedInStudent ? loggedInStudent.id : null,
+        family_no: parseInt(document.getElementById('cfFamilyNo').value, 10),
+        head_of_family: document.getElementById('cfHof').value.trim(),
+        family_name: document.getElementById('cfFamilyName').value.trim() || null,
+        contact_phone: cleanContact || null,
+        contact_number: cleanContact || null,
+        village_ward: document.getElementById('cfVillage').value.trim(),
+        address: document.getElementById('cfAddress').value.trim(),
+        city: document.getElementById('cfCity').value.trim() || null,
+        pincode: document.getElementById('cfPincode').value.trim() || null,
+        total_cu: parseFloat(document.getElementById('cfTotalCu').value) || 0,
+        calorie_intake_per_cu: parseInt(document.getElementById('cfCalorie').value) || 0,
+        calorie_status: document.getElementById('cfCalorieStatus').value,
+        dietary_advice_given: document.getElementById('cfAdvice').value,
+        members: []
+      };
+
+      try {
+        const res = await fetch('/api/families', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create family');
+
+        showToast(`Household #${payload.family_no} created successfully!`, 'success');
+        hideCreateFamilyForm();
+        selectedFamilyId = data.family_id || (data.family && data.family.id);
+        await loadFamilies();
+        if (selectedFamilyId) {
+          selectFamily(selectedFamilyId);
+        }
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Household Record';
+      }
+    }
+
+    /* ---- Edit Household Details ---- */
+    function openEditFamilyModal() {
+      if (!currentFamilyData) return;
+      document.getElementById('efHof').value = currentFamilyData.head_of_family || '';
+      document.getElementById('efFamilyName').value = currentFamilyData.family_name || '';
+      document.getElementById('efContactPhone').value = currentFamilyData.contact_phone || currentFamilyData.contact_number || '';
+      document.getElementById('efVillage').value = currentFamilyData.village_ward || '';
+      document.getElementById('efAddress').value = currentFamilyData.address || '';
+      document.getElementById('efCity').value = currentFamilyData.city || '';
+      document.getElementById('efPincode').value = currentFamilyData.pincode || '';
+      document.getElementById('efTotalCu').value = currentFamilyData.total_cu || 0;
+      document.getElementById('efCalorie').value = currentFamilyData.calorie_intake_per_cu || 0;
+      document.getElementById('efCalorieStatus').value = currentFamilyData.calorie_status || 'Normal';
+      document.getElementById('efAdvice').value = currentFamilyData.dietary_advice_given || 'N';
+
+      document.getElementById('editFamilyModal').style.display = 'flex';
+    }
+
+    function closeEditFamilyModal() {
+      document.getElementById('editFamilyModal').style.display = 'none';
+    }
+
+    async function submitEditFamily() {
+      if (!selectedFamilyId) return;
+
+      const contactInput = document.getElementById('efContactPhone');
+      const contactVal = contactInput ? contactInput.value.trim() : '';
+      let cleanContact = contactVal;
+      if (contactVal && window.MedPulseValidation) {
+        const check = MedPulseValidation.validatePhone(contactVal, false);
+        if (!check.valid) {
+          showToast(check.error, 'error');
+          MedPulseValidation.showError(contactInput, check.error);
+          contactInput.focus();
+          return;
+        }
+        cleanContact = check.clean;
+      }
+
+      const btn = document.getElementById('saveEditFamilyBtn');
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      const payload = {
+        head_of_family: document.getElementById('efHof').value.trim(),
+        family_name: document.getElementById('efFamilyName').value.trim() || null,
+        contact_phone: cleanContact || null,
+        contact_number: cleanContact || null,
+        village_ward: document.getElementById('efVillage').value.trim(),
+        address: document.getElementById('efAddress').value.trim(),
+        city: document.getElementById('efCity').value.trim() || null,
+        pincode: document.getElementById('efPincode').value.trim() || null,
+        total_cu: parseFloat(document.getElementById('efTotalCu').value) || 0,
+        calorie_intake_per_cu: parseInt(document.getElementById('efCalorie').value) || 0,
+        calorie_status: document.getElementById('efCalorieStatus').value,
+        dietary_advice_given: document.getElementById('efAdvice').value
+      };
+
+      try {
+        const res = await fetch(`/api/families/${selectedFamilyId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update household');
+
+        showToast('Household details updated', 'success');
+        closeEditFamilyModal();
+        await loadFamilies();
+        selectFamily(selectedFamilyId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Update Household';
+      }
+    }
+
+    /* ---- Delete Family ---- */
+    async function confirmDeleteFamily() {
+      if (!selectedFamilyId) return;
+      const fam = currentFamilies.find(f => f.id === selectedFamilyId);
+      const name = fam ? fam.head_of_family : `Family #${selectedFamilyId}`;
+      const confirmed = await showConfirm(
+        'Delete Household Record',
+        `Are you sure you want to permanently delete "${name}" and all its members, conditions, and clinical records? This action cannot be undone.`,
+        'Delete Household',
+        true
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/families/${selectedFamilyId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete family');
+
+        showToast('Household record deleted', 'info');
+        selectedFamilyId = null;
+        selectedMemberId = null;
+        await loadFamilies();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ---- Family Live Search & Load ---- */
+    function onFamilySearchInput() {
+      const q = document.getElementById('familySearchInput').value.trim();
+      const clearBtn = document.getElementById('familySearchClear');
+      clearBtn.style.display = q ? 'block' : 'none';
+
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        loadFamilies(q);
+      }, 250);
+    }
+
+    function clearFamilySearch() {
+      document.getElementById('familySearchInput').value = '';
+      document.getElementById('familySearchClear').style.display = 'none';
+      loadFamilies('');
+    }
+
+    async function loadFamilies(searchQuery = '') {
+      try {
+        const url = searchQuery ? `/api/families?search=${encodeURIComponent(searchQuery)}` : '/api/families';
+        const res = await fetch(url);
+        currentFamilies = await res.json();
+
+        const container = document.getElementById('familyListContainer');
+        document.getElementById('familiesBadge').textContent = currentFamilies.length;
+
+        if (currentFamilies.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding: 2rem 0.5rem; width: 100%;">
+              <div class="empty-state-icon">📂</div>
+              <h3>${searchQuery ? 'No Results Found' : 'No Families Yet'}</h3>
+              <p style="margin-bottom: 1rem;">${searchQuery ? `No households match "${searchQuery}". Try a different term.` : 'Click "+ Add New Family" to create your first household.'}</p>
+              ${searchQuery ? `<button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="clearFamilySearch()">Clear Search</button>` : `<button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="showCreateFamilyForm()">+ Add New Family</button>`}
+            </div>
+          `;
+          if (!selectedFamilyId || !currentFamilies.some(f => f.id === selectedFamilyId)) {
+            document.getElementById('noFamilySelectedCard').style.display = 'block';
+            document.getElementById('familyWorkspace').style.display = 'none';
+          }
+          return;
+        }
+
+        container.innerHTML = currentFamilies.map(f => {
+          const code = f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`;
+          const isSelected = f.id === selectedFamilyId;
+          const phoneVal = f.contact_phone || f.contact_number;
+          const phone = phoneVal ? ` • 📞 ${phoneVal}` : '';
+          return `
+            <div class="family-strip-card ${isSelected ? 'active' : ''}" id="familyCard_${f.id}" onclick="selectFamily(${f.id})">
+              <span class="badge badge-info" style="font-size: 0.72rem; padding: 0.15rem 0.45rem; width: fit-content; margin-bottom: 0.35rem;">${code}</span>
+              <div class="family-strip-name">${f.head_of_family}</div>
+              <div class="family-strip-meta">${f.member_count || 0} members • ${f.village_ward || '-'}${phone}</div>
+            </div>
+          `;
+        }).join('');
+
+        if (selectedFamilyId && currentFamilies.some(f => f.id === selectedFamilyId)) {
+          selectFamily(selectedFamilyId);
+        } else if (currentFamilies.length > 0 && !searchQuery) {
+          selectFamily(currentFamilies[0].id);
+        }
+
+      } catch (err) {
+        console.error('Failed to load families:', err);
+      }
+    }
+
+    /* ---- Select Family ---- */
+    async function selectFamily(familyId, preselectMemberId = null) {
+      selectedFamilyId = familyId;
+      selectedMemberId = null;
+
+      document.querySelectorAll('.family-strip-card').forEach(el => el.classList.remove('active'));
+      const activeCard = document.getElementById(`familyCard_${familyId}`);
+      if (activeCard) {
+        activeCard.classList.add('active');
+        activeCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+
+      document.getElementById('noFamilySelectedCard').style.display = 'none';
+      document.getElementById('familyWorkspace').style.display = 'block';
+
+      try {
+        const res = await fetch(`/api/families/${familyId}`);
+        currentFamilyData = await res.json();
+        const family = currentFamilyData;
+
+        const code = family.family_code || `FAM-${String(family.family_no).padStart(4, '0')}`;
+        document.getElementById('fWorkspaceCode').textContent = code;
+        document.getElementById('fWorkspaceTitle').textContent = family.family_name ? `${family.family_name} (${family.head_of_family})` : family.head_of_family;
+        document.getElementById('fSubhead').textContent = `${family.village_ward || '-'} • ${family.members ? family.members.length : 0} Members Recorded`;
+        document.getElementById('fHead').textContent = family.head_of_family;
+        document.getElementById('fPhone').textContent = family.contact_phone || family.contact_number || 'None recorded';
+        document.getElementById('fStudent').textContent = `Roll ${family.roll_number || '-'}`;
+        document.getElementById('fLocation').textContent = [family.address, family.city, family.village_ward, family.pincode].filter(Boolean).join(', ') || '-';
+        document.getElementById('fCu').textContent = family.total_cu || 0;
+        document.getElementById('fCalorie').innerHTML = `<span class="badge ${family.calorie_status === 'Deficient' ? 'badge-danger' : 'badge-success'}">${family.calorie_status} (${Math.round(family.calorie_intake_per_cu || 0)} kcal)</span>`;
+
+        document.getElementById('memberCountHeader').textContent = family.members ? family.members.length : 0;
+        renderMembersCards(family.members || []);
+
+        if (preselectMemberId && family.members && family.members.some(m => m.id === preselectMemberId)) {
+          selectMember(preselectMemberId);
+        } else if (family.members && family.members.length > 0) {
+          selectMember(family.members[0].id);
+        } else {
+          closeMemberDetail();
+        }
+
+      } catch (err) {
+        console.error('Error fetching family:', err);
+      }
+    }
+
+    /* ---- Member Roster & Search ---- */
+    function filterHouseholdMembers() {
+      if (!currentFamilyData || !currentFamilyData.members) return;
+      const q = document.getElementById('memberSearchInput').value.trim().toLowerCase();
+      document.getElementById('memberSearchClear').style.display = q ? 'block' : 'none';
+
+      const filtered = currentFamilyData.members.filter(m => {
+        return (m.name && m.name.toLowerCase().includes(q)) ||
+               (m.relation_to_hof && m.relation_to_hof.toLowerCase().includes(q)) ||
+               (m.occupation && m.occupation.toLowerCase().includes(q)) ||
+               (m.contact_number && m.contact_number.includes(q)) ||
+               (m.conditions_summary && m.conditions_summary.toLowerCase().includes(q));
+      });
+      renderMembersCards(filtered);
+    }
+
+    function clearMemberSearch() {
+      document.getElementById('memberSearchInput').value = '';
+      document.getElementById('memberSearchClear').style.display = 'none';
+      if (currentFamilyData) renderMembersCards(currentFamilyData.members || []);
+    }
+
+    function renderMembersCards(members) {
+      const container = document.getElementById('membersListContainer');
+      if (!members || members.length === 0) {
+        container.innerHTML = `
+          <div style="padding: 2rem 1rem; text-align: center; color: var(--text-muted);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👤</div>
+            <strong>No members found</strong>
+            <p style="font-size: 0.825rem; margin-top: 0.35rem;">Click <strong>"➕ Add Member"</strong> above to register household members.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = members.map(m => {
+        const isSelected = m.id === selectedMemberId;
+        const bpText = m.sbp && m.dbp ? `${m.sbp}/${m.dbp} mmHg` : null;
+        const hbText = m.hb ? `Hb ${m.hb}` : null;
+        const contact = m.contact_number ? ` • 📞 ${m.contact_number}` : '';
+
+        // Build clinical tags
+        const conditionTags = [];
+        if (m.conditions_summary) {
+          m.conditions_summary.split(',').forEach(c => {
+            const trimmed = c.trim();
+            if (trimmed) conditionTags.push(`<span class="badge badge-warning">${trimmed}</span>`);
+          });
+        }
+        if (m.has_htn === 'Y' && !m.conditions_summary?.includes('Hypertension')) conditionTags.push('<span class="badge badge-warning">HTN</span>');
+        if (m.has_dm === 'Y' && !m.conditions_summary?.includes('Diabetes')) conditionTags.push('<span class="badge badge-warning">DM</span>');
+        if (m.has_anaemia === 'Y') conditionTags.push('<span class="badge badge-danger">Anaemia</span>');
+        if (m.age_years <= 5) conditionTags.push('<span class="badge badge-info">Under 5</span>');
+        if (m.anc_taken === 'Y') conditionTags.push('<span class="badge badge-success">ANC Reg</span>');
+
+        const tagsHtml = conditionTags.length > 0 
+          ? conditionTags.join(' ') 
+          : '<span style="font-size: 0.75rem; color: var(--text-light); font-style: italic;">No recorded conditions</span>';
+
+        return `
+          <div class="member-card ${isSelected ? 'active' : ''}" id="memberCard_${m.id}" onclick="selectMember(${m.id})">
+            <div>
+              <div class="member-card-header">
+                <div>
+                  <div class="member-name">${m.name}</div>
+                  <div class="member-relation">${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}</div>
+                  ${m.added_by_patient_id ? '<span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:0.68rem;margin-top:4px;" title="Added by the family from the patient portal">✍️ Added by family</span>'
+                    : (m.patient_updated_at ? '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:0.68rem;margin-top:4px;" title="Basic details were updated by the family from the patient portal">✍️ Updated by family</span>' : '')}
+                </div>
+                <span class="badge badge-info">#${m.member_order}</span>
+              </div>
+              <div class="member-tags">
+                ${tagsHtml}
+              </div>
+            </div>
+            <div class="member-card-vitals">
+              <span>🩺 <strong>${bpText || 'BP: -'}</strong> • <strong>${hbText || 'Hb: -'}</strong> ${m.bmi ? `• BMI: <strong>${m.bmi}</strong>` : ''}</span>
+              <span style="color: var(--primary); font-weight: 700; font-size: 0.78rem;">Inspect &rarr;</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ---- Select Member & Render Segmented Profile ---- */
+    async function selectMember(memberId) {
+      selectedMemberId = memberId;
+      document.querySelectorAll('.member-card').forEach(c => c.classList.remove('active'));
+      const activeMemCard = document.getElementById(`memberCard_${memberId}`);
+      if (activeMemCard) activeMemCard.classList.add('active');
+
+      document.getElementById('noMemberSelectedCard').style.display = 'none';
+      const detailCard = document.getElementById('memberDetailCard');
+      detailCard.style.display = 'block';
+      detailCard.classList.remove('tab-slide-right');
+      void detailCard.offsetWidth;
+      detailCard.classList.add('tab-slide-right');
+      const fuWorkspace = document.getElementById('followUpWorkspaceCard');
+      if (fuWorkspace) {
+        fuWorkspace.style.display = 'block';
+        fuWorkspace.classList.remove('tab-slide-right');
+        void fuWorkspace.offsetWidth;
+        fuWorkspace.classList.add('tab-slide-right');
+      }
+
+      try {
+        const res = await fetch(`/api/members/${memberId}`);
+        currentMemberData = await res.json();
+        const m = currentMemberData;
+
+        // Header
+        document.getElementById('detailMemberName').textContent = m.name;
+        document.getElementById('detailMemberMeta').textContent = `${m.relation_to_hof} • ${m.age_years} yrs (${m.gender}) • ${m.marital_status || 'Married'} • ${m.occupation || 'Occupation: Not specified'}`;
+
+        // Counter Chips
+        updateSummaryChips(m);
+
+        // Segment 1: Demographics Grid
+        document.getElementById('detailDemographicsGrid').innerHTML = `
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Date of Birth</span><strong>${m.date_of_birth || 'Not recorded'}</strong></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Age / Gender</span><strong>${m.age_years} yrs (${m.gender})</strong></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Marital Status</span><span>${m.marital_status || 'NA'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Education</span><span>${m.education_level || 'NA'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Occupation</span><span>${m.occupation || 'NA'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Contact Phone</span><span>${m.contact_number || m.contact_phone || 'None'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Physical Activity</span><span>${m.work_type || 'Moderate'}</span></div>
+        `;
+
+        // Segment 2: Conditions List
+        renderConditionsList(m.conditions || []);
+
+        // Segment 3: Medications List
+        renderMedicationsList(m.medications || []);
+
+        // Segment 4: Allergies List
+        renderAllergiesList(m.allergies || []);
+
+        // Segment 5: History List
+        renderHistoryList(m.history || []);
+
+        // Segment 6: Lifestyle
+        renderLifestyleProfile(m.lifestyle);
+
+        // Segment 7: Baseline Survey Physical Examination
+        document.getElementById('detailVitalsGrid').innerHTML = `
+          <span class="calc-preview">BP: <strong>${m.sbp && m.dbp ? `${m.sbp}/${m.dbp} mmHg` : 'Unmeasured'}</strong></span>
+          <span class="calc-preview">RBS: <strong>${m.rbs ? `${m.rbs} mg/dl` : 'Untested'}</strong></span>
+          <span class="calc-preview">Hb: <strong>${m.hb ? `${m.hb} g/dl` : 'Untested'}</strong></span>
+          <span class="calc-preview">BMI: <strong>${m.bmi || 'Uncalculated'}</strong></span>
+          ${m.muac_cm ? `<span class="calc-preview">MUAC: <strong>${m.muac_cm} cm</strong></span>` : ''}
+          <span class="calc-preview">Oral Hygiene: <strong>${m.oral_hygiene || 'Y'}</strong></span>
+          <span class="calc-preview">General Hygiene: <strong>${m.general_hygiene || 'Y'}</strong></span>
+        `;
+
+        const baseContent = document.getElementById('baselineDetailsContent');
+        if (baseContent) {
+          baseContent.innerHTML = `
+            <strong>Primary Diagnosis:</strong> ${m.diagnosis || 'None reported'}<br>
+            <strong>Treatment Taken:</strong> ${m.treatment_taken || 'NA'} (${m.treatment_source || 'No facility noted'})<br>
+            ${m.age_years <= 5 ? `<strong>Pediatric Nutrition:</strong> HC: ${m.hc_cm || '-'} cm, CC: ${m.cc_cm || '-'} cm, Underweight: ${m.is_underweight}, Stunting: ${m.is_stunting}, Wasting: ${m.is_wasting}, Mamta Card: ${m.mamta_card}, Immunization: ${m.immunization_status}<br>` : ''}
+            ${m.gender === 'F' && m.anc_taken !== 'NA' ? `<strong>Maternal Care:</strong> ANC: ${m.anc_taken}, Delivery Place: ${m.delivery_place}, PNC: ${m.pnc_taken}, FP Method: ${m.fp_method_used}<br>` : ''}
+            <strong>Surveyed By:</strong> Roll ${m.student_roll || '-'} (${m.student_name || 'Student'})
+          `;
+        }
+
+        // Update Bottom Full-Width Follow-Up Workspace
+        const fuMemberHeader = document.getElementById('fuTargetMemberName');
+        if (fuMemberHeader) fuMemberHeader.textContent = m.name;
+        const fuBadge = document.getElementById('fuVisitsCountBadge');
+        if (fuBadge) fuBadge.textContent = `${m.follow_ups ? m.follow_ups.length : 0} Visits Recorded`;
+
+        // Render timeline
+        renderFollowUpsTimeline(m.follow_ups || []);
+
+      } catch (err) {
+        console.error('Error fetching member:', err);
+      }
+    }
+
+    function updateSummaryChips(m) {
+      const condCount = m.conditions ? m.conditions.length : 0;
+      const medCount = m.medications ? m.medications.length : 0;
+      const algCount = m.allergies ? m.allergies.length : 0;
+      const histCount = m.history ? m.history.length : 0;
+      const fuCount = m.follow_ups ? m.follow_ups.length : 0;
+
+      const c1 = document.getElementById('chipConditions');
+      c1.innerHTML = `🏷️ Conditions: <strong>${condCount}</strong>`;
+      c1.className = `summary-chip ${condCount > 0 ? 'has-items' : ''}`;
+
+      const c2 = document.getElementById('chipMedications');
+      c2.innerHTML = `💊 Medications: <strong>${medCount}</strong>`;
+      c2.className = `summary-chip ${medCount > 0 ? 'has-items' : ''}`;
+
+      const c3 = document.getElementById('chipAllergies');
+      c3.innerHTML = `⚠️ Allergies: <strong>${algCount}</strong>`;
+      c3.className = `summary-chip ${algCount > 0 ? 'has-items' : ''}`;
+
+      const c4 = document.getElementById('chipHistory');
+      c4.innerHTML = `📜 History: <strong>${histCount}</strong>`;
+      c4.className = `summary-chip ${histCount > 0 ? 'has-items' : ''}`;
+
+      const c5 = document.getElementById('chipFollowUps');
+      c5.innerHTML = `🩺 Visits: <strong>${fuCount}</strong>`;
+      c5.className = `summary-chip ${fuCount > 0 ? 'has-items' : ''}`;
+    }
+
+    function closeMemberDetail() {
+      selectedMemberId = null;
+      currentMemberData = null;
+      document.getElementById('memberDetailCard').style.display = 'none';
+      const fuWorkspace = document.getElementById('followUpWorkspaceCard');
+      if (fuWorkspace) fuWorkspace.style.display = 'none';
+      document.getElementById('noMemberSelectedCard').style.display = 'block';
+      document.querySelectorAll('.member-card').forEach(c => c.classList.remove('active'));
+
+      // Also reset bottom full-width follow-up workspace
+      const fuMemberHeader = document.getElementById('fuTargetMemberName');
+      if (fuMemberHeader) fuMemberHeader.textContent = 'No Member Selected';
+      const fuBadge = document.getElementById('fuVisitsCountBadge');
+      if (fuBadge) fuBadge.textContent = '0 Visits Recorded';
+      const timeline = document.getElementById('timelineContainer');
+      if (timeline) {
+        timeline.innerHTML = `
+          <div style="color: var(--text-muted); font-size: 0.85rem; padding: 2.5rem 1rem; text-align: center;">
+            Select a member above to view and log their longitudinal follow-up examination visits.
+          </div>
+        `;
+      }
+      const fuForm = document.getElementById('followUpFormContainer');
+      if (fuForm) fuForm.style.display = 'none';
+    }
+
+    /* ---- Delete Member ---- */
+    async function confirmDeleteMember() {
+      if (!selectedMemberId || !currentMemberData) return;
+      const confirmed = await showConfirm(
+        'Delete Member Record',
+        `Are you sure you want to permanently delete "${currentMemberData.name}" and all their clinical sub-entities (conditions, medications, allergies, history, and follow-ups)?`,
+        'Delete Member',
+        true
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/members/${selectedMemberId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete member');
+
+        showToast('Member deleted successfully', 'info');
+        selectedMemberId = null;
+        closeMemberDetail();
+        await selectFamily(selectedFamilyId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ==========================================================
+       SUB-ENTITY 1: CONDITIONS CRUD
+       ========================================================== */
+    function renderConditionsList(conditions) {
+      const container = document.getElementById('conditionsListContainer');
+      if (!conditions || conditions.length === 0) {
+        container.innerHTML = `<div style="font-size: 0.825rem; color: var(--text-muted);">No conditions recorded for this member. Click "+ Add Condition" to record one.</div>`;
+        return;
+      }
+
+      container.innerHTML = conditions.map(c => `
+        <div class="sub-item-row">
+          <div class="sub-item-content">
+            <div class="sub-item-main">
+              <span>${c.condition_name}</span>
+              <span class="badge ${c.status === 'Active' ? 'badge-danger' : 'badge-info'}">${c.status}</span>
+              <span class="badge badge-warning">${c.severity}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">(${c.category || 'General'})</span>
+            </div>
+            <div class="sub-item-meta">
+              ${c.diagnosis_date ? `Diagnosed: <strong>${c.diagnosis_date}</strong> • ` : ''}
+              ${c.notes ? `<em>${c.notes}</em>` : 'No additional notes'}
+            </div>
+          </div>
+          <div class="sub-item-actions">
+            <button class="btn-icon" onclick="openEditConditionModal(${c.id})" title="Edit condition">✏️</button>
+            <button class="btn-icon danger" onclick="deleteCondition(${c.id})" title="Delete condition">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddConditionModal() {
+      if (!selectedMemberId) return;
+      document.getElementById('conditionForm').reset();
+      document.getElementById('condEditId').value = '';
+      document.getElementById('conditionModalTitle').textContent = '+ Add Medical Condition';
+      document.getElementById('conditionModal').style.display = 'flex';
+      document.getElementById('condName').focus();
+    }
+
+    function openEditConditionModal(condId) {
+      if (!currentMemberData || !currentMemberData.conditions) return;
+      const c = currentMemberData.conditions.find(item => item.id === condId);
+      if (!c) return;
+
+      document.getElementById('condEditId').value = c.id;
+      document.getElementById('condName').value = c.condition_name;
+      document.getElementById('condCategory').value = c.category || 'Other';
+      document.getElementById('condStatus').value = c.status || 'Active';
+      document.getElementById('condSeverity').value = c.severity || 'Moderate';
+      document.getElementById('condDate').value = c.diagnosis_date || '';
+      document.getElementById('condNotes').value = c.notes || '';
+
+      document.getElementById('conditionModalTitle').textContent = '✏️ Edit Medical Condition';
+      document.getElementById('conditionModal').style.display = 'flex';
+    }
+
+    function closeConditionModal() {
+      document.getElementById('conditionModal').style.display = 'none';
+      document.getElementById('conditionForm').reset();
+    }
+
+    async function submitCondition() {
+      if (!selectedMemberId) return;
+      const editId = document.getElementById('condEditId').value;
+      const isEdit = !!editId;
+
+      const payload = {
+        condition_name: document.getElementById('condName').value.trim(),
+        category: document.getElementById('condCategory').value,
+        status: document.getElementById('condStatus').value,
+        severity: document.getElementById('condSeverity').value,
+        diagnosis_date: document.getElementById('condDate').value || null,
+        notes: document.getElementById('condNotes').value.trim() || null
+      };
+
+      const btn = document.getElementById('saveConditionBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const url = isEdit ? `/api/conditions/${editId}` : `/api/members/${selectedMemberId}/conditions`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save condition');
+
+        showToast(isEdit ? 'Condition updated' : 'Condition recorded', 'success');
+        closeConditionModal();
+        await selectMember(selectedMemberId);
+        // Refresh family in background to update condition tags on roster
+        loadFamilies();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Condition';
+      }
+    }
+
+    async function deleteCondition(condId) {
+      const confirmed = await showConfirm('Delete Condition', 'Are you sure you want to remove this medical condition record?', 'Delete', true);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/conditions/${condId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete condition');
+        showToast('Condition removed', 'info');
+        await selectMember(selectedMemberId);
+        loadFamilies();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ==========================================================
+       SUB-ENTITY 2: MEDICATIONS CRUD
+       ========================================================== */
+    function renderMedicationsList(medications) {
+      const container = document.getElementById('medicationsListContainer');
+      if (!medications || medications.length === 0) {
+        container.innerHTML = `<div style="font-size: 0.825rem; color: var(--text-muted);">No medications recorded for this member. Click "+ Add Medication" to log prescription.</div>`;
+        return;
+      }
+
+      container.innerHTML = medications.map(m => `
+        <div class="sub-item-row">
+          <div class="sub-item-content">
+            <div class="sub-item-main">
+              <span>💊 ${m.medication_name}</span>
+              ${m.dosage ? `<span style="color: var(--text-secondary); font-size: 0.8rem;">(${m.dosage})</span>` : ''}
+              <span class="badge badge-info">${m.frequency || 'OD'}</span>
+              <span class="badge ${m.adherence_status === 'Good' ? 'badge-success' : 'badge-warning'}">${m.adherence_status}</span>
+            </div>
+            <div class="sub-item-meta">
+              Route: <strong>${m.route || 'Oral'}</strong> •
+              ${m.prescribed_for ? `Indication: <em>${m.prescribed_for}</em> • ` : ''}
+              ${m.start_date ? `Started: ${m.start_date}` : ''}
+            </div>
+          </div>
+          <div class="sub-item-actions">
+            <button class="btn-icon" onclick="openEditMedicationModal(${m.id})" title="Edit medication">✏️</button>
+            <button class="btn-icon danger" onclick="deleteMedication(${m.id})" title="Delete medication">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddMedicationModal() {
+      if (!selectedMemberId) return;
+      document.getElementById('medicationForm').reset();
+      document.getElementById('medEditId').value = '';
+      document.getElementById('medicationModalTitle').textContent = '+ Add Medication';
+      document.getElementById('medicationModal').style.display = 'flex';
+      document.getElementById('medName').focus();
+    }
+
+    function openEditMedicationModal(medId) {
+      if (!currentMemberData || !currentMemberData.medications) return;
+      const m = currentMemberData.medications.find(item => item.id === medId);
+      if (!m) return;
+
+      document.getElementById('medEditId').value = m.id;
+      document.getElementById('medName').value = m.medication_name;
+      document.getElementById('medDosage').value = m.dosage || '';
+      document.getElementById('medFrequency').value = m.frequency || 'OD (Once daily)';
+      document.getElementById('medRoute').value = m.route || 'Oral';
+      document.getElementById('medPrescribedFor').value = m.prescribed_for || '';
+      document.getElementById('medStartDate').value = m.start_date || '';
+      document.getElementById('medAdherence').value = m.adherence_status || 'Good';
+
+      document.getElementById('medicationModalTitle').textContent = '✏️ Edit Medication';
+      document.getElementById('medicationModal').style.display = 'flex';
+    }
+
+    function closeMedicationModal() {
+      document.getElementById('medicationModal').style.display = 'none';
+      document.getElementById('medicationForm').reset();
+    }
+
+    async function submitMedication() {
+      if (!selectedMemberId) return;
+      const editId = document.getElementById('medEditId').value;
+      const isEdit = !!editId;
+
+      const payload = {
+        medication_name: document.getElementById('medName').value.trim(),
+        dosage: document.getElementById('medDosage').value.trim() || null,
+        frequency: document.getElementById('medFrequency').value,
+        route: document.getElementById('medRoute').value,
+        prescribed_for: document.getElementById('medPrescribedFor').value.trim() || null,
+        start_date: document.getElementById('medStartDate').value || null,
+        adherence_status: document.getElementById('medAdherence').value
+      };
+
+      const btn = document.getElementById('saveMedicationBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const url = isEdit ? `/api/medications/${editId}` : `/api/members/${selectedMemberId}/medications`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save medication');
+
+        showToast(isEdit ? 'Medication updated' : 'Medication added', 'success');
+        closeMedicationModal();
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Medication';
+      }
+    }
+
+    async function deleteMedication(medId) {
+      const confirmed = await showConfirm('Delete Medication', 'Are you sure you want to remove this medication entry?', 'Delete', true);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/medications/${medId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete medication');
+        showToast('Medication removed', 'info');
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ==========================================================
+       SUB-ENTITY 3: ALLERGIES CRUD
+       ========================================================== */
+    function renderAllergiesList(allergies) {
+      const container = document.getElementById('allergiesListContainer');
+      if (!allergies || allergies.length === 0) {
+        container.innerHTML = `<div style="font-size: 0.825rem; color: var(--text-muted);">No allergies recorded for this member. Click "+ Add Allergy" to record.</div>`;
+        return;
+      }
+
+      container.innerHTML = allergies.map(a => `
+        <div class="sub-item-row">
+          <div class="sub-item-content">
+            <div class="sub-item-main">
+              <span>⚠️ ${a.allergen}</span>
+              <span class="badge badge-info">${a.allergy_type}</span>
+              <span class="badge ${a.severity === 'Severe' || a.severity === 'Life-threatening' ? 'badge-danger' : 'badge-warning'}">${a.severity}</span>
+            </div>
+            <div class="sub-item-meta">
+              Reaction: <strong>${a.reaction_description || 'Unspecified allergic reaction'}</strong>
+            </div>
+          </div>
+          <div class="sub-item-actions">
+            <button class="btn-icon" onclick="openEditAllergyModal(${a.id})" title="Edit allergy">✏️</button>
+            <button class="btn-icon danger" onclick="deleteAllergy(${a.id})" title="Delete allergy">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddAllergyModal() {
+      if (!selectedMemberId) return;
+      document.getElementById('allergyForm').reset();
+      document.getElementById('algEditId').value = '';
+      document.getElementById('allergyModalTitle').textContent = '+ Add Allergy';
+      document.getElementById('allergyModal').style.display = 'flex';
+      document.getElementById('algAllergen').focus();
+    }
+
+    function openEditAllergyModal(algId) {
+      if (!currentMemberData || !currentMemberData.allergies) return;
+      const a = currentMemberData.allergies.find(item => item.id === algId);
+      if (!a) return;
+
+      document.getElementById('algEditId').value = a.id;
+      document.getElementById('algAllergen').value = a.allergen;
+      document.getElementById('algType').value = a.allergy_type || 'Drug';
+      document.getElementById('algSeverity').value = a.severity || 'Moderate';
+      document.getElementById('algReaction').value = a.reaction_description || '';
+
+      document.getElementById('allergyModalTitle').textContent = '✏️ Edit Allergy';
+      document.getElementById('allergyModal').style.display = 'flex';
+    }
+
+    function closeAllergyModal() {
+      document.getElementById('allergyModal').style.display = 'none';
+      document.getElementById('allergyForm').reset();
+    }
+
+    async function submitAllergy() {
+      if (!selectedMemberId) return;
+      const editId = document.getElementById('algEditId').value;
+      const isEdit = !!editId;
+
+      const payload = {
+        allergen: document.getElementById('algAllergen').value.trim(),
+        allergy_type: document.getElementById('algType').value,
+        severity: document.getElementById('algSeverity').value,
+        reaction_description: document.getElementById('algReaction').value.trim() || null
+      };
+
+      const btn = document.getElementById('saveAllergyBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const url = isEdit ? `/api/allergies/${editId}` : `/api/members/${selectedMemberId}/allergies`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save allergy');
+
+        showToast(isEdit ? 'Allergy updated' : 'Allergy recorded', 'success');
+        closeAllergyModal();
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Allergy';
+      }
+    }
+
+    async function deleteAllergy(algId) {
+      const confirmed = await showConfirm('Delete Allergy', 'Are you sure you want to remove this allergy record?', 'Delete', true);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/allergies/${algId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete allergy');
+        showToast('Allergy removed', 'info');
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ==========================================================
+       SUB-ENTITY 4: MEDICAL & SURGICAL HISTORY CRUD
+       ========================================================== */
+    function renderHistoryList(history) {
+      const container = document.getElementById('historyListContainer');
+      if (!history || history.length === 0) {
+        container.innerHTML = `<div style="font-size: 0.825rem; color: var(--text-muted);">No surgical or past medical events recorded. Click "+ Add History" to log past procedures.</div>`;
+        return;
+      }
+
+      container.innerHTML = history.map(h => `
+        <div class="sub-item-row">
+          <div class="sub-item-content">
+            <div class="sub-item-main">
+              <span>📜 ${h.description}</span>
+              <span class="badge badge-info">${h.event_type}</span>
+              ${h.event_date ? `<span style="font-size: 0.78rem; color: var(--text-muted);">(${h.event_date})</span>` : ''}
+            </div>
+            <div class="sub-item-meta">
+              ${h.facility_name ? `Facility: <strong>${h.facility_name}</strong> • ` : ''}
+              ${h.outcome_notes ? `Notes: <em>${h.outcome_notes}</em>` : 'No post-op notes'}
+            </div>
+          </div>
+          <div class="sub-item-actions">
+            <button class="btn-icon" onclick="openEditHistoryModal(${h.id})" title="Edit history">✏️</button>
+            <button class="btn-icon danger" onclick="deleteHistory(${h.id})" title="Delete history">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddHistoryModal() {
+      if (!selectedMemberId) return;
+      document.getElementById('historyForm').reset();
+      document.getElementById('histEditId').value = '';
+      document.getElementById('historyModalTitle').textContent = '+ Add Medical / Surgical History';
+      document.getElementById('historyModal').style.display = 'flex';
+      document.getElementById('histDesc').focus();
+    }
+
+    function openEditHistoryModal(histId) {
+      if (!currentMemberData || !currentMemberData.history) return;
+      const h = currentMemberData.history.find(item => item.id === histId);
+      if (!h) return;
+
+      document.getElementById('histEditId').value = h.id;
+      document.getElementById('histType').value = h.event_type || 'Surgery';
+      document.getElementById('histDesc').value = h.description;
+      document.getElementById('histDate').value = h.event_date || '';
+      document.getElementById('histFacility').value = h.facility_name || '';
+      document.getElementById('histNotes').value = h.outcome_notes || '';
+
+      document.getElementById('historyModalTitle').textContent = '✏️ Edit Medical / Surgical History';
+      document.getElementById('historyModal').style.display = 'flex';
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').style.display = 'none';
+      document.getElementById('historyForm').reset();
+    }
+
+    async function submitHistory() {
+      if (!selectedMemberId) return;
+      const editId = document.getElementById('histEditId').value;
+      const isEdit = !!editId;
+
+      const payload = {
+        event_type: document.getElementById('histType').value,
+        description: document.getElementById('histDesc').value.trim(),
+        event_date: document.getElementById('histDate').value.trim() || null,
+        facility_name: document.getElementById('histFacility').value.trim() || null,
+        outcome_notes: document.getElementById('histNotes').value.trim() || null
+      };
+
+      const btn = document.getElementById('saveHistoryBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const url = isEdit ? `/api/history/${editId}` : `/api/members/${selectedMemberId}/history`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save history');
+
+        showToast(isEdit ? 'History entry updated' : 'History entry recorded', 'success');
+        closeHistoryModal();
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save History';
+      }
+    }
+
+    async function deleteHistory(histId) {
+      const confirmed = await showConfirm('Delete History Record', 'Are you sure you want to remove this history entry?', 'Delete', true);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/history/${histId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete history');
+        showToast('History entry removed', 'info');
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ==========================================================
+       SUB-ENTITY 5: LIFESTYLE & HABITS CRUD
+       ========================================================== */
+    function renderLifestyleProfile(lifestyle) {
+      const container = document.getElementById('lifestyleContent');
+      if (!lifestyle) {
+        container.innerHTML = `<div style="color: var(--text-muted);">No lifestyle information recorded yet. Click "✏️ Edit Lifestyle" to record smoking, alcohol, exercise, and diet.</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Tobacco / Smoking</span><strong>${lifestyle.smoking_status || 'Never'}</strong> ${lifestyle.smoking_frequency ? `(${lifestyle.smoking_frequency})` : ''}</div>
+        <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Alcohol</span><strong>${lifestyle.alcohol_consumption || 'Never'}</strong></div>
+        <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Diet Type</span><span>${lifestyle.diet_type || 'Vegetarian'}</span></div>
+        <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Activity Level</span><span>${lifestyle.physical_activity_level || 'Moderate'}</span></div>
+        <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Salt Intake</span><span>${lifestyle.salt_intake || 'Normal'}</span></div>
+        <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Sleep Hours</span><span>${lifestyle.sleep_hours_per_night ? `${lifestyle.sleep_hours_per_night} hrs/night` : 'Unrecorded'}</span></div>
+        ${lifestyle.notes ? `<div style="grid-column: 1 / -1;"><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Counseling / Lifestyle Notes</span><em>${lifestyle.notes}</em></div>` : ''}
+      `;
+    }
+
+    function openEditLifestyleModal() {
+      if (!selectedMemberId) return;
+      const ls = currentMemberData?.lifestyle || {};
+      document.getElementById('lsSmoking').value = ls.smoking_status || 'Never';
+      document.getElementById('lsSmokingFreq').value = ls.smoking_frequency || '';
+      document.getElementById('lsAlcohol').value = ls.alcohol_consumption || 'Never';
+      document.getElementById('lsDiet').value = ls.diet_type || 'Vegetarian';
+      document.getElementById('lsPhysical').value = ls.physical_activity_level || 'Moderate';
+      document.getElementById('lsSalt').value = ls.salt_intake || 'Normal';
+      document.getElementById('lsSleep').value = ls.sleep_hours_per_night || '';
+      document.getElementById('lsNotes').value = ls.notes || '';
+
+      document.getElementById('lifestyleModal').style.display = 'flex';
+    }
+
+    function closeLifestyleModal() {
+      document.getElementById('lifestyleModal').style.display = 'none';
+      document.getElementById('lifestyleForm').reset();
+    }
+
+    async function submitLifestyle() {
+      if (!selectedMemberId) return;
+      const payload = {
+        smoking_status: document.getElementById('lsSmoking').value,
+        smoking_frequency: document.getElementById('lsSmokingFreq').value.trim() || null,
+        alcohol_consumption: document.getElementById('lsAlcohol').value,
+        physical_activity_level: document.getElementById('lsPhysical').value,
+        diet_type: document.getElementById('lsDiet').value,
+        sleep_hours_per_night: parseFloat(document.getElementById('lsSleep').value) || null,
+        salt_intake: document.getElementById('lsSalt').value,
+        notes: document.getElementById('lsNotes').value.trim() || null
+      };
+
+      const btn = document.getElementById('saveLifestyleBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`/api/members/${selectedMemberId}/lifestyle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save lifestyle');
+
+        showToast('Lifestyle profile saved', 'success');
+        closeLifestyleModal();
+        await selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Lifestyle Profile';
+      }
+    }
+
+    /* ==========================================================
+       LONGITUDINAL FOLLOW-UP VISITS CRUD
+       ========================================================== */
+    function renderFollowUpsTimeline(followUps) {
+      const container = document.getElementById('timelineContainer');
+      if (!followUps || followUps.length === 0) {
+        container.innerHTML = `
+          <div style="background: var(--bg-subtle); border: 1.5px dashed var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+            No follow-up visits recorded yet for this patient.<br>
+            Click <strong>"+ Log New Visit"</strong> above to record an examination visit.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="timeline">
+          ${followUps.map(fu => {
+            let progressBadge = '<span class="badge badge-info">Stable</span>';
+            if (fu.health_progress === 'Improved') progressBadge = '<span class="badge badge-success">Improved</span>';
+            if (fu.health_progress === 'Deteriorated') progressBadge = '<span class="badge badge-danger">Deteriorated</span>';
+
+            return `
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-header">
+                    <div>
+                      <strong style="color: var(--primary);">Visit #${fu.visit_number}</strong> • 
+                      <span class="timeline-date">${fu.visit_date}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      ${progressBadge}
+                      <span class="badge badge-info">Compliance: ${fu.treatment_compliance}</span>
+                      <button onclick="deleteFollowUp(${fu.id})" title="Delete visit" style="background: none; border: none; color: var(--danger-text); cursor: pointer; font-size: 0.75rem; padding: 0.15rem 0.35rem;">✕</button>
+                    </div>
+                  </div>
+                  <div style="font-size: 0.825rem; margin: 0.4rem 0; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    ${fu.sbp && fu.dbp ? `<span>BP: <strong>${fu.sbp}/${fu.dbp} mmHg</strong></span>` : ''}
+                    ${fu.rbs ? `<span>RBS: <strong>${fu.rbs} mg/dl</strong></span>` : ''}
+                    ${fu.hb ? `<span>Hb: <strong>${fu.hb} g/dl</strong></span>` : ''}
+                    ${fu.weight_kg ? `<span>Weight: <strong>${fu.weight_kg} kg</strong></span>` : ''}
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-main); margin-top: 0.4rem; background: var(--bg-subtle); padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                    📝 <em>"${fu.clinical_notes}"</em>
+                  </p>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>Recorded by: Roll ${fu.recorded_by_roll || '-'}</span>
+                    ${fu.next_visit_date ? `<span>📅 Next Visit: <strong>${fu.next_visit_date}</strong></span>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function toggleFollowUpForm() {
+      if (!selectedMemberId) {
+        showToast('Please select a household member first before logging a follow-up visit', 'warning');
+        return;
+      }
+      const f = document.getElementById('followUpFormContainer');
+      f.style.display = f.style.display === 'none' ? 'block' : 'none';
+      if (f.style.display === 'block') {
+        f.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    async function submitFollowUp() {
+      if (!selectedMemberId) return;
+      const saveBtn = document.getElementById('saveFuBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      const payload = {
+        student_id: loggedInStudent ? loggedInStudent.id : 1,
+        roll_number: loggedInStudent ? loggedInStudent.roll_number : '235',
+        visit_date: document.getElementById('fuDate').value,
+        sbp: parseInt(document.getElementById('fuSbp').value) || null,
+        dbp: parseInt(document.getElementById('fuDbp').value) || null,
+        rbs: parseFloat(document.getElementById('fuRbs').value) || null,
+        hb: parseFloat(document.getElementById('fuHb').value) || null,
+        weight_kg: parseFloat(document.getElementById('fuWeight').value) || null,
+        treatment_compliance: document.getElementById('fuCompliance').value,
+        health_progress: document.getElementById('fuProgress').value,
+        clinical_notes: document.getElementById('fuNotes').value.trim(),
+        next_visit_date: document.getElementById('fuNextDate').value || null
+      };
+
+      try {
+        const res = await fetch(`/api/members/${selectedMemberId}/follow-ups`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save follow-up');
+
+        showToast('Follow-up visit logged', 'success');
+        document.getElementById('followUpForm').reset();
+        document.getElementById('fuDate').value = new Date().toISOString().split('T')[0];
+        toggleFollowUpForm();
+        selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save Follow-up Visit';
+      }
+    }
+
+    async function deleteFollowUp(fuId) {
+      const confirmed = await showConfirm('Delete Follow-Up', 'Are you sure you want to remove this examination visit record?', 'Delete', true);
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/follow-ups/${fuId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete follow-up');
+        showToast('Follow-up visit removed', 'info');
+        selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    /* ==========================================================
+       EDIT MEMBER PERSONAL INFO
+       ========================================================== */
+    function openEditMemberModal() {
+      if (!currentMemberData) return;
+      const m = currentMemberData;
+      document.getElementById('emName').value = m.name || '';
+      document.getElementById('emRelation').value = m.relation_to_hof || 'Head of Family';
+      document.getElementById('emGender').value = m.gender || 'M';
+      document.getElementById('emDob').value = m.date_of_birth || '';
+      document.getElementById('emAgeYears').value = m.age_years || 0;
+      document.getElementById('emAgeMonths').value = m.age_months || 0;
+      document.getElementById('emMaritalStatus').value = m.marital_status || 'Married';
+      document.getElementById('emEducation').value = m.education_level || 'Secondary';
+      document.getElementById('emOccupation').value = m.occupation || '';
+      document.getElementById('emContact').value = m.contact_number || '';
+      document.getElementById('emWork').value = m.work_type || 'Moderate';
+
+      document.getElementById('editMemberModal').style.display = 'flex';
+    }
+
+    function closeEditMemberModal() {
+      document.getElementById('editMemberModal').style.display = 'none';
+    }
+
+    function calcEditAgeFromDob() {
+      const dobVal = document.getElementById('emDob').value;
+      if (!dobVal) return;
+      const dob = new Date(dobVal);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const mDiff = today.getMonth() - dob.getMonth();
+      if (mDiff < 0 || (mDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      if (age >= 0) {
+        document.getElementById('emAgeYears').value = age;
+      }
+    }
+
+    async function submitEditMember() {
+      if (!selectedMemberId) return;
+
+      const contactInput = document.getElementById('emContact');
+      const contactVal = contactInput ? contactInput.value.trim() : '';
+      let cleanContact = contactVal;
+      if (contactVal && window.MedPulseValidation) {
+        const check = MedPulseValidation.validatePhone(contactVal, false);
+        if (!check.valid) {
+          showToast(check.error, 'error');
+          MedPulseValidation.showError(contactInput, check.error);
+          contactInput.focus();
+          return;
+        }
+        cleanContact = check.clean;
+      }
+
+      const btn = document.getElementById('saveEditMemberBtn');
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      const payload = {
+        name: document.getElementById('emName').value.trim(),
+        relation_to_hof: document.getElementById('emRelation').value,
+        gender: document.getElementById('emGender').value,
+        date_of_birth: document.getElementById('emDob').value || null,
+        age_years: parseInt(document.getElementById('emAgeYears').value, 10),
+        age_months: parseInt(document.getElementById('emAgeMonths').value || 0, 10),
+        marital_status: document.getElementById('emMaritalStatus').value,
+        education_level: document.getElementById('emEducation').value,
+        occupation: document.getElementById('emOccupation').value.trim() || null,
+        contact_number: cleanContact || null,
+        work_type: document.getElementById('emWork').value
+      };
+
+      try {
+        const res = await fetch(`/api/members/${selectedMemberId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update member');
+
+        showToast('Member profile updated', 'success');
+        closeEditMemberModal();
+        await selectFamily(selectedFamilyId);
+        selectMember(selectedMemberId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Update Member';
+      }
+    }
+
+    /* ==========================================================
+       OPEN IN DATA ENTRY WORKSPACE
+       ========================================================== */
+    function openInDataEntry() {
+      if (!selectedFamilyId) return;
+      const targetMember = selectedMemberId ? `&memberId=${selectedMemberId}` : '';
+      window.location.href = `/entry.html?familyId=${selectedFamilyId}${targetMember}`;
+    }
+
+    /* ==========================================================
+       ADD MEMBER MODAL: DEMOGRAPHIC ENTRY & DRAFT AUTOSAVE
+       ========================================================== */
+    function openAddMemberModal() {
+      if (!selectedFamilyId) { showToast('Please select a household first', 'error'); return; }
+      const fam = currentFamilies.find(f => f.id === selectedFamilyId);
+      document.getElementById('modalFamilyNo').textContent = fam ? fam.family_no : selectedFamilyId;
+      document.getElementById('addMemberModal').style.display = 'flex';
+      checkMemberDraft();
+      document.getElementById('modalMName').focus();
+    }
+
+    function closeAddMemberModal() {
+      document.getElementById('addMemberModal').style.display = 'none';
+      document.getElementById('addMemberForm').reset();
+      document.getElementById('memberDraftAlert').style.display = 'none';
+    }
+
+    function calcAgeFromDob() {
+      const dobVal = document.getElementById('modalMDob').value;
+      if (!dobVal) return;
+      const dob = new Date(dobVal);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const mDiff = today.getMonth() - dob.getMonth();
+      if (mDiff < 0 || (mDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      if (age >= 0) {
+        document.getElementById('modalMAgeYears').value = age;
+        if (age < 2) {
+          const totalMonths = (today.getFullYear() - dob.getFullYear()) * 12 + (today.getMonth() - dob.getMonth());
+          document.getElementById('modalMAgeMonths').value = Math.max(0, totalMonths);
+        }
+      }
+    }
+
+    /* ---- Draft Recovery Engine ---- */
+    function setupDraftAutosave() {
+      const form = document.getElementById('addMemberForm');
+      if (!form) return;
+      form.addEventListener('input', () => {
+        if (!selectedFamilyId) return;
+        const draft = {
+          name: document.getElementById('modalMName').value,
+          relation: document.getElementById('modalMRelation').value,
+          gender: document.getElementById('modalMGender').value,
+          dob: document.getElementById('modalMDob').value,
+          ageYears: document.getElementById('modalMAgeYears').value,
+          ageMonths: document.getElementById('modalMAgeMonths').value,
+          marital: document.getElementById('modalMMaritalStatus').value,
+          education: document.getElementById('modalMEducation').value,
+          occupation: document.getElementById('modalMOccupation').value,
+          contact: document.getElementById('modalMContact').value,
+          work: document.getElementById('modalMWork').value,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`medpulse_member_draft_${selectedFamilyId}`, JSON.stringify(draft));
+      });
+    }
+
+    function checkMemberDraft() {
+      if (!selectedFamilyId) return;
+      const key = `medpulse_member_draft_${selectedFamilyId}`;
+      const draftStr = localStorage.getItem(key);
+      const alertEl = document.getElementById('memberDraftAlert');
+      if (draftStr) {
+        try {
+          const draft = JSON.parse(draftStr);
+          if (draft.name || draft.dob || draft.ageYears) {
+            alertEl.style.display = 'flex';
+            return;
+          }
+        } catch (e) {}
+      }
+      alertEl.style.display = 'none';
+    }
+
+    function restoreMemberDraft() {
+      if (!selectedFamilyId) return;
+      const key = `medpulse_member_draft_${selectedFamilyId}`;
+      const draftStr = localStorage.getItem(key);
+      if (!draftStr) return;
+      try {
+        const draft = JSON.parse(draftStr);
+        if (draft.name) document.getElementById('modalMName').value = draft.name;
+        if (draft.relation) document.getElementById('modalMRelation').value = draft.relation;
+        if (draft.gender) document.getElementById('modalMGender').value = draft.gender;
+        if (draft.dob) document.getElementById('modalMDob').value = draft.dob;
+        if (draft.ageYears) document.getElementById('modalMAgeYears').value = draft.ageYears;
+        if (draft.ageMonths) document.getElementById('modalMAgeMonths').value = draft.ageMonths;
+        if (draft.marital) document.getElementById('modalMMaritalStatus').value = draft.marital;
+        if (draft.education) document.getElementById('modalMEducation').value = draft.education;
+        if (draft.occupation) document.getElementById('modalMOccupation').value = draft.occupation;
+        if (draft.contact) document.getElementById('modalMContact').value = draft.contact;
+        if (draft.work) document.getElementById('modalMWork').value = draft.work;
+
+        document.getElementById('memberDraftAlert').style.display = 'none';
+        showToast('Member draft restored', 'info');
+      } catch (e) {}
+    }
+
+    function discardMemberDraft() {
+      if (!selectedFamilyId) return;
+      localStorage.removeItem(`medpulse_member_draft_${selectedFamilyId}`);
+      document.getElementById('memberDraftAlert').style.display = 'none';
+      document.getElementById('addMemberForm').reset();
+      showToast('Draft discarded', 'info');
+    }
+
+    function clearMemberDraft() {
+      if (!selectedFamilyId) return;
+      localStorage.removeItem(`medpulse_member_draft_${selectedFamilyId}`);
+      document.getElementById('memberDraftAlert').style.display = 'none';
+    }
+
+    /* ---- Submit New Member (Supports "Save & Add Another") ---- */
+    async function submitNewMember(addAnother = false) {
+      if (!selectedFamilyId) return;
+
+      const memberName = document.getElementById('modalMName').value.trim();
+      if (!memberName) {
+        showToast('Member full name is required', 'error');
+        document.getElementById('modalMName').focus();
+        return;
+      }
+
+      const contactInput = document.getElementById('modalMContact');
+      const contactVal = contactInput ? contactInput.value.trim() : '';
+      let cleanContact = contactVal;
+      if (contactVal && window.MedPulseValidation) {
+        const check = MedPulseValidation.validatePhone(contactVal, false);
+        if (!check.valid) {
+          showToast(check.error, 'error');
+          MedPulseValidation.showError(contactInput, check.error);
+          contactInput.focus();
+          return;
+        }
+        cleanContact = check.clean;
+      }
+
+      const payload = {
+        name: memberName,
+        relation_to_hof: document.getElementById('modalMRelation').value,
+        gender: document.getElementById('modalMGender').value,
+        date_of_birth: document.getElementById('modalMDob').value || null,
+        age_years: parseInt(document.getElementById('modalMAgeYears').value, 10) || 0,
+        age_months: parseInt(document.getElementById('modalMAgeMonths').value || 0, 10),
+        marital_status: document.getElementById('modalMMaritalStatus').value,
+        education_level: document.getElementById('modalMEducation').value,
+        occupation: document.getElementById('modalMOccupation').value.trim() || null,
+        contact_number: cleanContact || null,
+        work_type: document.getElementById('modalMWork').value
+      };
+
+      const btn = addAnother ? document.getElementById('saveAddAnotherBtn') : document.getElementById('saveMemberBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`/api/families/${selectedFamilyId}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to add member');
+
+        clearMemberDraft();
+        showToast(`Member "${payload.name}" saved!`, 'success');
+
+        if (addAnother) {
+          // Reset fields for rapid entry, keeping family context open
+          document.getElementById('addMemberForm').reset();
+          document.getElementById('modalMName').focus();
+          await selectFamily(selectedFamilyId);
+        } else {
+          closeAddMemberModal();
+          await selectFamily(selectedFamilyId);
+          selectMember(data.member.id);
+        }
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = addAnother ? '⚡ Save & Add Another' : '💾 Save Member';
+      }
+    }
+
+    /* ==========================================================
+       SUB-ENTITY: PROVISION PATIENT PORTAL ACCOUNT (PHASE 4)
+       ========================================================== */
+    function openProvisionModalForCurrentMember() {
+      if (!selectedMemberId || !currentMemberData) {
+        showToast('Please select a family member first', 'info');
+        return;
+      }
+      const m = currentMemberData;
+      document.getElementById('provMemberId').value = m.id;
+      document.getElementById('provMemberNameHeader').textContent = m.name;
+      document.getElementById('provPatientName').value = m.name;
+      document.getElementById('provPhone').value = (m.contact_number || m.contact_phone || '').replace(/[^0-9]/g, '');
+      document.getElementById('provPin').value = '1234';
+
+      document.getElementById('provisionFormSection').style.display = 'block';
+      document.getElementById('provisionSuccessSection').style.display = 'none';
+      document.getElementById('btnSubmitProvision').disabled = false;
+      document.getElementById('btnSubmitProvision').textContent = '✨ Generate Patient Access';
+
+      document.getElementById('provisionPatientModal').style.display = 'flex';
+    }
+
+    function closeProvisionPatientModal() {
+      document.getElementById('provisionPatientModal').style.display = 'none';
+    }
+
+    async function submitProvisionAccount() {
+      const memberId = document.getElementById('provMemberId').value;
+      const name = document.getElementById('provPatientName').value.trim();
+      const phone = document.getElementById('provPhone').value.trim();
+      const pin = document.getElementById('provPin').value.trim();
+
+      if (!memberId) {
+        showToast('No member selected', 'error');
+        return;
+      }
+      if (!name) {
+        showToast('Patient name is required', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitProvision');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        const res = await fetch('/api/students/provision-patient', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ member_id: memberId, name, phone, pin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to provision patient account');
+
+        document.getElementById('provSuccessMessage').textContent = data.message || 'Account successfully generated and linked!';
+        document.getElementById('provResName').textContent = data.name || name;
+        document.getElementById('provResUid').textContent = data.patient_uid || '-';
+        document.getElementById('provResPhone').textContent = data.phone || '-';
+        document.getElementById('provResPin').textContent = data.pin || pin || '1234';
+        document.getElementById('provResUrl').textContent = `${window.location.origin}/login.html?patient=1`;
+
+        document.getElementById('provisionFormSection').style.display = 'none';
+        document.getElementById('provisionSuccessSection').style.display = 'block';
+        showToast(data.message || 'Patient account ready!', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Generate Patient Access';
+      }
+    }
+
+    function copyProvisionCredentials() {
+      const name = document.getElementById('provResName').textContent;
+      const uid = document.getElementById('provResUid').textContent;
+      const phone = document.getElementById('provResPhone').textContent;
+      const pin = document.getElementById('provResPin').textContent;
+      const url = `${window.location.origin}/login.html?patient=1`;
+
+      const text = `🏥 MedPulse Patient Health Portal Access\n\nPatient: ${name}\nPatient UID: ${uid}\nLogin Phone: ${phone}\nAccess PIN: ${pin}\nPortal Link: ${url}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btnCopyCreds');
+        const origText = btn.textContent;
+        btn.textContent = '✅ Copied to Clipboard!';
+        showToast('Credentials copied to clipboard!', 'success');
+        setTimeout(() => { btn.textContent = origText; }, 2500);
+      }).catch(() => {
+        showToast('Unable to copy automatically. Please copy manually.', 'info');
+      });
+    }
+
+    /* ==========================================================
+       CADET CAMPAIGN OUTREACH TASKS (DECISION DIAMOND ENGINE)
+       ========================================================== */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    async function loadCadetCampaignTasks() {
+      const section = document.getElementById('cadetCampaignSection');
+      const listEl = document.getElementById('cadetCampaignTasksList');
+      const badge = document.getElementById('cadetPendingTasksBadge');
+      if (!section || !listEl) return;
+
+      try {
+        const res = await fetch('/api/student/campaign-tasks');
+        if (!res.ok) {
+          section.style.display = 'none';
+          return;
+        }
+        const data = await res.json();
+        const tasks = data.tasks || [];
+
+        if (tasks.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
+
+        section.style.display = 'block';
+        const pendingCount = tasks.filter(t => t.cadet_call_status === 'Pending').length;
+        if (badge) {
+          badge.textContent = `${pendingCount} Pending Call${pendingCount === 1 ? '' : 's'}`;
+          badge.className = pendingCount > 0 ? 'badge badge-warning' : 'badge badge-success';
+        }
+
+        listEl.innerHTML = tasks.map(t => {
+          const kwColor = t.matched_keyword === 'HTN' ? '#dc2626' : (t.matched_keyword === 'DM' ? '#9333ea' : (t.matched_keyword === 'ANAEMIA' ? '#d97706' : '#0284c7'));
+          
+          const rsvpVal = (t.rsvp && t.rsvp !== 'Pending') ? t.rsvp
+            : (t.notification_status === 'Acknowledged' ? 'Attending' : (t.notification_status === 'Declined' ? 'Not Attending' : 'Pending'));
+          const rsvpBadge = {
+            'Attending': `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient: Attending</span>`,
+            'Not Attending': `<span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700;">❌ Patient: Can't attend</span>`,
+            'Need Help': `<span class="badge" style="background: #fef3c7; color: #92400e; font-weight: 700;">🙋 Patient needs help</span>`,
+            'Pending': `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`
+          }[rsvpVal];
+          const verifyBadge = t.patient_contact_confirmation === 'Confirmed'
+            ? `<span class="badge" style="background: #ecfdf5; color: #065f46; font-weight: 700;" title="Patient confirmed you contacted them">✔ Patient verified</span>`
+            : (t.patient_contact_confirmation === 'Disputed'
+              ? `<span class="badge" style="background: #fef2f2; color: #b91c1c; font-weight: 700;" title="Patient says they were not contacted">⚠ Patient disputes call</span>`
+              : ((t.contacted_at || currentStatusRaw(t) !== 'Pending') ? `<span class="badge" style="background: #f8fafc; color: #64748b;">Awaiting patient confirmation</span>` : ''));
+
+          const currentStatus = t.cadet_call_status || 'Pending';
+          const statusBadge = currentStatus === 'Assisted'
+            ? `<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700;">🌟 Assisted</span>`
+            : (currentStatus === 'Contacted'
+              ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">📞 Contacted</span>`
+              : `<span class="badge" style="background: #fffbeb; color: #b45309; font-weight: 700;">⏳ Pending Call</span>`);
+
+          return `
+            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div style="flex: 1; min-width: 260px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span class="badge" style="background: ${kwColor}; color: #fff; font-weight: 700; font-size: 0.72rem;">${escapeHtml(t.matched_keyword)}</span>
+                  <span style="font-weight: 750; font-size: 0.95rem; color: var(--text-primary);">${escapeHtml(t.campaign_title)}</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 3px;">
+                  <strong>Patient:</strong> ${escapeHtml(t.patient_name || '-')} 
+                  ${t.patient_phone ? `(📞 <a href="tel:${escapeHtml(t.patient_phone)}" style="color: var(--primary); font-weight: 600;">${escapeHtml(t.patient_phone)}</a>)` : ''}
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span>🔍 ${escapeHtml(t.matched_condition_detail || 'Condition matched')}</span>
+                  <span>•</span>
+                  <span>📅 Camp: ${t.event_date || 'Upcoming'} (${escapeHtml(t.venue || 'Clinic')})</span>
+                </div>
+                ${t.patient_response_note ? `<div style="font-size: 0.76rem; color: #047857; margin-top: 4px; font-style: italic; background: #f0fdf4; padding: 2px 8px; border-radius: 4px; display: inline-block;">Patient Note: "${escapeHtml(t.patient_response_note)}"</div>` : ''}
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                ${rsvpBadge}
+                ${statusBadge}
+                ${verifyBadge}
+                
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-secondary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Contacted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Contacted' ? 'disabled' : ''}>
+                    📞 Contacted
+                  </button>
+                  <button class="btn btn-primary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Assisted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Assisted' ? 'disabled' : ''}>
+                    🌟 Assisted
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Error fetching cadet campaign tasks:', err);
+      }
+    }
+
+
+    function currentStatusRaw(t) { return t.cadet_call_status || 'Pending'; }
+
+    async function updateCadetTaskStatus(notifId, status) {
+      try {
+        const res = await fetch(`/api/student/campaign-tasks/${notifId}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callStatus: status })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update status');
+
+        showToast(`Outreach updated: ${status}`, 'success');
+        await loadCadetCampaignTasks();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+  </script>
+
+  <script src="/validation.js"></script>
+  <script src="/nav-glider.js"></script>
+</body>
+</html>

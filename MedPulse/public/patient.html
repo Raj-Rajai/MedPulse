@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
+  <title>Patient Health Portal | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .patient-hero {
+      background: linear-gradient(135deg, #0369a1, #0284c7, #075985);
+      border-radius: var(--radius-xl);
+      padding: 28px 32px;
+      color: #fff;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.25);
+    }
+    .patient-hero::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .cadet-supervision-card {
+      background: #ffffff;
+      border: 1.5px solid #bae6fd;
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+    }
+    .vitals-status-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .pill-normal { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .pill-warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .pill-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pill-info { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+
+    .records-list-item {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Patient CRM Campaign Cards */
+    .campaign-crm-card {
+      background: #ffffff;
+      border: 1.5px solid #bae6fd;
+      border-left: 5px solid #0284c7;
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .campaign-crm-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.14);
+    }
+    .campaign-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .campaign-tag-matched {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+    }
+    .campaign-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin: 12px 0 16px 0;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Collapsible Icon Dock Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="link-label">Home</span>
+      </a>
+      <a href="/patient.html" class="sidebar-link active" data-route="patient" data-title="My Health Portfolio">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="M12 8v8"/>
+            <path d="M8 12h8"/>
+          </svg>
+        </div>
+        <span class="link-label">Health Portfolio</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+
+  <!-- Mobile Drawer Toggle -->
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main Content Workspace -->
+  <main class="main-content">
+
+    <!-- Patient Identity Hero Card -->
+    <div class="patient-hero anim-fade-up">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <div style="width: 64px; height: 64px; border-radius: 18px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-size: 2rem; border: 1.5px solid rgba(255,255,255,0.4);">
+            🏥
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <h1 id="heroPatientName" style="font-size: 1.65rem; font-weight: 800; margin: 0; color: #fff;">
+                Loading Patient...
+              </h1>
+              <span id="heroPatientUid" class="profile-roll-tag" style="background: rgba(255,255,255,0.22); color: #fff; font-family: monospace;">
+                PAT-2026-XXXX
+              </span>
+              <span id="heroModelBadge" class="badge" style="background: #fff; color: #0369a1; font-weight: 750; font-size: 0.76rem;">
+                Independent Model
+              </span>
+            </div>
+            <div class="profile-sub-pills" style="margin-top: 8px;">
+              <span id="heroAgeGender">-</span>
+              <span>&bull;</span>
+              <span id="heroPhone">📞 -</span>
+              <span>&bull;</span>
+              <span style="color: #6ee7b7; font-weight: 650;">Active Surveillance</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="btnLinkCadetOpen" onclick="openLinkCadetModal()" style="display: none; background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); color: #fff; font-weight: 700;">
+            🔗 Link Medical Cadet
+          </button>
+          <button class="btn btn-secondary" onclick="window.print()" style="background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); color: #fff; font-weight: 650;">
+            🖨️ Print Summary
+          </button>
+          <button class="btn btn-secondary" onclick="logoutPatient()" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); color: #fff;">
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cadet Supervision Notification Card (Appears if Dependent) -->
+    <div id="cadetSupervisionCard" class="cadet-supervision-card anim-fade-up" style="display: none;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="font-size: 1.8rem; background: #e0f2fe; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+          👨‍⚕️
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 750; color: #0284c7; letter-spacing: 0.05em;">
+            Adopted Family &bull; Supervising Clinician
+          </div>
+          <div id="cadetNameDisplay" style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">
+            Dr. Dhruv Patel (Roll 235)
+          </div>
+          <div id="cadetCollegeDisplay" style="font-size: 0.8rem; color: var(--text-muted);">
+            GMERS Medical College &amp; Hospital &bull; RHTC Posting Unit
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="badge badge-info" id="cadetReferralCodeBadge" style="font-family: monospace; font-size: 0.85rem; padding: 6px 12px;">
+          Ref: GMERS-235-DA9B
+        </span>
+        <button class="btn btn-secondary" onclick="openLinkCadetModal()" style="font-size: 0.8rem; padding: 6px 12px;">
+          Change Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Independent Patient Adoption Invitation Card (Appears if Independent) -->
+    <div id="independentAdoptCard" class="cadet-supervision-card anim-fade-up" style="display: none; background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(99, 102, 241, 0.05)); border: 1.5px dashed #0284c7;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="font-size: 1.8rem;">💡</div>
+        <div>
+          <div style="font-size: 1.05rem; font-weight: 750; color: var(--text-primary); margin-bottom: 2px;">
+            Adopted by a Medical Student Cadet?
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+            Link your cadet's referral code to sync your clinical surveys, dietary counseling, and longitudinal follow-up records directly with their portfolio.
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="openLinkCadetModal()" style="font-size: 0.85rem; background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
+        🔗 Enter Referral Code &rarr;
+      </button>
+    </div>
+
+    <!-- Targeted Health Campaigns & CRM Communications (Automated Decision-Diamond Matching) -->
+    <div id="campaignCrmSection" class="anim-fade-up" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            🎯
+          </div>
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+              Targeted Public Health Campaigns &amp; Medical Camps
+            </h2>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+              Automated Clinical Match: Only campaigns matching your diagnosed conditions and vitals appear here.
+            </div>
+          </div>
+        </div>
+        <span id="crmCampaignCountBadge" class="badge badge-info" style="font-size: 0.78rem; padding: 5px 12px;">
+          Checking alerts...
+        </span>
+      </div>
+
+      <!-- Container where campaign cards are rendered -->
+      <div id="campaignCardsContainer">
+        <!-- Dynamically populated by loadPatientCampaigns() -->
+      </div>
+    </div>
+
+    <!-- Clinical Surveillance KPIs Grid (Latest Vitals) -->
+    <div class="profile-kpis-grid anim-fade-up">
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-followups">🩺</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="valBp">--/--</div>
+          <div class="kpi-label">Blood Pressure (mmHg)</div>
+          <div style="margin-top: 4px;"><span id="statusBp" class="vitals-status-pill pill-normal">Normal</span></div>
+        </div>
+      </div>
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-conditions">🩸</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="valRbs">--</div>
+          <div class="kpi-label">Blood Sugar (RBS mg/dL)</div>
+          <div style="margin-top: 4px;"><span id="statusRbs" class="vitals-status-pill pill-normal">Normal</span></div>
+        </div>
+      </div>
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-patients">⚖️</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="valBmi">--</div>
+          <div class="kpi-label">Body Mass Index (BMI)</div>
+          <div style="margin-top: 4px;"><span id="statusBmi" class="vitals-status-pill pill-info">Calculated</span></div>
+        </div>
+      </div>
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-families">🔬</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="valHb">--</div>
+          <div class="kpi-label">Hemoglobin (Hb g/dL)</div>
+          <div style="margin-top: 4px;"><span id="statusHb" class="vitals-status-pill pill-normal">Adequate</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-Column Responsive Layout -->
+    <div class="profile-content-grid anim-fade-up">
+
+      <!-- Left Column: Medical Diagnoses, Medications & Allergies -->
+      <div class="profile-col-left">
+
+        <!-- Active Prescriptions & Medications Card -->
+        <div class="card" style="margin-bottom: 24px;">
+          <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+            <span>💊 Prescribed Medications</span>
+            <span class="badge badge-info" id="medCountBadge">0 Active</span>
+          </h2>
+          <div id="medicationsList">
+            <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+              No current medications logged.
+            </div>
+          </div>
+        </div>
+
+        <!-- Diagnosed Medical Conditions Card -->
+        <div class="card" style="margin-bottom: 24px;">
+          <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+            <span>📋 Clinical Diagnoses &amp; Conditions</span>
+            <span class="badge badge-warning" id="condCountBadge">0 Records</span>
+          </h2>
+          <div id="conditionsList">
+            <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+              No diagnosed chronic conditions logged.
+            </div>
+          </div>
+        </div>
+
+        <!-- Allergies & Drug Sensitivities Card -->
+        <div class="card">
+          <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+            <span>⚠️ Allergies &amp; Sensitivities</span>
+            <span class="badge badge-danger" id="allergyCountBadge">0 Listed</span>
+          </h2>
+          <div id="allergiesList">
+            <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+              No known allergies or sensitivities recorded.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Longitudinal Follow-Up Consultations & Notes -->
+      <div class="profile-col-right">
+
+        <!-- Clinical Surveillance Consultations Timeline Card -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <h2 style="font-size: 1.25rem; font-weight: 750; color: var(--text-primary); margin-bottom: 4px;">
+                🩺 Longitudinal Field Consultations
+              </h2>
+              <p class="card-desc" style="margin: 0;">
+                Clinical follow-up visits and assessments conducted by your medical cadet.
+              </p>
+            </div>
+          </div>
+
+          <div class="activity-timeline" id="patientFollowupsTimeline">
+            <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+              Loading follow-up records...
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==========================================================
+       MODAL: LINK MEDICAL CADET REFERRAL CODE
+       ========================================================== -->
+  <div id="linkCadetModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 460px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="color: #0284c7; font-size: 1.3rem;">🔗 Link Medical Cadet</h2>
+        <button class="btn btn-secondary" onclick="closeLinkCadetModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
+        Enter your medical student's referral code (e.g. <code>GMERS-235-DA9B</code>) to link your patient account with their university surveillance cadre.
+      </p>
+
+      <form id="linkCadetForm" onsubmit="event.preventDefault(); submitLinkCadet();">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="linkRefCodeInput">Cadet Referral Code *</label>
+          <input type="text" id="linkRefCodeInput" required placeholder="e.g. GMERS-235-DA9B" oninput="debounceModalVerifyReferral()" style="font-family: monospace; font-weight: 750; text-transform: uppercase;">
+          <div id="modalRefFeedback" style="font-size: 0.8rem; margin-top: 8px; display: none;"></div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeLinkCadetModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveLinkBtn" style="background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
+            🔗 Link to Cadet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('preload-transitions');
+      });
+    });
+
+    let currentPatient = null;
+    let patientRecords = null;
+
+    /* ---- Sidebar Controls ---- */
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    function showToast(message, type = 'info', duration = 3200) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 200);
+      }, duration);
+    }
+
+    function logoutPatient() {
+      if (window.MedPulseAuth) {
+        window.MedPulseAuth.logoutPatient();
+      } else {
+        localStorage.removeItem('medpulse_patient');
+        window.location.href = '/login.html?patient=1';
+      }
+    }
+
+    /* ---- Load Patient Data & Clinical Records ---- */
+    async function loadPatientData() {
+      try {
+        const res = await fetch('/api/patient/records');
+        if (!res.ok) {
+          if (res.status === 401) {
+            logoutPatient();
+            return;
+          }
+          throw new Error('Failed to load patient records');
+        }
+        patientRecords = await res.json();
+        currentPatient = patientRecords.profile;
+        renderPatientDashboard(patientRecords);
+      } catch (err) {
+        console.error('Error loading patient portfolio:', err);
+        showToast(err.message, 'error');
+      }
+    }
+
+    function renderPatientDashboard(data) {
+      const p = data.profile || {};
+      const m = data.member || {};
+      const followUps = data.follow_ups || [];
+      const conditions = data.conditions || [];
+      const medications = data.medications || [];
+      const allergies = data.allergies || [];
+
+      // Hero Elements
+      document.getElementById('heroPatientName').textContent = p.name || 'Patient';
+      document.getElementById('heroPatientUid').textContent = p.patient_uid || 'PAT-0000';
+      document.getElementById('heroPhone').textContent = `📞 ${p.phone || 'No phone'}`;
+      document.getElementById('heroAgeGender').textContent = `${p.gender || 'Unknown'}, ${p.age_years || m.age_years || '--'} Years`;
+
+      const isDependent = (p.model_type === 'Dependent' && p.student_id);
+      const modelBadge = document.getElementById('heroModelBadge');
+      const cadetCard = document.getElementById('cadetSupervisionCard');
+      const indeCard = document.getElementById('independentAdoptCard');
+      const btnLink = document.getElementById('btnLinkCadetOpen');
+
+      if (isDependent) {
+        modelBadge.textContent = '👨‍⚕️ Adopted Dependent Model';
+        modelBadge.style.background = '#e0f2fe';
+        modelBadge.style.color = '#0284c7';
+        cadetCard.style.display = 'flex';
+        indeCard.style.display = 'none';
+        btnLink.style.display = 'none';
+
+        document.getElementById('cadetNameDisplay').textContent = `${p.cadet_name || 'Medical Cadet'} (Roll ${p.cadet_roll || '--'})`;
+        document.getElementById('cadetCollegeDisplay').textContent = `${p.college_name || 'Medical College'} • ${p.cadet_posting || 'Posting Unit'}`;
+        document.getElementById('cadetReferralCodeBadge').textContent = `Ref: ${p.referral_code_used || '--'}`;
+      } else {
+        modelBadge.textContent = '🏥 Independent Patient Model';
+        modelBadge.style.background = '#f1f5f9';
+        modelBadge.style.color = '#475569';
+        cadetCard.style.display = 'none';
+        indeCard.style.display = 'flex';
+        btnLink.style.display = 'inline-flex';
+      }
+
+      // Latest Vitals
+      // Check follow-ups first, then member baseline
+      let latestSbp = null, latestDbp = null, latestRbs = null, latestHb = null, latestWeight = null;
+      if (followUps.length > 0) {
+        const latestFu = followUps[0];
+        latestSbp = latestFu.sbp;
+        latestDbp = latestFu.dbp;
+        latestRbs = latestFu.rbs;
+        latestHb = latestFu.hb;
+        latestWeight = latestFu.weight_kg;
+      }
+
+      if (latestSbp === null && m.sbp) latestSbp = m.sbp;
+      if (latestDbp === null && m.dbp) latestDbp = m.dbp;
+      if (latestRbs === null && m.rbs) latestRbs = m.rbs;
+      if (latestHb === null && m.hb) latestHb = m.hb;
+      if (latestWeight === null && m.weight_kg) latestWeight = m.weight_kg;
+
+      // Blood Pressure
+      if (latestSbp && latestDbp) {
+        document.getElementById('valBp').textContent = `${latestSbp}/${latestDbp}`;
+        const bpStatus = document.getElementById('statusBp');
+        if (latestSbp >= 140 || latestDbp >= 90) {
+          bpStatus.textContent = 'Stage 2 HTN';
+          bpStatus.className = 'vitals-status-pill pill-danger';
+        } else if (latestSbp >= 130 || latestDbp >= 80) {
+          bpStatus.textContent = 'Stage 1 HTN';
+          bpStatus.className = 'vitals-status-pill pill-warning';
+        } else {
+          bpStatus.textContent = 'Normal';
+          bpStatus.className = 'vitals-status-pill pill-normal';
+        }
+      }
+
+      // RBS
+      if (latestRbs) {
+        document.getElementById('valRbs').textContent = latestRbs;
+        const rbsStatus = document.getElementById('statusRbs');
+        if (latestRbs >= 200) {
+          rbsStatus.textContent = 'Elevated';
+          rbsStatus.className = 'vitals-status-pill pill-danger';
+        } else if (latestRbs >= 140) {
+          rbsStatus.textContent = 'Borderline';
+          rbsStatus.className = 'vitals-status-pill pill-warning';
+        } else {
+          rbsStatus.textContent = 'Normal';
+          rbsStatus.className = 'vitals-status-pill pill-normal';
+        }
+      }
+
+      // BMI
+      const bmiVal = m.bmi;
+      if (bmiVal) {
+        document.getElementById('valBmi').textContent = bmiVal.toFixed(1);
+        const bmiStatus = document.getElementById('statusBmi');
+        if (bmiVal >= 30) {
+          bmiStatus.textContent = 'Obese';
+          bmiStatus.className = 'vitals-status-pill pill-danger';
+        } else if (bmiVal >= 25) {
+          bmiStatus.textContent = 'Overweight';
+          bmiStatus.className = 'vitals-status-pill pill-warning';
+        } else if (bmiVal < 18.5) {
+          bmiStatus.textContent = 'Underweight';
+          bmiStatus.className = 'vitals-status-pill pill-warning';
+        } else {
+          bmiStatus.textContent = 'Healthy';
+          bmiStatus.className = 'vitals-status-pill pill-normal';
+        }
+      }
+
+      // Hemoglobin
+      if (latestHb) {
+        document.getElementById('valHb').textContent = latestHb;
+        const hbStatus = document.getElementById('statusHb');
+        if (latestHb < 11.0) {
+          hbStatus.textContent = 'Anaemic';
+          hbStatus.className = 'vitals-status-pill pill-danger';
+        } else {
+          hbStatus.textContent = 'Adequate';
+          hbStatus.className = 'vitals-status-pill pill-normal';
+        }
+      }
+
+      // Medications
+      const medList = document.getElementById('medicationsList');
+      document.getElementById('medCountBadge').textContent = `${medications.length} Active`;
+      if (medications.length === 0) {
+        medList.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No current medications logged.</div>`;
+      } else {
+        medList.innerHTML = medications.map(med => `
+          <div class="records-list-item">
+            <div>
+              <div style="font-weight: 750; color: var(--text-primary); font-size: 0.95rem;">${med.name} ${med.dosage || ''}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">${med.frequency || 'Daily'} &bull; For: ${med.reason || 'General'}</div>
+            </div>
+            <span class="badge badge-success" style="font-size: 0.72rem;">Taking</span>
+          </div>
+        `).join('');
+      }
+
+      // Conditions
+      const condList = document.getElementById('conditionsList');
+      document.getElementById('condCountBadge').textContent = `${conditions.length} Records`;
+      if (conditions.length === 0) {
+        condList.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No diagnosed chronic conditions logged.</div>`;
+      } else {
+        condList.innerHTML = conditions.map(c => `
+          <div class="records-list-item">
+            <div>
+              <div style="font-weight: 750; color: var(--text-primary); font-size: 0.95rem;">${c.condition_name}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">${c.notes || 'Under clinical surveillance'}</div>
+            </div>
+            <span class="badge badge-warning" style="font-size: 0.72rem;">${c.status || 'Active'}</span>
+          </div>
+        `).join('');
+      }
+
+      // Allergies
+      const allergyList = document.getElementById('allergiesList');
+      document.getElementById('allergyCountBadge').textContent = `${allergies.length} Listed`;
+      if (allergies.length === 0) {
+        allergyList.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No known allergies or sensitivities recorded.</div>`;
+      } else {
+        allergyList.innerHTML = allergies.map(a => `
+          <div class="records-list-item">
+            <div>
+              <div style="font-weight: 750; color: #b91c1c; font-size: 0.95rem;">${a.allergen}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">${a.reaction || 'Adverse reaction'} (${a.allergy_type || 'General'})</div>
+            </div>
+            <span class="badge badge-danger" style="font-size: 0.72rem;">${a.severity || 'Moderate'}</span>
+          </div>
+        `).join('');
+      }
+
+      // Follow-Ups Timeline
+      const fuTimeline = document.getElementById('patientFollowupsTimeline');
+      if (followUps.length === 0) {
+        fuTimeline.innerHTML = `<div style="padding: 24px; text-align: center; color: var(--text-muted);">No clinical follow-up consultations logged yet.</div>`;
+      } else {
+        fuTimeline.innerHTML = followUps.map(fu => {
+          const bpText = fu.sbp && fu.dbp ? `BP: ${fu.sbp}/${fu.dbp} mmHg` : null;
+          const rbsText = fu.rbs ? `RBS: ${fu.rbs} mg/dL` : null;
+          const hbText = fu.hb ? `Hb: ${fu.hb} g/dL` : null;
+
+          return `
+            <div class="timeline-item">
+              <div class="timeline-header">
+                <span class="timeline-title">Consultation Visit #${fu.visit_number || 1}</span>
+                <span class="timeline-time">${fu.visit_date}</span>
+              </div>
+              <div class="timeline-body">
+                <div>${fu.clinical_notes || 'Routine health review and vitals check conducted.'}</div>
+                <div class="vitals-pills" style="margin-top: 8px;">
+                  ${bpText ? `<span class="vitals-pill">${bpText}</span>` : ''}
+                  ${rbsText ? `<span class="vitals-pill" style="background:#fef3c7; color:#b45309;">${rbsText}</span>` : ''}
+                  ${hbText ? `<span class="vitals-pill" style="background:#fee2e2; color:#b91c1c;">${hbText}</span>` : ''}
+                  <span class="vitals-pill" style="background:#ecfdf5; color:#065f46;">Progress: ${fu.health_progress || 'Stable'}</span>
+                </div>
+                ${fu.next_visit_date ? `<div style="font-size: 0.75rem; color: #0284c7; margin-top: 6px;">📅 Next Recommended Visit: ${fu.next_visit_date}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    /* ---- Modal Controls ---- */
+    function openLinkCadetModal() {
+      document.getElementById('linkCadetForm').reset();
+      document.getElementById('modalRefFeedback').style.display = 'none';
+      document.getElementById('linkCadetModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('linkRefCodeInput').focus(), 100);
+    }
+
+    function closeLinkCadetModal() {
+      document.getElementById('linkCadetModal').style.display = 'none';
+    }
+
+    let modalRefTimer = null;
+    function debounceModalVerifyReferral() {
+      clearTimeout(modalRefTimer);
+      modalRefTimer = setTimeout(verifyModalReferralCode, 350);
+    }
+
+    async function verifyModalReferralCode() {
+      const input = document.getElementById('linkRefCodeInput');
+      const feedback = document.getElementById('modalRefFeedback');
+      const code = input.value.trim().toUpperCase();
+
+      if (code.length < 4) {
+        feedback.style.display = 'none';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/patient/verify-referral', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referral_code: code })
+        });
+        const data = await res.json();
+        if (res.ok && data.valid && data.student) {
+          feedback.style.display = 'block';
+          feedback.style.color = '#065f46';
+          feedback.style.background = '#ecfdf5';
+          feedback.style.border = '1px solid #a7f3d0';
+          feedback.style.padding = '6px 10px';
+          feedback.style.borderRadius = '6px';
+          feedback.innerHTML = `<strong>Verified Cadet:</strong> ${data.student.name} • Roll ${data.student.roll_number} • ${data.student.college_name || 'Medical College'}`;
+        } else {
+          feedback.style.display = 'block';
+          feedback.style.color = '#b91c1c';
+          feedback.style.background = '#fef2f2';
+          feedback.style.border = '1px solid #fecaca';
+          feedback.style.padding = '6px 10px';
+          feedback.style.borderRadius = '6px';
+          feedback.textContent = data.error || 'No medical cadet found with this code.';
+        }
+      } catch (err) {}
+    }
+
+    async function submitLinkCadet() {
+      const code = document.getElementById('linkRefCodeInput').value.trim();
+      const btn = document.getElementById('saveLinkBtn');
+
+      btn.disabled = true;
+      btn.textContent = 'Linking...';
+
+      try {
+        const res = await fetch('/api/patient/link-referral', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referral_code: code })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to link referral code');
+
+        showToast(data.message || 'Linked to medical cadet successfully!', 'success');
+        closeLinkCadetModal();
+
+        // Update local session
+        if (data.patient) {
+          localStorage.setItem('medpulse_patient', JSON.stringify(data.patient));
+        }
+
+        await loadPatientData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔗 Link to Cadet';
+      }
+    }
+
+    /* ---- Patient CRM: Targeted Health Campaigns ---- */
+    async function loadPatientCampaigns() {
+      const container = document.getElementById('campaignCardsContainer');
+      const countBadge = document.getElementById('crmCampaignCountBadge');
+      if (!container) return;
+
+      try {
+        const res = await fetch('/api/patient/notifications');
+        if (!res.ok) throw new Error('Could not load campaign notifications');
+        const data = await res.json();
+        const notifs = data.notifications || [];
+
+        if (notifs.length === 0) {
+          countBadge.textContent = '0 Alerts • Clean Profile';
+          countBadge.className = 'badge';
+          countBadge.style.background = '#f1f5f9';
+          countBadge.style.color = '#64748b';
+          container.innerHTML = `
+            <div style="background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 22px; text-align: center; color: var(--text-muted); font-size: 0.88rem;">
+              <span style="font-size: 1.6rem; display: block; margin-bottom: 6px;">🛡️</span>
+              <strong style="color: var(--text-primary);">Zero Irrelevant Alerts:</strong> No active university health campaigns currently match your diagnosed conditions or vitals.
+              <div style="margin-top: 4px; font-size: 0.78rem;">You will only be alerted when an intervention (e.g. HTN screening, dietary counseling) matches your personal health records.</div>
+            </div>
+          `;
+          return;
+        }
+
+        countBadge.textContent = `${notifs.length} Matched Campaign${notifs.length > 1 ? 's' : ''}`;
+        countBadge.className = 'badge badge-warning';
+        countBadge.style.background = '#fef3c7';
+        countBadge.style.color = '#b45309';
+
+        container.innerHTML = notifs.map(n => {
+          const isAck = n.notification_status === 'Acknowledged';
+          return `
+            <div class="campaign-crm-card anim-fade-up">
+              <div class="campaign-header-row">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span class="campaign-tag-matched">
+                    🎯 Matched: ${n.matched_keyword}
+                  </span>
+                  <span style="font-size: 0.75rem; color: #0284c7; font-weight: 700;">
+                    ${n.matched_condition_detail || 'Condition Match'}
+                  </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.78rem; font-weight: 700; color: #475569; background: #f1f5f9; padding: 4px 10px; border-radius: 6px;">
+                    📅 ${n.event_date ? new Date(n.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Upcoming Date'}
+                  </span>
+                  ${isAck ? '<span class="vitals-status-pill pill-normal">✅ Attending</span>' : '<span class="vitals-status-pill pill-warning">⏳ RSVP Pending</span>'}
+                </div>
+              </div>
+
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0;">
+                ${n.campaign_title}
+              </h3>
+              <p style="font-size: 0.86rem; color: var(--text-muted); margin: 0 0 10px 0; line-height: 1.5;">
+                ${n.campaign_description}
+              </p>
+
+              <div class="campaign-meta-grid">
+                <div><strong>📍 Venue:</strong> ${n.venue || 'RHTC Posting Unit / Local Center'}</div>
+                <div><strong>🎓 Organizing College:</strong> ${n.organizing_college || 'Medical College'}</div>
+                <div><strong>👨‍⚕️ Supervising Cadet:</strong> ${n.cadet_name ? `${n.cadet_name} (Roll ${n.cadet_roll || '--'})` : 'Medical Faculty'}</div>
+                <div><strong>📞 Cadet Phone:</strong> ${n.cadet_phone || 'Available via portal'}</div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="font-size: 0.8rem; color: #059669; font-weight: 650;">
+                  ${isAck ? `✓ Attendance confirmed: "${n.patient_response_note || 'Confirmed'}"` : 'Please let the medical team know if you will attend:'}
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  ${!isAck ? `
+                    <button class="btn btn-primary" onclick="rsvpCampaign(${n.notification_id}, 'Acknowledged')" style="font-size: 0.82rem; padding: 6px 14px; background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
+                      ✅ I Will Attend (Confirm RSVP)
+                    </button>
+                  ` : `
+                    <button class="btn btn-secondary" onclick="rsvpCampaign(${n.notification_id}, 'Delivered')" style="font-size: 0.8rem; padding: 6px 12px;">
+                      Update RSVP
+                    </button>
+                  `}
+                  ${n.cadet_phone ? `
+                    <a href="tel:${n.cadet_phone}" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 4px;">
+                      📞 Call Cadet
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.warn('Could not load campaigns:', err);
+        if (container) container.innerHTML = '';
+      }
+    }
+
+    async function rsvpCampaign(notifId, status = 'Acknowledged') {
+      try {
+        const res = await fetch(`/api/patient/notifications/${notifId}/acknowledge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            status: status,
+            response_note: status === 'Acknowledged' ? 'Confirmed attendance for upcoming camp' : 'Updated status'
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update RSVP');
+        showToast(status === 'Acknowledged' ? '🎉 Attendance confirmed! Your cadet & faculty have been informed.' : 'Status updated.', 'success');
+        await loadPatientCampaigns();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      loadPatientData();
+      loadPatientCampaigns();
+    });
+  </script>
+</body>
+</html>
