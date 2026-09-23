@@ -99,13 +99,16 @@ const PatientModel = {
             cleanPin,
             date_of_birth || null,
             age_years ? parseInt(age_years, 10) : null,
-            gender || 'Other',
+            ({ m: 'M', male: 'M', f: 'F', female: 'F' })[String(gender || '').trim().toLowerCase()] || 'Other',
             address ? address.trim() : null,
             modelType,
             studentId,
             referralCodeUsed,
             familyMemberId
         );
+
+        // Auto-create the patient's card + household (patient becomes head of family)
+        require('./patient-family.model').ensureFamily(Number(result.lastInsertRowid));
 
         const newPatient = this.findById(Number(result.lastInsertRowid));
 
@@ -164,15 +167,18 @@ const PatientModel = {
             return { notFound: true, message: 'Invalid medical cadet referral code.' };
         }
 
-        let familyMemberId = currentPatient.family_member_id;
-        if (!familyMemberId) {
+        let familyMemberId = null;
+        {
             const memberMatch = db.prepare(`
                 SELECT m.id 
                 FROM family_members m 
                 JOIN families f ON m.family_id = f.id 
-                WHERE f.student_id = ? AND (m.contact_number = ? OR m.name LIKE ?)
+                WHERE f.student_id = ?
+                  AND (m.contact_number = ? OR LOWER(TRIM(m.name)) = LOWER(TRIM(?)))
+                  AND NOT EXISTS (SELECT 1 FROM patients p2 WHERE p2.family_member_id = m.id AND p2.id != ?)
+                ORDER BY CASE WHEN m.contact_number = ? THEN 0 ELSE 1 END
                 LIMIT 1
-            `).get(student.id, currentPatient.phone, `%${currentPatient.name}%`);
+            `).get(student.id, currentPatient.phone, currentPatient.name, patientId, currentPatient.phone);
             if (memberMatch) familyMemberId = memberMatch.id;
         }
 
@@ -181,10 +187,12 @@ const PatientModel = {
             SET model_type = 'Dependent',
                 student_id = ?,
                 referral_code_used = ?,
-                family_member_id = COALESCE(family_member_id, ?),
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        `).run(student.id, student.referral_code, familyMemberId, patientId);
+        `).run(student.id, student.referral_code, patientId);
+
+        // Household: move into the surveyed family, or let the student adopt the patient's family
+        require('./patient-family.model').onStudentLinked(patientId, student.id, familyMemberId);
 
         const updated = this.findById(patientId);
         return {
