@@ -1,12 +1,34 @@
 {
-  "name": "medpulse-root",
+  "name": "medpulse",
   "version": "2.0.0",
-  "private": true,
-  "description": "MedPulse root workspace wrapper",
+  "description": "MedPulse • Clinical Health Survey & Epidemiological Surveillance Platform for Medical Colleges",
+  "main": "backend/server.js",
   "scripts": {
-    "dev": "npm --prefix MedPulse run dev",
-    "start": "npm --prefix MedPulse start",
-    "test": "npm --prefix MedPulse test",
-    "seed": "npm --prefix MedPulse run seed"
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "seed": "node backend/config/seed-roll235.js",
+    "verify": "node server/verify-admin.js",
+    "test": "node server/verify-admin.js",
+    "test:patient": "node server/verify-patient-system.js",
+    "test:hospital": "node server/verify-hospital-system.js",
+    "test:fap": "node scripts/check-hospital-ui.cjs",
+    "test:export": "node server/verify-export.js",
+    "test:campaign": "node server/verify-campaign-crm.js",
+    "test:routes": "node server/verify-route-redirection.js",
+    "test:all": "node server/verify-patient-system.js && node server/verify-hospital-system.js && node server/verify-export.js && node server/verify-campaign-crm.js && node server/verify-patient-engagement.js && node server/verify-patient-family.js && node server/verify-route-redirection.js",
+    "test:engagement": "node server/verify-patient-engagement.js",
+    "test:family": "node server/verify-patient-family.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "express": "^5.2.1",
+    "pdfkit": "^0.20.2"
+  },
+  "engines": {
+    "node": ">=20.17.0"
   }
 }

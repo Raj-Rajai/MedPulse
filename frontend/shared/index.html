@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
+  <title>MedPulse | Medical College Health Survey Portal</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sleek Left Sliding Sidebar Navigation -->
+  <!-- Sidebar Navigation (Collapsible Icon Dock) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link active" data-route="home" data-title="Home">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="link-label">Home</span>
+      </a>
+      <a href="/family-manage.html" class="sidebar-link" data-route="families" data-title="Families">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="link-label">Families</span>
+      </a>
+      <a href="/entry.html" class="sidebar-link" data-route="entry" data-title="Data Entry">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h4"/>
+            <path d="M12 10h.01"/>
+          </svg>
+        </div>
+        <span class="link-label">Data Entry</span>
+      </a>
+      <a href="/analytics.html" class="sidebar-link" data-route="analytics" data-title="Analytics">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+        </div>
+        <span class="link-label">Analytics</span>
+      </a>
+      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="link-label">Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+  <!-- Mobile Drawer Toggle -->
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Hero Section -->
+    <div class="hero anim-fade-up">
+      <div class="hero-text">
+        <div class="anim-float-subtle" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(109, 40, 217, 0.08); border: 1.5px solid rgba(109, 40, 217, 0.22); padding: 4px 14px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; letter-spacing: 0.03em;">
+          <span class="role-dot" style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #10b981;"></span>
+          <span>PSM · Community Medicine Surveillance</span>
+        </div>
+        <div id="heroUserBadge" style="display: none; align-items: center; gap: 8px; margin-bottom: 12px; background: rgba(109, 40, 217, 0.12); border: 1.5px solid rgba(109, 40, 217, 0.28); border-radius: 100px; padding: 5px 16px; width: fit-content;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent);">👤 Authenticated Cadet:</span>
+          <span id="heroCadetInfo" style="font-size: 0.82rem; font-weight: 650; color: #1e1b4b;"></span>
+        </div>
+        <h1 class="page-title-animated">Community Medicine Field Health System</h1>
+        <p>
+          A standardized, clinical data-entry and surveillance platform for medical colleges and MBBS students. 
+          Record household socio-demographics, screen for non-communicable diseases, evaluate nutritional adequacy, 
+          and track longitudinal patient follow-up visits in rural and urban field practice areas.
+        </p>
+        <div class="hero-actions">
+          <a href="/family-manage.html" class="btn btn-primary btn-lg">👥 Manage Families</a>
+          <a href="/entry.html" class="btn btn-secondary btn-lg">📝 Survey Data Entry</a>
+          <a href="/analytics.html" class="btn btn-secondary btn-lg">📊 Analytics</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid anim-fade-up anim-delay-1">
+      <div class="stat-box">
+        <div class="title">Families Surveyed</div>
+        <div class="value" id="statFamilies">0</div>
+        <div class="subtext">Active household units</div>
+      </div>
+      <div class="stat-box">
+        <div class="title">Total Individuals</div>
+        <div class="value" id="statMembers">0</div>
+        <div class="subtext">Registered individuals</div>
+      </div>
+      <div class="stat-box stat-warning">
+        <div class="title">Adult HTN Prevalence</div>
+        <div class="value" id="statHtn">0%</div>
+        <div class="subtext">SBP &ge; 140 or DBP &ge; 90 mmHg</div>
+      </div>
+      <div class="stat-box stat-warning">
+        <div class="title">Adult DM Prevalence</div>
+        <div class="value" id="statDm">0%</div>
+        <div class="subtext">Random Blood Sugar &ge; 200 mg/dl</div>
+      </div>
+    </div>
+
+    <!-- Feature Modules Grid -->
+    <div class="features-grid anim-fade-up anim-delay-2">
+      <a href="/family-manage.html" class="feature-card">
+        <span class="feature-icon">👥</span>
+        <h3>Family &amp; Member Management</h3>
+        <p>Create households from scratch, stage family members, inspect baseline clinical records, and manage individual patient charts.</p>
+      </a>
+      <a href="/entry.html" class="feature-card">
+        <span class="feature-icon">📋</span>
+        <h3>Standardized Field Survey Entry</h3>
+        <p>Full 3-step structured digitization form with dynamic age-adaptive builders for adult NCDs, pediatric growth, and maternal RMNCH+A.</p>
+      </a>
+      <a href="/family-manage.html" class="feature-card">
+        <span class="feature-icon">🩺</span>
+        <h3>Longitudinal Follow-up Visits</h3>
+        <p>Log chronological patient re-examinations, track blood pressure and sugar control, therapy compliance, and clinical progress notes.</p>
+      </a>
+      <a href="/analytics.html" class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Epidemiological Audit Queries</h3>
+        <p>Run pre-built relational SQL reports for student survey audits, sex ratios, community anaemia burden, and malnutrition distributions.</p>
+      </a>
+    </div>
+
+    <!-- Medical & Clinical Reference Guide for Field Students -->
+    <div class="card anim-fade-up anim-delay-3">
+      <div class="section-title">
+        <span>Clinical Screening Criteria</span>
+        <span class="badge badge-info">Reference</span>
+      </div>
+      <p class="card-desc">Quick diagnostic reference values and field examination benchmarks used during family health postings:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+        
+        <!-- Adult NCD Criteria -->
+        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <strong style="color: var(--primary); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
+            Adult NCD Screening (Age &ge; 18)
+          </strong>
+          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
+            <li><strong>Hypertension:</strong> SBP &ge; 140 mmHg or DBP &ge; 90 mmHg</li>
+            <li><strong>Pre-Hypertension:</strong> SBP 120-139 or DBP 80-89</li>
+            <li><strong>Diabetes Mellitus:</strong> RBS &ge; 200 mg/dl (with symptoms)</li>
+            <li><strong>Severe Anaemia:</strong> Hb &lt; 7.0 g/dl | Moderate: 7.0-9.9 g/dl</li>
+            <li><strong>WHR Risk:</strong> &gt; 0.90 in Males, &gt; 0.85 in Females</li>
+          </ul>
+        </div>
+
+        <!-- Pediatric Nutrition -->
+        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <strong style="color: var(--warning-text); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
+            Pediatric Malnutrition (0-5 Yrs)
+          </strong>
+          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
+            <li><strong>MUAC &lt; 11.5 cm:</strong> Severe Acute Malnutrition (SAM)</li>
+            <li><strong>MUAC 11.5 - 12.5 cm:</strong> Moderate Malnutrition (MAM)</li>
+            <li><strong>MUAC &gt; 12.5 cm:</strong> Normal nutritional status</li>
+            <li><strong>Growth Screening:</strong> Verify Mamta Card &amp; Immunization</li>
+            <li><strong>Head vs Chest Circ:</strong> HC = CC at approx. 1 year of age</li>
+          </ul>
+        </div>
+
+        <!-- ICMR Dietary Assessment -->
+        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <strong style="color: var(--success-text); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
+            ICMR Dietary Units (CU Reference)
+          </strong>
+          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
+            <li><strong>Reference Adult Male (Sedentary):</strong> 1.0 CU (2400 kcal)</li>
+            <li><strong>Moderate Worker:</strong> 1.2 CU | <strong>Heavy Worker:</strong> 1.6 CU</li>
+            <li><strong>Adult Female:</strong> 0.8 CU (Sedentary) | 0.9 CU (Moderate)</li>
+            <li><strong>Calorie Adequacy:</strong> Deficient if daily intake &lt; requirement</li>
+            <li><strong>Dietary Advice:</strong> Balanced diet counseling for deficient households</li>
+          </ul>
+        </div>
+
+        <!-- Maternal Health RMNCH+A -->
+        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <strong style="color: #7c3aed; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
+            Maternal Health (RMNCH+A)
+          </strong>
+          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
+            <li><strong>Antenatal Care:</strong> Minimum 4 ANC checkups recommended</li>
+            <li><strong>Institutional Delivery:</strong> Hospital/PHC vs Home birth</li>
+            <li><strong>Postnatal Care:</strong> Follow-up within 48h and 7 days</li>
+            <li><strong>Family Planning:</strong> Modern spacing / terminal methods</li>
+            <li><strong>IFA Supplementation:</strong> 180 tablets during pregnancy</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Student Field Workflow Guide -->
+    <div class="card anim-fade-up anim-delay-4">
+      <h2 class="card-title">MBBS Field Survey Step-by-Step Workflow</h2>
+      <p class="card-desc">Standard operating procedure for manual survey record entry in community medicine:</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">01</div>
+          <strong style="display: block; margin-bottom: 0.25rem;">Create Household</strong>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
+            Register the family number, head of household, ward/village, and total family consumption units (CU).
+          </p>
+        </div>
+        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">02</div>
+          <strong style="display: block; margin-bottom: 0.25rem;">Add Family Members</strong>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
+            Record demographics and clinical screening for each individual. The form adapts automatically by age group.
+          </p>
+        </div>
+        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">03</div>
+          <strong style="display: block; margin-bottom: 0.25rem;">Log Follow-Up Visits</strong>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
+            Revisit hypertensive, diabetic, or anaemic individuals to record follow-up blood pressure, sugar, and compliance.
+          </p>
+        </div>
+        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
+          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">04</div>
+          <strong style="display: block; margin-bottom: 0.25rem;">Run College Audits</strong>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
+            Execute relational SQL queries to analyze morbidity rates, sex ratios, and nutritional trends across batches.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('preload-transitions');
+      });
+    });
+
+    // Execute callback only when document is active/visible, and after loading, nothing
+    function runWhenActive(callback) {
+      if (document.visibilityState === 'visible') {
+        callback();
+      } else {
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            callback();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      }
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    async function loadDashboard() {
+      try {
+        const activeUser = window.getMedPulseUser ? window.getMedPulseUser() : null;
+        if (activeUser) {
+          const badge = document.getElementById('heroUserBadge');
+          const info = document.getElementById('heroCadetInfo');
+          if (badge && info) {
+            info.textContent = `${activeUser.name || 'Cadet'} (Roll ${activeUser.roll_number}) • ${activeUser.posting_unit || 'Community Medicine'}`;
+            badge.style.display = 'inline-flex';
+          }
+        }
+
+        const statsRes = await fetch('/api/analytics/summary');
+        const stats = await statsRes.json();
+
+        document.getElementById('statFamilies').textContent = (stats && stats.totals && stats.totals.families) || 0;
+        document.getElementById('statMembers').textContent = (stats && stats.totals && stats.totals.members) || 0;
+        document.getElementById('statHtn').textContent = ((stats && stats.adults && stats.adults.htn_pct) || 0) + '%';
+        document.getElementById('statDm').textContent = ((stats && stats.adults && stats.adults.dm_pct) || 0) + '%';
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+      }
+    }
+
+    function initAuth() {
+      const userStr = localStorage.getItem('medpulse_user');
+      const authArea = document.getElementById('authNavArea');
+      if (!authArea) return;
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          authArea.innerHTML = `
+            <div class="sidebar-user" data-tooltip="Roll ${user.roll_number} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logoutUser();}else{window.location.href='/profile.html';}" title="Roll ${user.roll_number}">
+              <div class="user-avatar-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="role-dot"></span>
+              </div>
+              <div class="user-info-text">
+                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); display: block;">Student</span>
+                <span style="font-weight: 700; color: #fff;">Roll ${user.roll_number}</span>
+              </div>
+              <button class="logout-btn" onclick="event.stopPropagation(); logoutUser();" title="Logout">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          `;
+        } catch (e) {
+          showLoginLink(authArea);
+        }
+      } else {
+        showLoginLink(authArea);
+      }
+    }
+
+    function showLoginLink(authArea) {
+      authArea.innerHTML = `
+        <a href="/login.html" class="sidebar-login-link" title="Sign In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span class="login-label">Sign In</span>
+        </a>
+      `;
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('medpulse_user');
+      window.location.reload();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      initAuth();
+      runWhenActive(loadDashboard);
+    });
+  </script>
+
+  <script src="/nav-glider.js"></script>
+</body>
+</html>

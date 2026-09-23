@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1678f2">
+  <title>Hospital Command Center | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .hosp-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .hosp-kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .hosp-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+    }
+    .hosp-kpi-card.teal::before { background: #0d9488; }
+    .hosp-kpi-card.blue::before { background: #0284c7; }
+    .hosp-kpi-card.purple::before { background: #7c3aed; }
+    .hosp-kpi-card.amber::before { background: #d97706; }
+    .hosp-kpi-card.red::before { background: #dc2626; }
+    .hosp-kpi-val {
+      font-size: 1.85rem;
+      font-weight: 850;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin: 0.35rem 0 0.2rem;
+    }
+    .hosp-kpi-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .hosp-quota-card {
+      background: linear-gradient(135deg, rgba(13, 148, 136, 0.08) 0%, rgba(2, 132, 199, 0.06) 100%);
+      border: 1.5px solid rgba(13, 148, 136, 0.25);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .quota-meter-track {
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+      position: relative;
+      margin-top: 0.5rem;
+    }
+    .quota-meter-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+    .filter-bar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      align-items: flex-end;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .dossier-grid-2col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .dossier-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+    .dossier-title {
+      font-size: 0.85rem;
+      font-weight: 750;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+  </style>
+  <link rel="stylesheet" href="/hospital.css">
+</head>
+<body class="hms">
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon" style="background: linear-gradient(135deg, #0d9488, #0f766e);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel" style="color: #0d9488;">HOSPITAL CONSOLE</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav" aria-label="Hospital navigation">
+      <div class="hms-nav-label">WORKSPACE</div>
+      <a class="sidebar-link active" href="#overview" data-view="overview"><span class="nav-icon-box" data-icon="dashboard"></span><span class="link-label">Overview</span></a>
+      <a class="sidebar-link" href="#patients" data-view="patients"><span class="nav-icon-box" data-icon="users"></span><span class="link-label">Patients</span></a>
+      <a class="sidebar-link" href="#insights" data-view="insights"><span class="nav-icon-box" data-icon="chart"></span><span class="link-label">Clinical insights</span></a>
+      <div class="hms-nav-label">MANAGEMENT</div>
+      <a class="sidebar-link" href="#staff" data-view="staff"><span class="nav-icon-box" data-icon="staff"></span><span class="link-label">Staff &amp; access</span></a>
+      <a class="sidebar-link" href="#hospital" data-view="hospital"><span class="nav-icon-box" data-icon="hospital"></span><span class="link-label">Hospital profile</span></a>
+    </nav>
+    <div class="hms-sidebar-note"><span data-icon="shield"></span><strong>Care, connected.</strong><p>One workspace for your hospital and community care network.</p><span class="hms-version">MEDPULSE / HOSPITAL</span></div>
+    <div class="sidebar-footer">
+      <div id="authNavArea"></div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-content">
+    <div class="container" style="max-width: 1240px;">
+
+      <header class="hms-topbar">
+        <div class="hms-breadcrumb"><button class="hms-icon-btn" onclick="toggleSidebar()" aria-label="Toggle navigation" data-icon="menu"></button><span>Workspace</span><span class="hms-separator">/</span><strong id="hmsBreadcrumb">Overview</strong></div>
+        <div class="hms-top-actions"><span class="hms-date" id="hmsDate"></span><span class="hms-avatar" id="hmsAvatar" aria-hidden="true">MP</span></div>
+      </header>
+      <div class="hms-page-heading"><div><div class="hms-eyebrow">HOSPITAL COMMAND CENTRE</div><h1 id="hmsPageTitle">Hospital overview</h1><p id="hmsPageSubtitle">A clear picture of your care network, all in one place.</p></div><div class="hms-heading-actions"><button class="btn btn-secondary" id="hmsRefresh" onclick="loadHospitalData()"><span data-icon="refresh"></span> Refresh</button><button class="btn btn-primary" onclick="hmsNavigate('patients')"><span data-icon="users"></span> View patients</button></div></div>
+      <div id="hmsError" class="hms-error" role="alert" hidden></div>
+      <section class="hms-welcome" data-page="overview"><div><span class="hms-eyebrow">YOUR CONNECTED CARE WORKSPACE</span><h2 id="hmsGreeting">Welcome to MedPulse</h2><p>Better visibility. More coordinated care.<br>Stay close to the patients and teams that matter.</p><button class="hms-text-btn" onclick="hmsNavigate('staff')">Manage your care team <span aria-hidden="true">&#8594;</span></button></div><div class="hms-care-art" aria-hidden="true"><div class="hms-orbit orbit-one"></div><div class="hms-orbit orbit-two"></div><div class="hms-art-cross">+</div><div class="hms-art-tag tag-one"><span data-icon="heart"></span> Patient-first care</div><div class="hms-art-tag tag-two"><span class="hms-dot"></span> Connected teams</div></div></section>
+      <!-- Institutional Profile & Quota Meter Card -->
+      <div class="hosp-quota-card" data-page="hospital staff" hidden>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 46px; height: 46px; border-radius: var(--radius-lg); background: #0d9488; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);">
+              🏥
+            </div>
+            <div>
+              <h2 id="hospNameHeader" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.15rem 0;">
+                Loading Hospital...
+              </h2>
+              <div id="hospMetaHeader" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">
+                Code: - • Civil / General Hospital • Gandhinagar
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span class="badge badge-success" id="hospStatusBadge">Hospital profile</span>
+            <span class="badge badge-info" id="hospBedsBadge">? Beds</span>
+          </div>
+        </div>
+
+        <!-- Strict Staff Quota Meters (1~3 Super Admins, max 20 Admins) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          
+          <!-- Meter 1: Hospital Super Admins (Strict Quota: 1 to 3) -->
+          <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">👑 Hospital Super Admins</span>
+              <span id="superAdminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">? / ? Seats</span>
+            </div>
+            <div class="quota-meter-track">
+              <div id="superAdminMeterBar" class="quota-meter-fill" style="width: 0%; background: linear-gradient(90deg, #0d9488, #0284c7);"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.45rem; font-size: 0.75rem; color: var(--text-muted);">
+              <span>Super administrator capacity</span>
+              <span id="superAdminRemainingLabel" style="font-weight: 650; color: #0d9488;">Loading seats</span>
+            </div>
+          </div>
+
+          <!-- Meter 2: Hospital Admins (Strict Quota: Max 20) -->
+          <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">👥 Hospital Clinical Admins</span>
+              <span id="adminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">? / ? Seats</span>
+            </div>
+            <div class="quota-meter-track">
+              <div id="adminMeterBar" class="quota-meter-fill" style="width: 0%; background: linear-gradient(90deg, #0284c7, #6366f1);"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.45rem; font-size: 0.75rem; color: var(--text-muted);">
+              <span>Clinical administrator capacity</span>
+              <span id="adminRemainingLabel" style="font-weight: 650; color: #0284c7;">Loading seats</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Executive Clinical KPIs -->
+      <div class="hosp-kpi-grid" data-page="overview insights">
+        <div class="hosp-kpi-card teal">
+          <div class="hosp-kpi-label">Monitored Patients</div>
+          <div class="hosp-kpi-val" id="kpiTotalPatients">?</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Unified Network</span>
+        </div>
+        <div class="hosp-kpi-card blue">
+          <div class="hosp-kpi-label">Independent Walk-ins</div>
+          <div class="hosp-kpi-val" id="kpiIndependentPatients">?</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Self-Registered</span>
+        </div>
+        <div class="hosp-kpi-card purple">
+          <div class="hosp-kpi-label">Cadet Supervised</div>
+          <div class="hosp-kpi-val" id="kpiDependentPatients">?</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Adopted by Students</span>
+        </div>
+        <div class="hosp-kpi-card amber">
+          <div class="hosp-kpi-label">Hypertension (HTN)</div>
+          <div class="hosp-kpi-val" id="kpiHtnCases">?</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Chronic BP Flag</span>
+        </div>
+        <div class="hosp-kpi-card red">
+          <div class="hosp-kpi-label">Diabetes (DM)</div>
+          <div class="hosp-kpi-val" id="kpiDmCases">?</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">High RBS Flag</span>
+        </div>
+        <div class="hosp-kpi-card teal">
+          <div class="hosp-kpi-label">Follow-up Visits</div>
+          <div class="hosp-kpi-val" id="kpiFollowUps">?</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Longitudinal Records</span>
+        </div>
+      </div>
+
+      <section class="hms-insight-grid" data-page="overview insights">
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>Patient distribution</h2><p>How patients connect to your hospital</p></div><span class="hms-chip">All time</span></div><div class="hms-distribution"><div class="hms-donut" id="hmsDonut" role="img" aria-label="Patient distribution loading"><div><strong id="hmsPatientTotal">?</strong><span>Total patients</span></div></div><div class="hms-legend"><div><span class="hms-dot"></span><span>Independent patients<small>Self-registered care</small></span><strong id="hmsIndependent">?</strong></div><div><span class="hms-dot purple"></span><span>Supervised patients<small>Student-led community care</small></span><strong id="hmsDependent">?</strong></div><p id="hmsDistributionNote">Loading patient distribution?</p></div></div></article>
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>Clinical monitoring</h2><p>Recorded conditions across linked patients</p></div><span class="hms-icon-soft" data-icon="heart"></span></div><div id="hmsConditions" class="hms-condition-list"><p class="hms-empty">Loading clinical indicators?</p></div><p class="hms-footnote">A patient may have more than one recorded condition.</p></article>
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>University network</h2><p>Community care across institutions</p></div><span class="hms-icon-soft" data-icon="hospital"></span></div><div id="hmsUniversities" class="hms-university-list"><p class="hms-empty">Loading institutions?</p></div></article>
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>Your care team</h2><p>Hospital administration and access</p></div><button class="hms-text-btn" onclick="hmsNavigate('staff')">View all &#8594;</button></div><div id="hmsTeam"><p class="hms-empty">Loading team?</p></div></article>
+      </section>
+      <section class="hms-panel hms-registry-preview" data-page="overview"><div class="hms-panel-heading"><div><h2>Patient registry</h2><p>Your hospital's registered care network</p></div><button class="hms-text-btn" onclick="hmsNavigate('patients')">View registry &#8594;</button></div><div id="hmsPatientPreview"><p class="hms-empty">Loading patients?</p></div></section>
+      <!-- Main Workspace Card: Tabs & Content -->
+      <div class="card hms-workspace" data-page="patients staff" hidden style="padding: 1.5rem;">
+
+        <!-- View Switcher Tabs -->
+        <div class="hms-legacy-tabs">
+          <button class="btn" id="tabViewPatients" onclick="switchView('patients')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-weight: 700; border-bottom: 3px solid #0d9488; color: #0d9488; background: transparent;">
+            📋 Patient registry
+          </button>
+          <button class="btn" id="tabViewStaff" onclick="switchView('staff')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-weight: 600; border-bottom: 3px solid transparent; color: var(--text-muted); background: transparent;">
+            👥 Staff &amp; access
+          </button>
+        </div>
+
+        <!-- SECTION 1: Patient Surveillance Registry -->
+        <div id="sectionPatients">
+          <!-- Filter Controls -->
+          <div class="filter-bar-grid">
+            <div>
+              <label for="filterUniversity" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">University Institution</label>
+              <select id="filterUniversity" onchange="applyFilters()">
+                <option value="">All Universities</option>
+              </select>
+            </div>
+            <div>
+              <label for="filterCadet" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">Medical Cadet</label>
+              <select id="filterCadet" onchange="applyFilters()">
+                <option value="">All Cadets</option>
+              </select>
+            </div>
+            <div>
+              <label for="filterModel" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">Patient Model</label>
+              <select id="filterModel" onchange="applyFilters()">
+                <option value="">All Models</option>
+                <option value="Independent">Independent Walk-in</option>
+                <option value="Dependent">Dependent (Adopted)</option>
+              </select>
+            </div>
+            <div>
+              <label for="filterCondition" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">Clinical Condition</label>
+              <select id="filterCondition" onchange="applyFilters()">
+                <option value="">All Conditions</option>
+                <option value="HTN">Hypertension (HTN)</option>
+                <option value="DM">Diabetes Mellitus (DM)</option>
+                <option value="Anaemia">Anaemia</option>
+                <option value="Pediatric">Pediatric (< 5 yrs / Nutrition)</option>
+              </select>
+            </div>
+            <div>
+              <label for="filterSearch" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">Patient Search</label>
+              <input type="text" id="filterSearch" placeholder="Name, Phone, or UID..." oninput="debounceApplyFilters()">
+            </div>
+            <div>
+              <button class="btn btn-secondary" onclick="resetFilters()" style="width: 100%;">
+                Reset Filters
+              </button>
+            </div>
+          </div>
+
+          <!-- Patients Table -->
+          <div class="table-responsive">
+            <table class="table" id="patientsTable">
+              <thead>
+                <tr>
+                  <th>Patient UID</th>
+                  <th>Patient Name</th>
+                  <th>Age / Sex</th>
+                  <th>Model Type</th>
+                  <th>Care team / Institution</th>
+                  <th>Baseline vitals</th>
+                  <th>Conditions</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="patientsTableBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Loading surveillance registry...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECTION 2: Hospital Staff & Quota Management -->
+        <div id="sectionStaff" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.2rem 0;">
+                Hospital staff
+              </h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                Enforces strict institutional governance: 1 to 3 Super Admins and up to 20 Hospital Admins.
+              </p>
+            </div>
+            <button class="btn btn-primary" id="btnAppointStaff" onclick="openAppointStaffModal()" style="background: linear-gradient(135deg, #0d9488, #0f766e); border: none;">
+              + Appoint Hospital Staff
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table" id="staffTable">
+              <thead>
+                <tr>
+                  <th>Staff Name</th>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Department</th>
+                  <th>Phone / Email</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staffTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Loading staff roster...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ==========================================================
+       MODAL: COMPREHENSIVE MEDICAL DOSSIER
+       ========================================================== -->
+  <div id="patientDossierModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 860px; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.85rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <span class="badge badge-info" id="dosUid">-</span>
+            <span class="badge" id="dosModelBadge">-</span>
+          </div>
+          <h2 id="dosName" style="color: var(--primary); font-size: 1.35rem; font-weight: 850; margin: 0;">-</h2>
+          <div id="dosDemographics" style="font-size: 0.825rem; color: var(--text-muted);">-</div>
+        </div>
+        <button class="btn btn-secondary" onclick="closeDossierModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕ Close</button>
+      </div>
+
+      <!-- Supervisor & Institution Attribution Banner -->
+      <div id="dosSupervisorBanner" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <span style="font-size: 0.72rem; color: #166534; font-weight: 800; text-transform: uppercase; display: block;">Supervising Medical Cadet &amp; University</span>
+          <strong id="dosCadetName" style="color: #15803d; font-size: 0.95rem;">-</strong>
+        </div>
+        <div id="dosCadetMeta" style="font-size: 0.8rem; color: #166534;">-</div>
+      </div>
+
+      <!-- Vitals & Physical Exam Grid -->
+      <div class="dossier-grid-2col">
+        <div class="dossier-box">
+          <div class="dossier-title">🩺 Baseline vitals &amp; Screenings</div>
+          <div id="dosVitalsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; font-size: 0.825rem;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="dossier-box">
+          <div class="dossier-title">🏷️ Recorded Chronic Diagnoses</div>
+          <div id="dosConditionsContent" style="font-size: 0.825rem;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <div class="dossier-grid-2col">
+        <div class="dossier-box">
+          <div class="dossier-title">💊 Active Medications &amp; Adherence</div>
+          <div id="dosMedicationsContent" style="font-size: 0.825rem;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="dossier-box">
+          <div class="dossier-title">⚠️ Allergies &amp; ADRs</div>
+          <div id="dosAllergiesContent" style="font-size: 0.825rem;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Longitudinal Follow-up Visits -->
+      <div class="dossier-box" style="margin-top: 0.5rem;">
+        <div class="dossier-title">📅 Longitudinal Examination Visits</div>
+        <div id="dosFollowUpsContent" style="font-size: 0.825rem;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: APPOINT HOSPITAL STAFF
+       ========================================================== -->
+  <div id="appointStaffModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="color: var(--primary); font-size: 1.25rem; font-weight: 800; margin: 0;">+ Appoint Hospital Staff</h2>
+        <button class="btn btn-secondary" onclick="closeAppointStaffModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+      </div>
+
+      <form id="appointStaffForm" onsubmit="event.preventDefault(); submitAppointStaff();">
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="asRole">Administrative Role *</label>
+          <select id="asRole" onchange="checkRoleQuotaAvailability()" required>
+            <option value="Hospital Admin">Hospital Admin (Max 20)</option>
+            <option value="Hospital Super Admin">Hospital Super Admin (Max 3)</option>
+          </select>
+          <small id="asQuotaHint" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 3px;"></small>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="asName">Full Staff Name *</label>
+          <input type="text" id="asName" placeholder="e.g. Dr. Priya Shah" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="asUsername">Login Username *</label>
+          <input type="text" id="asUsername" placeholder="e.g. dr_priya" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label for="asDept">Department</label>
+          <input type="text" id="asDept" placeholder="e.g. OPD & Internal Medicine" value="General Medicine">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label for="asPhone">Contact Phone</label>
+            <input type="tel" id="asPhone" placeholder="10 digits">
+          </div>
+          <div class="form-group">
+            <label for="asPin">Security PIN</label>
+            <input type="text" id="asPin" value="8888" maxlength="6" style="letter-spacing: 2px; font-weight: 700;">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeAppointStaffModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitAppoint" style="background: linear-gradient(135deg, #0d9488, #0f766e); border: none;">
+            ✨ Appoint Staff Member
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MODAL: RESET PIN
+       ========================================================== -->
+  <div id="resetPinModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 400px;">
+      <h3 style="color: var(--primary); font-size: 1.15rem; font-weight: 800; margin-bottom: 0.75rem;">🔑 Reset Security PIN</h3>
+      <p id="resetPinTargetName" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">-</p>
+      <input type="hidden" id="resetPinStaffId">
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="newPinInput">New 4-6 Digit Security PIN</label>
+        <input type="password" id="newPinInput" minlength="4" maxlength="8" placeholder="e.g. 8888" required>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeResetPinModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitResetPin()">Save New PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    let hospitalData = null;
+    let staffData = [];
+    let filterOptions = { universities: [], students: [] };
+    let currentFilterDebounce = null;
+    let patientRequestVersion = 0;
+    let currentQuota = { super_admins: {}, admins: {} };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      initHms();
+      if (typeof window.renderSidebarUserBadge === 'function') {
+        window.renderSidebarUserBadge();
+      } else if (typeof window.refreshSidebarUser === 'function') {
+        window.refreshSidebarUser();
+      }
+      loadHospitalData();
+    });
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    function showToast(message, type = 'info', duration = 3200) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${hmsEscape(message)}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 200);
+      }, duration);
+    }
+
+    function switchView(view) {
+      hmsNavigate(view);
+    }
+
+    async function loadHospitalData() {
+      const refresh = document.getElementById('hmsRefresh');
+      refresh.disabled = true;
+      document.getElementById('hmsError').hidden = true;
+      try {
+        // Fetch Profile & Hospital Entity
+        const profRes = await fetch('/api/hospital/profile');
+        const profData = await profRes.json();
+        if (!profRes.ok) throw new Error(profData.error || "Unable to load hospital profile");
+        if (profData.admin) {
+          renderHmsProfile(profData.admin);
+          const adm = profData.admin;
+          document.getElementById('hospNameHeader').textContent = adm.hospital_name || 'Civil Hospital';
+          document.getElementById('hospMetaHeader').textContent = `Code: ${adm.hospital_code || 'HOSP-01'} • ${adm.hospital_type || 'Civil / General Hospital'} • ${adm.hospital_city || 'Gandhinagar'}`;
+          document.getElementById('hospBedsBadge').textContent = `${adm.bed_capacity ?? '?'} Beds`;
+        }
+
+        // Fetch Stats
+        const statsRes = await fetch('/api/hospital/stats');
+        const stats = await statsRes.json();
+        if (!statsRes.ok) throw new Error(stats.error || "Unable to load hospital statistics");
+        if (statsRes.ok) {
+          renderHmsStats(stats);
+          document.getElementById('kpiTotalPatients').textContent = stats.totals.total_patients || 0;
+          document.getElementById('kpiIndependentPatients').textContent = stats.totals.independent_patients || 0;
+          document.getElementById('kpiDependentPatients').textContent = stats.totals.dependent_patients || 0;
+          document.getElementById('kpiHtnCases').textContent = stats.morbidities.htn_cases || 0;
+          document.getElementById('kpiDmCases').textContent = stats.morbidities.dm_cases || 0;
+          document.getElementById('kpiFollowUps').textContent = stats.totals.follow_up_visits || 0;
+        }
+
+        // Fetch Staff & Quota
+        await loadStaffRoster();
+
+        const selectedUniversity = document.getElementById('filterUniversity').value;
+        const selectedCadet = document.getElementById('filterCadet').value;
+        // Fetch Filter Options
+        const optRes = await fetch('/api/hospital/filter-options');
+        const optData = await optRes.json();
+        if (optRes.ok) {
+          filterOptions = optData;
+          populateFilterDropdowns();
+          document.getElementById('filterUniversity').value = selectedUniversity;
+          document.getElementById('filterCadet').value = selectedCadet;
+        }
+
+        // Load Initial Patients
+        await applyFilters();
+
+      } catch (err) {
+        document.getElementById('hmsError').textContent = err.message + '. Use Refresh to try again.';
+        document.getElementById('hmsError').hidden = false;
+      } finally {
+        refresh.disabled = false;
+      }
+    }
+
+    function populateFilterDropdowns() {
+      const uniSel = document.getElementById('filterUniversity');
+      uniSel.innerHTML = '<option value="">All Universities</option>';
+      if (filterOptions.universities) {
+        filterOptions.universities.forEach(u => {
+          uniSel.innerHTML += `<option value="${u.id}">${u.name} (${u.code})</option>`;
+        });
+      }
+
+      const cadetSel = document.getElementById('filterCadet');
+      cadetSel.innerHTML = '<option value="">All Cadets</option>';
+      if (filterOptions.students) {
+        filterOptions.students.forEach(s => {
+          cadetSel.innerHTML += `<option value="${s.id}">Roll ${s.roll_number} - ${s.name} (${s.college_name || 'Cadet'})</option>`;
+        });
+      }
+    }
+
+    function debounceApplyFilters() {
+      clearTimeout(currentFilterDebounce);
+      currentFilterDebounce = setTimeout(applyFilters, 300);
+    }
+
+    function resetFilters() {
+      document.getElementById('filterUniversity').value = '';
+      document.getElementById('filterCadet').value = '';
+      document.getElementById('filterModel').value = '';
+      document.getElementById('filterCondition').value = '';
+      document.getElementById('filterSearch').value = '';
+      applyFilters();
+    }
+
+    async function applyFilters() {
+      const requestVersion = ++patientRequestVersion;
+      const uniId = document.getElementById('filterUniversity').value;
+      const cadetId = document.getElementById('filterCadet').value;
+      const model = document.getElementById('filterModel').value;
+      const cond = document.getElementById('filterCondition').value;
+      const search = document.getElementById('filterSearch').value.trim();
+
+      const params = new URLSearchParams();
+      if (uniId) params.set('university_id', uniId);
+      if (cadetId) params.set('student_id', cadetId);
+      if (model) params.set('model_type', model);
+      if (cond) params.set('condition', cond);
+      if (search) params.set('search', search);
+
+      const tbody = document.getElementById('patientsTableBody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading filtered records...</td></tr>`;
+
+      try {
+        const res = await fetch(`/api/hospital/patients?${params.toString()}`);
+        const data = await res.json();
+        if (requestVersion !== patientRequestVersion) return;
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch patients');
+
+        if (!params.toString()) renderHmsPatients(data.patients || []);
+        if (!data.patients || data.patients.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching patient records found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.patients.map(p => {
+          const isDep = p.model_type === 'Dependent';
+          const modelBadge = isDep 
+            ? `<span class="badge" style="background: rgba(124, 58, 237, 0.12); color: #7c3aed; border: 1px solid rgba(124, 58, 237, 0.3);">Adopted Dependent</span>`
+            : `<span class="badge" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3);">Independent</span>`;
+
+          const attribution = isDep
+            ? `<strong>${p.student_name || 'Cadet'}</strong> (Roll ${p.student_roll || '-'})<br><small style="color: var(--text-muted);">${p.university_name || 'Medical College'}</small>`
+            : `<span style="color: var(--text-muted); font-style: italic;">Hospital Walk-in</span>`;
+
+          const bpText = p.sbp && p.dbp ? `${p.sbp}/${p.dbp} mmHg` : '-';
+          const rbsText = p.rbs ? `${p.rbs} mg/dL` : '-';
+          const vitalsSummary = `<small>BP: <strong>${bpText}</strong> • RBS: <strong>${rbsText}</strong></small>`;
+
+          const condSummary = p.conditions_summary 
+            ? p.conditions_summary.split(',').map(c => `<span class="badge badge-warning" style="font-size: 0.72rem; margin: 2px;">${c.trim()}</span>`).join(' ')
+            : `<span style="color: var(--text-muted); font-size: 0.75rem;">None noted</span>`;
+
+          return `
+            <tr>
+              <td><strong style="color: #0284c7; font-family: monospace;">${p.patient_uid}</strong></td>
+              <td><strong>${p.name}</strong><br><small style="color: var(--text-muted);">📞 ${p.phone}</small></td>
+              <td>${p.age_years || '-'} yrs (${p.gender || '-'})</td>
+              <td>${modelBadge}</td>
+              <td>${attribution}</td>
+              <td>${vitalsSummary}</td>
+              <td>${condSummary}</td>
+              <td>
+                <button class="btn btn-secondary" onclick="openPatientDossier(${p.id})" style="font-size: 0.78rem; padding: 0.3rem 0.65rem;">
+                  🔍 Dossier
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        if (requestVersion !== patientRequestVersion) return;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 1.5rem;">${hmsEscape(err.message)}. Use Refresh to retry.</td></tr>`;
+        document.getElementById("hmsPatientPreview").innerHTML = '<p class="hms-empty">Patient records could not be loaded. Use Refresh to retry.</p>';
+      }
+    }
+
+    async function loadStaffRoster() {
+      try {
+        const res = await fetch('/api/hospital/staff');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load staff roster');
+
+        currentQuota = data.quota;
+        const sq = data.quota.super_admins;
+        const aq = data.quota.admins;
+
+        // Update Super Admin Meter
+        document.getElementById('superAdminMeterLabel').textContent = `${sq.current} / ${sq.max} Seats`;
+        document.getElementById('superAdminMeterBar').style.width = `${Math.min(100, (sq.current / sq.max) * 100)}%`;
+        document.getElementById('superAdminRemainingLabel').textContent = sq.is_at_capacity ? 'Capacity full' : `${sq.remaining} seats free`;
+
+        // Update Admin Meter
+        document.getElementById('adminMeterLabel').textContent = `${aq.current} / ${aq.max} Seats`;
+        document.getElementById('adminMeterBar').style.width = `${Math.min(100, (aq.current / aq.max) * 100)}%`;
+        document.getElementById('adminRemainingLabel').textContent = aq.is_at_capacity ? 'Capacity full' : `${aq.remaining} seats free`;
+
+        // Disable appoint button if both quotas are full
+        const btnAppoint = document.getElementById('btnAppointStaff');
+        if (sq.is_at_capacity && aq.is_at_capacity) {
+          btnAppoint.disabled = true;
+          btnAppoint.title = 'Hospital staff quotas at maximum capacity';
+        } else {
+          btnAppoint.disabled = false;
+        }
+
+        // Render Staff Table
+        const tbody = document.getElementById('staffTableBody');
+        staffData = data.staff || [];
+        renderHmsTeam(staffData);
+        if (staffData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No staff members found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = staffData.map(s => {
+          const isSuper = s.role === 'Hospital Super Admin';
+          const roleBadge = isSuper
+            ? `<span class="badge" style="background: rgba(217, 119, 6, 0.12); color: #d97706; border: 1px solid rgba(217, 119, 6, 0.3);">👑 Super Admin</span>`
+            : `<span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3);">👥 Hospital Admin</span>`;
+
+          return `
+            <tr>
+              <td><strong>${s.name}</strong></td>
+              <td><span style="font-family: monospace; color: var(--text-secondary);">${s.username}</span></td>
+              <td>${roleBadge}</td>
+              <td>${s.department || 'General Medicine'}</td>
+              <td>📞 ${s.phone || '-'}</td>
+              <td><span class="badge badge-success">${s.status}</span></td>
+              <td>
+                <button class="btn btn-secondary" onclick="openResetPinModal(${s.id}, '${s.name}')" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" title="Reset PIN">
+                  🔑 PIN
+                </button>
+                <button class="btn btn-danger" onclick="deleteStaff(${s.id}, '${s.name}', '${s.role}')" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" title="Revoke Staff Seat">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function openPatientDossier(patientId) {
+      try {
+        const res = await fetch(`/api/hospital/patients/${patientId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch medical dossier');
+
+        const p = data.patient;
+        document.getElementById('dosUid').textContent = p.patient_uid;
+        document.getElementById('dosName').textContent = p.name;
+        document.getElementById('dosDemographics').textContent = `${p.age_years || '-'} yrs (${p.gender || '-'}) • Contact: ${p.phone || '-'} • Address: ${p.address || 'Gandhinagar District'}`;
+
+        const isDep = p.model_type === 'Dependent';
+        const badge = document.getElementById('dosModelBadge');
+        badge.textContent = isDep ? 'Cadet Adopted Dependent' : 'Independent Walk-in Patient';
+        badge.className = isDep ? 'badge badge-warning' : 'badge badge-info';
+
+        // Attribution
+        const supBanner = document.getElementById('dosSupervisorBanner');
+        if (isDep && p.student_name) {
+          supBanner.style.display = 'flex';
+          document.getElementById('dosCadetName').textContent = `Dr. ${p.student_name} (Roll ${p.student_roll})`;
+          document.getElementById('dosCadetMeta').textContent = `${p.university_name || 'Medical College'} • 📞 ${p.student_phone || 'Unit'}`;
+        } else {
+          supBanner.style.display = 'none';
+        }
+
+        // Vitals
+        const v = data.vitals || {};
+        document.getElementById('dosVitalsContent').innerHTML = `
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Blood Pressure</span><strong>${v.sbp && v.dbp ? `${v.sbp}/${v.dbp} mmHg` : 'Unmeasured'}</strong></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Blood Sugar (RBS)</span><strong>${v.rbs ? `${v.rbs} mg/dL` : 'Untested'}</strong></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Hemoglobin (Hb)</span><strong>${v.hb ? `${v.hb} g/dL` : 'Untested'}</strong></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Body Mass Index</span><strong>${v.bmi || 'Uncalculated'}</strong></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Hypertension</span><span>${v.has_htn === 'Y' ? '⚠️ Yes' : 'No'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Diabetes Mellitus</span><span>${v.has_dm === 'Y' ? '⚠️ Yes' : 'No'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Anaemia Flag</span><span>${v.has_anaemia === 'Y' ? '⚠️ Yes' : 'No'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Pediatric MUAC</span><span>${v.muac_cm ? `${v.muac_cm} cm` : 'NA'}</span></div>
+        `;
+
+        // Conditions
+        const condContainer = document.getElementById('dosConditionsContent');
+        if (data.conditions && data.conditions.length > 0) {
+          condContainer.innerHTML = data.conditions.map(c => `
+            <div style="border-bottom: 1px solid var(--border-light); padding: 0.35rem 0;">
+              <strong>${c.condition_name}</strong> <span class="badge badge-info" style="font-size: 0.7rem;">${c.category || 'General'}</span>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Diagnosed: ${c.diagnosis_date || 'Baseline'} • Status: ${c.status || 'Active'}</div>
+            </div>
+          `).join('');
+        } else {
+          condContainer.innerHTML = '<div style="color: var(--text-muted);">No chronic conditions recorded.</div>';
+        }
+
+        // Medications
+        const medContainer = document.getElementById('dosMedicationsContent');
+        if (data.medications && data.medications.length > 0) {
+          medContainer.innerHTML = data.medications.map(m => `
+            <div style="border-bottom: 1px solid var(--border-light); padding: 0.35rem 0;">
+              <strong>${m.drug_name}</strong> (${m.dosage || 'Prescribed dose'})
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Freq: ${m.frequency || 'Daily'} • Adherence: <strong>${m.adherence_level || 'Good'}</strong></div>
+            </div>
+          `).join('');
+        } else {
+          medContainer.innerHTML = '<div style="color: var(--text-muted);">No active medications recorded.</div>';
+        }
+
+        // Allergies
+        const algContainer = document.getElementById('dosAllergiesContent');
+        if (data.allergies && data.allergies.length > 0) {
+          algContainer.innerHTML = data.allergies.map(a => `
+            <div style="border-bottom: 1px solid var(--border-light); padding: 0.35rem 0;">
+              <span class="badge badge-danger" style="font-size: 0.7rem;">${a.severity || 'Moderate'}</span> <strong>${a.allergen}</strong>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Reaction: ${a.reaction_description || 'Adverse reaction'}</div>
+            </div>
+          `).join('');
+        } else {
+          algContainer.innerHTML = '<div style="color: var(--text-muted);">No known allergies or ADRs reported.</div>';
+        }
+
+        // Follow-ups
+        const fuContainer = document.getElementById('dosFollowUpsContent');
+        if (data.follow_ups && data.follow_ups.length > 0) {
+          fuContainer.innerHTML = data.follow_ups.map((fu, idx) => `
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; margin-bottom: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; font-weight: 750;">
+                <span>Visit #${data.follow_ups.length - idx}: ${fu.visit_date}</span>
+                <span class="badge badge-success">${fu.health_progress || 'Stable'}</span>
+              </div>
+              <div style="font-size: 0.8rem; margin: 0.35rem 0;">
+                BP: <strong>${fu.sbp && fu.dbp ? `${fu.sbp}/${fu.dbp} mmHg` : '-'}</strong> • Sugar: <strong>${fu.rbs || '-'} mg/dL</strong> • Compliance: <strong>${fu.treatment_compliance || 'Good'}</strong>
+              </div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">
+                "${fu.clinical_notes || 'Consultation recorded by medical cadet.'}"
+              </div>
+            </div>
+          `).join('');
+        } else {
+          fuContainer.innerHTML = '<div style="color: var(--text-muted);">No follow-up examination visits recorded yet.</div>';
+        }
+
+        document.getElementById('patientDossierModal').style.display = 'flex';
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function closeDossierModal() {
+      document.getElementById('patientDossierModal').style.display = 'none';
+    }
+
+    function openAppointStaffModal() {
+      checkRoleQuotaAvailability();
+      document.getElementById('appointStaffForm').reset();
+      document.getElementById('appointStaffModal').style.display = 'flex';
+    }
+
+    function closeAppointStaffModal() {
+      document.getElementById('appointStaffModal').style.display = 'none';
+    }
+
+    function checkRoleQuotaAvailability() {
+      const role = document.getElementById('asRole').value;
+      const hint = document.getElementById('asQuotaHint');
+      const btn = document.getElementById('btnSubmitAppoint');
+
+      if (role === 'Hospital Super Admin') {
+        const sq = currentQuota.super_admins;
+        hint.textContent = `Super Admins: ${sq.current} of ${sq.max} used (${sq.remaining} seats remaining)`;
+        if (sq.is_at_capacity) {
+          hint.style.color = '#ef4444';
+          hint.textContent += ' ⚠️ Quota full! Cannot appoint more Super Admins.';
+          btn.disabled = true;
+        } else {
+          hint.style.color = '#0d9488';
+          btn.disabled = false;
+        }
+      } else {
+        const aq = currentQuota.admins;
+        hint.textContent = `Hospital Admins: ${aq.current} of ${aq.max} used (${aq.remaining} seats remaining)`;
+        if (aq.is_at_capacity) {
+          hint.style.color = '#ef4444';
+          hint.textContent += ' ⚠️ Quota full! Cannot appoint more Hospital Admins.';
+          btn.disabled = true;
+        } else {
+          hint.style.color = '#0d9488';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    async function submitAppointStaff() {
+      const role = document.getElementById('asRole').value;
+      const name = document.getElementById('asName').value.trim();
+      const username = document.getElementById('asUsername').value.trim();
+      const department = document.getElementById('asDept').value.trim();
+      const phone = document.getElementById('asPhone').value.trim();
+      const pin = document.getElementById('asPin').value.trim();
+
+      const btn = document.getElementById('btnSubmitAppoint');
+      btn.disabled = true;
+      btn.textContent = 'Appointing...';
+
+      try {
+        const res = await fetch('/api/hospital/staff', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, name, username, department, phone, pin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to appoint staff');
+
+        showToast(data.message || 'Staff member appointed!', 'success');
+        closeAppointStaffModal();
+        await loadStaffRoster();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Appoint Staff Member';
+      }
+    }
+
+    function openResetPinModal(id, name) {
+      document.getElementById('resetPinStaffId').value = id;
+      document.getElementById('resetPinTargetName').textContent = `Set new PIN for ${name}`;
+      document.getElementById('newPinInput').value = '';
+      document.getElementById('resetPinModal').style.display = 'flex';
+      document.getElementById('newPinInput').focus();
+    }
+
+    function closeResetPinModal() {
+      document.getElementById('resetPinModal').style.display = 'none';
+    }
+
+    async function submitResetPin() {
+      const staffId = document.getElementById('resetPinStaffId').value;
+      const pin = document.getElementById('newPinInput').value.trim();
+
+      if (!pin || pin.length < 4) {
+        showToast('PIN must be at least 4 digits', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/hospital/staff/${staffId}/reset-pin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to reset PIN');
+
+        showToast(data.message || 'PIN updated!', 'success');
+        closeResetPinModal();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteStaff(id, name, role) {
+      if (role === 'Hospital Super Admin' && currentQuota.super_admins.current <= 1) {
+        showToast('Cannot delete the only remaining Hospital Super Admin.', 'error');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to remove ${name} (${role})?\nThis will immediately free up their quota seat.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/hospital/staff/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to remove staff');
+
+        showToast(data.message || 'Staff member removed and seat freed.', 'info');
+        await loadStaffRoster();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+  </script>
+
+  <script src="/hospital-ui.js"></script>
+</body>
+</html>

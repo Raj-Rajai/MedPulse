@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
+  <title>Patient Health Portal | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function () {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') document.documentElement.classList.add('sidebar-collapsed');
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* ============ Patient portal (CRM) — scoped styles, prefix .pt- ============ */
+    :root {
+      --pt: #0284c7;
+      --pt-dark: #075985;
+      --pt-soft: #e0f2fe;
+      --pt-soft-2: #f0f9ff;
+      --pt-border: #bae6fd;
+    }
+    .pt-wrap { max-width: 1180px; margin: 0 auto; }
+
+    /* Hero */
+    .pt-hero {
+      background: linear-gradient(135deg, #075985 0%, #0284c7 55%, #0ea5e9 100%);
+      border-radius: var(--radius-xl, 20px);
+      padding: 22px 24px;
+      color: #fff;
+      display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap;
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.22);
+      position: relative; overflow: hidden;
+    }
+    .pt-hero::after {
+      content: ''; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(255,255,255,0.14) 0%, transparent 70%); border-radius: 50%; pointer-events: none;
+    }
+    .pt-hero-id { display: flex; align-items: center; gap: 16px; min-width: 0; }
+    .pt-avatar {
+      width: 58px; height: 58px; flex: 0 0 58px; border-radius: 16px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+      display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 800; letter-spacing: 0.02em;
+    }
+    .pt-greet { font-size: 0.8rem; opacity: 0.85; font-weight: 600; }
+    .pt-name { font-size: 1.5rem; font-weight: 800; margin: 2px 0 6px; color: #fff; line-height: 1.15; word-break: break-word; }
+    .pt-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pt-chip {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 0.74rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+    }
+    .pt-chip.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .pt-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .pt-hero-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; cursor: pointer;
+      background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.32); color: #fff; font-weight: 700; font-size: 0.82rem;
+    }
+    .pt-hero-btn:hover { background: rgba(255,255,255,0.26); }
+
+    /* Tabs */
+    .pt-tabs {
+      position: sticky; top: 0; z-index: 20; margin: 16px 0 18px;
+      display: flex; gap: 4px; padding: 5px; overflow-x: auto; scrollbar-width: none;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(30, 27, 75, 0.05);
+    }
+    .pt-tabs::-webkit-scrollbar { display: none; }
+    .pt-tab {
+      flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 9px 14px; border-radius: 10px; border: 0; background: transparent; cursor: pointer;
+      font-weight: 700; font-size: 0.86rem; color: var(--text-secondary); white-space: nowrap;
+    }
+    .pt-tab:hover { background: var(--pt-soft-2); color: var(--pt-dark); }
+    .pt-tab.active { background: var(--pt); color: #fff; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
+    .pt-count {
+      min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 0.7rem; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center; background: #f59e0b; color: #fff;
+    }
+    .pt-tab.active .pt-count { background: #fff; color: var(--pt-dark); }
+    .pt-count:empty { display: none; }
+    .pt-panel { display: none; }
+    .pt-panel.active { display: block; animation: ptFade 0.25s ease; }
+    @keyframes ptFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* Generic blocks */
+    .pt-grid-2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px; }
+    @media (max-width: 960px) { .pt-grid-2 { grid-template-columns: 1fr; } }
+    .pt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; margin-bottom: 18px; }
+    .pt-card-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .pt-card-h h2 { font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px; }
+    .pt-sub { font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0; }
+    .pt-section-title { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 6px 0 10px; }
+    .pt-empty {
+      border: 1.5px dashed var(--border-hover); border-radius: 14px; padding: 22px; text-align: center;
+      color: var(--text-muted); font-size: 0.86rem; background: var(--bg-subtle);
+    }
+    .pt-empty .big { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+    .pt-empty strong { color: var(--text-primary); }
+
+    .pt-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px;
+      font-weight: 700; font-size: 0.83rem; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-primary); text-decoration: none; transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .pt-btn:hover { border-color: var(--pt-border); background: var(--pt-soft-2); }
+    .pt-btn:active { transform: scale(0.98); }
+    .pt-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .pt-btn.primary { background: var(--pt); border-color: var(--pt); color: #fff; }
+    .pt-btn.primary:hover { background: var(--pt-dark); }
+    .pt-btn.wa { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .pt-btn.wa:hover { background: #15803d; }
+    .pt-btn.ghost-danger { color: #b91c1c; }
+    .pt-btn.ghost-danger:hover { background: #fef2f2; border-color: #fecaca; }
+    .pt-btn.sm { padding: 6px 10px; font-size: 0.78rem; }
+
+    .pt-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
+    .pt-pill.ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .pt-pill.warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .pt-pill.bad { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pt-pill.info { background: var(--pt-soft); color: var(--pt-dark); border: 1px solid var(--pt-border); }
+    .pt-pill.mute { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Reminder banner */
+    .pt-reminder {
+      display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; margin-bottom: 12px;
+      background: linear-gradient(135deg, #fff7ed, #fffbeb); border: 1.5px solid #fdba74;
+    }
+    .pt-reminder .ic { font-size: 1.6rem; }
+    .pt-reminder .t { font-weight: 800; color: #9a3412; font-size: 0.95rem; }
+    .pt-reminder .d { font-size: 0.8rem; color: #9a3412; opacity: 0.85; }
+    .pt-reminder .grow { flex: 1; min-width: 0; }
+
+    /* Action centre */
+    .pt-action {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg-card); margin-bottom: 8px;
+    }
+    .pt-action .ic { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; background: var(--pt-soft); }
+    .pt-action .grow { flex: 1; min-width: 0; }
+    .pt-action .t { font-weight: 750; font-size: 0.88rem; color: var(--text-primary); }
+    .pt-action .d { font-size: 0.77rem; color: var(--text-muted); }
+    .pt-action .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    @media (max-width: 560px) { .pt-action { flex-wrap: wrap; } .pt-action .btns { width: 100%; } .pt-action .btns .pt-btn { flex: 1; } }
+
+    /* Vitals */
+    .pt-vitals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    @media (max-width: 420px) { .pt-vitals { grid-template-columns: 1fr; } }
+    .pt-vital { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; background: var(--bg-subtle); border-left: 4px solid #cbd5e1; }
+    .pt-vital.ok { border-left-color: #10b981; } .pt-vital.warn { border-left-color: #f59e0b; } .pt-vital.bad { border-left-color: #ef4444; }
+    .pt-vital .lbl { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; gap: 6px; }
+    .pt-vital .val { font-size: 1.45rem; font-weight: 800; color: var(--text-primary); margin: 2px 0; }
+    .pt-vital .val small { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
+    .pt-vital .hint { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.35; }
+
+    /* Care team */
+    .pt-care { display: flex; gap: 14px; align-items: center; }
+    .pt-care .av { width: 52px; height: 52px; flex: 0 0 52px; border-radius: 14px; background: var(--pt-soft); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .pt-care .nm { font-weight: 800; font-size: 1.02rem; color: var(--text-primary); }
+    .pt-care .meta { font-size: 0.78rem; color: var(--text-muted); }
+    .pt-care-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+    @media (max-width: 420px) { .pt-care-actions { grid-template-columns: 1fr; } }
+
+    /* Campaign cards */
+    .pt-camp { border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); margin-bottom: 14px; overflow: hidden; }
+    .pt-camp-top { padding: 16px 18px 0; }
+    .pt-camp-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .pt-kw { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; background: var(--pt); color: #fff; }
+    .pt-camp h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; }
+    .pt-camp p.desc { font-size: 0.86rem; color: var(--text-secondary); margin: 0 0 12px; line-height: 1.5; }
+    .pt-why {
+      display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; margin-bottom: 12px;
+      background: var(--pt-soft-2); border: 1px solid var(--pt-border); font-size: 0.82rem; color: var(--pt-dark); line-height: 1.45;
+    }
+    .pt-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px 16px; font-size: 0.81rem; color: var(--text-secondary); margin-bottom: 14px; }
+    .pt-meta b { color: var(--text-primary); font-weight: 700; }
+    .pt-camp-foot { border-top: 1px solid var(--border); background: var(--bg-subtle); padding: 12px 18px; }
+    .pt-rsvp-q { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
+    .pt-rsvp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    @media (max-width: 560px) { .pt-rsvp { grid-template-columns: 1fr; } }
+    .pt-rsvp button {
+      padding: 10px 8px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-card); cursor: pointer;
+      font-weight: 750; font-size: 0.83rem; color: var(--text-primary); transition: all 0.15s;
+    }
+    .pt-rsvp button:hover { border-color: var(--pt-border); background: var(--pt-soft-2); }
+    .pt-rsvp button.sel-Attending { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+    .pt-rsvp button.sel-NotAttending { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
+    .pt-rsvp button.sel-NeedHelp { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+    .pt-rsvp-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+    .pt-foot-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .pt-confirm {
+      margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: #eef2ff; border: 1px solid #c7d2fe;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.83rem; color: #3730a3;
+    }
+    .pt-confirm .grow { flex: 1; min-width: 200px; }
+    .pt-past { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; background: var(--bg-card); flex-wrap: wrap; }
+    .pt-past .t { font-weight: 750; font-size: 0.88rem; color: var(--text-primary); }
+    .pt-past .d { font-size: 0.76rem; color: var(--text-muted); }
+
+    /* Request form */
+    .pt-seg { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pt-seg label { cursor: pointer; }
+    .pt-seg input { position: absolute; opacity: 0; pointer-events: none; }
+    .pt-seg span {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--border);
+      font-weight: 700; font-size: 0.82rem; color: var(--text-secondary); background: var(--bg-card);
+    }
+    .pt-seg input:checked + span { border-color: var(--pt); background: var(--pt-soft); color: var(--pt-dark); }
+    .pt-seg input:focus-visible + span { outline: 2px solid var(--pt); outline-offset: 2px; }
+    .pt-form-row { margin-bottom: 12px; }
+    .pt-form-row > label.l { display: block; font-size: 0.78rem; font-weight: 750; color: var(--text-secondary); margin-bottom: 6px; }
+    .pt-form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 520px) { .pt-form-2 { grid-template-columns: 1fr; } }
+    .pt-input, .pt-select, .pt-textarea {
+      width: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--border);
+      font: inherit; font-size: 0.86rem; color: var(--text-primary); background: var(--bg-card);
+    }
+    .pt-textarea { min-height: 78px; resize: vertical; }
+    .pt-input:focus, .pt-select:focus, .pt-textarea:focus { outline: none; border-color: var(--pt); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+
+    /* Request history */
+    .pt-req { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; background: var(--bg-card); }
+    .pt-req .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .pt-req .t { font-weight: 750; font-size: 0.9rem; color: var(--text-primary); }
+    .pt-req .d { font-size: 0.77rem; color: var(--text-muted); margin-top: 2px; }
+    .pt-req .msg { font-size: 0.83rem; color: var(--text-secondary); margin-top: 6px; }
+    .pt-req .reply { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; font-size: 0.8rem; color: #065f46; }
+    .pt-steps { display: flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); flex-wrap: wrap; }
+    .pt-steps .s { padding: 2px 8px; border-radius: 999px; background: #f1f5f9; }
+    .pt-steps .s.on { background: var(--pt); color: #fff; }
+
+    /* Records */
+    .pt-rec { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg-subtle); border: 1px solid var(--border); margin-bottom: 8px; }
+    .pt-rec .t { font-weight: 750; font-size: 0.9rem; color: var(--text-primary); }
+    .pt-rec .d { font-size: 0.77rem; color: var(--text-muted); }
+    .pt-tl { position: relative; padding-left: 20px; }
+    .pt-tl::before { content: ''; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 2px; background: var(--pt-border); }
+    .pt-tl-item { position: relative; margin-bottom: 14px; }
+    .pt-tl-item::before { content: ''; position: absolute; left: -19px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--pt); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--pt-border); }
+    .pt-tl-item .h { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-weight: 750; font-size: 0.88rem; color: var(--text-primary); }
+    .pt-tl-item .h span:last-child { font-weight: 600; font-size: 0.78rem; color: var(--text-muted); }
+    .pt-tl-item .b { font-size: 0.83rem; color: var(--text-secondary); margin-top: 3px; }
+    .pt-tl-item .v { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+
+    /* Skeleton */
+    .pt-skel { border-radius: 12px; height: 64px; margin-bottom: 8px; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%); background-size: 400% 100%; animation: ptShimmer 1.3s ease infinite; }
+    @keyframes ptShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+    /* Modal tweaks */
+    .pt-modal-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .pt-modal-h h2 { color: var(--pt-dark); font-size: 1.15rem; margin: 0; }
+    .pt-x { border: 0; background: #f1f5f9; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem; }
+
+    @media (max-width: 640px) {
+      .pt-hero { padding: 18px; }
+      .pt-name { font-size: 1.25rem; }
+      .pt-hero-actions { width: 100%; }
+      .pt-hero-actions .pt-hero-btn { flex: 1; justify-content: center; }
+      .pt-card { padding: 16px; }
+    }
+
+    @media print {
+      .sidebar, .mobile-nav-toggle, .pt-tabs, .pt-hero-actions, .pt-rsvp, .pt-foot-links, .pt-confirm, #panel-hospital, .mem-actions, .mem-add, .hc-actions, .toast-container { display: none !important; }
+      .pt-panel { display: block !important; }
+      .main-content { margin: 0 !important; padding: 0 !important; }
+      .pt-hero { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ============ v2.2: health card, family, hospital ============ */
+    .pt-grid-card { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 18px; align-items: start; }
+    @media (max-width: 960px) { .pt-grid-card { grid-template-columns: 1fr; } }
+
+    .hc {
+      position: relative; overflow: hidden; border-radius: 20px; color: #fff; padding: 18px 20px 16px;
+      background: radial-gradient(circle at 100% 0%, rgba(255,255,255,0.18), transparent 45%), linear-gradient(140deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%);
+      box-shadow: 0 18px 40px rgba(3, 105, 161, 0.28); aspect-ratio: auto;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .hc::before { content: ''; position: absolute; left: -40px; bottom: -70px; width: 220px; height: 220px; border-radius: 50%; border: 28px solid rgba(255,255,255,0.06); }
+    .hc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; position: relative; }
+    .hc-brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.02em; }
+    .hc-brand .lg { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
+    .hc-brand small { display: block; font-size: 0.6rem; font-weight: 700; opacity: 0.8; letter-spacing: 0.12em; }
+    .hc-blood { background: #fff; color: #b91c1c; border-radius: 12px; padding: 4px 10px; text-align: center; min-width: 52px; }
+    .hc-blood b { display: block; font-size: 1.15rem; line-height: 1.1; }
+    .hc-blood span { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.08em; color: #7f1d1d; }
+    .hc-mid { display: flex; gap: 14px; align-items: center; margin: 16px 0 12px; position: relative; }
+    .hc-av { width: 60px; height: 60px; flex: 0 0 60px; border-radius: 16px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.35rem; }
+    .hc-name { font-size: 1.25rem; font-weight: 800; line-height: 1.15; word-break: break-word; }
+    .hc-uid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86rem; font-weight: 700; letter-spacing: 0.06em; opacity: 0.95; margin-top: 3px; }
+    .hc-body { display: flex; gap: 12px; align-items: flex-end; position: relative; }
+    .hc-fields { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+    .hc-f span { display: block; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.72; }
+    .hc-f b { display: block; font-size: 0.82rem; font-weight: 700; word-break: break-word; }
+    .hc-f.wide { grid-column: 1 / -1; }
+    .hc-qr { flex: 0 0 auto; background: #fff; border-radius: 12px; padding: 5px; line-height: 0; }
+    .hc-qr svg { width: 92px; height: 92px; }
+    .hc-foot { margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.3); display: flex; justify-content: space-between; gap: 8px; font-size: 0.7rem; opacity: 0.9; position: relative; flex-wrap: wrap; }
+    .hc-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .hc-actions .pt-btn { flex: 1; }
+    .pt-complete { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 0.8rem; }
+    .pt-meter { height: 6px; border-radius: 99px; background: #fde68a; margin-top: 6px; overflow: hidden; }
+    .pt-meter i { display: block; height: 100%; background: #f59e0b; border-radius: 99px; }
+
+    .pt-fieldset { border: 0; padding: 0; margin: 0 0 6px; }
+    .pt-fieldset legend { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+    .pt-bg-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .pt-bg-picker label { cursor: pointer; }
+    .pt-bg-picker input { position: absolute; opacity: 0; pointer-events: none; }
+    .pt-bg-picker span { display: block; text-align: center; padding: 7px 0; border-radius: 10px; border: 1.5px solid var(--border); font-weight: 800; font-size: 0.85rem; color: var(--text-secondary); background: var(--bg-card); }
+    .pt-bg-picker input:checked + span { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
+    .pt-bg-picker input:focus-visible + span { outline: 2px solid var(--pt); outline-offset: 2px; }
+    .pt-err { color: #b91c1c; font-size: 0.76rem; margin-top: 4px; display: none; }
+    .pt-input.invalid, .pt-select.invalid { border-color: #ef4444; }
+
+    /* Family */
+    .fam-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+    .fam-title { font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .fam-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
+    .fam-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .fam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .mem { border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .mem.self { border-color: var(--pt-border); background: linear-gradient(180deg, var(--pt-soft-2), var(--bg-card) 60%); }
+    .mem-top { display: flex; gap: 12px; align-items: center; }
+    .mem-av { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 0.95rem; }
+    .mem-name { font-weight: 800; color: var(--text-primary); font-size: 0.98rem; line-height: 1.2; }
+    .mem-sub { font-size: 0.78rem; color: var(--text-muted); }
+    .mem-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .mem-health { display: flex; gap: 5px; flex-wrap: wrap; padding-top: 8px; border-top: 1px dashed var(--border); }
+    .mem-health .lbl { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); width: 100%; }
+    .mem-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+    .mem-actions .pt-btn { flex: 1 1 auto; white-space: nowrap; }
+    .mem-actions .pt-btn.icon { flex: 0 0 42px; padding-left: 0; padding-right: 0; }
+    .mem-add { border: 1.5px dashed var(--pt-border); border-radius: 16px; background: var(--pt-soft-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 150px; cursor: pointer; color: var(--pt-dark); font-weight: 800; font-size: 0.9rem; }
+    .mem-add:hover { background: var(--pt-soft); }
+    .mem-add .plus { width: 40px; height: 40px; border-radius: 50%; background: var(--pt); color: #fff; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; }
+    .pt-note { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; font-size: 0.82rem; line-height: 1.45; margin-bottom: 14px; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
+
+    /* Hospital */
+    .hosp-card { display: flex; gap: 14px; align-items: center; }
+    .hosp-card .ic { width: 54px; height: 54px; flex: 0 0 54px; border-radius: 14px; background: #fef2f2; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+    .hosp-name { font-weight: 800; font-size: 1.05rem; color: var(--text-primary); }
+    .hosp-call { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+    @media (max-width: 480px) { .hosp-call { grid-template-columns: 1fr; } }
+    .pt-btn.call { background: #0f766e; border-color: #0f766e; color: #fff; }
+    .pt-btn.call:hover { background: #115e59; }
+    .pt-btn.sos { background: #dc2626; border-color: #dc2626; color: #fff; }
+    .pt-btn.sos:hover { background: #b91c1c; }
+    .pt-appt { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #eef2ff; border: 1px solid #c7d2fe; font-size: 0.82rem; color: #3730a3; font-weight: 700; }
+
+    /* Modal form */
+    .pt-modal-body { max-height: min(70vh, 640px); overflow-y: auto; padding-right: 2px; }
+
+    @media print {
+      body.print-card * { visibility: hidden !important; }
+      body.print-card #healthCard, body.print-card #healthCard * { visibility: visible !important; }
+      body.print-card #healthCard { position: absolute; left: 0; top: 0; width: 86mm; box-shadow: none; }
+      body.print-card .hc-actions { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#overview" class="sidebar-link active" data-tab="overview" data-title="Overview">
+        <div class="nav-icon-box"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <span class="link-label">Overview</span>
+      </a>
+      <a href="#profile" class="sidebar-link" data-tab="profile" data-title="My Health Card">
+        <div class="nav-icon-box"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><path d="M13 10h5M13 14h3"/></svg></div>
+        <span class="link-label">My Health Card</span>
+      </a>
+      <a href="#family" class="sidebar-link" data-tab="family" data-title="My Family">
+        <div class="nav-icon-box"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <span class="link-label">My Family</span>
+      </a>
+      <a href="#hospital" class="sidebar-link" data-tab="hospital" data-title="Call Hospital">
+        <div class="nav-icon-box"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <span class="link-label">Call Hospital</span>
+      </a>
+      <a href="#campaigns" class="sidebar-link" data-tab="campaigns" data-title="Health Camps">
+        <div class="nav-icon-box"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+        <span class="link-label">Health Camps</span>
+      </a>
+      <a href="#records" class="sidebar-link" data-tab="records" data-title="Health Records">
+        <div class="nav-icon-box"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg></div>
+        <span class="link-label">Health Records</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+
+  <div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+
+  <main class="main-content">
+    <div class="pt-wrap">
+
+      <!-- Hero -->
+      <header class="pt-hero">
+        <div class="pt-hero-id">
+          <div class="pt-avatar" id="heroAvatar">–</div>
+          <div style="min-width:0">
+            <div class="pt-greet" id="heroGreeting">Welcome</div>
+            <h1 class="pt-name" id="heroName">Loading…</h1>
+            <div class="pt-chips">
+              <span class="pt-chip mono" id="heroUid">PAT-····</span>
+              <span class="pt-chip" id="heroAgeGender">–</span>
+              <span class="pt-chip" id="heroRole">–</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-hero-actions">
+          <button class="pt-hero-btn" onclick="showTab('profile')">🪪 My card</button>
+          <button class="pt-hero-btn" onclick="logoutPatient()">🚪 Sign out</button>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <nav class="pt-tabs" role="tablist" aria-label="Patient portal sections">
+        <button class="pt-tab active" role="tab" data-tab="overview" onclick="showTab('overview')">🏠 Overview <span class="pt-count" id="cntOverview"></span></button>
+        <button class="pt-tab" role="tab" data-tab="profile" onclick="showTab('profile')">🪪 Health Card <span class="pt-count" id="cntProfile"></span></button>
+        <button class="pt-tab" role="tab" data-tab="family" onclick="showTab('family')">👪 Family</button>
+        <button class="pt-tab" role="tab" data-tab="hospital" onclick="showTab('hospital')">🏥 Hospital <span class="pt-count" id="cntHospital"></span></button>
+        <button class="pt-tab" role="tab" data-tab="campaigns" onclick="showTab('campaigns')">📣 Camps <span class="pt-count" id="cntCampaigns"></span></button>
+        <button class="pt-tab" role="tab" data-tab="records" onclick="showTab('records')">📋 Records</button>
+      </nav>
+
+      <!-- ================= OVERVIEW ================= -->
+      <section class="pt-panel active" id="panel-overview" role="tabpanel">
+        <div id="reminderArea"></div>
+        <div class="pt-grid-2">
+          <div>
+            <div class="pt-card">
+              <div class="pt-card-h">
+                <div>
+                  <h2>✅ Needs your attention</h2>
+                  <p class="pt-sub">Things waiting on you.</p>
+                </div>
+              </div>
+              <div id="actionCentre"><div class="pt-skel"></div><div class="pt-skel"></div></div>
+            </div>
+            <div class="pt-card">
+              <div class="pt-card-h">
+                <div>
+                  <h2>🩺 Your latest health numbers</h2>
+                  <p class="pt-sub" id="vitalsSource">From your last check-up.</p>
+                </div>
+              </div>
+              <div class="pt-vitals" id="vitalsGrid"><div class="pt-skel"></div><div class="pt-skel"></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>🏥 Your hospital</h2><button class="pt-btn sm" onclick="showTab('hospital')">Requests →</button></div>
+              <div id="overviewHospital"><div class="pt-skel"></div></div>
+            </div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>👪 Your family</h2><button class="pt-btn sm" onclick="showTab('family')">Open →</button></div>
+              <div id="overviewFamily"><div class="pt-skel"></div></div>
+            </div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>📣 Next health camp</h2><button class="pt-btn sm" onclick="showTab('campaigns')">See all →</button></div>
+              <div id="nextCampBody"><div class="pt-skel"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PROFILE / HEALTH CARD ================= -->
+      <section class="pt-panel" id="panel-profile" role="tabpanel">
+        <div class="pt-grid-card">
+          <div>
+            <div class="hc" id="healthCard" aria-label="Patient health card">
+              <div class="pt-skel" style="height:220px;opacity:.3"></div>
+            </div>
+            <div class="hc-actions">
+              <button class="pt-btn" onclick="printCard()">🖨️ Print card</button>
+              <button class="pt-btn" onclick="copyUid()">📋 Copy patient ID</button>
+            </div>
+            <div id="completeness"></div>
+          </div>
+
+          <div class="pt-card">
+            <div class="pt-card-h">
+              <div>
+                <h2>✏️ Your details</h2>
+                <p class="pt-sub">These appear on your card. Your phone number is your login, so it can't be changed here.</p>
+              </div>
+            </div>
+            <form id="profileForm" novalidate onsubmit="event.preventDefault(); saveProfile();">
+              <fieldset class="pt-fieldset">
+                <legend>Basic</legend>
+                <div class="pt-form-row">
+                  <label class="l" for="pfName">Full name *</label>
+                  <input id="pfName" class="pt-input" maxlength="80" required autocomplete="name">
+                  <div class="pt-err" id="pfNameErr">Please enter your name.</div>
+                </div>
+                <div class="pt-form-2 pt-form-row">
+                  <div>
+                    <label class="l" for="pfDob">Date of birth</label>
+                    <input id="pfDob" type="date" class="pt-input">
+                    <div class="pt-err" id="pfDobErr">Date of birth can't be in the future.</div>
+                  </div>
+                  <div>
+                    <label class="l" for="pfGender">Gender</label>
+                    <select id="pfGender" class="pt-select"><option value="M">Male</option><option value="F">Female</option><option value="Other">Other</option></select>
+                  </div>
+                </div>
+                <div class="pt-form-row">
+                  <label class="l">Blood group</label>
+                  <div class="pt-bg-picker" id="pfBlood"></div>
+                </div>
+              </fieldset>
+              <fieldset class="pt-fieldset">
+                <legend>Contact</legend>
+                <div class="pt-form-2 pt-form-row">
+                  <div>
+                    <label class="l" for="pfPhone">Mobile (login)</label>
+                    <input id="pfPhone" class="pt-input" disabled>
+                  </div>
+                  <div>
+                    <label class="l" for="pfEmail">Email</label>
+                    <input id="pfEmail" type="email" class="pt-input" maxlength="120" autocomplete="email" placeholder="optional">
+                    <div class="pt-err" id="pfEmailErr">Enter a valid email.</div>
+                  </div>
+                </div>
+                <div class="pt-form-row">
+                  <label class="l" for="pfAddress">Address</label>
+                  <textarea id="pfAddress" class="pt-textarea" style="min-height:60px" maxlength="300" autocomplete="street-address"></textarea>
+                </div>
+              </fieldset>
+              <fieldset class="pt-fieldset">
+                <legend>Emergency contact</legend>
+                <div class="pt-form-2 pt-form-row">
+                  <div>
+                    <label class="l" for="pfEcName">Name</label>
+                    <input id="pfEcName" class="pt-input" maxlength="80" placeholder="e.g. Asha Patel">
+                  </div>
+                  <div>
+                    <label class="l" for="pfEcRel">Relation</label>
+                    <select id="pfEcRel" class="pt-select"><option value="">Select</option><option>Spouse</option><option>Son</option><option>Daughter</option><option>Father</option><option>Mother</option><option>Brother</option><option>Sister</option><option>Friend</option><option>Neighbour</option><option>Other</option></select>
+                  </div>
+                </div>
+                <div class="pt-form-row">
+                  <label class="l" for="pfEcPhone">Mobile</label>
+                  <input id="pfEcPhone" class="pt-input" inputmode="numeric" maxlength="10" placeholder="10-digit mobile">
+                  <div class="pt-err" id="pfEcPhoneErr">Enter a 10-digit mobile that isn't your own.</div>
+                </div>
+              </fieldset>
+              <button type="submit" class="pt-btn primary" id="pfSave" style="width:100%">Save details</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= FAMILY ================= -->
+      <section class="pt-panel" id="panel-family" role="tabpanel">
+        <div class="pt-card">
+          <div class="fam-head" id="famHead"><div class="pt-skel" style="width:100%"></div></div>
+        </div>
+        <div id="famNotice"></div>
+        <div class="fam-grid" id="famGrid"></div>
+      </section>
+
+      <!-- ================= HOSPITAL ================= -->
+      <section class="pt-panel" id="panel-hospital" role="tabpanel">
+        <div class="pt-grid-2">
+          <div>
+            <div class="pt-card">
+              <div class="pt-card-h">
+                <div>
+                  <h2>📞 Request a call from the hospital</h2>
+                  <p class="pt-sub">The hospital helpdesk will call or message you back.</p>
+                </div>
+              </div>
+              <form id="requestForm" onsubmit="event.preventDefault(); submitRequest();">
+                <div class="pt-form-row">
+                  <label class="l" for="reqFor">Who is it for?</label>
+                  <select id="reqFor" class="pt-select"></select>
+                </div>
+                <div class="pt-form-2 pt-form-row">
+                  <div>
+                    <label class="l" for="reqDept">Department</label>
+                    <select id="reqDept" class="pt-select"></select>
+                  </div>
+                  <div>
+                    <label class="l" for="reqReason">What do you need?</label>
+                    <select id="reqReason" class="pt-select"></select>
+                  </div>
+                </div>
+                <div class="pt-form-row">
+                  <label class="l">How should they reach you?</label>
+                  <div class="pt-seg">
+                    <label><input type="radio" name="channel" value="Callback" checked><span>📞 Call me back</span></label>
+                    <label><input type="radio" name="channel" value="WhatsApp"><span>💬 WhatsApp</span></label>
+                  </div>
+                </div>
+                <div class="pt-form-row">
+                  <label class="l" for="reqTime">Best time</label>
+                  <select id="reqTime" class="pt-select">
+                    <option>Any time</option><option>Morning (8–12)</option><option>Afternoon (12–4)</option><option>Evening (4–8)</option>
+                  </select>
+                </div>
+                <div class="pt-form-row">
+                  <label class="l" for="reqMsg">Message <span style="font-weight:500;color:var(--text-muted)">(optional)</span></label>
+                  <textarea id="reqMsg" class="pt-textarea" maxlength="1000" placeholder="e.g. BP tablet makes me dizzy in the morning"></textarea>
+                </div>
+                <div class="pt-why" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;margin-bottom:12px">
+                  <span>🚑</span><div>For emergencies (chest pain, breathing trouble, fainting, heavy bleeding), call <strong>108</strong> right away. Don't wait for a callback.</div>
+                </div>
+                <button type="submit" class="pt-btn primary" id="reqSubmit" style="width:100%">Send to hospital</button>
+              </form>
+            </div>
+          </div>
+          <div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>🏥 Your hospital</h2></div>
+              <div id="hospitalBody"><div class="pt-skel"></div></div>
+            </div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>🗂️ Your requests</h2><span class="pt-pill mute" id="reqCountPill">0 open</span></div>
+              <div id="requestList"><div class="pt-skel"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CAMPAIGNS ================= -->
+      <section class="pt-panel" id="panel-campaigns" role="tabpanel">
+        <div class="pt-why" style="margin-bottom:16px">
+          <span style="font-size:1.2rem">🛡️</span>
+          <div><strong>Only what's relevant to you.</strong> You get a camp alert only when it matches a condition or reading in your health record.</div>
+        </div>
+        <div class="pt-section-title">Upcoming</div>
+        <div id="upcomingCamps"><div class="pt-skel" style="height:180px"></div></div>
+        <div class="pt-section-title" style="margin-top:22px">Past camps</div>
+        <div id="pastCamps"></div>
+      </section>
+
+      <!-- ================= RECORDS ================= -->
+      <section class="pt-panel" id="panel-records" role="tabpanel">
+        <div class="pt-card" id="surveyCard"></div>
+        <div class="pt-grid-2">
+          <div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>💊 Medicines</h2><span class="pt-pill info" id="medCount">0</span></div>
+              <div id="medicationsList"></div>
+            </div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>📋 Conditions</h2><span class="pt-pill warn" id="condCount">0</span></div>
+              <div id="conditionsList"></div>
+            </div>
+            <div class="pt-card">
+              <div class="pt-card-h"><h2>⚠️ Allergies</h2><span class="pt-pill bad" id="allergyCount">0</span></div>
+              <div id="allergiesList"></div>
+            </div>
+          </div>
+          <div>
+            <div class="pt-card">
+              <div class="pt-card-h">
+                <div>
+                  <h2>🩺 Check-up visits</h2>
+                  <p class="pt-sub">Follow-up visits recorded in your health survey.</p>
+                </div>
+              </div>
+              <div id="followupsTimeline"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal: add / edit family member -->
+  <div id="memberModal" class="modal-overlay" style="display:none" onclick="if (event.target === this) closeModal('memberModal')">
+    <div class="modal-content" style="max-width:520px" role="dialog" aria-modal="true" aria-labelledby="memberTitle">
+      <div class="pt-modal-h"><h2 id="memberTitle">Add family member</h2><button class="pt-x" onclick="closeModal('memberModal')" aria-label="Close">✕</button></div>
+      <form id="memberForm" novalidate onsubmit="event.preventDefault(); saveMember();">
+        <div class="pt-modal-body">
+          <div class="pt-form-row">
+            <label class="l" for="mfName">Full name *</label>
+            <input id="mfName" class="pt-input" maxlength="80" required>
+          </div>
+          <div class="pt-form-2 pt-form-row">
+            <div>
+              <label class="l" for="mfRel">Relation to you *</label>
+              <select id="mfRel" class="pt-select" required></select>
+            </div>
+            <div>
+              <label class="l" for="mfGender">Gender *</label>
+              <select id="mfGender" class="pt-select" required><option value="">Select</option><option value="M">Male</option><option value="F">Female</option><option value="Other">Other</option></select>
+            </div>
+          </div>
+          <div class="pt-form-2 pt-form-row">
+            <div>
+              <label class="l" for="mfDob">Date of birth</label>
+              <input id="mfDob" type="date" class="pt-input">
+            </div>
+            <div>
+              <label class="l" for="mfAge">…or age (years)</label>
+              <input id="mfAge" type="number" min="0" max="120" class="pt-input" placeholder="if DOB unknown">
+            </div>
+          </div>
+          <div class="pt-form-row">
+            <label class="l" for="mfPhone">Mobile</label>
+            <input id="mfPhone" class="pt-input" inputmode="numeric" maxlength="10" placeholder="optional, 10 digits">
+          </div>
+          <div class="pt-form-2 pt-form-row">
+            <div>
+              <label class="l" for="mfMarital">Marital status</label>
+              <select id="mfMarital" class="pt-select"><option>Unknown</option><option>Single</option><option>Married</option><option>Widowed</option><option>Divorced</option></select>
+            </div>
+            <div>
+              <label class="l" for="mfOcc">Occupation</label>
+              <input id="mfOcc" class="pt-input" maxlength="60" placeholder="e.g. Farmer, Student">
+            </div>
+          </div>
+          <div class="pt-form-row">
+            <label class="l" for="mfEdu">Education</label>
+            <input id="mfEdu" class="pt-input" maxlength="60" placeholder="e.g. Class 10, Graduate">
+          </div>
+          <div class="pt-note" style="margin-bottom:0"><span>ℹ️</span><div>Health readings (BP, sugar, weight) are added by the hospital or health survey team, not here.</div></div>
+          <div class="pt-err" id="mfErr" style="margin-top:8px"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+          <button type="button" class="pt-btn" onclick="closeModal('memberModal')">Cancel</button>
+          <button type="submit" class="pt-btn primary" id="mfSave">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: family address -->
+  <div id="famModal" class="modal-overlay" style="display:none" onclick="if (event.target === this) closeModal('famModal')">
+    <div class="modal-content" style="max-width:480px" role="dialog" aria-modal="true" aria-labelledby="famTitle">
+      <div class="pt-modal-h"><h2 id="famTitle">🏠 Family details</h2><button class="pt-x" onclick="closeModal('famModal')" aria-label="Close">✕</button></div>
+      <form onsubmit="event.preventDefault(); saveFamily();">
+        <div class="pt-form-row"><label class="l" for="ffName">Family name</label><input id="ffName" class="pt-input" maxlength="80" placeholder="e.g. Patel Parivar"></div>
+        <div class="pt-form-row"><label class="l" for="ffAddr">House / street</label><input id="ffAddr" class="pt-input" maxlength="300"></div>
+        <div class="pt-form-2 pt-form-row">
+          <div><label class="l" for="ffVillage">Village / area</label><input id="ffVillage" class="pt-input" maxlength="80"></div>
+          <div><label class="l" for="ffCity">City</label><input id="ffCity" class="pt-input" maxlength="80"></div>
+        </div>
+        <div class="pt-form-2 pt-form-row">
+          <div><label class="l" for="ffDistrict">District</label><input id="ffDistrict" class="pt-input" maxlength="80"></div>
+          <div><label class="l" for="ffPin">PIN code</label><input id="ffPin" class="pt-input" inputmode="numeric" maxlength="6"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+          <button type="button" class="pt-btn" onclick="closeModal('famModal')">Cancel</button>
+          <button type="submit" class="pt-btn primary" id="ffSave">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: link health survey (student referral) -->
+  <div id="linkModal" class="modal-overlay" style="display:none" onclick="if (event.target === this) closeModal('linkModal')">
+    <div class="modal-content" style="max-width:440px" role="dialog" aria-modal="true" aria-labelledby="linkTitle">
+      <div class="pt-modal-h"><h2 id="linkTitle">🔗 Connect your health survey</h2><button class="pt-x" onclick="closeModal('linkModal')" aria-label="Close">✕</button></div>
+      <p class="pt-sub" style="margin-bottom:12px">If a medical student surveyed your family, enter the referral code they gave you (for example <code>GMERS-235-DA9B</code>). Your survey health data will then show here.</p>
+      <form onsubmit="event.preventDefault(); submitLink();">
+        <input id="linkCode" class="pt-input" required placeholder="GMERS-235-XXXX" autocomplete="off" oninput="debounceVerify()" style="font-family:ui-monospace,monospace;font-weight:700;text-transform:uppercase">
+        <div id="linkFeedback" style="font-size:0.8rem;margin-top:8px;display:none;padding:6px 10px;border-radius:8px"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+          <button type="button" class="pt-btn" onclick="closeModal('linkModal')">Cancel</button>
+          <button type="submit" class="pt-btn primary" id="linkSubmit">Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: RSVP note -->
+  <div id="rsvpModal" class="modal-overlay" style="display:none" onclick="if (event.target === this) closeModal('rsvpModal')">
+    <div class="modal-content" style="max-width:440px" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
+      <div class="pt-modal-h"><h2 id="rsvpTitle">Reply</h2><button class="pt-x" onclick="closeModal('rsvpModal')" aria-label="Close">✕</button></div>
+      <p class="pt-sub" id="rsvpHelp" style="margin-bottom:10px"></p>
+      <form onsubmit="event.preventDefault(); submitRsvpNote();">
+        <div class="pt-seg" id="rsvpQuick" style="margin-bottom:10px"></div>
+        <textarea id="rsvpNote" class="pt-textarea" maxlength="500" placeholder="Anything else? (optional)"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+          <button type="button" class="pt-btn" onclick="closeModal('rsvpModal')">Cancel</button>
+          <button type="submit" class="pt-btn primary">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: confirm (replaces window.confirm) -->
+  <div id="confirmModal" class="modal-overlay" style="display:none" onclick="if (event.target === this) closeModal('confirmModal')">
+    <div class="modal-content" style="max-width:400px" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="pt-modal-h"><h2 id="confirmTitle">Are you sure?</h2></div>
+      <p class="pt-sub" id="confirmText" style="margin-bottom:16px"></p>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button type="button" class="pt-btn" onclick="closeModal('confirmModal')">Cancel</button>
+        <button type="button" class="pt-btn ghost-danger" id="confirmOk">Yes, remove</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendor/qr.js"></script>
+  <script src="/patient/patient.js"></script>
+</body>
+</html>

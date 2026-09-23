@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
+  <title>Clinical Field Survey Data Entry | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Dedicated Data Entry Workspace Enhancements */
+    /* ==========================================================
+       COMMERCIAL SAAS SELECTION BOARD & CUSTOM DROPDOWN
+       ========================================================== */
+    .family-selector-board {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .selector-board-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .custom-select-container {
+      position: relative;
+      flex: 1;
+      max-width: 540px;
+      min-width: 280px;
+    }
+    .family-selector-label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    .custom-select-trigger {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.65rem 0.95rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      text-align: left;
+      min-height: 48px;
+    }
+    .custom-select-trigger:hover {
+      border-color: var(--border-hover);
+      background: #faf9ff;
+    }
+    .custom-select-trigger.open {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+      background: #ffffff;
+    }
+    .custom-trigger-content {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex: 1;
+      overflow: hidden;
+    }
+    .trigger-placeholder {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .trigger-active-card {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .trigger-active-title {
+      font-weight: 700;
+      font-size: 0.925rem;
+      color: var(--text-primary);
+    }
+    .trigger-active-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .custom-trigger-arrow {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+      transition: transform 0.2s ease;
+      user-select: none;
+    }
+    .custom-select-trigger.open .custom-trigger-arrow {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+
+    /* Custom Selection Board Dropdown Menu */
+    .custom-select-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width: 100%;
+      min-width: 320px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 45px -8px rgba(30, 27, 75, 0.18), 0 8px 16px -4px rgba(30, 27, 75, 0.08);
+      z-index: 1050;
+      overflow: hidden;
+      animation: selectFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes selectFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .custom-select-search-wrap {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .custom-select-search-wrap .search-icon {
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+    .custom-select-search {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: var(--text-primary);
+    }
+    .custom-select-header {
+      padding: 0.45rem 0.85rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .custom-select-list {
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 0.35rem;
+    }
+    .custom-select-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border-left: 3px solid transparent;
+    }
+    .custom-select-item:hover {
+      background: var(--bg-hover);
+    }
+    .custom-select-item.active {
+      background: var(--accent-subtle);
+      border-left-color: var(--accent);
+    }
+    .custom-select-item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      overflow: hidden;
+    }
+    .custom-select-item-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      line-height: 1.25;
+    }
+    .custom-select-item-name {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .custom-select-item.active .custom-select-item-name {
+      color: var(--accent);
+    }
+    .custom-select-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .custom-select-item-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .custom-select-check {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .custom-select-footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      padding: 0.5rem 0.85rem;
+    }
+    .custom-select-footer-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .custom-select-footer-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Horizontal Quick-Switch Strip */
+    .selector-board-strip-wrap {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px dashed var(--border);
+    }
+    .strip-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.45rem;
+    }
+    .strip-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .household-summary-quick {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 1rem;
+      flex-shrink: 0;
+    }
+    .household-summary-info {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .household-summary-item {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    @media (max-width: 900px) {
+      .selector-board-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .custom-select-container {
+        max-width: 100%;
+      }
+      .household-summary-quick {
+        justify-content: space-between;
+      }
+    }
+    .roster-carousel {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding: 14px 10px 18px 8px;
+      margin-bottom: 1.5rem;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100px;
+    }
+    .roster-card {
+      min-width: 185px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.95rem 1.1rem;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+      position: relative;
+      overflow: visible !important;
+    }
+    .roster-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px -4px rgba(109, 40, 217, 0.18);
+    }
+    .roster-card.active {
+      border-color: var(--accent);
+      background: var(--accent-subtle);
+      box-shadow: 0 0 0 2px var(--accent), 0 8px 24px -4px rgba(109, 40, 217, 0.25);
+    }
+    .roster-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .roster-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+    }
+    .gender-card-female {
+      background: #fff;
+      border: 1.5px solid rgba(236, 72, 153, 0.35);
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.08);
+    }
+    .gender-card-female .section-title {
+      color: #be185d;
+    }
+    .gender-card-male {
+      background: #fff;
+      border: 1.5px solid rgba(59, 130, 246, 0.35);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+    }
+    .gender-card-male .section-title {
+      color: #1d4ed8;
+    }
+    .pediatric-card {
+      background: #fff;
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
+    }
+    .pediatric-card .section-title {
+      color: #b45309;
+    }
+    .sticky-actions-bar {
+      position: sticky;
+      bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sleek Left Sidebar Navigation -->
+  <!-- Sidebar Navigation (Collapsible Icon Dock) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="link-label">Home</span>
+      </a>
+      <a href="/family-manage.html" class="sidebar-link" data-route="families" data-title="Families">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="link-label">Families</span>
+      </a>
+      <a href="/entry.html" class="sidebar-link active" data-route="entry" data-title="Data Entry">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h4"/>
+            <path d="M12 10h.01"/>
+          </svg>
+        </div>
+        <span class="link-label">Data Entry</span>
+      </a>
+      <a href="/analytics.html" class="sidebar-link" data-route="analytics" data-title="Analytics">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+        </div>
+        <span class="link-label">Analytics</span>
+      </a>
+      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="link-label">Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+  <!-- Mobile Drawer Toggle -->
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header anim-fade-up">
+      <div>
+        <h1 class="page-title page-title-animated">Clinical Field Survey Data Entry</h1>
+        <p class="page-subtitle">Standardized clinical digitization for registered households &amp; individuals (Roll 235 PSM Survey)</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="/family-manage.html" class="btn btn-secondary">👥 Manage Families</a>
+      </div>
+    </div>
+
+    <!-- STEP 1: Select Household / Family Context (Commercial SaaS Selection Board) -->
+    <div class="family-selector-board card anim-fade-up anim-delay-1">
+      <div class="selector-board-top">
+        <div class="custom-select-container">
+          <label class="family-selector-label">
+            <span>🏠</span>
+            <span>Select Household Unit *</span>
+          </label>
+
+          <!-- Custom Trigger Button (Replaces unstyled OS select) -->
+          <button type="button" id="customSelectTrigger" class="custom-select-trigger" onclick="toggleCustomSelectMenu()">
+            <div id="customTriggerContent" class="custom-trigger-content">
+              <span class="trigger-placeholder">Loading surveyed families...</span>
+            </div>
+            <span class="custom-trigger-arrow" id="customTriggerArrow">▾</span>
+          </button>
+
+          <!-- Hidden Native Select (Maintains form state and accessibility) -->
+          <select id="familySelect" class="family-select-input sr-only" onchange="onFamilySelectChange()">
+            <option value="" disabled selected>Loading surveyed families...</option>
+          </select>
+
+          <!-- Custom Floating Dropdown Selection Board -->
+          <div id="customSelectMenu" class="custom-select-menu" style="display: none;">
+            <div class="custom-select-search-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="customSelectSearch" class="custom-select-search" placeholder="Search household code, head name, ward..." oninput="filterCustomSelectFamilies()" autocomplete="off">
+            </div>
+            <div class="custom-select-header">
+              <span>Surveyed Households</span>
+              <span id="customSelectCount" class="badge badge-info">0</span>
+            </div>
+            <div id="customSelectList" class="custom-select-list">
+              <!-- Dynamically rendered custom option cards -->
+            </div>
+            <div class="custom-select-footer">
+              <a href="/family-manage.html" class="custom-select-footer-link">
+                <span>➕ Register / Manage Families</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div id="householdSummaryQuick" class="household-summary-quick" style="display: none;">
+          <div class="household-summary-info">
+            <span class="badge badge-info" id="quickFamilyCode">FAM-0001</span>
+            <span class="household-summary-item">HOF: <strong id="quickHofName">-</strong></span>
+            <span class="household-summary-item">Location: <strong id="quickVillage">-</strong></span>
+          </div>
+          <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; white-space: nowrap;" onclick="toggleFamilyDietModal()">🥗 Household Diet</button>
+        </div>
+      </div>
+
+      <!-- Quick 1-Click Horizontal Household Strip (Selection Board) -->
+      <div class="selector-board-strip-wrap">
+        <div class="strip-label-row">
+          <span class="strip-label">Quick Switch Household:</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Click any household below to select</span>
+        </div>
+        <div id="quickFamilyStrip" class="family-horizontal-strip"></div>
+      </div>
+    </div>
+
+    <!-- Household Dietary Assessment Card (Collapsible / Expandable) -->
+    <div class="card" id="familyDietCard" style="display: none; border: 1.5px solid var(--accent);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+        <div class="section-title" style="margin-bottom: 0;">
+          <span>🥗 Household Dietary Assessment (ICMR Units)</span>
+          <span class="badge badge-info">Family Level</span>
+        </div>
+        <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleFamilyDietModal()">✕ Close</button>
+      </div>
+      <p class="card-desc">Enter total consumption units and daily caloric adequacy for the entire household (from 1st row of survey sheet):</p>
+      <form id="familyDietForm" onsubmit="event.preventDefault(); saveFamilyDietary();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fdTotalCu">Total Family CU (Consumption Units)</label>
+            <input type="number" step="0.1" id="fdTotalCu" placeholder="e.g. 4.5" value="4.0">
+          </div>
+          <div class="form-group">
+            <label for="fdCalorie">Daily Calorie Intake (kcal/CU/Day)</label>
+            <input type="number" id="fdCalorie" placeholder="e.g. 13459" value="12000">
+          </div>
+          <div class="form-group">
+            <label for="fdCalorieStatus">Calorie Intake Status</label>
+            <select id="fdCalorieStatus">
+              <option value="Normal">Normal (N)</option>
+              <option value="Deficient">Deficient (D)</option>
+              <option value="Excess">Excess (E)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fdAdvice">Dietary Advice Provided?</label>
+            <select id="fdAdvice">
+              <option value="Y">Yes (Y)</option>
+              <option value="N" selected>No (N)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+          <button type="submit" class="btn btn-primary" id="saveDietBtn">💾 Save Household Diet</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Empty State: When No Household is Loaded -->
+    <div id="emptyWorkspacePrompt" class="card anim-fade-up anim-delay-2" style="padding: 4rem 2rem; text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Select a Household to Begin Clinical Entry</h2>
+      <p style="font-size: 0.875rem; color: var(--text-muted); max-width: 440px; margin: 0 auto 1.5rem;">
+        Choose any surveyed family from the dropdown above to load its members and record structured screening data.
+      </p>
+      <a href="/family-manage.html" class="btn btn-primary">➕ Register New Families &amp; Members</a>
+    </div>
+
+    <!-- Active Workspace: When Family is Selected -->
+    <div id="surveyWorkspace" style="display: none;">
+
+      <!-- STEP 2: Member Roster Selector Carousel -->
+      <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+          Select Family Member to Enter Survey (<span id="rosterCount">0</span> Members)
+        </span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Click a member card below to switch</span>
+      </div>
+      <div class="roster-carousel" id="rosterCarousel"></div>
+
+      <!-- STEP 3: Clinical Survey Entry Form -->
+      <div class="card" id="memberSurveyCard" style="border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+
+        <!-- Selected Member Header Banner -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div id="memberGenderAvatar" style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 800;">
+              👤
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <h2 id="entryMemberName" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0;">-</h2>
+                <span class="badge badge-info" id="entryMemberOrder">#1</span>
+                <span class="badge" id="entryMemberStatusBadge">○ Pending</span>
+              </div>
+              <div id="entryMemberSubtext" style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.15rem;">
+                Head of Family &bull; 60 Years (M)
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Vitals Preview Indicators -->
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;" id="quickVitalsPills"></div>
+        </div>
+
+        <!-- THE CLINICAL SURVEY FORM (MATCHING Roll235.pdf.pdf) -->
+        <form id="memberSurveyForm" onsubmit="event.preventDefault(); saveMemberSurvey(false);">
+
+          <!-- ==========================================================
+               SECTION A: COMMON HEALTH PARAMETERS (EVERYONE)
+               ========================================================== -->
+          <div class="section-title">
+            <span>🌐 1. Common Clinical Assessment &amp; Vitals</span>
+            <span class="badge badge-info">Applies to All Individuals</span>
+          </div>
+          <p class="card-desc">General anthropometry, hemoglobin/pallor evaluation, hygiene status, and primary diagnosis.</p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fPallor">Pallor Present? (Y/N)</label>
+              <select id="fPallor">
+                <option value="N" selected>No (N)</option>
+                <option value="Y">Yes (Y)</option>
+                <option value="NA">NA</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fHb">Hemoglobin (Hb in g/dl) *</label>
+              <input type="number" step="0.1" min="2" max="25" id="fHb" placeholder="e.g. 13.5" oninput="onHbInputChange()">
+            </div>
+
+            <div class="form-group">
+              <label for="fAnaemia">Anaemia Diagnosis</label>
+              <select id="fAnaemia">
+                <option value="N" selected>No (Normal)</option>
+                <option value="Y">Yes (Anaemic)</option>
+                <option value="NA">NA</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fHeight">Height (in Meters)</label>
+              <input type="number" step="0.01" min="0.3" max="2.5" id="fHeight" placeholder="e.g. 1.62" oninput="recalcBMI()">
+            </div>
+
+            <div class="form-group">
+              <label for="fWeight">Weight (in kg)</label>
+              <input type="number" step="0.1" min="1" max="250" id="fWeight" placeholder="e.g. 58.0" oninput="recalcBMI()">
+            </div>
+
+            <div class="form-group">
+              <label>BMI (kg/m²) &amp; Status</label>
+              <div id="bmiDisplay" class="calc-preview">Enter Ht &amp; Wt</div>
+            </div>
+
+            <div class="form-group">
+              <label for="fWorkType">Type of Work (S/M/H)</label>
+              <select id="fWorkType" onchange="onWorkTypeChange()">
+                <option value="S">S — Sedentary</option>
+                <option value="M" selected>M — Moderate</option>
+                <option value="H">H — Heavy</option>
+                <option value="NA">NA / Child</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fCu">Consumption Unit (CU)</label>
+              <input type="number" step="0.1" id="fCu" placeholder="e.g. 1.2" value="1.0">
+            </div>
+
+            <div class="form-group">
+              <label for="fDiagnosis">Diagnosis (If Known)</label>
+              <input type="text" id="fDiagnosis" placeholder="e.g. Essential Hypertension, Type 2 DM, None">
+            </div>
+
+            <div class="form-group">
+              <label for="fTreatment">Treatment Taken? (Y/N/NA)</label>
+              <select id="fTreatment">
+                <option value="NA">NA</option>
+                <option value="Y" selected>Yes (Y)</option>
+                <option value="N">No (N)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fTreatmentSource">If Yes, From Where?</label>
+              <input type="text" id="fTreatmentSource" placeholder="e.g. Govt Hospital, PHC, Private Clinic">
+            </div>
+
+            <div class="form-group">
+              <label for="fOralHygiene">Oral Hygiene Satisfactory?</label>
+              <select id="fOralHygiene">
+                <option value="Y" selected>Satisfactory (Y)</option>
+                <option value="N">Unsatisfactory (N)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fGeneralHygiene">General Hygiene Status?</label>
+              <select id="fGeneralHygiene">
+                <option value="Y" selected>Satisfactory (Y)</option>
+                <option value="N">Unsatisfactory (N)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ==========================================================
+               SECTION B: ADULT NCD & ANTHROPOMETRY (AGE >= 18)
+               ========================================================== -->
+          <div id="adultNcdSection" class="section-divider">
+            <div class="section-title">
+              <span>🩺 2. Adult NCD Screening &amp; Central Obesity</span>
+              <span class="badge badge-info">Only for Adults (Age &ge; 18)</span>
+            </div>
+            <p class="card-desc">Non-communicable disease examination (Hypertension &ge;140/90, Diabetes RBS &ge;200) and waist-to-hip ratio.</p>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fSbp">Systolic BP (SBP, mmHg)</label>
+                <input type="number" min="50" max="300" id="fSbp" placeholder="e.g. 120" oninput="checkAdultVitals()">
+              </div>
+
+              <div class="form-group">
+                <label for="fDbp">Diastolic BP (DBP, mmHg)</label>
+                <input type="number" min="30" max="200" id="fDbp" placeholder="e.g. 80" oninput="checkAdultVitals()">
+              </div>
+
+              <div class="form-group">
+                <label for="fHtn">Hypertension HTN (Y/N)</label>
+                <select id="fHtn">
+                  <option value="N" selected>No (Normal BP)</option>
+                  <option value="Y">Yes (Hypertensive)</option>
+                  <option value="NA">NA</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fRbs">Random Blood Sugar (mg/dl)</label>
+                <input type="number" min="30" max="600" id="fRbs" placeholder="e.g. 110" oninput="checkAdultVitals()">
+              </div>
+
+              <div class="form-group">
+                <label for="fDm">Diabetes Mellitus DM (Y/N)</label>
+                <select id="fDm">
+                  <option value="N" selected>No (Normal)</option>
+                  <option value="Y">Yes (Diabetic &ge; 200)</option>
+                  <option value="NA">NA</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fWaist">Waist Circumference (cm)</label>
+                <input type="number" step="0.1" min="30" max="200" id="fWaist" placeholder="e.g. 85.0" oninput="recalcWHR()">
+              </div>
+
+              <div class="form-group">
+                <label for="fHip">Hip Circumference (cm)</label>
+                <input type="number" step="0.1" min="30" max="200" id="fHip" placeholder="e.g. 95.0" oninput="recalcWHR()">
+              </div>
+
+              <div class="form-group">
+                <label>Waist-to-Hip Ratio (WHR)</label>
+                <div id="whrDisplay" class="calc-preview">Enter Waist &amp; Hip</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================================
+               SECTION C1: FEMALE ONLY SECTION (Maternal & Reproductive)
+               ========================================================== -->
+          <div id="femaleOnlyCard" class="card gender-card-female" style="margin-top: 1.5rem; display: none;">
+            <div class="section-title">
+              <span>👩 3. Female Specific — Maternal &amp; Reproductive Health</span>
+              <span class="badge" style="background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8;">Female Only</span>
+            </div>
+            <p class="card-desc">Antenatal care checkups, institutional vs home delivery, postnatal visits, family planning, and female central obesity standard (WHR &gt; 0.85).</p>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fAnc">ANC Checkups Taken? (Y/N/NA)</label>
+                <select id="fAnc">
+                  <option value="NA" selected>Not Applicable (NA)</option>
+                  <option value="Y">Yes (Y)</option>
+                  <option value="N">No (N)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fDelivery">Delivery Place (Hospital/Home)</label>
+                <select id="fDelivery">
+                  <option value="NA" selected>Not Applicable (NA)</option>
+                  <option value="Hospital">Hospital (Institutional)</option>
+                  <option value="Home">Home Delivery</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fPnc">PNC Checkups Taken? (Y/N/NA)</label>
+                <select id="fPnc">
+                  <option value="NA" selected>Not Applicable (NA)</option>
+                  <option value="Y">Yes (Y)</option>
+                  <option value="N">No (N)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fFp">Use of Any Family Planning Method?</label>
+                <select id="fFp">
+                  <option value="NA" selected>Not Applicable (NA)</option>
+                  <option value="Y">Yes (Y)</option>
+                  <option value="N">No (N)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Female WHR Threshold Alert</label>
+                <div id="femaleWhrAlert" class="calc-preview" style="background: #fdf2f8; color: #9d174d;">WHR Standard: &le; 0.85</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================================
+               SECTION C2: MALE ONLY SECTION (Male Standards)
+               ========================================================== -->
+          <div id="maleOnlyCard" class="card gender-card-male" style="margin-top: 1.5rem; display: none;">
+            <div class="section-title">
+              <span>👨 3. Male Specific — Anthropometry &amp; Activity Evaluation</span>
+              <span class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;">Male Only</span>
+            </div>
+            <p class="card-desc">Male cardiovascular risk threshold (WHR &gt; 0.90) and ICMR adult male consumption unit allocation. (Maternal sections are excluded).</p>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Male Central Obesity Risk (WHR)</label>
+                <div id="maleWhrAlert" class="calc-preview" style="background: #eff6ff; color: #1e40af;">WHR Standard: &le; 0.90</div>
+              </div>
+              <div class="form-group">
+                <label>ICMR Reference Male Allocation</label>
+                <div class="calc-preview" style="background: #f8fafc; color: var(--text-secondary);">
+                  Sedentary: 1.0 CU &bull; Moderate: 1.2 CU &bull; Heavy: 1.6 CU
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================================
+               SECTION D: PEDIATRIC SPECIFIC (0-5 YEARS)
+               ========================================================== -->
+          <div id="pediatricSection" class="card pediatric-card" style="margin-top: 1.5rem; display: none;">
+            <div class="section-title">
+              <span>👶 4. Pediatric Growth, Nutrition &amp; Immunization (0-5 Yrs)</span>
+              <span class="badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">Children 0-5 Yrs</span>
+            </div>
+            <p class="card-desc">Head/Chest circumference (0-2 yrs), MUAC arm circumference (6 mo - 5 yrs), clinical stunting/wasting, and Mamta card status.</p>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fHc">Head Circumference HC (cm, &le; 2 Yrs)</label>
+                <input type="number" step="0.1" min="20" max="65" id="fHc" placeholder="e.g. 45.0">
+              </div>
+
+              <div class="form-group">
+                <label for="fCc">Chest Circumference CC (cm, &le; 2 Yrs)</label>
+                <input type="number" step="0.1" min="20" max="75" id="fCc" placeholder="e.g. 46.0">
+              </div>
+
+              <div class="form-group">
+                <label for="fMuac">MUAC (cm, 6 mo - 5 Yrs)</label>
+                <input type="number" step="0.1" min="5" max="25" id="fMuac" placeholder="e.g. 13.5" oninput="checkMuacStatus()">
+              </div>
+
+              <div class="form-group">
+                <label>MUAC Malnutrition Status</label>
+                <div id="muacStatusDisplay" class="calc-preview">Normal (&gt; 12.5 cm)</div>
+              </div>
+
+              <div class="form-group">
+                <label for="fUnderweight">Underweight? (Y/N/NA)</label>
+                <select id="fUnderweight">
+                  <option value="NA">NA</option>
+                  <option value="N" selected>No (Normal)</option>
+                  <option value="Y">Yes (Underweight)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fOverweight">Overweight? (Y/N/NA)</label>
+                <select id="fOverweight">
+                  <option value="NA">NA</option>
+                  <option value="N" selected>No (Normal)</option>
+                  <option value="Y">Yes (Overweight)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fStunting">Stunting? (Y/N/NA)</label>
+                <select id="fStunting">
+                  <option value="NA">NA</option>
+                  <option value="N" selected>No</option>
+                  <option value="Y">Yes (Low Height-for-Age)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fWasting">Wasting? (Y/N/NA)</label>
+                <select id="fWasting">
+                  <option value="NA">NA</option>
+                  <option value="N" selected>No</option>
+                  <option value="Y">Yes (Low Weight-for-Height)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fSevereWasting">Severe Wasting? (Y/N/NA)</label>
+                <select id="fSevereWasting">
+                  <option value="NA">NA</option>
+                  <option value="N" selected>No</option>
+                  <option value="Y">Yes (Severe Acute)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fMamta">Mamta Card Available? (Y/N/NA)</label>
+                <select id="fMamta">
+                  <option value="Y" selected>Yes (Y)</option>
+                  <option value="N">No (N)</option>
+                  <option value="NA">NA</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fImmun">Immunization Status As Per Age</label>
+                <select id="fImmun">
+                  <option value="Y" selected>Complete as per Age (Y)</option>
+                  <option value="N">Incomplete / Delayed (N)</option>
+                  <option value="NA">NA</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sticky Action Bar -->
+          <div class="sticky-actions-bar">
+            <div style="font-size: 0.825rem; color: var(--text-secondary);">
+              Editing Survey Record: <strong id="actionTargetMemberName">-</strong>
+            </div>
+            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" onclick="reloadMemberData()">🔄 Reset</button>
+              <button type="button" class="btn btn-primary" id="btnSaveMember" onclick="saveMemberSurvey(false)">💾 Save Member Survey</button>
+              <button type="button" class="btn btn-success" id="btnSaveNext" onclick="saveMemberSurvey(true)">⚡ Save &amp; Next Member &rarr;</button>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    /* Global Application State */
+    let allFamilies = [];
+    let currentFamilyId = null;
+    let currentFamilyData = null;
+    let currentMemberId = null;
+    let currentMemberData = null;
+    let loggedInStudent = null;
+
+    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('preload-transitions');
+      });
+    });
+
+    // Execute callback only when document is active/visible, and after loading, nothing
+    function runWhenActive(callback) {
+      if (document.visibilityState === 'visible') {
+        callback();
+      } else {
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            callback();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      }
+    }
+
+    /* Sliding Sidebar Controls */
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    /* Toast Notification System */
+    function showToast(message, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.innerHTML = `<span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(12px)';
+        setTimeout(() => t.remove(), 250);
+      }, 3500);
+    }
+
+    /* User Authentication & Navbar */
+    function initAuth() {
+      const userStr = localStorage.getItem('medpulse_user');
+      const authArea = document.getElementById('authNavArea');
+      if (!authArea) return;
+      if (userStr) {
+        try {
+          loggedInStudent = JSON.parse(userStr);
+          authArea.innerHTML = `
+            <div class="sidebar-user" data-tooltip="Roll ${loggedInStudent.roll_number} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logoutEntryUser();}else{window.location.href='/profile.html';}" title="Roll ${loggedInStudent.roll_number}">
+              <div class="user-avatar-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="role-dot"></span>
+              </div>
+              <div class="user-info-text">
+                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); display: block;">Student</span>
+                <span style="font-weight: 700; color: #fff;">Roll ${loggedInStudent.roll_number}</span>
+              </div>
+              <button class="logout-btn" onclick="event.stopPropagation(); logoutEntryUser();" title="Logout">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          `;
+        } catch (e) {
+          showLoginLink(authArea);
+        }
+      } else {
+        showLoginLink(authArea);
+      }
+    }
+
+    function showLoginLink(authArea) {
+      if (!authArea) return;
+      authArea.innerHTML = `
+        <a href="/login.html" class="sidebar-login-link" title="Sign In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span class="login-label">Sign In</span>
+        </a>
+      `;
+    }
+
+    function logoutEntryUser() {
+      localStorage.removeItem('medpulse_user');
+      window.location.reload();
+    }
+
+    /* ---- Initial Page Bootstrap ---- */
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      initAuth();
+      runWhenActive(async () => {
+        await loadFamilyDropdown();
+
+        // Check URL query parameters (e.g. /entry.html?familyId=17&memberId=48)
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramFamilyId = urlParams.get('familyId');
+        const paramMemberId = urlParams.get('memberId');
+
+        if (paramFamilyId) {
+          const selectEl = document.getElementById('familySelect');
+          selectEl.value = paramFamilyId;
+          await selectFamily(parseInt(paramFamilyId, 10), paramMemberId ? parseInt(paramMemberId, 10) : null);
+        } else if (allFamilies.length > 0) {
+          // Auto select first family if available
+          selectFamily(allFamilies[0].id);
+        }
+      });
+    });
+
+    /* ---- Load All Available Surveyed Families ---- */
+    async function loadFamilyDropdown() {
+      try {
+        const res = await fetch('/api/families');
+        allFamilies = await res.json();
+        const select = document.getElementById('familySelect');
+
+        if (!allFamilies || allFamilies.length === 0) {
+          select.innerHTML = '<option value="">No households recorded yet</option>';
+          renderCustomFamilySelect([]);
+          return;
+        }
+
+        // Keep native select synchronized for accessibility / form submit
+        select.innerHTML = '<option value="" disabled selected>-- Select a Household Unit --</option>' + 
+          allFamilies.map(f => {
+            const code = f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`;
+            return `<option value="${f.id}">[${code}] #${f.family_no} — ${f.head_of_family} (${f.village_ward || 'Ward'}, ${f.member_count || 0} members)</option>`;
+          }).join('');
+
+        // Render Custom Selection Board Dropdown & Horizontal Strip
+        renderCustomFamilySelect(allFamilies);
+
+      } catch (err) {
+        console.error('Error loading families dropdown:', err);
+        showToast('Failed to load families', 'error');
+      }
+    }
+
+    /* ---- Render Custom Select Menu & Horizontal Selection Strip ---- */
+    function renderCustomFamilySelect(families) {
+      const listEl = document.getElementById('customSelectList');
+      const stripEl = document.getElementById('quickFamilyStrip');
+      const countEl = document.getElementById('customSelectCount');
+
+      if (countEl) countEl.textContent = families.length;
+
+      if (!families || families.length === 0) {
+        if (listEl) listEl.innerHTML = `<div style="padding: 1.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">No households registered under your cadet cadre yet.<br><a href="/family-manage.html" class="btn btn-primary" style="margin-top: 10px; font-size: 0.8rem; padding: 6px 14px;">+ Register Household in Family Management</a></div>`;
+        if (stripEl) stripEl.innerHTML = `<div style="padding: 0.5rem 0.25rem; color: var(--text-muted); font-size: 0.825rem;">No households registered yet. <a href="/family-manage.html" style="color: var(--accent); font-weight: 700; text-decoration: underline;">+ Register Household</a></div>`;
+        return;
+      }
+
+      // 1. Render Custom Dropdown Options
+      if (listEl) {
+        listEl.innerHTML = families.map(f => {
+          const code = f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`;
+          const isActive = currentFamilyId === f.id;
+          return `
+            <div class="custom-select-item ${isActive ? 'active' : ''}" onclick="onCustomSelectFamily(${f.id})" id="customFamilyItem_${f.id}">
+              <div class="custom-select-item-left">
+                <span class="badge badge-info" style="font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.5rem; letter-spacing: 0.02em;">${code}</span>
+                <div class="custom-select-item-info">
+                  <span class="custom-select-item-name">${f.head_of_family}</span>
+                  <span class="custom-select-item-meta">${f.village_ward || 'Field Area'} &bull; 👥 ${f.member_count || 0} members</span>
+                </div>
+              </div>
+              <div class="custom-select-item-right">
+                ${isActive ? '<span class="custom-select-check">✓</span>' : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 2. Render Horizontal Quick-Select Strip Cards
+      if (stripEl) {
+        stripEl.innerHTML = families.map(f => {
+          const code = f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`;
+          const isActive = currentFamilyId === f.id;
+          return `
+            <div class="family-strip-card ${isActive ? 'active' : ''}" onclick="onCustomSelectFamily(${f.id})" id="quickFamilyCard_${f.id}">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span class="badge badge-info" style="font-size: 0.72rem; padding: 0.15rem 0.45rem;">${code}</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">👥 ${f.member_count || 0}</span>
+              </div>
+              <div class="family-strip-name" title="${f.head_of_family}">${f.head_of_family}</div>
+              <div class="family-strip-meta">${f.village_ward || 'Ward'}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function filterCustomSelectFamilies() {
+      const q = (document.getElementById('customSelectSearch')?.value || '').toLowerCase().trim();
+      const filtered = allFamilies.filter(f => {
+        const code = (f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`).toLowerCase();
+        const hof = (f.head_of_family || '').toLowerCase();
+        const loc = (f.village_ward || '').toLowerCase();
+        return code.includes(q) || hof.includes(q) || loc.includes(q);
+      });
+      renderCustomFamilySelect(filtered);
+    }
+
+    function toggleCustomSelectMenu() {
+      const menu = document.getElementById('customSelectMenu');
+      const trigger = document.getElementById('customSelectTrigger');
+      if (!menu) return;
+      const isOpen = menu.style.display === 'block';
+      if (isOpen) {
+        closeCustomSelectMenu();
+      } else {
+        menu.style.display = 'block';
+        if (trigger) trigger.classList.add('open');
+        const searchInput = document.getElementById('customSelectSearch');
+        if (searchInput) {
+          searchInput.value = '';
+          filterCustomSelectFamilies();
+          setTimeout(() => searchInput.focus(), 60);
+        }
+      }
+    }
+
+    function closeCustomSelectMenu() {
+      const menu = document.getElementById('customSelectMenu');
+      const trigger = document.getElementById('customSelectTrigger');
+      if (menu) menu.style.display = 'none';
+      if (trigger) trigger.classList.remove('open');
+    }
+
+    function onCustomSelectFamily(familyId) {
+      closeCustomSelectMenu();
+      selectFamily(familyId);
+    }
+
+    // Global Click Listener to Dismiss Custom Dropdown
+    document.addEventListener('click', (e) => {
+      const container = document.querySelector('.custom-select-container');
+      if (container && !container.contains(e.target)) {
+        closeCustomSelectMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeCustomSelectMenu();
+      }
+    });
+
+    function onFamilySelectChange() {
+      const familyId = parseInt(document.getElementById('familySelect').value, 10);
+      if (familyId) {
+        selectFamily(familyId);
+      }
+    }
+
+    /* ---- Select Family and Fetch Detailed Roster ---- */
+    async function selectFamily(familyId, preselectMemberId = null) {
+      currentFamilyId = familyId;
+      document.getElementById('familySelect').value = familyId;
+
+      // Update Custom Trigger Button Display
+      const selectedF = allFamilies.find(f => f.id === familyId);
+      if (selectedF) {
+        const code = selectedF.family_code || `FAM-${String(selectedF.family_no).padStart(4, '0')}`;
+        const triggerContent = document.getElementById('customTriggerContent');
+        if (triggerContent) {
+          triggerContent.innerHTML = `
+            <div class="trigger-active-card">
+              <span class="badge badge-info" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; font-weight: 700;">${code}</span>
+              <div style="display: flex; flex-direction: column; overflow: hidden; line-height: 1.25;">
+                <span class="trigger-active-title">${selectedF.head_of_family}</span>
+                <span class="trigger-active-sub">${selectedF.village_ward || 'Field Area'} &bull; 👥 ${selectedF.member_count || 0} members</span>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // Synchronize Active States on Custom Options and Horizontal Strip
+      document.querySelectorAll('.custom-select-item').forEach(el => {
+        el.classList.remove('active');
+        const checkEl = el.querySelector('.custom-select-item-right');
+        if (checkEl) checkEl.innerHTML = '';
+      });
+      document.querySelectorAll('.family-strip-card').forEach(el => el.classList.remove('active'));
+
+      const activeItem = document.getElementById(`customFamilyItem_${familyId}`);
+      if (activeItem) {
+        activeItem.classList.add('active');
+        const checkEl = activeItem.querySelector('.custom-select-item-right');
+        if (checkEl) checkEl.innerHTML = '<span class="custom-select-check">✓</span>';
+      }
+
+      const activeStrip = document.getElementById(`quickFamilyCard_${familyId}`);
+      if (activeStrip) {
+        activeStrip.classList.add('active');
+        activeStrip.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      }
+
+      try {
+        const res = await fetch(`/api/families/${familyId}`);
+        currentFamilyData = await res.json();
+
+        // Update Quick Summary Header
+        document.getElementById('householdSummaryQuick').style.display = 'flex';
+        document.getElementById('quickFamilyCode').textContent = currentFamilyData.family_code || `FAM-${currentFamilyData.family_no}`;
+        document.getElementById('quickHofName').textContent = currentFamilyData.head_of_family;
+        document.getElementById('quickVillage').textContent = currentFamilyData.village_ward || '-';
+
+        // Pre-fill Family Dietary Assessment Form
+        document.getElementById('fdTotalCu').value = currentFamilyData.total_cu || 0;
+        document.getElementById('fdCalorie').value = currentFamilyData.calorie_intake_per_cu || 0;
+        document.getElementById('fdCalorieStatus').value = currentFamilyData.calorie_status || 'Normal';
+        document.getElementById('fdAdvice').value = currentFamilyData.dietary_advice_given || 'N';
+
+        // Display Active Workspace
+        document.getElementById('emptyWorkspacePrompt').style.display = 'none';
+        document.getElementById('surveyWorkspace').style.display = 'block';
+
+        // Render Roster Carousel
+        const members = currentFamilyData.members || [];
+        document.getElementById('rosterCount').textContent = members.length;
+        renderRosterCarousel(members, preselectMemberId);
+
+      } catch (err) {
+        console.error('Error selecting family:', err);
+        showToast('Error loading family record', 'error');
+      }
+    }
+
+    function toggleFamilyDietModal() {
+      const card = document.getElementById('familyDietCard');
+      card.style.display = card.style.display === 'none' ? 'block' : 'none';
+      if (card.style.display === 'block') card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function saveFamilyDietary() {
+      if (!currentFamilyId) return;
+      const btn = document.getElementById('saveDietBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        total_cu: parseFloat(document.getElementById('fdTotalCu').value) || 0,
+        calorie_intake_per_cu: parseInt(document.getElementById('fdCalorie').value, 10) || 0,
+        calorie_status: document.getElementById('fdCalorieStatus').value,
+        dietary_advice_given: document.getElementById('fdAdvice').value
+      };
+
+      try {
+        const res = await fetch(`/api/families/${currentFamilyId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Failed to update dietary assessment');
+
+        showToast('Household dietary assessment saved!', 'success');
+        toggleFamilyDietModal();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Household Diet';
+      }
+    }
+
+    /* ---- Render Family Member Carousel ---- */
+    function renderRosterCarousel(members, preselectMemberId = null) {
+      const container = document.getElementById('rosterCarousel');
+
+      if (!members || members.length === 0) {
+        container.innerHTML = `<div style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem;">No members in this family yet. <a href="/family-manage.html" style="color: var(--accent); font-weight: 600;">+ Add members on Family page</a>.</div>`;
+        document.getElementById('memberSurveyCard').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('memberSurveyCard').style.display = 'block';
+
+      container.innerHTML = members.map(m => {
+        const isSurveyDone = (m.sbp > 0 || m.hb > 0 || m.height_m > 0 || m.muac_cm > 0);
+        const statusBadge = isSurveyDone 
+          ? `<span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 6px;">✓ Done</span>`
+          : `<span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">○ Pending</span>`;
+
+        return `
+          <div class="roster-card" id="rosterCard_${m.id}" onclick="selectMemberForSurvey(${m.id})">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span class="badge badge-info" style="font-size: 0.65rem;">#${m.member_order}</span>
+                ${statusBadge}
+              </div>
+              <div class="roster-name" title="${m.name}">${m.name}</div>
+              <div class="roster-meta">${m.relation_to_hof || 'Member'} &bull; ${m.age_years}y (${m.gender})</div>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--accent); font-weight: 600;">Select &rarr;</div>
+          </div>
+        `;
+      }).join('');
+
+      // Determine preselection
+      let targetId = preselectMemberId;
+      if (!targetId || !members.some(m => m.id === targetId)) {
+        targetId = members[0].id;
+      }
+      selectMemberForSurvey(targetId);
+    }
+
+    /* ---- Select Member and Populate Survey Form with Gender Rules ---- */
+    function selectMemberForSurvey(memberId) {
+      if (!currentFamilyData || !currentFamilyData.members) return;
+      const member = currentFamilyData.members.find(m => m.id === memberId);
+      if (!member) return;
+
+      currentMemberId = memberId;
+      currentMemberData = member;
+
+      // Update Active Styling in Carousel
+      document.querySelectorAll('.roster-card').forEach(c => c.classList.remove('active'));
+      const activeCard = document.getElementById(`rosterCard_${memberId}`);
+      if (activeCard) {
+        activeCard.classList.add('active');
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+
+      // Member Banner Header
+      document.getElementById('entryMemberName').textContent = member.name;
+      document.getElementById('entryMemberOrder').textContent = `#${member.member_order}`;
+      document.getElementById('entryMemberSubtext').textContent = `${member.relation_to_hof || 'Member'} • ${member.age_years} Years, ${member.age_months || 0} Months • Gender: ${member.gender === 'F' ? 'Female (F)' : (member.gender === 'M' ? 'Male (M)' : 'Other')} • ${member.occupation || 'No occupation listed'}`;
+      document.getElementById('actionTargetMemberName').textContent = `${member.name} (${member.gender}, ${member.age_years}y)`;
+
+      const genderAvatar = document.getElementById('memberGenderAvatar');
+      if (member.gender === 'F') {
+        genderAvatar.textContent = '👩';
+        genderAvatar.style.background = '#fdf2f8';
+        genderAvatar.style.color = '#be185d';
+      } else if (member.gender === 'M') {
+        genderAvatar.textContent = '👨';
+        genderAvatar.style.background = '#eff6ff';
+        genderAvatar.style.color = '#1d4ed8';
+      } else {
+        genderAvatar.textContent = '👤';
+        genderAvatar.style.background = 'var(--accent-subtle)';
+        genderAvatar.style.color = 'var(--accent)';
+      }
+
+      const isSurveyDone = (member.sbp > 0 || member.hb > 0 || member.height_m > 0 || member.muac_cm > 0);
+      const statusBadge = document.getElementById('entryMemberStatusBadge');
+      if (isSurveyDone) {
+        statusBadge.className = 'badge badge-success';
+        statusBadge.textContent = '✓ Survey Recorded';
+      } else {
+        statusBadge.className = 'badge badge-warning';
+        statusBadge.textContent = '○ Survey Pending';
+      }
+
+      // Populate Common Fields (Everyone)
+      document.getElementById('fPallor').value = member.has_pallor || 'N';
+      document.getElementById('fHb').value = member.hb || '';
+      document.getElementById('fAnaemia').value = member.has_anaemia || 'N';
+      document.getElementById('fHeight').value = member.height_m || '';
+      document.getElementById('fWeight').value = member.weight_kg || '';
+      document.getElementById('fWorkType').value = member.work_type || 'M';
+      document.getElementById('fCu').value = member.consumption_unit || (member.gender === 'F' ? 0.9 : 1.2);
+      document.getElementById('fDiagnosis').value = member.diagnosis || '';
+      document.getElementById('fTreatment').value = member.treatment_taken || 'NA';
+      document.getElementById('fTreatmentSource').value = member.treatment_source || '';
+      document.getElementById('fOralHygiene').value = member.oral_hygiene || 'Y';
+      document.getElementById('fGeneralHygiene').value = member.general_hygiene || 'Y';
+
+      // Populate Adult Fields (Age >= 18)
+      document.getElementById('fSbp').value = member.sbp || '';
+      document.getElementById('fDbp').value = member.dbp || '';
+      document.getElementById('fHtn').value = member.has_htn || 'N';
+      document.getElementById('fRbs').value = member.rbs || '';
+      document.getElementById('fDm').value = member.has_dm || 'N';
+      document.getElementById('fWaist').value = member.waist_cm || '';
+      document.getElementById('fHip').value = member.hip_cm || '';
+
+      // Populate Female Specific Fields
+      document.getElementById('fAnc').value = member.anc_taken || 'NA';
+      document.getElementById('fDelivery').value = member.delivery_place || 'NA';
+      document.getElementById('fPnc').value = member.pnc_taken || 'NA';
+      document.getElementById('fFp').value = member.fp_method_used || 'NA';
+
+      // Populate Pediatric Fields (0-5 Yrs)
+      document.getElementById('fHc').value = member.hc_cm || '';
+      document.getElementById('fCc').value = member.cc_cm || '';
+      document.getElementById('fMuac').value = member.muac_cm || '';
+      document.getElementById('fUnderweight').value = member.is_underweight || 'NA';
+      document.getElementById('fOverweight').value = member.is_overweight || 'NA';
+      document.getElementById('fStunting').value = member.is_stunting || 'NA';
+      document.getElementById('fWasting').value = member.is_wasting || 'NA';
+      document.getElementById('fSevereWasting').value = member.is_severe_wasting || 'NA';
+      document.getElementById('fMamta').value = member.mamta_card || 'Y';
+      document.getElementById('fImmun').value = member.immunization_status || 'Y';
+
+      // ENFORCE GENDER & AGE CONDITIONAL SECTIONS
+      applyGenderAndAgeRules(member);
+
+      // Trigger dynamic calculations
+      recalcBMI();
+      recalcWHR();
+      checkMuacStatus();
+      updateQuickPills(member);
+    }
+
+    /* ---- Enforce Gender and Age Visibility Rules ---- */
+    function applyGenderAndAgeRules(member) {
+      const isAdult = (member.age_years >= 18);
+      const isChild = (member.age_years <= 5);
+      const isFemale = (member.gender === 'F');
+      const isMale = (member.gender === 'M');
+
+      // Adult Section
+      const adultSec = document.getElementById('adultNcdSection');
+      if (isAdult) {
+        adultSec.style.display = 'block';
+      } else {
+        adultSec.style.display = 'none';
+      }
+
+      // Gender-specific sections
+      const femaleCard = document.getElementById('femaleOnlyCard');
+      const maleCard = document.getElementById('maleOnlyCard');
+
+      if (isFemale) {
+        femaleCard.style.display = 'block';
+        maleCard.style.display = 'none';
+      } else if (isMale) {
+        femaleCard.style.display = 'none';
+        maleCard.style.display = 'block';
+      } else {
+        femaleCard.style.display = 'none';
+        maleCard.style.display = 'none';
+      }
+
+      // Pediatric Section
+      const pedSec = document.getElementById('pediatricSection');
+      if (isChild) {
+        pedSec.style.display = 'block';
+      } else {
+        pedSec.style.display = 'none';
+      }
+    }
+
+    /* ---- Dynamic Calculations & Auto-Classifiers ---- */
+    function recalcBMI() {
+      const ht = parseFloat(document.getElementById('fHeight').value);
+      const wt = parseFloat(document.getElementById('fWeight').value);
+      const disp = document.getElementById('bmiDisplay');
+
+      if (ht > 0 && wt > 0) {
+        const bmi = (wt / (ht * ht)).toFixed(1);
+        let cat = 'Normal';
+        let colorClass = 'var(--green)';
+
+        if (bmi < 18.5) {
+          cat = 'Underweight';
+          colorClass = 'var(--amber)';
+        } else if (bmi >= 25 && bmi < 30) {
+          cat = 'Overweight';
+          colorClass = 'var(--amber)';
+        } else if (bmi >= 30) {
+          cat = 'Obese';
+          colorClass = 'var(--red)';
+        }
+
+        disp.innerHTML = `BMI: <strong>${bmi}</strong> <span style="color: ${colorClass}; font-weight: 700;">(${cat})</span>`;
+      } else {
+        disp.textContent = 'Enter Ht & Wt';
+      }
+    }
+
+    function recalcWHR() {
+      const waist = parseFloat(document.getElementById('fWaist').value);
+      const hip = parseFloat(document.getElementById('fHip').value);
+      const disp = document.getElementById('whrDisplay');
+      const isFemale = currentMemberData && currentMemberData.gender === 'F';
+
+      if (waist > 0 && hip > 0) {
+        const whr = (waist / hip).toFixed(2);
+        const threshold = isFemale ? 0.85 : 0.90;
+        const isHighRisk = whr > threshold;
+
+        disp.innerHTML = `WHR: <strong>${whr}</strong> ${isHighRisk ? `<span style="color: var(--red); font-weight: 700;">⚠️ Central Obesity</span>` : `<span style="color: var(--green); font-weight: 700;">✓ Low Risk</span>`}`;
+
+        // Update gender-specific cards
+        if (isFemale) {
+          const alert = document.getElementById('femaleWhrAlert');
+          if (alert) alert.innerHTML = isHighRisk 
+            ? `⚠️ WHR ${whr} &gt; 0.85 (Central Obesity Risk)` 
+            : `✓ WHR ${whr} &le; 0.85 (Normal Female Ratio)`;
+        } else {
+          const alert = document.getElementById('maleWhrAlert');
+          if (alert) alert.innerHTML = isHighRisk 
+            ? `⚠️ WHR ${whr} &gt; 0.90 (Central Obesity Risk)` 
+            : `✓ WHR ${whr} &le; 0.90 (Normal Male Ratio)`;
+        }
+
+      } else {
+        disp.textContent = 'Enter Waist & Hip';
+      }
+    }
+
+    function checkAdultVitals() {
+      const sbp = parseInt(document.getElementById('fSbp').value || 0, 10);
+      const dbp = parseInt(document.getElementById('fDbp').value || 0, 10);
+      const rbs = parseFloat(document.getElementById('fRbs').value || 0);
+
+      // Auto-classify HTN
+      if (sbp >= 140 || dbp >= 90) {
+        document.getElementById('fHtn').value = 'Y';
+      } else if (sbp > 0 && dbp > 0) {
+        document.getElementById('fHtn').value = 'N';
+      }
+
+      // Auto-classify DM
+      if (rbs >= 200) {
+        document.getElementById('fDm').value = 'Y';
+      } else if (rbs > 0) {
+        document.getElementById('fDm').value = 'N';
+      }
+    }
+
+    function onHbInputChange() {
+      const hb = parseFloat(document.getElementById('fHb').value || 0);
+      if (hb > 0) {
+        // Clinical cutoffs: < 12.0 indicates anaemia for women/general
+        if (hb < 12.0) {
+          document.getElementById('fAnaemia').value = 'Y';
+          document.getElementById('fPallor').value = 'Y';
+        } else {
+          document.getElementById('fAnaemia').value = 'N';
+        }
+      }
+    }
+
+    function checkMuacStatus() {
+      const muac = parseFloat(document.getElementById('fMuac').value || 0);
+      const disp = document.getElementById('muacStatusDisplay');
+      if (muac > 0) {
+        if (muac < 11.5) {
+          disp.innerHTML = `<span style="color: var(--red); font-weight: 700;">⚠️ SAM (&lt; 11.5 cm)</span>`;
+          document.getElementById('fSevereWasting').value = 'Y';
+          document.getElementById('fWasting').value = 'Y';
+        } else if (muac <= 12.5) {
+          disp.innerHTML = `<span style="color: var(--amber); font-weight: 700;">⚠️ MAM (11.5 - 12.5 cm)</span>`;
+          document.getElementById('fWasting').value = 'Y';
+        } else {
+          disp.innerHTML = `<span style="color: var(--green); font-weight: 700;">✓ Normal (&gt; 12.5 cm)</span>`;
+        }
+      }
+    }
+
+    function onWorkTypeChange() {
+      const wt = document.getElementById('fWorkType').value;
+      const isFemale = currentMemberData && currentMemberData.gender === 'F';
+      const cuInput = document.getElementById('fCu');
+
+      if (isFemale) {
+        if (wt === 'S') cuInput.value = '0.8';
+        else if (wt === 'M') cuInput.value = '0.9';
+        else if (wt === 'H') cuInput.value = '1.2';
+      } else {
+        if (wt === 'S') cuInput.value = '1.0';
+        else if (wt === 'M') cuInput.value = '1.2';
+        else if (wt === 'H') cuInput.value = '1.6';
+      }
+    }
+
+    function updateQuickPills(m) {
+      const container = document.getElementById('quickVitalsPills');
+      const pills = [];
+
+      if (m.sbp && m.dbp) pills.push(`<span class="badge ${m.has_htn === 'Y' ? 'badge-danger' : 'badge-info'}">BP ${m.sbp}/${m.dbp}</span>`);
+      if (m.rbs) pills.push(`<span class="badge ${m.has_dm === 'Y' ? 'badge-danger' : 'badge-info'}">RBS ${m.rbs}</span>`);
+      if (m.hb) pills.push(`<span class="badge ${m.has_anaemia === 'Y' ? 'badge-danger' : 'badge-success'}">Hb ${m.hb}</span>`);
+      if (m.bmi) pills.push(`<span class="badge badge-info">BMI ${m.bmi}</span>`);
+      if (m.muac_cm) pills.push(`<span class="badge badge-warning">MUAC ${m.muac_cm}</span>`);
+      if (m.anc_taken === 'Y') pills.push(`<span class="badge badge-success">ANC Reg</span>`);
+
+      container.innerHTML = pills.length > 0 ? pills.join('') : '<span style="font-size: 0.75rem; color: var(--text-light); font-style: italic;">No vitals recorded</span>';
+    }
+
+    /* ---- Save Member Clinical Survey Data ---- */
+    async function saveMemberSurvey(nextMember = false) {
+      if (!currentMemberId) {
+        showToast('Please select a member first', 'error');
+        return;
+      }
+
+      const btn = nextMember ? document.getElementById('btnSaveNext') : document.getElementById('btnSaveMember');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        has_pallor: document.getElementById('fPallor').value,
+        hb: parseFloat(document.getElementById('fHb').value) || null,
+        has_anaemia: document.getElementById('fAnaemia').value,
+        height_m: parseFloat(document.getElementById('fHeight').value) || null,
+        weight_kg: parseFloat(document.getElementById('fWeight').value) || null,
+        work_type: document.getElementById('fWorkType').value,
+        consumption_unit: parseFloat(document.getElementById('fCu').value) || 1.0,
+        diagnosis: document.getElementById('fDiagnosis').value.trim() || null,
+        treatment_taken: document.getElementById('fTreatment').value,
+        treatment_source: document.getElementById('fTreatmentSource').value.trim() || null,
+        oral_hygiene: document.getElementById('fOralHygiene').value,
+        general_hygiene: document.getElementById('fGeneralHygiene').value,
+
+        // Adult NCD
+        sbp: parseInt(document.getElementById('fSbp').value, 10) || null,
+        dbp: parseInt(document.getElementById('fDbp').value, 10) || null,
+        has_htn: document.getElementById('fHtn').value,
+        rbs: parseFloat(document.getElementById('fRbs').value) || null,
+        has_dm: document.getElementById('fDm').value,
+        waist_cm: parseFloat(document.getElementById('fWaist').value) || null,
+        hip_cm: parseFloat(document.getElementById('fHip').value) || null,
+
+        // Female Maternal
+        anc_taken: document.getElementById('fAnc').value,
+        delivery_place: document.getElementById('fDelivery').value,
+        pnc_taken: document.getElementById('fPnc').value,
+        fp_method_used: document.getElementById('fFp').value,
+
+        // Pediatric
+        hc_cm: parseFloat(document.getElementById('fHc').value) || null,
+        cc_cm: parseFloat(document.getElementById('fCc').value) || null,
+        muac_cm: parseFloat(document.getElementById('fMuac').value) || null,
+        is_underweight: document.getElementById('fUnderweight').value,
+        is_overweight: document.getElementById('fOverweight').value,
+        is_stunting: document.getElementById('fStunting').value,
+        is_wasting: document.getElementById('fWasting').value,
+        is_severe_wasting: document.getElementById('fSevereWasting').value,
+        mamta_card: document.getElementById('fMamta').value,
+        immunization_status: document.getElementById('fImmun').value
+      };
+
+      try {
+        const res = await fetch(`/api/members/${currentMemberId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update member survey');
+
+        showToast(`Survey saved for "${currentMemberData.name}"!`, 'success');
+
+        // Update local cache
+        Object.assign(currentMemberData, data.member);
+
+        // Update carousel card status badge
+        const card = document.getElementById(`rosterCard_${currentMemberId}`);
+        if (card) {
+          const badgeEl = card.querySelector('.badge-warning, .badge-success');
+          if (badgeEl) {
+            badgeEl.className = 'badge badge-success';
+            badgeEl.textContent = '✓ Done';
+          }
+        }
+
+        // Advance to next member if requested
+        if (nextMember) {
+          const members = currentFamilyData.members || [];
+          const currIdx = members.findIndex(m => m.id === currentMemberId);
+          if (currIdx >= 0 && currIdx < members.length - 1) {
+            const nextM = members[currIdx + 1];
+            selectMemberForSurvey(nextM.id);
+            showToast(`Loaded next member: "${nextM.name}"`, 'info');
+          } else {
+            showToast('All family members surveyed!', 'success');
+          }
+        } else {
+          selectMemberForSurvey(currentMemberId);
+        }
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = nextMember ? '⚡ Save & Next Member →' : '💾 Save Member Survey';
+      }
+    }
+
+    function reloadMemberData() {
+      if (currentMemberId) selectMemberForSurvey(currentMemberId);
+    }
+  </script>
+
+  <script src="/nav-glider.js"></script>
+</body>
+</html>
