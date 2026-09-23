@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121026">
+  <title>Epidemiological Intelligence &amp; Analytics | MedPulse</title>
+  <script src="/auth-guard.js"></script>
+  <script>
+    (function() {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+  <!-- Local Vendor Chart.js with CDN Fallback -->
+  <script src="/vendor/chart.umd.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Backdrop Overlay for Mobile Sliding Nav -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar Navigation (Collapsible Icon Dock) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="logo-text-group">
+          <span class="logo-label">MedPulse</span>
+          <span class="logo-sublabel">HEALTH PORTAL</span>
+        </div>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <svg class="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="link-label">Home</span>
+      </a>
+      <a href="/family-manage.html" class="sidebar-link" data-route="families" data-title="Families">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="link-label">Families</span>
+      </a>
+      <a href="/entry.html" class="sidebar-link" data-route="entry" data-title="Data Entry">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h4"/>
+            <path d="M12 10h.01"/>
+          </svg>
+        </div>
+        <span class="link-label">Data Entry</span>
+      </a>
+      <a href="/analytics.html" class="sidebar-link active" data-route="analytics" data-title="Analytics">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+        </div>
+        <span class="link-label">Analytics</span>
+      </a>
+      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="link-label">Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer" id="authNavArea"></div>
+  </aside>
+  <!-- Mobile Drawer Toggle -->
+  <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Page Header & Global Actions -->
+    <div class="page-header anim-fade-up" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 class="page-title page-title-animated">Epidemiological Intelligence &amp; Analytics</h1>
+        <p class="page-subtitle">
+          Interactive population health dashboards, NCD screening metrics, nutrition indicators, and longitudinal tracking
+        </p>
+      </div>
+      <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="exportAllCharts()" title="Download a bundle of active charts">📸 Export Charts</button>
+        <button class="btn btn-secondary" onclick="resetFilters()" title="Reset all interactive filters">↺ Reset Filters</button>
+      </div>
+    </div>
+
+    <!-- Executive KPI Metric Cards (Top Row) -->
+    <div class="kpi-grid anim-fade-up anim-delay-1" id="kpiContainer">
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-header">
+          <span class="kpi-title">Surveyed Households</span>
+          <span class="kpi-icon">🏠</span>
+        </div>
+        <div class="kpi-value" id="kpiHouseholds">-</div>
+        <div class="kpi-sub">
+          <span>Active Field Postings</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-header">
+          <span class="kpi-title">Screened Population</span>
+          <span class="kpi-icon">👥</span>
+        </div>
+        <div class="kpi-value" id="kpiMembers">-</div>
+        <div class="kpi-sub" id="kpiSexRatio">
+          <span>Sex Ratio: - / 1000 M</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-rose">
+        <div class="kpi-header">
+          <span class="kpi-title">Adult Hypertension Rate</span>
+          <span class="kpi-icon">🩺</span>
+        </div>
+        <div class="kpi-value" id="kpiHtn">-</div>
+        <div class="kpi-sub" id="kpiHtnCases">
+          <span>- cases &bull; SBP &ge; 140 or DBP &ge; 90</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-header">
+          <span class="kpi-title">Adult Diabetes Rate</span>
+          <span class="kpi-icon">🩸</span>
+        </div>
+        <div class="kpi-value" id="kpiDm">-</div>
+        <div class="kpi-sub" id="kpiDmCases">
+          <span>- cases &bull; RBS &ge; 200 mg/dL</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-emerald">
+        <div class="kpi-header">
+          <span class="kpi-title">Community Anaemia Rate</span>
+          <span class="kpi-icon">🧪</span>
+        </div>
+        <div class="kpi-value" id="kpiAnaemia">-</div>
+        <div class="kpi-sub" id="kpiAnaemiaCases">
+          <span>- cases &bull; Hb &lt; 12.0 g/dL</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-indigo">
+        <div class="kpi-header">
+          <span class="kpi-title">Caloric Adequacy Rate</span>
+          <span class="kpi-icon">🥗</span>
+        </div>
+        <div class="kpi-value" id="kpiCalorie">-</div>
+        <div class="kpi-sub" id="kpiCalorieStatus">
+          <span>ICMR CU Recommended</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Multi-Parameter Filter Toolbar -->
+    <div class="analytics-filter-bar anim-fade-up anim-delay-2">
+      <div class="filter-controls">
+        <div class="filter-item">
+          <label for="filterGender">Gender</label>
+          <select id="filterGender" class="filter-select" onchange="onFilterChange()">
+            <option value="all" selected>All Genders</option>
+            <option value="M">Male Only</option>
+            <option value="F">Female Only</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filterAgeGroup">Age Cohort</label>
+          <select id="filterAgeGroup" class="filter-select" onchange="onFilterChange()">
+            <option value="all" selected>All Ages</option>
+            <option value="under18">Pediatric &amp; Adolescents (&lt; 18 yrs)</option>
+            <option value="18-44">Young Adults (18–44 yrs)</option>
+            <option value="45-59">Middle-aged (45–59 yrs)</option>
+            <option value="60+">Geriatric (60+ yrs)</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filterFamily">Household Unit</label>
+          <select id="filterFamily" class="filter-select" onchange="onFilterChange()">
+            <option value="all" selected>All Households</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="badge badge-info" id="filterStatusBadge">Showing 19 Members</span>
+        <button class="btn btn-secondary" onclick="resetFilters()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">Clear Filters</button>
+      </div>
+    </div>
+
+    <!-- Analytics View Tabs -->
+    <div class="analytics-tabs anim-fade-up anim-delay-2">
+      <button class="analytics-tab active" onclick="switchViewTab('tab-all', this)">🌐 All Visualizations &amp; Overview</button>
+      <button class="analytics-tab" onclick="switchViewTab('tab-ncd', this)">🩺 Cardiovascular &amp; NCDs</button>
+      <button class="analytics-tab" onclick="switchViewTab('tab-nutrition', this)">🩸 Nutrition &amp; Hematology</button>
+      <button class="analytics-tab" onclick="switchViewTab('tab-longitudinal', this)">📈 Longitudinal Care Tracking</button>
+      <button class="analytics-tab" onclick="switchViewTab('tab-audit', this)">🔍 Academic SQL Audit</button>
+    </div>
+
+    <!-- VIEW 1: Charts Dashboard Grid -->
+    <div id="chartsViewContainer" class="anim-fade-up anim-delay-3">
+      <div class="charts-grid">
+
+        <!-- Chart 1: Adult BMI Distribution (Doughnut) -->
+        <div class="chart-card" id="cardBmiChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">🥧 Adult Nutritional Status (BMI)</h3>
+              <div class="chart-desc">Asian-Indian WHO Cut-offs (&lt;18.5, 18.5-22.9, 23-27.4, &ge;27.5)</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(bmiChart, 'bmi-distribution.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="bmiChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: NCD Prevalence by Age Group (Grouped Bar) -->
+        <div class="chart-card" id="cardNcdAgeChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">📊 NCD Burden Across Age Cohorts</h3>
+              <div class="chart-desc">Hypertension (%) vs Diabetes Mellitus (%) across age brackets</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(ncdAgeChart, 'ncd-prevalence-by-age.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="ncdAgeChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Longitudinal Care Progress (Multi-Line Time-Series) -->
+        <div class="chart-card" id="cardLongitudinalChart" style="grid-column: 1 / -1;">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">📈 Longitudinal Follow-up Progression Over Visits</h3>
+              <div class="chart-desc">Chronological tracking of SBP, DBP, RBS, and Hb across consecutive examination visits</div>
+            </div>
+            <div class="chart-actions" style="gap: 0.6rem;">
+              <select id="lineChartPatientSelector" class="filter-select" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;" onchange="onLongitudinalPatientChange()">
+                <option value="cohort" selected>👥 Cohort Average (All Patients)</option>
+              </select>
+              <button class="chart-btn-icon" onclick="exportChartPng(longitudinalChart, 'longitudinal-progression.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap" style="height: 320px;">
+            <canvas id="longitudinalChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Blood Pressure Stratification (Bar) -->
+        <div class="chart-card" id="cardBpChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">📊 Blood Pressure Stratification</h3>
+              <div class="chart-desc">AHA/ACC Classification: Normal, Pre-HTN, Stage 1, Stage 2</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(bpChart, 'bp-stratification.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="bpChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 5: Anaemia Burden & Mean Hemoglobin by Gender (Grouped Bar) -->
+        <div class="chart-card" id="cardAnaemiaChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">📊 Anaemia Prevalence &amp; Mean Hb by Gender</h3>
+              <div class="chart-desc">Comparison of community anaemia rates and average Hb (g/dL)</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(anaemiaChart, 'anaemia-by-gender.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="anaemiaChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 6: Community Chronic Pathologies Ranking (Horizontal Bar) -->
+        <div class="chart-card" id="cardConditionsChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">📊 Community Chronic Pathologies Ranking</h3>
+              <div class="chart-desc">Top diagnosed conditions ranked by prevalence in surveyed families</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(conditionsChart, 'conditions-ranking.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="conditionsChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 7: Household Caloric Adequacy (Pie) -->
+        <div class="chart-card" id="cardCalorieChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">🥧 Household Caloric Adequacy</h3>
+              <div class="chart-desc">ICMR Consumption Units adequacy (Normal vs Deficient vs Excess)</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(calorieChart, 'caloric-adequacy.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="calorieChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 8: Physical Activity & Work Type (Bar) -->
+        <div class="chart-card" id="cardWorkChart">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">📊 Occupational Physical Activity Level</h3>
+              <div class="chart-desc">Daily physical exertion categories (Sedentary vs Moderate vs Heavy)</div>
+            </div>
+            <div class="chart-actions">
+              <button class="chart-btn-icon" onclick="exportChartPng(workChart, 'work-activity-level.png')" title="Save as PNG">📸 PNG</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="workChartCanvas"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Cohort Drilldown Data Table (Interactive & Filterable) -->
+    <div class="card" id="drilldownCard" style="margin-top: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h2 class="card-title" style="margin-bottom: 0.15rem; font-size: 1.25rem;">
+            🔍 Cohort Drilldown &amp; Clinical Records (<span id="drilldownCount">0</span> Members)
+          </h2>
+          <div style="font-size: 0.825rem; color: var(--text-muted);">
+            Click any row to inspect member profile or click chart elements above to filter this table
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="text" id="drilldownSearch" class="search-input" placeholder="🔍 Search by name, condition, village..." oninput="filterDrilldownTable()" style="max-width: 260px; font-size: 0.825rem; padding: 0.4rem 0.8rem;">
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="drilldownTable">
+          <thead>
+            <tr>
+              <th>Member Name</th>
+              <th>Household</th>
+              <th>Age / Gender</th>
+              <th>BP (mmHg)</th>
+              <th>RBS</th>
+              <th>Hb (g/dL)</th>
+              <th>BMI</th>
+              <th>Work Type</th>
+              <th>Diagnosed Conditions</th>
+              <th>Visits</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="drilldownTbody">
+            <tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW 2: Academic SQL Query Inspector Section (Collapsible & Tabbed) -->
+    <div class="card" id="auditQueryCard" style="display: none; margin-top: 1.5rem;">
+      <div class="section-title">
+        <span>🔍 Academic SQL Query Inspector &amp; Medical College Audit</span>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <button class="btn btn-primary" onclick="loadAuditReport('student-audit')">1. Student Survey Audit</button>
+        <button class="btn btn-secondary" onclick="loadAuditReport('ncd-prevalence')">2. Adult NCD Prevalence (HTN &amp; DM)</button>
+        <button class="btn btn-secondary" onclick="loadAuditReport('anaemia-gender')">3. Anaemia &amp; Hb by Gender</button>
+        <button class="btn btn-secondary" onclick="loadAuditReport('bmi-distribution')">4. Adult BMI Distribution</button>
+        <button class="btn btn-secondary" onclick="loadAuditReport('pediatric-health')">5. Pediatric Health (0-5 Yrs)</button>
+      </div>
+
+      <div id="queryMeta" style="background: var(--bg-subtle); border: 1px solid var(--border-light); padding: 1.25rem 1.35rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);">
+        <h3 id="reportTitle" style="font-size: 1.05rem; margin-bottom: 0.35rem; color: var(--text-primary); font-weight: 700;">Select an audit report above</h3>
+        <p id="reportDesc" style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.65rem;"></p>
+        <details>
+          <summary style="font-size: 0.8rem; font-weight: 700; color: var(--accent); cursor: pointer; user-select: none;">View Relational SQL Code</summary>
+          <pre id="rawSqlCode" style="margin-top: 0.65rem; padding: 0.9rem 1.1rem; background: #0f172a; color: #f8fafc; border-radius: var(--radius-md); font-size: 0.825rem; overflow-x: auto; border: 1px solid #334155; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; line-height: 1.6;"></pre>
+        </details>
+      </div>
+
+      <!-- Result Table -->
+      <div class="table-wrapper">
+        <table id="resultsTable">
+          <thead id="resultsThead">
+            <tr><th>Select an audit query above to view results</th></tr>
+          </thead>
+          <tbody id="resultsTbody">
+            <tr><td style="text-align: center; color: var(--text-muted);">No query selected</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Reference Section -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <h2>Database Schema &amp; Methodological References</h2>
+      <p class="card-desc">Standards-aligned epidemiological analytics engine built for PSM (Community Medicine) medical training:</p>
+      <ul style="margin-left: 1.5rem; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.8;">
+        <li><strong>ICMR Dietary Standards</strong>: Caloric requirements assessed per Consumption Unit (CU) based on occupational workload (Sedentary, Moderate, Heavy).</li>
+        <li><strong>Asian-Indian BMI Cut-offs (WHO/Consensus Guidelines)</strong>: Normal (18.5–22.9 kg/m&sup2;), Overweight (23.0–27.4 kg/m&sup2;), Obese (&ge;27.5 kg/m&sup2;).</li>
+        <li><strong>NCD Diagnostic Thresholds (Roll 235 Protocol)</strong>: Hypertension: SBP &ge;140 mmHg or DBP &ge;90 mmHg; Diabetes Mellitus: RBS &ge;200 mg/dL; Anaemia: Hb &lt;12.0 g/dL.</li>
+        <li><strong>Longitudinal Cohort Progression</strong>: Follow-up visits capture chronological blood pressure control, glycemic response, medication adherence, and health improvement.</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <!-- ==========================================================
+       JAVASCRIPT: INTERACTIVE CHARTS & DATA PIPELINE
+       ========================================================== -->
+  <script>
+    // Global state
+    let activeAnalyticsData = null;
+    let rawMembersList = [];
+    let allFamiliesList = [];
+
+    // Chart.js Instances
+    let bmiChart = null;
+    let ncdAgeChart = null;
+    let longitudinalChart = null;
+    let bpChart = null;
+    let anaemiaChart = null;
+    let conditionsChart = null;
+    let calorieChart = null;
+    let workChart = null;
+
+    // Design System Color Tokens
+    const PALETTE = {
+      violet: '#7c3aed',
+      violetSubtle: '#ede9fe',
+      indigo: '#4f46e5',
+      indigoSubtle: '#e0e7ff',
+      blue: '#2563eb',
+      blueSubtle: '#dbeafe',
+      emerald: '#059669',
+      emeraldSubtle: '#d1fae5',
+      amber: '#d97706',
+      amberSubtle: '#fef3c7',
+      rose: '#e11d48',
+      roseSubtle: '#ffe4e6',
+      slate: '#64748b',
+      slateSubtle: '#f1f5f9'
+    };
+
+    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('preload-transitions');
+      });
+    });
+
+    // Execute callback only when document is active/visible, and after loading, nothing
+    function runWhenActive(callback) {
+      if (document.visibilityState === 'visible') {
+        callback();
+      } else {
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            callback();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      }
+    }
+
+    /* ---- Page Initialization ---- */
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      initAuth();
+      runWhenActive(async () => {
+        await loadFamiliesList();
+        await fetchAnalyticsData();
+      });
+    });
+
+    /* ---- Fetch Families for Filter Dropdown ---- */
+    async function loadFamiliesList() {
+      try {
+        const res = await fetch('/api/families');
+        allFamiliesList = await res.json();
+        const sel = document.getElementById('filterFamily');
+        if (!sel) return;
+
+        allFamiliesList.forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f.id;
+          const code = f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`;
+          opt.textContent = `[${code}] ${f.head_of_family} (${f.member_count || 0} members)`;
+          sel.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error loading families for filter:', err);
+      }
+    }
+
+    /* ---- Fetch Analytics Data with Active Filters ---- */
+    async function fetchAnalyticsData() {
+      const gender = document.getElementById('filterGender').value;
+      const ageGroup = document.getElementById('filterAgeGroup').value;
+      const familyId = document.getElementById('filterFamily').value;
+
+      const params = new URLSearchParams();
+      if (gender !== 'all') params.append('gender', gender);
+      if (ageGroup !== 'all') params.append('ageGroup', ageGroup);
+      if (familyId !== 'all') params.append('familyId', familyId);
+
+      try {
+        const res = await fetch(`/api/analytics/charts?${params.toString()}`);
+        activeAnalyticsData = await res.json();
+        rawMembersList = activeAnalyticsData.memberList || [];
+
+        // Render Dashboard
+        updateKpiCards(activeAnalyticsData.kpis);
+        renderAllCharts(activeAnalyticsData);
+        populatePatientSelector(activeAnalyticsData.longitudinalTrends.patientCurves);
+        renderDrilldownTable(rawMembersList);
+
+        // Update Filter Badge
+        const badge = document.getElementById('filterStatusBadge');
+        if (badge) {
+          badge.textContent = `Showing ${rawMembersList.length} Members`;
+        }
+
+      } catch (err) {
+        console.error('Error fetching analytics:', err);
+      }
+    }
+
+    function onFilterChange() {
+      fetchAnalyticsData();
+    }
+
+    function resetFilters() {
+      document.getElementById('filterGender').value = 'all';
+      document.getElementById('filterAgeGroup').value = 'all';
+      document.getElementById('filterFamily').value = 'all';
+      document.getElementById('drilldownSearch').value = '';
+      fetchAnalyticsData();
+    }
+
+    /* ---- Update Executive KPI Cards ---- */
+    function updateKpiCards(k) {
+      if (!k) return;
+
+      document.getElementById('kpiHouseholds').textContent = k.totalHouseholds;
+      document.getElementById('kpiMembers').textContent = k.totalMembers;
+      document.getElementById('kpiSexRatio').innerHTML = `<span>${k.males} M &bull; ${k.females} F &bull; Sex Ratio: <strong>${k.sexRatio}</strong></span>`;
+
+      document.getElementById('kpiHtn').textContent = `${k.htnPct}%`;
+      document.getElementById('kpiHtnCases').innerHTML = `<span>${k.htnCases} adult cases &bull; Avg SBP: ${k.avgSbp || '-'}</span>`;
+
+      document.getElementById('kpiDm').textContent = `${k.dmPct}%`;
+      document.getElementById('kpiDmCases').innerHTML = `<span>${k.dmCases} adult cases &bull; Avg RBS: ${k.avgRbs || '-'}</span>`;
+
+      document.getElementById('kpiAnaemia').textContent = `${k.anaemiaPct}%`;
+      document.getElementById('kpiAnaemiaCases').innerHTML = `<span>${k.anaemiaCases} cases &bull; Avg Hb: ${k.avgHb ? k.avgHb + ' g/dL' : '-'}</span>`;
+
+      // Caloric adequacy calculation
+      const dietary = activeAnalyticsData?.dietaryStatus || [];
+      const normalCount = dietary.find(d => d.calorie_status === 'Normal')?.count || 0;
+      const totalFam = k.totalHouseholds || 1;
+      const calorieRate = Math.round((normalCount / totalFam) * 100);
+      document.getElementById('kpiCalorie').textContent = `${calorieRate}%`;
+      document.getElementById('kpiCalorieStatus').innerHTML = `<span>${normalCount} / ${totalFam} households adequate</span>`;
+    }
+
+    /* ==========================================================
+       RENDER ALL CHARTS (Chart.js Engine)
+       ========================================================== */
+    function renderAllCharts(data) {
+      renderBmiChart(data.bmiDistribution);
+      renderNcdAgeChart(data.ncdByAgeGroup);
+      renderLongitudinalChart(data.longitudinalTrends.cohortAverages);
+      renderBpChart(data.bpCategories);
+      renderAnaemiaChart(data.anaemiaByGender);
+      renderConditionsChart(data.conditionsRanking);
+      renderCalorieChart(data.dietaryStatus);
+      renderWorkChart(data.lifestyleWork);
+    }
+
+    /* 1. BMI Distribution (Doughnut) */
+    function renderBmiChart(bmiData) {
+      const ctx = document.getElementById('bmiChartCanvas').getContext('2d');
+      if (bmiChart) bmiChart.destroy();
+
+      const labels = bmiData.map(d => d.category);
+      const counts = bmiData.map(d => d.count);
+      const colors = labels.map(l => {
+        if (l.includes('Normal')) return PALETTE.emerald;
+        if (l.includes('Overweight')) return PALETTE.amber;
+        if (l.includes('Obese')) return PALETTE.rose;
+        if (l.includes('Underweight')) return PALETTE.blue;
+        return PALETTE.slate;
+      });
+
+      bmiChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 12, padding: 12, font: { size: 11, weight: '600' } }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const total = counts.reduce((a, b) => a + b, 0);
+                  const val = ctx.parsed;
+                  const pct = total ? Math.round((val / total) * 100) : 0;
+                  return ` ${ctx.label}: ${val} (${pct}%)`;
+                }
+              }
+            }
+          },
+          onClick: (evt, elements) => {
+            if (elements.length > 0) {
+              const idx = elements[0].index;
+              const selectedCat = labels[idx];
+              filterTableByBmiCategory(selectedCat);
+            }
+          }
+        }
+      });
+    }
+
+    /* 2. NCD Prevalence by Age (Grouped Bar) */
+    function renderNcdAgeChart(ncdData) {
+      const ctx = document.getElementById('ncdAgeChartCanvas').getContext('2d');
+      if (ncdAgeChart) ncdAgeChart.destroy();
+
+      const labels = ncdData.map(d => d.age_bracket);
+      const htnPct = ncdData.map(d => d.htn_pct);
+      const dmPct = ncdData.map(d => d.dm_pct);
+
+      ncdAgeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Hypertension (%)',
+              data: htnPct,
+              backgroundColor: PALETTE.rose,
+              borderRadius: 6,
+              barPercentage: 0.65
+            },
+            {
+              label: 'Diabetes (%)',
+              data: dmPct,
+              backgroundColor: PALETTE.amber,
+              borderRadius: 6,
+              barPercentage: 0.65
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { callback: v => v + '%' },
+              grid: { color: '#f1f5f9' }
+            },
+            x: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { weight: '600' } } },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /* 3. Longitudinal Multi-Line Time-Series Chart */
+    function renderLongitudinalChart(cohortAverages) {
+      const ctx = document.getElementById('longitudinalChartCanvas').getContext('2d');
+      if (longitudinalChart) longitudinalChart.destroy();
+
+      const labels = cohortAverages.map(d => `Visit #${d.visit_number}`);
+      const sbpData = cohortAverages.map(d => d.avg_sbp);
+      const dbpData = cohortAverages.map(d => d.avg_dbp);
+      const rbsData = cohortAverages.map(d => d.avg_rbs);
+      const hbData = cohortAverages.map(d => d.avg_hb);
+
+      longitudinalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Mean SBP (mmHg)',
+              data: sbpData,
+              borderColor: PALETTE.purple,
+              backgroundColor: PALETTE.violetSubtle,
+              tension: 0.3,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              borderWidth: 3
+            },
+            {
+              label: 'Mean DBP (mmHg)',
+              data: dbpData,
+              borderColor: PALETTE.blue,
+              backgroundColor: PALETTE.blueSubtle,
+              tension: 0.3,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              borderWidth: 2.5
+            },
+            {
+              label: 'Mean RBS (mg/dL)',
+              data: rbsData,
+              borderColor: PALETTE.amber,
+              backgroundColor: PALETTE.amberSubtle,
+              tension: 0.3,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              borderWidth: 2.5
+            },
+            {
+              label: 'Mean Hb (g/dL)',
+              data: hbData,
+              borderColor: PALETTE.emerald,
+              backgroundColor: PALETTE.emeraldSubtle,
+              tension: 0.3,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              borderWidth: 2.5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              grid: { color: '#f1f5f9' },
+              ticks: { font: { weight: '600' } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { weight: '700' } }
+            }
+          },
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 14, font: { weight: '600' } } },
+            tooltip: {
+              padding: 10,
+              callbacks: {
+                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function populatePatientSelector(patientCurves) {
+      const sel = document.getElementById('lineChartPatientSelector');
+      if (!sel) return;
+
+      sel.innerHTML = '<option value="cohort" selected>👥 Cohort Average (All Patients)</option>';
+      (patientCurves || []).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `👤 ${p.name} (${p.gender}, ${p.visits.length} Visits)`;
+        sel.appendChild(opt);
+      });
+    }
+
+    function onLongitudinalPatientChange() {
+      const selVal = document.getElementById('lineChartPatientSelector').value;
+      const trends = activeAnalyticsData?.longitudinalTrends;
+      if (!trends) return;
+
+      if (selVal === 'cohort') {
+        renderLongitudinalChart(trends.cohortAverages);
+      } else {
+        const patient = trends.patientCurves.find(p => String(p.id) === selVal);
+        if (patient) {
+          renderIndividualPatientCurve(patient);
+        }
+      }
+    }
+
+    function renderIndividualPatientCurve(patient) {
+      const ctx = document.getElementById('longitudinalChartCanvas').getContext('2d');
+      if (longitudinalChart) longitudinalChart.destroy();
+
+      const labels = patient.visits.map(v => `Visit #${v.visit_number} (${v.visit_date})`);
+      const sbp = patient.visits.map(v => v.sbp);
+      const dbp = patient.visits.map(v => v.dbp);
+      const rbs = patient.visits.map(v => v.rbs);
+      const hb = patient.visits.map(v => v.hb);
+
+      longitudinalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: `${patient.name} SBP (mmHg)`,
+              data: sbp,
+              borderColor: PALETTE.purple,
+              tension: 0.25,
+              pointRadius: 7,
+              borderWidth: 3
+            },
+            {
+              label: 'DBP (mmHg)',
+              data: dbp,
+              borderColor: PALETTE.blue,
+              tension: 0.25,
+              pointRadius: 6,
+              borderWidth: 2.5
+            },
+            {
+              label: 'RBS (mg/dL)',
+              data: rbs,
+              borderColor: PALETTE.amber,
+              tension: 0.25,
+              pointRadius: 6,
+              borderWidth: 2.5
+            },
+            {
+              label: 'Hb (g/dL)',
+              data: hb,
+              borderColor: PALETTE.emerald,
+              tension: 0.25,
+              pointRadius: 6,
+              borderWidth: 2.5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const idx = items[0].dataIndex;
+                  const v = patient.visits[idx];
+                  return `Progress: ${v.progress || 'Stable'}\nCompliance: ${v.compliance || 'Good'}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /* 4. Blood Pressure Classification (Bar) */
+    function renderBpChart(bpData) {
+      const ctx = document.getElementById('bpChartCanvas').getContext('2d');
+      if (bpChart) bpChart.destroy();
+
+      const labels = bpData.map(d => d.category);
+      const counts = bpData.map(d => d.count);
+      const colors = labels.map(l => {
+        if (l.includes('Normal')) return PALETTE.emerald;
+        if (l.includes('Pre-HTN')) return PALETTE.blue;
+        if (l.includes('Stage 1')) return PALETTE.amber;
+        if (l.includes('Stage 2')) return PALETTE.rose;
+        return PALETTE.slate;
+      });
+
+      bpChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y} Individuals`
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    /* 5. Anaemia by Gender (Grouped Bar) */
+    function renderAnaemiaChart(anaemiaData) {
+      const ctx = document.getElementById('anaemiaChartCanvas').getContext('2d');
+      if (anaemiaChart) anaemiaChart.destroy();
+
+      const labels = anaemiaData.map(d => d.gender === 'M' ? 'Males' : 'Females');
+      const anaemiaPct = anaemiaData.map(d => d.anaemia_pct);
+      const avgHb = anaemiaData.map(d => d.avg_hb);
+
+      anaemiaChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Anaemia Prevalence (%)',
+              data: anaemiaPct,
+              backgroundColor: PALETTE.rose,
+              borderRadius: 6
+            },
+            {
+              label: 'Average Hemoglobin (g/dL)',
+              data: avgHb,
+              backgroundColor: PALETTE.blue,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { weight: '600' } } }
+          },
+          scales: {
+            y: { beginAtZero: true },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    /* 6. Chronic Conditions Ranking (Horizontal Bar) */
+    function renderConditionsChart(condsData) {
+      const ctx = document.getElementById('conditionsChartCanvas').getContext('2d');
+      if (conditionsChart) conditionsChart.destroy();
+
+      const labels = condsData.map(d => d.condition_name);
+      const counts = condsData.map(d => d.count);
+
+      conditionsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Diagnosed Cases',
+            data: counts,
+            backgroundColor: PALETTE.indigo,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, ticks: { stepSize: 1 } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    /* 7. Household Caloric Adequacy (Pie) */
+    function renderCalorieChart(calData) {
+      const ctx = document.getElementById('calorieChartCanvas').getContext('2d');
+      if (calorieChart) calorieChart.destroy();
+
+      const labels = calData.map(d => `${d.calorie_status} Calorie`);
+      const counts = calData.map(d => d.count);
+      const colors = labels.map(l => {
+        if (l.includes('Normal')) return PALETTE.emerald;
+        if (l.includes('Deficient')) return PALETTE.rose;
+        return PALETTE.amber;
+      });
+
+      calorieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { weight: '600' } } }
+          }
+        }
+      });
+    }
+
+    /* 8. Physical Activity / Work Type (Bar) */
+    function renderWorkChart(workData) {
+      const ctx = document.getElementById('workChartCanvas').getContext('2d');
+      if (workChart) workChart.destroy();
+
+      const labels = workData.map(d => d.work_category);
+      const counts = workData.map(d => d.count);
+      const colors = [PALETTE.blue, PALETTE.emerald, PALETTE.amber, PALETTE.violet];
+
+      workChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    /* ==========================================================
+       INTERACTIVE DRILLDOWN TABLE & FILTERS
+       ========================================================== */
+    function renderDrilldownTable(members) {
+      const tbody = document.getElementById('drilldownTbody');
+      const countEl = document.getElementById('drilldownCount');
+      if (countEl) countEl.textContent = members.length;
+
+      if (!members || members.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching member records found for the active filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = members.map(m => `
+        <tr>
+          <td>
+            <strong>${m.name}</strong>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${m.relation_to_hof}</div>
+          </td>
+          <td>
+            <span class="badge badge-info">${m.family_code}</span>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${m.village_ward || '-'}</div>
+          </td>
+          <td>${m.age_years} yrs (${m.gender})</td>
+          <td>
+            ${m.sbp && m.dbp ? `
+              <strong style="color: ${m.has_htn === 'Y' ? 'var(--danger-text)' : 'inherit'};">
+                ${m.sbp}/${m.dbp}
+              </strong>
+              ${m.has_htn === 'Y' ? '<span class="badge badge-danger" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem;">HTN</span>' : ''}
+            ` : '-'}
+          </td>
+          <td>
+            ${m.rbs ? `
+              <strong style="color: ${m.has_dm === 'Y' ? 'var(--warning-text)' : 'inherit'};">
+                ${m.rbs}
+              </strong>
+              ${m.has_dm === 'Y' ? '<span class="badge badge-warning" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem;">DM</span>' : ''}
+            ` : '-'}
+          </td>
+          <td>
+            ${m.hb ? `
+              <span style="color: ${m.has_anaemia === 'Y' ? 'var(--danger-text)' : 'inherit'};">
+                ${m.hb}
+              </span>
+              ${m.has_anaemia === 'Y' ? '<span class="badge badge-danger" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem;">Anaemic</span>' : ''}
+            ` : '-'}
+          </td>
+          <td><strong>${m.bmi || '-'}</strong></td>
+          <td><span class="badge badge-subtle">${m.work_type || 'Moderate'}</span></td>
+          <td style="max-width: 220px; font-size: 0.8rem; line-height: 1.35;">
+            ${m.diagnosis ? m.diagnosis : '<span style="color: var(--text-muted);">None reported</span>'}
+          </td>
+          <td>
+            <span class="badge ${m.follow_up_count > 0 ? 'badge-success' : 'badge-subtle'}">
+              ${m.follow_up_count || 0} visits
+            </span>
+          </td>
+          <td>
+            <a href="/family-manage.html" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; white-space: nowrap;">
+              View &rarr;
+            </a>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterDrilldownTable() {
+      const q = (document.getElementById('drilldownSearch')?.value || '').toLowerCase().trim();
+      if (!q) {
+        renderDrilldownTable(rawMembersList);
+        return;
+      }
+      const filtered = rawMembersList.filter(m => {
+        return (m.name || '').toLowerCase().includes(q) ||
+               (m.family_code || '').toLowerCase().includes(q) ||
+               (m.diagnosis || '').toLowerCase().includes(q) ||
+               (m.village_ward || '').toLowerCase().includes(q);
+      });
+      renderDrilldownTable(filtered);
+    }
+
+    function filterTableByBmiCategory(category) {
+      document.getElementById('drilldownCard').scrollIntoView({ behavior: 'smooth' });
+      let filtered = rawMembersList;
+      if (category.includes('Underweight')) filtered = rawMembersList.filter(m => m.bmi && m.bmi < 18.5);
+      else if (category.includes('Normal')) filtered = rawMembersList.filter(m => m.bmi && m.bmi >= 18.5 && m.bmi <= 22.9);
+      else if (category.includes('Overweight')) filtered = rawMembersList.filter(m => m.bmi && m.bmi >= 23.0 && m.bmi <= 27.4);
+      else if (category.includes('Obese')) filtered = rawMembersList.filter(m => m.bmi && m.bmi >= 27.5);
+      renderDrilldownTable(filtered);
+    }
+
+    /* ==========================================================
+       TAB SWITCHING (iPhone-Style Fluid Slide Transition)
+       ========================================================== */
+    let currentTabIndex = 0;
+    const tabOrder = ['tab-all', 'tab-ncd', 'tab-nutrition', 'tab-longitudinal', 'tab-audit'];
+
+    function switchViewTab(tabId, tabBtn) {
+      document.querySelectorAll('.analytics-tab').forEach(t => t.classList.remove('active'));
+      tabBtn.classList.add('active');
+
+      const chartsWrap = document.getElementById('chartsViewContainer');
+      const auditCard = document.getElementById('auditQueryCard');
+      const drilldownCard = document.getElementById('drilldownCard');
+
+      const newIndex = tabOrder.indexOf(tabId);
+      const slideClass = (newIndex >= currentTabIndex) ? 'tab-slide-right' : 'tab-slide-left';
+      currentTabIndex = newIndex >= 0 ? newIndex : 0;
+
+      // Remove previous slide animation classes
+      [chartsWrap, auditCard, drilldownCard].forEach(el => {
+        if (el) el.classList.remove('tab-slide-right', 'tab-slide-left');
+      });
+
+      if (tabId === 'tab-audit') {
+        chartsWrap.style.display = 'none';
+        drilldownCard.style.display = 'none';
+        auditCard.style.display = 'block';
+        void auditCard.offsetWidth;
+        auditCard.classList.add(slideClass);
+        loadAuditReport('student-audit');
+      } else {
+        chartsWrap.style.display = 'block';
+        drilldownCard.style.display = 'block';
+        auditCard.style.display = 'none';
+        void chartsWrap.offsetWidth;
+        chartsWrap.classList.add(slideClass);
+
+        // Filter visible charts based on tab focus
+        const cards = {
+          bmi: document.getElementById('cardBmiChart'),
+          ncdAge: document.getElementById('cardNcdAgeChart'),
+          longitudinal: document.getElementById('cardLongitudinalChart'),
+          bp: document.getElementById('cardBpChart'),
+          anaemia: document.getElementById('cardAnaemiaChart'),
+          conditions: document.getElementById('cardConditionsChart'),
+          calorie: document.getElementById('cardCalorieChart'),
+          work: document.getElementById('cardWorkChart')
+        };
+
+        // Reset display
+        Object.values(cards).forEach(c => { if (c) c.style.display = 'flex'; });
+
+        if (tabId === 'tab-ncd') {
+          if (cards.bmi) cards.bmi.style.display = 'none';
+          if (cards.calorie) cards.calorie.style.display = 'none';
+          if (cards.work) cards.work.style.display = 'none';
+          if (cards.anaemia) cards.anaemia.style.display = 'none';
+        } else if (tabId === 'tab-nutrition') {
+          if (cards.ncdAge) cards.ncdAge.style.display = 'none';
+          if (cards.bp) cards.bp.style.display = 'none';
+          if (cards.longitudinal) cards.longitudinal.style.display = 'none';
+          if (cards.conditions) cards.conditions.style.display = 'none';
+        } else if (tabId === 'tab-longitudinal') {
+          Object.values(cards).forEach(c => { if (c) c.style.display = 'none'; });
+          if (cards.longitudinal) cards.longitudinal.style.display = 'flex';
+        }
+      }
+    }
+
+    /* ==========================================================
+       EXPORT UTILITIES
+       ========================================================== */
+    function exportChartPng(chartInstance, filename = 'chart.png') {
+      if (!chartInstance) return;
+      const a = document.createElement('a');
+      a.href = chartInstance.toBase64Image();
+      a.download = filename;
+      a.click();
+    }
+
+    function exportAllCharts() {
+      const charts = [
+        { chart: bmiChart, name: 'bmi-distribution.png' },
+        { chart: ncdAgeChart, name: 'ncd-prevalence-by-age.png' },
+        { chart: longitudinalChart, name: 'longitudinal-progression.png' },
+        { chart: bpChart, name: 'bp-stratification.png' },
+        { chart: anaemiaChart, name: 'anaemia-by-gender.png' }
+      ];
+
+      charts.forEach((item, i) => {
+        if (item.chart) {
+          setTimeout(() => exportChartPng(item.chart, item.name), i * 350);
+        }
+      });
+    }
+
+    /* ==========================================================
+       ACADEMIC AUDIT SQL REPORTING LOGIC (PRESERVED)
+       ========================================================== */
+    const auditReportMetadata = {
+      'student-audit': {
+        title: 'Student Field Survey Audit & Sex Ratio',
+        desc: 'Aggregates surveyed families, surveyed individuals, and calculated sex ratio per student roll number.',
+        sql: `SELECT 
+    s.roll_number,
+    s.name AS student_name,
+    COUNT(DISTINCT f.id) AS total_families_surveyed,
+    COUNT(m.id) AS total_members_surveyed,
+    SUM(CASE WHEN m.gender = 'M' THEN 1 ELSE 0 END) AS male_count,
+    SUM(CASE WHEN m.gender = 'F' THEN 1 ELSE 0 END) AS female_count,
+    ROUND(CAST(SUM(CASE WHEN m.gender = 'F' THEN 1 ELSE 0 END) AS REAL) / 
+          NULLIF(SUM(CASE WHEN m.gender = 'M' THEN 1 ELSE 0 END), 0) * 1000, 1) AS sex_ratio
+FROM students s
+LEFT JOIN families f ON s.id = f.student_id
+LEFT JOIN family_members m ON f.id = m.family_id
+GROUP BY s.id, s.roll_number, s.name;`
+      },
+      'ncd-prevalence': {
+        title: 'Adult Non-Communicable Disease (NCD) Prevalence',
+        desc: 'Calculates prevalence rates for Hypertension (HTN), Diabetes Mellitus (DM), and average Blood Pressure values.',
+        sql: `SELECT 
+    COUNT(*) AS total_adults,
+    SUM(CASE WHEN has_htn = 'Y' THEN 1 ELSE 0 END) AS htn_cases,
+    ROUND(SUM(CASE WHEN has_htn = 'Y' THEN 1.0 ELSE 0 END) / COUNT(*) * 100, 1) AS htn_pct,
+    SUM(CASE WHEN has_dm = 'Y' THEN 1 ELSE 0 END) AS dm_cases,
+    ROUND(SUM(CASE WHEN has_dm = 'Y' THEN 1.0 ELSE 0 END) / COUNT(*) * 100, 1) AS dm_pct,
+    SUM(CASE WHEN has_htn = 'Y' AND has_dm = 'Y' THEN 1 ELSE 0 END) AS htn_and_dm_cases,
+    ROUND(AVG(CASE WHEN sbp IS NOT NULL THEN sbp END), 1) AS mean_sbp,
+    ROUND(AVG(CASE WHEN dbp IS NOT NULL THEN dbp END), 1) AS mean_dbp,
+    ROUND(AVG(CASE WHEN rbs IS NOT NULL THEN rbs END), 1) AS mean_rbs
+FROM family_members
+WHERE age_years >= 18;`
+      },
+      'anaemia-gender': {
+        title: 'Anaemia & Hemoglobin Profile by Gender',
+        desc: 'Evaluates community anaemia burden and mean Hemoglobin levels separated by male vs female individuals.',
+        sql: `SELECT 
+    gender,
+    COUNT(*) AS total_individuals,
+    SUM(CASE WHEN has_anaemia = 'Y' OR (hb IS NOT NULL AND hb < 12.0) THEN 1 ELSE 0 END) AS anaemic_count,
+    ROUND(SUM(CASE WHEN has_anaemia = 'Y' OR (hb IS NOT NULL AND hb < 12.0) THEN 1.0 ELSE 0 END) / COUNT(*) * 100, 1) AS anaemia_pct,
+    SUM(CASE WHEN has_pallor = 'Y' THEN 1 ELSE 0 END) AS pallor_count,
+    ROUND(AVG(hb), 2) AS average_hb
+FROM family_members
+WHERE gender IN ('M', 'F')
+GROUP BY gender;`
+      },
+      'bmi-distribution': {
+        title: 'Adult Nutritional Status (BMI Categorization)',
+        desc: 'Breaks down adults into WHO/Asian BMI cut-offs: Underweight, Normal, Overweight, and Obese.',
+        sql: `SELECT 
+    CASE 
+        WHEN bmi < 18.5 THEN 'Underweight (< 18.5)'
+        WHEN bmi BETWEEN 18.5 AND 22.9 THEN 'Normal Weight (18.5 - 22.9)'
+        WHEN bmi BETWEEN 23.0 AND 27.4 THEN 'Overweight (23.0 - 27.4)'
+        WHEN bmi >= 27.5 THEN 'Obese (>= 27.5)'
+        ELSE 'Unmeasured'
+    END AS bmi_category,
+    COUNT(*) AS count
+FROM family_members
+WHERE age_years >= 18 AND bmi IS NOT NULL
+GROUP BY bmi_category;`
+      },
+      'pediatric-health': {
+        title: 'Pediatric Health & Malnutrition (Children 0 - 5 Years)',
+        desc: 'Measures under-5 growth metrics: underweight, stunting, wasting, Mamta card possession, and age-appropriate immunization.',
+        sql: `SELECT 
+    COUNT(*) AS total_under_5,
+    SUM(CASE WHEN is_underweight = 'Y' THEN 1 ELSE 0 END) AS underweight,
+    SUM(CASE WHEN is_stunting = 'Y' THEN 1 ELSE 0 END) AS stunting,
+    SUM(CASE WHEN is_wasting = 'Y' THEN 1 ELSE 0 END) AS wasting,
+    SUM(CASE WHEN mamta_card = 'Y' THEN 1 ELSE 0 END) AS mamta_card,
+    SUM(CASE WHEN immunization_status = 'Y' THEN 1 ELSE 0 END) AS age_immunized
+FROM family_members
+WHERE age_years <= 5;`
+      }
+    };
+
+    async function loadAuditReport(reportId) {
+      const meta = auditReportMetadata[reportId];
+      if (!meta) return;
+
+      document.getElementById('reportTitle').textContent = meta.title;
+      document.getElementById('reportDesc').textContent = meta.desc;
+      document.getElementById('rawSqlCode').textContent = meta.sql;
+
+      document.querySelectorAll('#auditQueryCard button.btn').forEach(b => {
+        if (b.getAttribute('onclick')?.includes(reportId)) {
+          b.className = 'btn btn-primary';
+        } else {
+          b.className = 'btn btn-secondary';
+        }
+      });
+
+      const thead = document.getElementById('resultsThead');
+      const tbody = document.getElementById('resultsTbody');
+      tbody.innerHTML = '<tr><td style="text-align: center;">Executing database query...</td></tr>';
+
+      try {
+        const res = await fetch(`/api/analytics/report/${reportId}`);
+        const result = await res.json();
+        const rows = result.data || [];
+
+        if (rows.length === 0) {
+          tbody.innerHTML = '<tr><td style="text-align: center; color: var(--text-muted);">No matching records found in database.</td></tr>';
+          return;
+        }
+
+        const cols = Object.keys(rows[0]);
+        thead.innerHTML = `<tr>${cols.map(c => `<th>${c.replace(/_/g, ' ').toUpperCase()}</th>`).join('')}</tr>`;
+
+        tbody.innerHTML = rows.map(r => `
+          <tr>
+            ${cols.map(c => `<td><strong>${r[c] !== null ? r[c] : '-'}</strong></td>`).join('')}
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td style="color: var(--danger-text);">Error running query: ${err.message}</td></tr>`;
+      }
+    }
+
+    /* ---- Sidebar & Auth ---- */
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        const isOpen = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('active', isOpen);
+      } else {
+        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+      }
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (window.innerWidth <= 860) {
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('active');
+      } else {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', '1');
+      }
+    }
+
+    function initSidebar() {
+      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }
+
+    function initAuth() {
+      const userStr = localStorage.getItem('medpulse_user');
+      const authArea = document.getElementById('authNavArea');
+      if (!authArea) return;
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          authArea.innerHTML = `
+            <div class="sidebar-user" data-tooltip="Roll ${user.roll_number} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logoutAnalyticsUser();}else{window.location.href='/profile.html';}" title="Roll ${user.roll_number}">
+              <div class="user-avatar-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="role-dot"></span>
+              </div>
+              <div class="user-info-text">
+                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); display: block;">Student</span>
+                <span style="font-weight: 700; color: #fff;">Roll ${user.roll_number}</span>
+              </div>
+              <button class="logout-btn" onclick="event.stopPropagation(); logoutAnalyticsUser();" title="Logout">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          `;
+        } catch (e) {
+          showLoginLink(authArea);
+        }
+      } else {
+        showLoginLink(authArea);
+      }
+    }
+
+    function showLoginLink(authArea) {
+      if (!authArea) return;
+      authArea.innerHTML = `
+        <a href="/login.html" class="sidebar-login-link" title="Sign In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span class="login-label">Sign In</span>
+        </a>
+      `;
+    }
+
+    function logoutAnalyticsUser() {
+      localStorage.removeItem('medpulse_user');
+      window.location.reload();
+    }
+  </script>
+
+  <script src="/nav-glider.js"></script>
+</body>
+</html>

@@ -2,13 +2,17 @@
   "name": "medpulse",
   "version": "2.0.0",
   "description": "MedPulse • Clinical Health Survey & Epidemiological Surveillance Platform for Medical Colleges",
-  "main": "server/server.js",
+  "main": "backend/server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "node --watch server/server.js",
-    "seed": "node server/seed-roll235.js",
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "seed": "node backend/config/seed-roll235.js",
     "verify": "node server/verify-admin.js",
-    "test": "node server/verify-admin.js"
+    "test": "node server/verify-admin.js",
+    "test:patient": "node server/verify-patient-system.js",
+    "test:hospital": "node server/verify-hospital-system.js",
+    "test:export": "node server/verify-export.js",
+    "test:all": "node server/verify-patient-system.js && node server/verify-hospital-system.js && node server/verify-export.js"
   },
   "keywords": [],
   "author": "",
