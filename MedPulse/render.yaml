@@ -3,6 +3,7 @@ services:
     name: medpulse
     runtime: node
     plan: free
+    rootDir: MedPulse
     buildCommand: npm install
     startCommand: npm start
     envVars:
