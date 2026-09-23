@@ -1,16 +1,14 @@
-const { DatabaseSync } = require('node:sqlite');
 const path = require('node:path');
 const fs = require('node:fs');
-
-const dbPath = path.join(__dirname, '..', 'database', 'health_survey.db');
+const { db: defaultDb } = require('./db');
 
 function seedRoll235(targetDb) {
-    const db = targetDb || new DatabaseSync(dbPath);
+    const db = targetDb || defaultDb;
 
     console.log('🌱 Seeding Roll 235 Real Field Survey Data from Roll235.pdf...');
 
     // Parse JSON generated from Roll235.pdf
-    const parsedJsonPath = path.join(__dirname, '..', 'database', 'roll235_parsed.json');
+    const parsedJsonPath = path.join(__dirname, '..', '..', 'database', 'roll235_parsed.json');
     let membersData = [];
 
     if (fs.existsSync(parsedJsonPath)) {
@@ -437,6 +435,41 @@ for (const item of followUpsToSeed) {
 }
 
     console.log(`Successfully created ${totalFollowUps} longitudinal follow-up records for Roll 235.`);
+
+    // Seed/link default demo patient (9876543210 / 1234) to Radhuji Thakore (HTN & Anaemia)
+    const radhuji = db.prepare("SELECT * FROM family_members WHERE LOWER(name) LIKE '%radhuji%'").get();
+    if (radhuji) {
+        const existingDemoPatient = db.prepare("SELECT * FROM patients WHERE phone = '9876543210'").get();
+        if (!existingDemoPatient) {
+            db.prepare(`
+                INSERT INTO patients (patient_uid, student_id, family_member_id, name, phone, pin, age_years, gender, model_type, referral_code_used)
+                VALUES ('PAT-ROLL235-001', ?, ?, ?, '9876543210', '1234', ?, ?, 'Dependent', 'GMERS-235-DA9B')
+            `).run(studentId, radhuji.id, radhuji.name, radhuji.age_years || 60, radhuji.gender || 'Male');
+        } else {
+            db.prepare(`
+                UPDATE patients 
+                SET family_member_id = ?, name = ?, student_id = ?, model_type = 'Dependent', referral_code_used = 'GMERS-235-DA9B', age_years = ?, gender = ?
+                WHERE id = ?
+            `).run(radhuji.id, radhuji.name, studentId, radhuji.age_years || 60, radhuji.gender || 'Male', existingDemoPatient.id);
+        }
+    }
+
+    // Seed default HTN Campaign matching the user's workflow diagram
+    try {
+        const campCount = db.prepare('SELECT COUNT(*) as count FROM campaigns').get();
+        if (!campCount || campCount.count === 0) {
+            db.prepare(`
+                INSERT INTO campaigns (id, title, keyword, description, college_id, created_by_admin_id, event_date, venue, status)
+                VALUES (1, 'Statewide Hypertension & Cardiovascular Wellness Drive', 'HTN', 'Comprehensive blood pressure screening, free antihypertensive medication review, and dietary sodium restriction counseling led by medical faculty and clinical cadets.', 1, 1, '2026-10-15', 'RHTC Community Health Center, Field Wing B', 'Active')
+            `).run();
+
+            const CampaignModel = require('../models/campaign.model');
+            CampaignModel.dispatchCampaign(1);
+        }
+    } catch (e) {
+        console.warn('Campaign seed note:', e.message);
+    }
+
     console.log('Seed synchronization complete!');
     return { familiesCount: Object.keys(familiesMap).length, followUpsCount: totalFollowUps };
 }

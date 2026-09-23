@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('node:path');
+const fs = require('node:fs');
 const { initDatabase } = require('./config/db');
 const apiRoutes = require('./routes');
 const { strictApi404, errorHandler } = require('./middleware/error.middleware');
@@ -16,41 +17,18 @@ app.use(express.urlencoded({ extended: true }));
 
 // Paths
 const frontendShared = path.join(__dirname, '..', 'frontend', 'shared');
-const frontendStudent = path.join(__dirname, '..', 'frontend', 'student');
-const frontendAdmin = path.join(__dirname, '..', 'frontend', 'admin');
-const frontendPatient = path.join(__dirname, '..', 'frontend', 'patient');
-const frontendHospital = path.join(__dirname, '..', 'frontend', 'hospital');
 const legacyPublic = path.join(__dirname, '..', 'public');
 
-// Role folder root and direct page routes
-app.get(['/patient', '/patient/'], (req, res) => res.sendFile(path.join(frontendPatient, 'patient.html')));
-app.get(['/patient/patient.html', '/patient.html'], (req, res) => res.sendFile(path.join(frontendPatient, 'patient.html')));
-app.get('/patient/login', (req, res) => res.redirect('/login.html?patient=1'));
-
-app.get(['/hospital', '/hospital/'], (req, res) => res.sendFile(path.join(frontendHospital, 'hospital.html')));
-app.get(['/hospital/hospital.html', '/hospital.html'], (req, res) => res.sendFile(path.join(frontendHospital, 'hospital.html')));
-app.get('/hospital/login', (req, res) => res.redirect('/login.html?hospital=1'));
-
-app.get(['/admin', '/admin/'], (req, res) => res.sendFile(path.join(frontendAdmin, 'admin.html')));
-app.get(['/admin/admin.html', '/admin.html'], (req, res) => res.sendFile(path.join(frontendAdmin, 'admin.html')));
-app.get('/admin/login', (req, res) => res.redirect('/login.html?admin=1'));
-
-app.get(['/student', '/student/'], (req, res) => res.sendFile(path.join(frontendStudent, 'family-manage.html')));
-app.get(['/student/family-manage.html', '/family-manage.html'], (req, res) => res.sendFile(path.join(frontendStudent, 'family-manage.html')));
-app.get(['/student/entry.html', '/entry.html'], (req, res) => res.sendFile(path.join(frontendStudent, 'entry.html')));
-app.get(['/student/analytics.html', '/analytics.html'], (req, res) => res.sendFile(path.join(frontendStudent, 'analytics.html')));
-app.get(['/student/profile.html', '/profile.html'], (req, res) => res.sendFile(path.join(frontendStudent, 'profile.html')));
-app.get('/student/login', (req, res) => res.redirect('/login.html'));
+// Portal page routes + static folders: one file per portal in backend/portals/
+const portalDir = path.join(__dirname, 'portals');
+fs.readdirSync(portalDir)
+    .filter((f) => f.endsWith('.portal.js'))
+    .sort()
+    .forEach((f) => require(path.join(portalDir, f))(app));
 
 // Public Auth Aliases
 app.get('/login', (req, res) => res.redirect('/login.html'));
 app.get('/register', (req, res) => res.redirect('/register.html'));
-
-// Role-based folder static endpoints
-app.use('/student', express.static(frontendStudent));
-app.use('/admin', express.static(frontendAdmin));
-app.use('/patient', express.static(frontendPatient));
-app.use('/hospital', express.static(frontendHospital));
 
 // Shared frontend assets (styles, scripts, icons, vendor, login, index)
 app.use(express.static(frontendShared));
