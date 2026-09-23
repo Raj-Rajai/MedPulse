@@ -11,6 +11,7 @@
     "test": "node server/verify-admin.js",
     "test:patient": "node server/verify-patient-system.js",
     "test:hospital": "node server/verify-hospital-system.js",
+    "test:fap": "node scripts/check-hospital-ui.cjs",
     "test:export": "node server/verify-export.js",
     "test:all": "node server/verify-patient-system.js && node server/verify-hospital-system.js && node server/verify-export.js"
   },

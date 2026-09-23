@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#121026">
+  <meta name="theme-color" content="#1678f2">
   <title>Hospital Command Center | MedPulse</title>
   <script src="/auth-guard.js"></script>
   <script>
@@ -121,8 +121,9 @@
       gap: 0.4rem;
     }
   </style>
+  <link rel="stylesheet" href="/hospital.css">
 </head>
-<body>
+<body class="hms">
 
   <!-- Backdrop Overlay for Mobile Sliding Nav -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
@@ -152,55 +153,16 @@
         </svg>
       </button>
     </div>
-    <nav class="sidebar-nav">
-      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
-        <div class="nav-icon-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </div>
-        <span class="link-label">Home</span>
-      </a>
-      <a href="/hospital.html" class="sidebar-link active" data-route="hospital" data-title="Hospital">
-        <div class="nav-icon-box" style="color: #0d9488;">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="18" height="18" x="3" y="3" rx="2"/>
-            <path d="M12 8v8"/>
-            <path d="M8 12h8"/>
-          </svg>
-        </div>
-        <span class="link-label">Hospital Console</span>
-      </a>
-      <a href="/admin.html" class="sidebar-link" data-route="admin" data-title="Admin">
-        <div class="nav-icon-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-          </svg>
-        </div>
-        <span class="link-label">Faculty Admin</span>
-      </a>
-      <a href="/patient.html" class="sidebar-link" data-route="patient" data-title="Patient Portal">
-        <div class="nav-icon-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-          </svg>
-        </div>
-        <span class="link-label">Patient Portal</span>
-      </a>
-      <a href="/analytics.html" class="sidebar-link" data-route="analytics" data-title="Analytics">
-        <div class="nav-icon-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"/>
-            <line x1="12" y1="20" x2="12" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="14"/>
-            <line x1="2" y1="20" x2="22" y2="20"/>
-          </svg>
-        </div>
-        <span class="link-label">Analytics</span>
-      </a>
+    <nav class="sidebar-nav" aria-label="Hospital navigation">
+      <div class="hms-nav-label">WORKSPACE</div>
+      <a class="sidebar-link active" href="#overview" data-view="overview"><span class="nav-icon-box" data-icon="dashboard"></span><span class="link-label">Overview</span></a>
+      <a class="sidebar-link" href="#patients" data-view="patients"><span class="nav-icon-box" data-icon="users"></span><span class="link-label">Patients</span></a>
+      <a class="sidebar-link" href="#insights" data-view="insights"><span class="nav-icon-box" data-icon="chart"></span><span class="link-label">Clinical insights</span></a>
+      <div class="hms-nav-label">MANAGEMENT</div>
+      <a class="sidebar-link" href="#staff" data-view="staff"><span class="nav-icon-box" data-icon="staff"></span><span class="link-label">Staff &amp; access</span></a>
+      <a class="sidebar-link" href="#hospital" data-view="hospital"><span class="nav-icon-box" data-icon="hospital"></span><span class="link-label">Hospital profile</span></a>
     </nav>
+    <div class="hms-sidebar-note"><span data-icon="shield"></span><strong>Care, connected.</strong><p>One workspace for your hospital and community care network.</p><span class="hms-version">MEDPULSE / HOSPITAL</span></div>
     <div class="sidebar-footer">
       <div id="authNavArea"></div>
     </div>
@@ -210,31 +172,15 @@
   <main class="main-content">
     <div class="container" style="max-width: 1240px;">
 
-      <!-- Top Header / Hero -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;" class="anim-fade-up">
-        <div>
-          <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: rgba(13, 148, 136, 0.12); color: #0d9488; padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 750; margin-bottom: 0.5rem;">
-            <span>🏥</span> INDEPENDENT MEDIUM • CROSS-INSTITUTIONAL HEALTHCARE
-          </div>
-          <h1 style="font-size: 1.85rem; font-weight: 850; color: var(--text-primary); margin: 0 0 0.35rem 0;">
-            Hospital Command Center
-          </h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">
-            Unified clinical registry monitoring walk-in independent patients and university medical cadet field adoptions.
-          </p>
-        </div>
-        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-          <button class="btn btn-secondary" onclick="loadHospitalData()" title="Refresh Surveillance Feed">
-            🔄 Refresh Feed
-          </button>
-          <button class="btn btn-primary" onclick="switchView('staff')" style="background: linear-gradient(135deg, #0d9488, #0f766e); border: none;">
-            👥 Manage Hospital Staff
-          </button>
-        </div>
-      </div>
-
+      <header class="hms-topbar">
+        <div class="hms-breadcrumb"><button class="hms-icon-btn" onclick="toggleSidebar()" aria-label="Toggle navigation" data-icon="menu"></button><span>Workspace</span><span class="hms-separator">/</span><strong id="hmsBreadcrumb">Overview</strong></div>
+        <div class="hms-top-actions"><span class="hms-date" id="hmsDate"></span><span class="hms-avatar" id="hmsAvatar" aria-hidden="true">MP</span></div>
+      </header>
+      <div class="hms-page-heading"><div><div class="hms-eyebrow">HOSPITAL COMMAND CENTRE</div><h1 id="hmsPageTitle">Hospital overview</h1><p id="hmsPageSubtitle">A clear picture of your care network, all in one place.</p></div><div class="hms-heading-actions"><button class="btn btn-secondary" id="hmsRefresh" onclick="loadHospitalData()"><span data-icon="refresh"></span> Refresh</button><button class="btn btn-primary" onclick="hmsNavigate('patients')"><span data-icon="users"></span> View patients</button></div></div>
+      <div id="hmsError" class="hms-error" role="alert" hidden></div>
+      <section class="hms-welcome" data-page="overview"><div><span class="hms-eyebrow">YOUR CONNECTED CARE WORKSPACE</span><h2 id="hmsGreeting">Welcome to MedPulse</h2><p>Better visibility. More coordinated care.<br>Stay close to the patients and teams that matter.</p><button class="hms-text-btn" onclick="hmsNavigate('staff')">Manage your care team <span aria-hidden="true">&#8594;</span></button></div><div class="hms-care-art" aria-hidden="true"><div class="hms-orbit orbit-one"></div><div class="hms-orbit orbit-two"></div><div class="hms-art-cross">+</div><div class="hms-art-tag tag-one"><span data-icon="heart"></span> Patient-first care</div><div class="hms-art-tag tag-two"><span class="hms-dot"></span> Connected teams</div></div></section>
       <!-- Institutional Profile & Quota Meter Card -->
-      <div class="hosp-quota-card anim-fade-up anim-delay-1">
+      <div class="hosp-quota-card" data-page="hospital staff" hidden>
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
             <div style="width: 46px; height: 46px; border-radius: var(--radius-lg); background: #0d9488; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);">
@@ -250,8 +196,8 @@
             </div>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <span class="badge badge-success" id="hospStatusBadge">Operational</span>
-            <span class="badge badge-info" id="hospBedsBadge">750 Beds</span>
+            <span class="badge badge-success" id="hospStatusBadge">Hospital profile</span>
+            <span class="badge badge-info" id="hospBedsBadge">? Beds</span>
           </div>
         </div>
 
@@ -262,14 +208,14 @@
           <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: var(--radius-md); padding: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">👑 Hospital Super Admins</span>
-              <span id="superAdminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">1 / 3 Seats</span>
+              <span id="superAdminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">? / ? Seats</span>
             </div>
             <div class="quota-meter-track">
-              <div id="superAdminMeterBar" class="quota-meter-fill" style="width: 33.33%; background: linear-gradient(90deg, #0d9488, #0284c7);"></div>
+              <div id="superAdminMeterBar" class="quota-meter-fill" style="width: 0%; background: linear-gradient(90deg, #0d9488, #0284c7);"></div>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 0.45rem; font-size: 0.75rem; color: var(--text-muted);">
-              <span>Strict Rule: 1 to 3 allowed</span>
-              <span id="superAdminRemainingLabel" style="font-weight: 650; color: #0d9488;">2 seats free</span>
+              <span>Super administrator capacity</span>
+              <span id="superAdminRemainingLabel" style="font-weight: 650; color: #0d9488;">Loading seats</span>
             </div>
           </div>
 
@@ -277,14 +223,14 @@
           <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: var(--radius-md); padding: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">👥 Hospital Clinical Admins</span>
-              <span id="adminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">0 / 20 Seats</span>
+              <span id="adminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">? / ? Seats</span>
             </div>
             <div class="quota-meter-track">
               <div id="adminMeterBar" class="quota-meter-fill" style="width: 0%; background: linear-gradient(90deg, #0284c7, #6366f1);"></div>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 0.45rem; font-size: 0.75rem; color: var(--text-muted);">
-              <span>Strict Ceiling: Max 20 allowed</span>
-              <span id="adminRemainingLabel" style="font-weight: 650; color: #0284c7;">20 seats free</span>
+              <span>Clinical administrator capacity</span>
+              <span id="adminRemainingLabel" style="font-weight: 650; color: #0284c7;">Loading seats</span>
             </div>
           </div>
 
@@ -292,49 +238,56 @@
       </div>
 
       <!-- Executive Clinical KPIs -->
-      <div class="hosp-kpi-grid anim-fade-up anim-delay-2">
+      <div class="hosp-kpi-grid" data-page="overview insights">
         <div class="hosp-kpi-card teal">
           <div class="hosp-kpi-label">Monitored Patients</div>
-          <div class="hosp-kpi-val" id="kpiTotalPatients">0</div>
+          <div class="hosp-kpi-val" id="kpiTotalPatients">?</div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">Unified Network</span>
         </div>
         <div class="hosp-kpi-card blue">
           <div class="hosp-kpi-label">Independent Walk-ins</div>
-          <div class="hosp-kpi-val" id="kpiIndependentPatients">0</div>
+          <div class="hosp-kpi-val" id="kpiIndependentPatients">?</div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">Self-Registered</span>
         </div>
         <div class="hosp-kpi-card purple">
           <div class="hosp-kpi-label">Cadet Supervised</div>
-          <div class="hosp-kpi-val" id="kpiDependentPatients">0</div>
+          <div class="hosp-kpi-val" id="kpiDependentPatients">?</div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">Adopted by Students</span>
         </div>
         <div class="hosp-kpi-card amber">
           <div class="hosp-kpi-label">Hypertension (HTN)</div>
-          <div class="hosp-kpi-val" id="kpiHtnCases">0</div>
+          <div class="hosp-kpi-val" id="kpiHtnCases">?</div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">Chronic BP Flag</span>
         </div>
         <div class="hosp-kpi-card red">
           <div class="hosp-kpi-label">Diabetes (DM)</div>
-          <div class="hosp-kpi-val" id="kpiDmCases">0</div>
+          <div class="hosp-kpi-val" id="kpiDmCases">?</div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">High RBS Flag</span>
         </div>
         <div class="hosp-kpi-card teal">
           <div class="hosp-kpi-label">Follow-up Visits</div>
-          <div class="hosp-kpi-val" id="kpiFollowUps">0</div>
+          <div class="hosp-kpi-val" id="kpiFollowUps">?</div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">Longitudinal Records</span>
         </div>
       </div>
 
+      <section class="hms-insight-grid" data-page="overview insights">
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>Patient distribution</h2><p>How patients connect to your hospital</p></div><span class="hms-chip">All time</span></div><div class="hms-distribution"><div class="hms-donut" id="hmsDonut" role="img" aria-label="Patient distribution loading"><div><strong id="hmsPatientTotal">?</strong><span>Total patients</span></div></div><div class="hms-legend"><div><span class="hms-dot"></span><span>Independent patients<small>Self-registered care</small></span><strong id="hmsIndependent">?</strong></div><div><span class="hms-dot purple"></span><span>Supervised patients<small>Student-led community care</small></span><strong id="hmsDependent">?</strong></div><p id="hmsDistributionNote">Loading patient distribution?</p></div></div></article>
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>Clinical monitoring</h2><p>Recorded conditions across linked patients</p></div><span class="hms-icon-soft" data-icon="heart"></span></div><div id="hmsConditions" class="hms-condition-list"><p class="hms-empty">Loading clinical indicators?</p></div><p class="hms-footnote">A patient may have more than one recorded condition.</p></article>
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>University network</h2><p>Community care across institutions</p></div><span class="hms-icon-soft" data-icon="hospital"></span></div><div id="hmsUniversities" class="hms-university-list"><p class="hms-empty">Loading institutions?</p></div></article>
+        <article class="hms-panel"><div class="hms-panel-heading"><div><h2>Your care team</h2><p>Hospital administration and access</p></div><button class="hms-text-btn" onclick="hmsNavigate('staff')">View all &#8594;</button></div><div id="hmsTeam"><p class="hms-empty">Loading team?</p></div></article>
+      </section>
+      <section class="hms-panel hms-registry-preview" data-page="overview"><div class="hms-panel-heading"><div><h2>Patient registry</h2><p>Your hospital's registered care network</p></div><button class="hms-text-btn" onclick="hmsNavigate('patients')">View registry &#8594;</button></div><div id="hmsPatientPreview"><p class="hms-empty">Loading patients?</p></div></section>
       <!-- Main Workspace Card: Tabs & Content -->
-      <div class="card anim-fade-up anim-delay-3" style="padding: 1.5rem;">
+      <div class="card hms-workspace" data-page="patients staff" hidden style="padding: 1.5rem;">
 
         <!-- View Switcher Tabs -->
-        <div style="display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-light); margin-bottom: 1.25rem;">
+        <div class="hms-legacy-tabs">
           <button class="btn" id="tabViewPatients" onclick="switchView('patients')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-weight: 700; border-bottom: 3px solid #0d9488; color: #0d9488; background: transparent;">
-            📋 Cross-Institutional Patient Registry
+            📋 Patient registry
           </button>
           <button class="btn" id="tabViewStaff" onclick="switchView('staff')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-weight: 600; border-bottom: 3px solid transparent; color: var(--text-muted); background: transparent;">
-            👥 Hospital Staff &amp; Quotas
+            👥 Staff &amp; access
           </button>
         </div>
 
@@ -392,9 +345,9 @@
                   <th>Patient Name</th>
                   <th>Age / Sex</th>
                   <th>Model Type</th>
-                  <th>Attribution (Cadet &amp; University)</th>
-                  <th>Baseline Vitals</th>
-                  <th>Diagnosed Conditions</th>
+                  <th>Care team / Institution</th>
+                  <th>Baseline vitals</th>
+                  <th>Conditions</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -414,7 +367,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
             <div>
               <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.2rem 0;">
-                Hospital Administrative Staff Roster
+                Hospital staff
               </h3>
               <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
                 Enforces strict institutional governance: 1 to 3 Super Admins and up to 20 Hospital Admins.
@@ -483,7 +436,7 @@
       <!-- Vitals & Physical Exam Grid -->
       <div class="dossier-grid-2col">
         <div class="dossier-box">
-          <div class="dossier-title">🩺 Baseline Vitals &amp; Screenings</div>
+          <div class="dossier-title">🩺 Baseline vitals &amp; Screenings</div>
           <div id="dosVitalsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; font-size: 0.825rem;">
             <!-- Dynamically populated -->
           </div>
@@ -607,10 +560,12 @@
     let staffData = [];
     let filterOptions = { universities: [], students: [] };
     let currentFilterDebounce = null;
+    let patientRequestVersion = 0;
     let currentQuota = { super_admins: {}, admins: {} };
 
     document.addEventListener('DOMContentLoaded', () => {
       initSidebar();
+      initHms();
       if (typeof window.renderSidebarUserBadge === 'function') {
         window.renderSidebarUserBadge();
       } else if (typeof window.refreshSidebarUser === 'function') {
@@ -661,7 +616,7 @@
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
       toast.innerHTML = `
-        <span>${message}</span>
+        <span>${hmsEscape(message)}</span>
         <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
       `;
       container.appendChild(toast);
@@ -673,46 +628,32 @@
     }
 
     function switchView(view) {
-      const tabPatients = document.getElementById('tabViewPatients');
-      const tabStaff = document.getElementById('tabViewStaff');
-      const secPatients = document.getElementById('sectionPatients');
-      const secStaff = document.getElementById('sectionStaff');
-
-      if (view === 'staff') {
-        tabStaff.style.borderBottom = '3px solid #0d9488';
-        tabStaff.style.color = '#0d9488';
-        tabPatients.style.borderBottom = '3px solid transparent';
-        tabPatients.style.color = 'var(--text-muted)';
-        secPatients.style.display = 'none';
-        secStaff.style.display = 'block';
-        loadStaffRoster();
-      } else {
-        tabPatients.style.borderBottom = '3px solid #0d9488';
-        tabPatients.style.color = '#0d9488';
-        tabStaff.style.borderBottom = '3px solid transparent';
-        tabStaff.style.color = 'var(--text-muted)';
-        secPatients.style.display = 'block';
-        secStaff.style.display = 'none';
-        applyFilters();
-      }
+      hmsNavigate(view);
     }
 
     async function loadHospitalData() {
+      const refresh = document.getElementById('hmsRefresh');
+      refresh.disabled = true;
+      document.getElementById('hmsError').hidden = true;
       try {
         // Fetch Profile & Hospital Entity
         const profRes = await fetch('/api/hospital/profile');
         const profData = await profRes.json();
-        if (profRes.ok && profData.admin) {
+        if (!profRes.ok) throw new Error(profData.error || "Unable to load hospital profile");
+        if (profData.admin) {
+          renderHmsProfile(profData.admin);
           const adm = profData.admin;
           document.getElementById('hospNameHeader').textContent = adm.hospital_name || 'Civil Hospital';
           document.getElementById('hospMetaHeader').textContent = `Code: ${adm.hospital_code || 'HOSP-01'} • ${adm.hospital_type || 'Civil / General Hospital'} • ${adm.hospital_city || 'Gandhinagar'}`;
-          document.getElementById('hospBedsBadge').textContent = `${adm.bed_capacity || 500} Beds`;
+          document.getElementById('hospBedsBadge').textContent = `${adm.bed_capacity ?? '?'} Beds`;
         }
 
         // Fetch Stats
         const statsRes = await fetch('/api/hospital/stats');
         const stats = await statsRes.json();
+        if (!statsRes.ok) throw new Error(stats.error || "Unable to load hospital statistics");
         if (statsRes.ok) {
+          renderHmsStats(stats);
           document.getElementById('kpiTotalPatients').textContent = stats.totals.total_patients || 0;
           document.getElementById('kpiIndependentPatients').textContent = stats.totals.independent_patients || 0;
           document.getElementById('kpiDependentPatients').textContent = stats.totals.dependent_patients || 0;
@@ -724,19 +665,26 @@
         // Fetch Staff & Quota
         await loadStaffRoster();
 
+        const selectedUniversity = document.getElementById('filterUniversity').value;
+        const selectedCadet = document.getElementById('filterCadet').value;
         // Fetch Filter Options
         const optRes = await fetch('/api/hospital/filter-options');
         const optData = await optRes.json();
         if (optRes.ok) {
           filterOptions = optData;
           populateFilterDropdowns();
+          document.getElementById('filterUniversity').value = selectedUniversity;
+          document.getElementById('filterCadet').value = selectedCadet;
         }
 
         // Load Initial Patients
         await applyFilters();
 
       } catch (err) {
-        showToast(err.message, 'error');
+        document.getElementById('hmsError').textContent = err.message + '. Use Refresh to try again.';
+        document.getElementById('hmsError').hidden = false;
+      } finally {
+        refresh.disabled = false;
       }
     }
 
@@ -773,6 +721,7 @@
     }
 
     async function applyFilters() {
+      const requestVersion = ++patientRequestVersion;
       const uniId = document.getElementById('filterUniversity').value;
       const cadetId = document.getElementById('filterCadet').value;
       const model = document.getElementById('filterModel').value;
@@ -792,8 +741,10 @@
       try {
         const res = await fetch(`/api/hospital/patients?${params.toString()}`);
         const data = await res.json();
+        if (requestVersion !== patientRequestVersion) return;
         if (!res.ok) throw new Error(data.error || 'Failed to fetch patients');
 
+        if (!params.toString()) renderHmsPatients(data.patients || []);
         if (!data.patients || data.patients.length === 0) {
           tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching patient records found.</td></tr>`;
           return;
@@ -836,7 +787,9 @@
         }).join('');
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 1.5rem;">Error: ${err.message}</td></tr>`;
+        if (requestVersion !== patientRequestVersion) return;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 1.5rem;">${hmsEscape(err.message)}. Use Refresh to retry.</td></tr>`;
+        document.getElementById("hmsPatientPreview").innerHTML = '<p class="hms-empty">Patient records could not be loaded. Use Refresh to retry.</p>';
       }
     }
 
@@ -872,6 +825,7 @@
         // Render Staff Table
         const tbody = document.getElementById('staffTableBody');
         staffData = data.staff || [];
+        renderHmsTeam(staffData);
         if (staffData.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No staff members found.</td></tr>`;
           return;
@@ -1149,6 +1103,6 @@
     }
   </script>
 
-  <script src="/nav-glider.js"></script>
+  <script src="/hospital-ui.js"></script>
 </body>
 </html>

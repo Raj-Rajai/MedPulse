@@ -146,7 +146,7 @@ const HospitalModel = {
         return cleanList(patients);
     },
 
-    getPatientDossier(patientId) {
+    getPatientDossier(patientId, hospitalId) {
         const patient = db.prepare(`
             SELECT 
                 p.*, 
@@ -157,10 +157,11 @@ const HospitalModel = {
             LEFT JOIN students s ON p.student_id = s.id
             LEFT JOIN colleges c ON s.college_id = c.id
             LEFT JOIN hospitals h ON p.hospital_id = h.id
-            WHERE p.id = ?
-        `).get(patientId);
+            WHERE p.id = ? AND p.hospital_id = ?
+        `).get(patientId, hospitalId);
 
         if (!patient) return null;
+        delete patient.pin;
 
         let vitals = null;
         let conditions = [];
@@ -181,7 +182,7 @@ const HospitalModel = {
             conditions = db.prepare('SELECT * FROM member_conditions WHERE member_id = ? ORDER BY id DESC').all(patient.family_member_id);
             medications = db.prepare('SELECT * FROM member_medications WHERE member_id = ? ORDER BY id DESC').all(patient.family_member_id);
             allergies = db.prepare('SELECT * FROM member_allergies WHERE member_id = ? ORDER BY id DESC').all(patient.family_member_id);
-            history = db.prepare('SELECT * FROM member_medical_history WHERE member_id = ? ORDER BY event_date DESC').all(patient.family_member_id);
+            history = db.prepare('SELECT * FROM member_medical_history WHERE member_id = ? ORDER BY id DESC').all(patient.family_member_id);
             lifestyle = db.prepare('SELECT * FROM member_lifestyle WHERE member_id = ?').get(patient.family_member_id);
             followUps = db.prepare('SELECT * FROM follow_ups WHERE member_id = ? ORDER BY visit_date DESC').all(patient.family_member_id);
         }

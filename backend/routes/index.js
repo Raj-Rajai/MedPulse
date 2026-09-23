@@ -15,6 +15,7 @@ router.use(studentRoutes);
 router.use(adminRoutes);
 router.use(patientRoutes);
 router.use(hospitalRoutes);
+router.use(require('./hospital-fap.routes'));
 router.use(surveyRoutes);
 
 module.exports = router;
