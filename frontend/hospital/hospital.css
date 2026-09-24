@@ -201,3 +201,12 @@
   .modal-heading,.slip-actions{display:none!important}
 }
 
+
+/* Keep hospital branding proportional and contained on every screen. */
+.page-heading-copy{min-width:0;max-width:100%}
+.hospital-logo-band{background:white;border-bottom:1px solid var(--line);margin:-35px -36px 30px;padding:35px 36px 28px}
+.hospital-logo{display:block;width:clamp(144px,16vw,184px);max-width:100%;height:auto;object-fit:contain;margin:0 auto}
+@media(min-width:1500px){.hospital-logo-band{margin-top:-40px;padding-top:40px}}
+@media(max-width:1200px){.hospital-logo-band{margin:-28px -23px 30px;padding:28px 23px 28px}}
+@media(max-width:800px){.hospital-logo-band{margin:-26px -20px 28px;padding:26px 20px 26px}}
+@media(max-width:560px){.hospital-logo-band{margin:-23px -14px 24px;padding:23px 14px 24px}}
