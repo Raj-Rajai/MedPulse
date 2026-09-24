@@ -1,11 +1,11 @@
-﻿const http = require('node:http');
+const http = require('node:http');
 const express = require('express');
 const { db, initDatabase } = require('./db');
 const routes = require('./routes');
 
 async function runQuotaVerification() {
     console.log('====================================================');
-    console.log('ðŸ›ï¸ MEDPULSE UNIVERSITY ADMIN & QUOTA ENFORCEMENT TEST');
+    console.log('🏛️ MEDPULSE UNIVERSITY ADMIN & QUOTA ENFORCEMENT TEST');
     console.log('====================================================\n');
 
     initDatabase();
@@ -23,10 +23,10 @@ async function runQuotaVerification() {
 
     function assert(condition, message) {
         if (condition) {
-            console.log(`  âœ… PASS: ${message}`);
+            console.log(`  ✅ PASS: ${message}`);
             passed++;
         } else {
-            console.error(`  âŒ FAIL: ${message}`);
+            console.error(`  ❌ FAIL: ${message}`);
             failed++;
         }
     }
@@ -171,7 +171,7 @@ async function runQuotaVerification() {
     }
 
     console.log('\n====================================================');
-    console.log(`ðŸ TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);
+    console.log(`🏁 TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);
     console.log('====================================================');
 
     if (failed > 0) process.exit(1);

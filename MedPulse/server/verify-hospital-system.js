@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MedPulse Hospital Network (Independent Medium) & Quota System Verification Suite
  * Tests 1-3 Super Admin & 20 Admin quotas, cross-institutional surveillance, and medical dossier API.
  */
@@ -20,12 +20,12 @@ let passedTests = 0;
 let failedTests = 0;
 
 function logPass(msg) {
-    console.log(`  âœ… PASS: ${msg}`);
+    console.log(`  ✅ PASS: ${msg}`);
     passedTests++;
 }
 
 function logFail(msg, err) {
-    console.error(`  âŒ FAIL: ${msg}`);
+    console.error(`  ❌ FAIL: ${msg}`);
     if (err) console.error(`     Error: ${err}`);
     failedTests++;
 }
@@ -62,7 +62,7 @@ function request(server, method, url, body = null, headers = {}) {
 
 async function runTests() {
     console.log('====================================================');
-    console.log('ðŸ¥ MEDPULSE HOSPITAL NETWORK & QUOTA SYSTEM TEST');
+    console.log('🏥 MEDPULSE HOSPITAL NETWORK & QUOTA SYSTEM TEST');
     console.log('====================================================\n');
 
     const server = app.listen(0);
@@ -293,7 +293,7 @@ async function runTests() {
         server.close();
 
         console.log('\n====================================================');
-        console.log(`ðŸ TEST RESULTS: ${passedTests} PASSED, ${failedTests} FAILED`);
+        console.log(`🏁 TEST RESULTS: ${passedTests} PASSED, ${failedTests} FAILED`);
         console.log('====================================================\n');
 
         if (failedTests > 0) process.exit(1);
