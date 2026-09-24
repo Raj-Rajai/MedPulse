@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 
 /**
  * Generate a clean, collision-free Student Referral Code for Patient Adoption.
- * Format: [PREFIX]-[ROLL]-[4_CHAR_HEX] (e.g. GMERS-235-9F4D)
+ * Format: [PREFIX]-[ROLL]-[4_CHAR_HEX] (e.g. SAL-235-9F4D)
  */
 function formatReferralCode(collegePrefix, rollNumber) {
     const cleanPrefix = (collegePrefix || 'UNI').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8);

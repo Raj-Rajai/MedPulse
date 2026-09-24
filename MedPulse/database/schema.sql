@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS students (
     phone TEXT,
     posting_unit TEXT DEFAULT 'RHTC - Rural Health Training Center',
     college_id INTEGER REFERENCES colleges(id) ON DELETE SET NULL,
-    referral_code TEXT UNIQUE,                      -- Unique Patient Adoption Referral Code (e.g. GMERS-235-9B2D)
+    referral_code TEXT UNIQUE,                      -- Unique Patient Adoption Referral Code (e.g. SAL-235-9B2D)
     status TEXT DEFAULT 'Active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

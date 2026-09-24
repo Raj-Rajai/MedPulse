@@ -901,7 +901,7 @@ function generateFacultyAuditPdfStream(res) {
         const vals = [
             { t: s.roll_number, align: 'center', bold: true, c: primaryColor },
             { t: s.name, align: 'left', bold: true, c: '#0f172a' },
-            { t: s.college_name || 'GMERS Medical College', align: 'left', bold: false, c: '#334155' },
+            { t: s.college_name || 'SAL Hospital', align: 'left', bold: false, c: '#334155' },
             { t: s.batch_year || '3rd Year MBBS', align: 'left', bold: false, c: '#475569' },
             { t: s.posting_unit || 'RHTC Training Center', align: 'left', bold: false, c: '#475569' },
             { t: String(s.fam_count), align: 'center', bold: true, c: '#0284c7' },

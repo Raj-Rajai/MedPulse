@@ -1,6 +1,6 @@
-const { db, initDatabase } = require('./db');
+﻿const { db, initDatabase } = require('./db');
 
-console.log('🧪 Starting MedPulse Phase 2 Verification Test Suite...\n');
+console.log('ðŸ§ª Starting MedPulse Phase 2 Verification Test Suite...\n');
 
 // 1. Initialize DB and run migrations
 initDatabase();
@@ -9,7 +9,7 @@ initDatabase();
 const student235 = db.prepare('SELECT * FROM students WHERE roll_number = ?').get('235');
 if (!student235) throw new Error('Student 235 not found');
 if (student235.pin !== '1234') throw new Error('Default PIN not set to 1234');
-console.log(`✅ Auth Check: Roll 235 exists with PIN '${student235.pin}'.`);
+console.log(`âœ… Auth Check: Roll 235 exists with PIN '${student235.pin}'.`);
 
 // Clean any leftover test records
 db.prepare('DELETE FROM families WHERE family_no = 201').run();
@@ -27,7 +27,7 @@ const famInsert = db.prepare(`
   )
 `).run(student235.id);
 const testFamId = Number(famInsert.lastInsertRowid);
-console.log(`✅ Household Creation: Created Family #201 (ID: ${testFamId}, Code: FAM-0201, Name: 'Sharma Household').`);
+console.log(`âœ… Household Creation: Created Family #201 (ID: ${testFamId}, Code: FAM-0201, Name: 'Sharma Household').`);
 
 // 4. Test Household Details Update (PUT)
 db.prepare(`
@@ -40,7 +40,7 @@ const updatedFam = db.prepare('SELECT * FROM families WHERE id = ?').get(testFam
 if (updatedFam.family_name !== 'Updated Sharma Residence' || updatedFam.contact_number !== '9988776655') {
   throw new Error('Family update verification failed');
 }
-console.log(`✅ Household Update: Updated family name to '${updatedFam.family_name}' and phone to '${updatedFam.contact_number}'.`);
+console.log(`âœ… Household Update: Updated family name to '${updatedFam.family_name}' and phone to '${updatedFam.contact_number}'.`);
 
 // 5. Test Family Search Query
 const searchMatch = db.prepare(`
@@ -48,7 +48,7 @@ const searchMatch = db.prepare(`
   WHERE head_of_family LIKE ? OR family_name LIKE ? OR family_code LIKE ? OR contact_number LIKE ?
 `).all('%Sharma%', '%Sharma%', '%Sharma%', '%Sharma%');
 if (searchMatch.length === 0) throw new Error('Family search by name failed');
-console.log(`✅ Family Search: Found ${searchMatch.length} household(s) matching 'Sharma'.`);
+console.log(`âœ… Family Search: Found ${searchMatch.length} household(s) matching 'Sharma'.`);
 
 // 6. Test Member Creation with Phase 2 Fields (DOB, marital_status, education, occupation, contact)
 const memberInsert = db.prepare(`
@@ -63,7 +63,7 @@ const memberInsert = db.prepare(`
   )
 `).run(testFamId);
 const testMemberId = Number(memberInsert.lastInsertRowid);
-console.log(`✅ Member Creation: Created member Ramesh Sharma (ID: ${testMemberId}) with DOB 1979-05-15, Marital: Married, Occupation: Farmer.`);
+console.log(`âœ… Member Creation: Created member Ramesh Sharma (ID: ${testMemberId}) with DOB 1979-05-15, Marital: Married, Occupation: Farmer.`);
 
 // 7. Test Member Details Update
 db.prepare(`
@@ -73,7 +73,7 @@ db.prepare(`
 `).run('Senior Agri Contractor', '9988776655', testMemberId);
 const updatedMember = db.prepare('SELECT * FROM family_members WHERE id = ?').get(testMemberId);
 if (updatedMember.occupation !== 'Senior Agri Contractor') throw new Error('Member update failed');
-console.log(`✅ Member Update: Updated member occupation to '${updatedMember.occupation}'.`);
+console.log(`âœ… Member Update: Updated member occupation to '${updatedMember.occupation}'.`);
 
 // 8. Test Clinical Sub-Entity: Medical Conditions
 const condInsert = db.prepare(`
@@ -86,7 +86,7 @@ const testCondId = Number(condInsert.lastInsertRowid);
 db.prepare('UPDATE member_conditions SET status = ? WHERE id = ?').run('Resolved', testCondId);
 const condRecord = db.prepare('SELECT * FROM member_conditions WHERE id = ?').get(testCondId);
 if (condRecord.status !== 'Resolved') throw new Error('Condition status update failed');
-console.log(`✅ Sub-Entity (Conditions): Added & updated condition '${condRecord.condition_name}' (Status: ${condRecord.status}).`);
+console.log(`âœ… Sub-Entity (Conditions): Added & updated condition '${condRecord.condition_name}' (Status: ${condRecord.status}).`);
 
 // 9. Test Clinical Sub-Entity: Medications
 const medInsert = db.prepare(`
@@ -96,7 +96,7 @@ const medInsert = db.prepare(`
 const testMedId = Number(medInsert.lastInsertRowid);
 const medRecord = db.prepare('SELECT * FROM member_medications WHERE id = ?').get(testMedId);
 if (!medRecord || medRecord.dosage !== '5 mg') throw new Error('Medication insertion failed');
-console.log(`✅ Sub-Entity (Medications): Added medication '${medRecord.name}' ${medRecord.dosage} (Taking: ${medRecord.currently_taking}).`);
+console.log(`âœ… Sub-Entity (Medications): Added medication '${medRecord.name}' ${medRecord.dosage} (Taking: ${medRecord.currently_taking}).`);
 
 // 10. Test Clinical Sub-Entity: Allergies
 const algInsert = db.prepare(`
@@ -106,17 +106,17 @@ const algInsert = db.prepare(`
 const testAlgId = Number(algInsert.lastInsertRowid);
 const algRecord = db.prepare('SELECT * FROM member_allergies WHERE id = ?').get(testAlgId);
 if (!algRecord || algRecord.allergen !== 'Penicillin') throw new Error('Allergy insertion failed');
-console.log(`✅ Sub-Entity (Allergies): Added allergy '${algRecord.allergen}' (${algRecord.severity}).`);
+console.log(`âœ… Sub-Entity (Allergies): Added allergy '${algRecord.allergen}' (${algRecord.severity}).`);
 
 // 11. Test Clinical Sub-Entity: Medical / Surgical History
 const histInsert = db.prepare(`
   INSERT INTO member_medical_history (member_id, category, description, year, notes)
-  VALUES (?, 'Surgery', 'Open Appendectomy', 2015, 'Civil Hospital, full recovery')
+  VALUES (?, 'Surgery', 'Open Appendectomy', 2015, 'SAL Hospital, full recovery')
 `).run(testMemberId);
 const testHistId = Number(histInsert.lastInsertRowid);
 const histRecord = db.prepare('SELECT * FROM member_medical_history WHERE id = ?').get(testHistId);
 if (!histRecord || histRecord.category !== 'Surgery') throw new Error('History insertion failed');
-console.log(`✅ Sub-Entity (History): Added past surgical event '${histRecord.description}' (${histRecord.year}).`);
+console.log(`âœ… Sub-Entity (History): Added past surgical event '${histRecord.description}' (${histRecord.year}).`);
 
 // 12. Test Clinical Sub-Entity: Lifestyle & Habits (Upsert)
 db.prepare(`
@@ -130,7 +130,7 @@ const lsRecord = db.prepare('SELECT * FROM member_lifestyle WHERE member_id = ?'
 if (!lsRecord || lsRecord.smoking_status !== 'Former' || lsRecord.diet !== 'Vegetarian') {
   throw new Error('Lifestyle insertion failed');
 }
-console.log(`✅ Sub-Entity (Lifestyle): Upserted lifestyle (Smoking: ${lsRecord.smoking_status}, Alcohol: ${lsRecord.alcohol_status}, Diet: ${lsRecord.diet}).`);
+console.log(`âœ… Sub-Entity (Lifestyle): Upserted lifestyle (Smoking: ${lsRecord.smoking_status}, Alcohol: ${lsRecord.alcohol_status}, Diet: ${lsRecord.diet}).`);
 
 // 13. Test Follow-up Visit Logging
 const fuRes = db.prepare(`
@@ -143,7 +143,7 @@ const fuRes = db.prepare(`
   )
 `).run(testMemberId, student235.id);
 const testFuId = Number(fuRes.lastInsertRowid);
-console.log(`✅ Longitudinal Care: Logged Follow-up Visit #${testFuId} with BP 128/82 mmHg.`);
+console.log(`âœ… Longitudinal Care: Logged Follow-up Visit #${testFuId} with BP 128/82 mmHg.`);
 
 // 14. Test Joined Member Retrieval (Verify conditions, meds, allergies, history, lifestyle all link)
 const allConditions = db.prepare('SELECT * FROM member_conditions WHERE member_id = ?').all(testMemberId);
@@ -156,7 +156,7 @@ const allFollowUps = db.prepare('SELECT * FROM follow_ups WHERE member_id = ?').
 if (allConditions.length !== 1 || allMeds.length !== 1 || allAllergies.length !== 1 || allHistory.length !== 1 || !lifestyle || allFollowUps.length !== 1) {
   throw new Error('Joined member sub-entities retrieval check failed');
 }
-console.log(`✅ Profile Aggregation: Member ${testMemberId} successfully linked with:
+console.log(`âœ… Profile Aggregation: Member ${testMemberId} successfully linked with:
    - Conditions: ${allConditions.length}
    - Medications: ${allMeds.length}
    - Allergies: ${allAllergies.length}
@@ -189,7 +189,7 @@ const profileCheck = db.prepare('SELECT * FROM students WHERE id = ?').get(stude
 if (profileCheck.name !== 'Dhruv Patel' || profileCheck.email !== 'dhruv.patel@medpulse.edu' || profileCheck.posting_unit !== 'Community Medicine Unit 3') {
   throw new Error('Student profile update verification failed');
 }
-console.log(`✅ Student Profile: Updated profile for Roll ${profileCheck.roll_number} (${profileCheck.name}, Email: ${profileCheck.email}, Unit: ${profileCheck.posting_unit}).`);
+console.log(`âœ… Student Profile: Updated profile for Roll ${profileCheck.roll_number} (${profileCheck.name}, Email: ${profileCheck.email}, Unit: ${profileCheck.posting_unit}).`);
 
 // Change PIN test
 db.prepare('UPDATE students SET pin = ? WHERE id = ?').run('5678', student235.id);
@@ -198,7 +198,7 @@ if (pinCheck.pin !== '5678') throw new Error('Student PIN update failed');
 
 // Restore default PIN 1234
 db.prepare('UPDATE students SET pin = ? WHERE id = ?').run('1234', student235.id);
-console.log(`✅ Student Security: Verified PIN change and reset back to default PIN '1234'.`);
+console.log(`âœ… Student Security: Verified PIN change and reset back to default PIN '1234'.`);
 
 // 17. Test Student Registration Panel Persistence
 const testRegRoll = 'TEST-999';
@@ -221,7 +221,7 @@ const regStudent = db.prepare('SELECT s.*, c.name as college_name FROM students 
 if (!regStudent || regStudent.roll_number !== testRegRoll || regStudent.name !== 'Dr. Ananya Sharma' || regStudent.pin !== '4321' || !regStudent.college_name) {
   throw new Error('Student registration persistence assertion failed');
 }
-console.log(`✅ Student Registration: Created student '${regStudent.name}' (Roll: ${regStudent.roll_number}, College: ${regStudent.college_name}, PIN: ${regStudent.pin}).`);
+console.log(`âœ… Student Registration: Created student '${regStudent.name}' (Roll: ${regStudent.roll_number}, College: ${regStudent.college_name}, PIN: ${regStudent.pin}).`);
 
 // 18. Test Duplicate Roll Number Rejection
 let dupErrorThrown = false;
@@ -231,7 +231,7 @@ try {
   dupErrorThrown = true;
 }
 if (!dupErrorThrown) throw new Error('Duplicate student roll number was not rejected by UNIQUE constraint');
-console.log(`✅ Registration Security: Duplicate Roll Number '${testRegRoll}' successfully rejected.`);
+console.log(`âœ… Registration Security: Duplicate Roll Number '${testRegRoll}' successfully rejected.`);
 
 // Cleanup test student
 db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
@@ -247,7 +247,7 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (unauthRes.status !== 401) {
       throw new Error(`Expected 401 on unauthenticated /api/families, got ${unauthRes.status}`);
     }
-    console.log('✅ API Security: Unauthenticated request rejected with 401 Unauthorized.');
+    console.log('âœ… API Security: Unauthenticated request rejected with 401 Unauthorized.');
 
     // 19b. User A (Dhruv Patel, Roll 235) Data Scoping
     const userARes = await fetch(`${baseUrl}/api/families`, {
@@ -258,7 +258,7 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (userAFamilies.length !== 5) {
       throw new Error(`Expected 5 families for Roll 235 (Dhruv Patel), got ${userAFamilies.length}`);
     }
-    console.log(`✅ User A Scoping: Roll 235 (Dhruv Patel) successfully loaded exclusively his ${userAFamilies.length} surveyed households.`);
+    console.log(`âœ… User A Scoping: Roll 235 (Dhruv Patel) successfully loaded exclusively his ${userAFamilies.length} surveyed households.`);
 
     // 19c. User B Registration & Clean Slate Isolation
     const cadetBRoll = 'CADET_B_VERIFY';
@@ -283,7 +283,7 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (userBFamilies.length !== 0) {
       throw new Error(`Expected 0 families for fresh Cadet B, got ${userBFamilies.length}`);
     }
-    console.log('✅ User B Scoping: Freshly registered Cadet B starts with a clean slate of 0 families (zero data leakage).');
+    console.log('âœ… User B Scoping: Freshly registered Cadet B starts with a clean slate of 0 families (zero data leakage).');
 
     // 19d. User B Analytics Summary Isolation
     const summaryBRes = await fetch(`${baseUrl}/api/analytics/summary`, {
@@ -293,7 +293,7 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (summaryB.totals.families !== 0 || summaryB.totals.members !== 0) {
       throw new Error(`Expected 0 totals for Cadet B summary, got ${JSON.stringify(summaryB.totals)}`);
     }
-    console.log('✅ Analytics Isolation: Cadet B summary metrics reflect strictly 0 families and 0 members.');
+    console.log('âœ… Analytics Isolation: Cadet B summary metrics reflect strictly 0 families and 0 members.');
 
     // 20. Test Cross-Tenant Authorization Protection (403 Forbidden)
     const dhruvFam = userAFamilies[0];
@@ -306,7 +306,7 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (crossRead.status !== 403) {
       throw new Error(`Expected 403 Forbidden on cross-tenant read of Family ${famId}, got ${crossRead.status}`);
     }
-    console.log(`✅ Cross-Tenant Security: Cross-cadet inspection of Family ${famId} blocked with 403 Forbidden.`);
+    console.log(`âœ… Cross-Tenant Security: Cross-cadet inspection of Family ${famId} blocked with 403 Forbidden.`);
 
     // 20b. Cadet B attempting to modify Dhruv's family
     const crossUpdate = await fetch(`${baseUrl}/api/families/${famId}`, {
@@ -317,7 +317,7 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (crossUpdate.status !== 403) {
       throw new Error(`Expected 403 Forbidden on cross-tenant update of Family ${famId}, got ${crossUpdate.status}`);
     }
-    console.log(`✅ Cross-Tenant Security: Cross-cadet mutation of Family ${famId} blocked with 403 Forbidden.`);
+    console.log(`âœ… Cross-Tenant Security: Cross-cadet mutation of Family ${famId} blocked with 403 Forbidden.`);
 
     // 20c. Cadet B creates their own household
     const createB = await fetch(`${baseUrl}/api/families`, {
@@ -347,17 +347,16 @@ db.prepare('DELETE FROM students WHERE roll_number = ?').run(testRegRoll);
     if (userAFamiliesAfter.length !== 5) {
       throw new Error(`Expected exactly 5 families for Roll 235 after Cadet B created family, got ${userAFamiliesAfter.length}`);
     }
-    console.log(`✅ Multi-Tenant Integrity: Cadet B has 1 household; Roll 235 (Dhruv Patel) still has exactly 5 households.`);
+    console.log(`âœ… Multi-Tenant Integrity: Cadet B has 1 household; Roll 235 (Dhruv Patel) still has exactly 5 households.`);
 
     // Cleanup Cadet B
     db.prepare('DELETE FROM families WHERE family_code = ?').run('FAM-B01');
     db.prepare('DELETE FROM students WHERE roll_number = ?').run(cadetBRoll);
-    console.log('✅ Cleanup: Temporary Cadet B test records purged.');
+    console.log('âœ… Cleanup: Temporary Cadet B test records purged.');
 
-    console.log('\n🎉 ALL MULTI-TENANT AUTHENTICATION & AUTHORIZATION VERIFICATION TESTS PASSED SUCCESSFULLY!\n');
+    console.log('\nðŸŽ‰ ALL MULTI-TENANT AUTHENTICATION & AUTHORIZATION VERIFICATION TESTS PASSED SUCCESSFULLY!\n');
   } catch (err) {
-    console.error('❌ Async verification failed:', err.message);
+    console.error('âŒ Async verification failed:', err.message);
     process.exit(1);
   }
 })();
-

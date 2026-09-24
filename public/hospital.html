@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="preload-transitions">
 <head>
   <link rel="manifest" href="/manifest.webmanifest">
@@ -184,14 +184,14 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
             <div style="width: 46px; height: 46px; border-radius: var(--radius-lg); background: #0d9488; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);">
-              🏥
+              ðŸ¥
             </div>
             <div>
               <h2 id="hospNameHeader" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.15rem 0;">
                 Loading Hospital...
               </h2>
               <div id="hospMetaHeader" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">
-                Code: - • Civil / General Hospital • Gandhinagar
+                Code: - â€¢ Private Multi-Specialty Hospital â€¢ Ahmedabad
               </div>
             </div>
           </div>
@@ -203,11 +203,11 @@
 
         <!-- Strict Staff Quota Meters (1~3 Super Admins, max 20 Admins) -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
-          
+
           <!-- Meter 1: Hospital Super Admins (Strict Quota: 1 to 3) -->
           <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: var(--radius-md); padding: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">👑 Hospital Super Admins</span>
+              <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">ðŸ‘‘ Hospital Super Admins</span>
               <span id="superAdminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">? / ? Seats</span>
             </div>
             <div class="quota-meter-track">
@@ -222,7 +222,7 @@
           <!-- Meter 2: Hospital Admins (Strict Quota: Max 20) -->
           <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: var(--radius-md); padding: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">👥 Hospital Clinical Admins</span>
+              <span style="font-weight: 750; font-size: 0.85rem; color: #0f766e;">ðŸ‘¥ Hospital Clinical Admins</span>
               <span id="adminMeterLabel" style="font-size: 0.825rem; font-weight: 800; color: #0f766e;">? / ? Seats</span>
             </div>
             <div class="quota-meter-track">
@@ -284,10 +284,10 @@
         <!-- View Switcher Tabs -->
         <div class="hms-legacy-tabs">
           <button class="btn" id="tabViewPatients" onclick="switchView('patients')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-weight: 700; border-bottom: 3px solid #0d9488; color: #0d9488; background: transparent;">
-            📋 Patient registry
+            ðŸ“‹ Patient registry
           </button>
           <button class="btn" id="tabViewStaff" onclick="switchView('staff')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; font-weight: 600; border-bottom: 3px solid transparent; color: var(--text-muted); background: transparent;">
-            👥 Staff &amp; access
+            ðŸ‘¥ Staff &amp; access
           </button>
         </div>
 
@@ -421,7 +421,7 @@
           <h2 id="dosName" style="color: var(--primary); font-size: 1.35rem; font-weight: 850; margin: 0;">-</h2>
           <div id="dosDemographics" style="font-size: 0.825rem; color: var(--text-muted);">-</div>
         </div>
-        <button class="btn btn-secondary" onclick="closeDossierModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕ Close</button>
+        <button class="btn btn-secondary" onclick="closeDossierModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ• Close</button>
       </div>
 
       <!-- Supervisor & Institution Attribution Banner -->
@@ -436,14 +436,14 @@
       <!-- Vitals & Physical Exam Grid -->
       <div class="dossier-grid-2col">
         <div class="dossier-box">
-          <div class="dossier-title">🩺 Baseline vitals &amp; Screenings</div>
+          <div class="dossier-title">ðŸ©º Baseline vitals &amp; Screenings</div>
           <div id="dosVitalsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; font-size: 0.825rem;">
             <!-- Dynamically populated -->
           </div>
         </div>
 
         <div class="dossier-box">
-          <div class="dossier-title">🏷️ Recorded Chronic Diagnoses</div>
+          <div class="dossier-title">ðŸ·ï¸ Recorded Chronic Diagnoses</div>
           <div id="dosConditionsContent" style="font-size: 0.825rem;">
             <!-- Dynamically populated -->
           </div>
@@ -452,14 +452,14 @@
 
       <div class="dossier-grid-2col">
         <div class="dossier-box">
-          <div class="dossier-title">💊 Active Medications &amp; Adherence</div>
+          <div class="dossier-title">ðŸ’Š Active Medications &amp; Adherence</div>
           <div id="dosMedicationsContent" style="font-size: 0.825rem;">
             <!-- Dynamically populated -->
           </div>
         </div>
 
         <div class="dossier-box">
-          <div class="dossier-title">⚠️ Allergies &amp; ADRs</div>
+          <div class="dossier-title">âš ï¸ Allergies &amp; ADRs</div>
           <div id="dosAllergiesContent" style="font-size: 0.825rem;">
             <!-- Dynamically populated -->
           </div>
@@ -468,7 +468,7 @@
 
       <!-- Longitudinal Follow-up Visits -->
       <div class="dossier-box" style="margin-top: 0.5rem;">
-        <div class="dossier-title">📅 Longitudinal Examination Visits</div>
+        <div class="dossier-title">ðŸ“… Longitudinal Examination Visits</div>
         <div id="dosFollowUpsContent" style="font-size: 0.825rem;">
           <!-- Dynamically populated -->
         </div>
@@ -483,7 +483,7 @@
     <div class="modal-content" style="max-width: 520px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <h2 style="color: var(--primary); font-size: 1.25rem; font-weight: 800; margin: 0;">+ Appoint Hospital Staff</h2>
-        <button class="btn btn-secondary" onclick="closeAppointStaffModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeAppointStaffModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
 
       <form id="appointStaffForm" onsubmit="event.preventDefault(); submitAppointStaff();">
@@ -525,7 +525,7 @@
         <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
           <button type="button" class="btn btn-secondary" onclick="closeAppointStaffModal()">Cancel</button>
           <button type="submit" class="btn btn-primary" id="btnSubmitAppoint" style="background: linear-gradient(135deg, #0d9488, #0f766e); border: none;">
-            ✨ Appoint Staff Member
+            âœ¨ Appoint Staff Member
           </button>
         </div>
       </form>
@@ -537,7 +537,7 @@
        ========================================================== -->
   <div id="resetPinModal" class="modal-overlay" style="display: none;">
     <div class="modal-content" style="max-width: 400px;">
-      <h3 style="color: var(--primary); font-size: 1.15rem; font-weight: 800; margin-bottom: 0.75rem;">🔑 Reset Security PIN</h3>
+      <h3 style="color: var(--primary); font-size: 1.15rem; font-weight: 800; margin-bottom: 0.75rem;">ðŸ”‘ Reset Security PIN</h3>
       <p id="resetPinTargetName" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">-</p>
       <input type="hidden" id="resetPinStaffId">
       <div class="form-group" style="margin-bottom: 1.25rem;">
@@ -617,7 +617,7 @@
       toast.className = `toast toast-${type}`;
       toast.innerHTML = `
         <span>${hmsEscape(message)}</span>
-        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+        <button class="toast-close" onclick="this.parentElement.remove()">âœ•</button>
       `;
       container.appendChild(toast);
       setTimeout(() => {
@@ -643,8 +643,8 @@
         if (profData.admin) {
           renderHmsProfile(profData.admin);
           const adm = profData.admin;
-          document.getElementById('hospNameHeader').textContent = adm.hospital_name || 'Civil Hospital';
-          document.getElementById('hospMetaHeader').textContent = `Code: ${adm.hospital_code || 'HOSP-01'} • ${adm.hospital_type || 'Civil / General Hospital'} • ${adm.hospital_city || 'Gandhinagar'}`;
+          document.getElementById('hospNameHeader').textContent = adm.hospital_name || 'SAL Hospital';
+          document.getElementById('hospMetaHeader').textContent = `Code: ${adm.hospital_code || 'HOSP-SAL-01'} â€¢ ${adm.hospital_type || 'Private Multi-Specialty Hospital'} â€¢ ${adm.hospital_city || 'Ahmedabad'}`;
           document.getElementById('hospBedsBadge').textContent = `${adm.bed_capacity ?? '?'} Beds`;
         }
 
@@ -752,7 +752,7 @@
 
         tbody.innerHTML = data.patients.map(p => {
           const isDep = p.model_type === 'Dependent';
-          const modelBadge = isDep 
+          const modelBadge = isDep
             ? `<span class="badge" style="background: rgba(124, 58, 237, 0.12); color: #7c3aed; border: 1px solid rgba(124, 58, 237, 0.3);">Adopted Dependent</span>`
             : `<span class="badge" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3);">Independent</span>`;
 
@@ -762,16 +762,16 @@
 
           const bpText = p.sbp && p.dbp ? `${p.sbp}/${p.dbp} mmHg` : '-';
           const rbsText = p.rbs ? `${p.rbs} mg/dL` : '-';
-          const vitalsSummary = `<small>BP: <strong>${bpText}</strong> • RBS: <strong>${rbsText}</strong></small>`;
+          const vitalsSummary = `<small>BP: <strong>${bpText}</strong> â€¢ RBS: <strong>${rbsText}</strong></small>`;
 
-          const condSummary = p.conditions_summary 
+          const condSummary = p.conditions_summary
             ? p.conditions_summary.split(',').map(c => `<span class="badge badge-warning" style="font-size: 0.72rem; margin: 2px;">${c.trim()}</span>`).join(' ')
             : `<span style="color: var(--text-muted); font-size: 0.75rem;">None noted</span>`;
 
           return `
             <tr>
               <td><strong style="color: #0284c7; font-family: monospace;">${p.patient_uid}</strong></td>
-              <td><strong>${p.name}</strong><br><small style="color: var(--text-muted);">📞 ${p.phone}</small></td>
+              <td><strong>${p.name}</strong><br><small style="color: var(--text-muted);">ðŸ“ž ${p.phone}</small></td>
               <td>${p.age_years || '-'} yrs (${p.gender || '-'})</td>
               <td>${modelBadge}</td>
               <td>${attribution}</td>
@@ -779,7 +779,7 @@
               <td>${condSummary}</td>
               <td>
                 <button class="btn btn-secondary" onclick="openPatientDossier(${p.id})" style="font-size: 0.78rem; padding: 0.3rem 0.65rem;">
-                  🔍 Dossier
+                  ðŸ” Dossier
                 </button>
               </td>
             </tr>
@@ -834,8 +834,8 @@
         tbody.innerHTML = staffData.map(s => {
           const isSuper = s.role === 'Hospital Super Admin';
           const roleBadge = isSuper
-            ? `<span class="badge" style="background: rgba(217, 119, 6, 0.12); color: #d97706; border: 1px solid rgba(217, 119, 6, 0.3);">👑 Super Admin</span>`
-            : `<span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3);">👥 Hospital Admin</span>`;
+            ? `<span class="badge" style="background: rgba(217, 119, 6, 0.12); color: #d97706; border: 1px solid rgba(217, 119, 6, 0.3);">ðŸ‘‘ Super Admin</span>`
+            : `<span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3);">ðŸ‘¥ Hospital Admin</span>`;
 
           return `
             <tr>
@@ -843,14 +843,14 @@
               <td><span style="font-family: monospace; color: var(--text-secondary);">${s.username}</span></td>
               <td>${roleBadge}</td>
               <td>${s.department || 'General Medicine'}</td>
-              <td>📞 ${s.phone || '-'}</td>
+              <td>ðŸ“ž ${s.phone || '-'}</td>
               <td><span class="badge badge-success">${s.status}</span></td>
               <td>
                 <button class="btn btn-secondary" onclick="openResetPinModal(${s.id}, '${s.name}')" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" title="Reset PIN">
-                  🔑 PIN
+                  ðŸ”‘ PIN
                 </button>
                 <button class="btn btn-danger" onclick="deleteStaff(${s.id}, '${s.name}', '${s.role}')" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" title="Revoke Staff Seat">
-                  🗑️
+                  ðŸ—‘ï¸
                 </button>
               </td>
             </tr>
@@ -871,7 +871,7 @@
         const p = data.patient;
         document.getElementById('dosUid').textContent = p.patient_uid;
         document.getElementById('dosName').textContent = p.name;
-        document.getElementById('dosDemographics').textContent = `${p.age_years || '-'} yrs (${p.gender || '-'}) • Contact: ${p.phone || '-'} • Address: ${p.address || 'Gandhinagar District'}`;
+        document.getElementById('dosDemographics').textContent = `${p.age_years || '-'} yrs (${p.gender || '-'}) â€¢ Contact: ${p.phone || '-'} â€¢ Address: ${p.address || 'Ahmedabad'}`;
 
         const isDep = p.model_type === 'Dependent';
         const badge = document.getElementById('dosModelBadge');
@@ -883,7 +883,7 @@
         if (isDep && p.student_name) {
           supBanner.style.display = 'flex';
           document.getElementById('dosCadetName').textContent = `Dr. ${p.student_name} (Roll ${p.student_roll})`;
-          document.getElementById('dosCadetMeta').textContent = `${p.university_name || 'Medical College'} • 📞 ${p.student_phone || 'Unit'}`;
+          document.getElementById('dosCadetMeta').textContent = `${p.university_name || 'Medical College'} â€¢ ðŸ“ž ${p.student_phone || 'Unit'}`;
         } else {
           supBanner.style.display = 'none';
         }
@@ -895,9 +895,9 @@
           <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Blood Sugar (RBS)</span><strong>${v.rbs ? `${v.rbs} mg/dL` : 'Untested'}</strong></div>
           <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Hemoglobin (Hb)</span><strong>${v.hb ? `${v.hb} g/dL` : 'Untested'}</strong></div>
           <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Body Mass Index</span><strong>${v.bmi || 'Uncalculated'}</strong></div>
-          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Hypertension</span><span>${v.has_htn === 'Y' ? '⚠️ Yes' : 'No'}</span></div>
-          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Diabetes Mellitus</span><span>${v.has_dm === 'Y' ? '⚠️ Yes' : 'No'}</span></div>
-          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Anaemia Flag</span><span>${v.has_anaemia === 'Y' ? '⚠️ Yes' : 'No'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Hypertension</span><span>${v.has_htn === 'Y' ? 'âš ï¸ Yes' : 'No'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Diabetes Mellitus</span><span>${v.has_dm === 'Y' ? 'âš ï¸ Yes' : 'No'}</span></div>
+          <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Anaemia Flag</span><span>${v.has_anaemia === 'Y' ? 'âš ï¸ Yes' : 'No'}</span></div>
           <div><span style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700; display: block;">Pediatric MUAC</span><span>${v.muac_cm ? `${v.muac_cm} cm` : 'NA'}</span></div>
         `;
 
@@ -907,7 +907,7 @@
           condContainer.innerHTML = data.conditions.map(c => `
             <div style="border-bottom: 1px solid var(--border-light); padding: 0.35rem 0;">
               <strong>${c.condition_name}</strong> <span class="badge badge-info" style="font-size: 0.7rem;">${c.category || 'General'}</span>
-              <div style="color: var(--text-muted); font-size: 0.75rem;">Diagnosed: ${c.diagnosis_date || 'Baseline'} • Status: ${c.status || 'Active'}</div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Diagnosed: ${c.diagnosis_date || 'Baseline'} â€¢ Status: ${c.status || 'Active'}</div>
             </div>
           `).join('');
         } else {
@@ -920,7 +920,7 @@
           medContainer.innerHTML = data.medications.map(m => `
             <div style="border-bottom: 1px solid var(--border-light); padding: 0.35rem 0;">
               <strong>${m.drug_name}</strong> (${m.dosage || 'Prescribed dose'})
-              <div style="color: var(--text-muted); font-size: 0.75rem;">Freq: ${m.frequency || 'Daily'} • Adherence: <strong>${m.adherence_level || 'Good'}</strong></div>
+              <div style="color: var(--text-muted); font-size: 0.75rem;">Freq: ${m.frequency || 'Daily'} â€¢ Adherence: <strong>${m.adherence_level || 'Good'}</strong></div>
             </div>
           `).join('');
         } else {
@@ -950,7 +950,7 @@
                 <span class="badge badge-success">${fu.health_progress || 'Stable'}</span>
               </div>
               <div style="font-size: 0.8rem; margin: 0.35rem 0;">
-                BP: <strong>${fu.sbp && fu.dbp ? `${fu.sbp}/${fu.dbp} mmHg` : '-'}</strong> • Sugar: <strong>${fu.rbs || '-'} mg/dL</strong> • Compliance: <strong>${fu.treatment_compliance || 'Good'}</strong>
+                BP: <strong>${fu.sbp && fu.dbp ? `${fu.sbp}/${fu.dbp} mmHg` : '-'}</strong> â€¢ Sugar: <strong>${fu.rbs || '-'} mg/dL</strong> â€¢ Compliance: <strong>${fu.treatment_compliance || 'Good'}</strong>
               </div>
               <div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">
                 "${fu.clinical_notes || 'Consultation recorded by medical cadet.'}"
@@ -991,7 +991,7 @@
         hint.textContent = `Super Admins: ${sq.current} of ${sq.max} used (${sq.remaining} seats remaining)`;
         if (sq.is_at_capacity) {
           hint.style.color = '#ef4444';
-          hint.textContent += ' ⚠️ Quota full! Cannot appoint more Super Admins.';
+          hint.textContent += ' âš ï¸ Quota full! Cannot appoint more Super Admins.';
           btn.disabled = true;
         } else {
           hint.style.color = '#0d9488';
@@ -1002,7 +1002,7 @@
         hint.textContent = `Hospital Admins: ${aq.current} of ${aq.max} used (${aq.remaining} seats remaining)`;
         if (aq.is_at_capacity) {
           hint.style.color = '#ef4444';
-          hint.textContent += ' ⚠️ Quota full! Cannot appoint more Hospital Admins.';
+          hint.textContent += ' âš ï¸ Quota full! Cannot appoint more Hospital Admins.';
           btn.disabled = true;
         } else {
           hint.style.color = '#0d9488';
@@ -1039,7 +1039,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '✨ Appoint Staff Member';
+        btn.textContent = 'âœ¨ Appoint Staff Member';
       }
     }
 

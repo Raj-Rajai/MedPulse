@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MedPulse Hospital Network (Independent Medium) & Quota System Verification Suite
  * Tests 1-3 Super Admin & 20 Admin quotas, cross-institutional surveillance, and medical dossier API.
  */
@@ -20,12 +20,12 @@ let passedTests = 0;
 let failedTests = 0;
 
 function logPass(msg) {
-    console.log(`  ✅ PASS: ${msg}`);
+    console.log(`  âœ… PASS: ${msg}`);
     passedTests++;
 }
 
 function logFail(msg, err) {
-    console.error(`  ❌ FAIL: ${msg}`);
+    console.error(`  âŒ FAIL: ${msg}`);
     if (err) console.error(`     Error: ${err}`);
     failedTests++;
 }
@@ -62,7 +62,7 @@ function request(server, method, url, body = null, headers = {}) {
 
 async function runTests() {
     console.log('====================================================');
-    console.log('🏥 MEDPULSE HOSPITAL NETWORK & QUOTA SYSTEM TEST');
+    console.log('ðŸ¥ MEDPULSE HOSPITAL NETWORK & QUOTA SYSTEM TEST');
     console.log('====================================================\n');
 
     const server = app.listen(0);
@@ -108,7 +108,7 @@ async function runTests() {
 
         // 3. Test Strict Quota for Hospital Super Admins (1 to 3 max)
         console.log('\n3. Testing Hospital Super Admin Quota (Max 3 Allowed):');
-        
+
         // Clean any leftover test super admins from previous runs
         db.prepare("DELETE FROM hospital_admins WHERE username LIKE 'test_super_%' OR username LIKE 'test_adm_%'").run();
 
@@ -211,7 +211,7 @@ async function runTests() {
 
         if (delRes.status === 200 && delRes.body.success) {
             logPass('DELETE /api/hospital/staff/:id freed up an admin seat (200 OK)');
-            
+
             // Now appointment of a new admin should succeed
             const refillRes = await request(server, 'POST', '/api/hospital/staff', {
                 username: 'test_adm_refill',
@@ -256,10 +256,10 @@ async function runTests() {
             logFail('Failed to retrieve patients', JSON.stringify(patRes.body));
         }
 
-        // Filter by University (GMERS - ID 1)
+        // Filter by University (SAL - ID 1)
         const uniFilterRes = await request(server, 'GET', '/api/hospital/patients?university_id=1', null, hospHeaders);
         if (uniFilterRes.status === 200 && Array.isArray(uniFilterRes.body.patients)) {
-            logPass(`University-wise filter (GMERS) returned ${uniFilterRes.body.patients.length} records`);
+            logPass(`University-wise filter (SAL) returned ${uniFilterRes.body.patients.length} records`);
         } else {
             logFail('Failed to filter by university', JSON.stringify(uniFilterRes.body));
         }
@@ -293,7 +293,7 @@ async function runTests() {
         server.close();
 
         console.log('\n====================================================');
-        console.log(`🏁 TEST RESULTS: ${passedTests} PASSED, ${failedTests} FAILED`);
+        console.log(`ðŸ TEST RESULTS: ${passedTests} PASSED, ${failedTests} FAILED`);
         console.log('====================================================\n');
 
         if (failedTests > 0) process.exit(1);

@@ -882,7 +882,7 @@
           <div style="display: flex; align-items: center; gap: 10px;">
             <label style="font-size: 0.8rem; font-weight: 650; color: var(--text-secondary); white-space: nowrap;">Institution:</label>
             <select id="uniAdminCollegeSelect" onchange="loadUniversityAdmins(this.value)" style="padding: 0.45rem 0.85rem; font-size: 0.84rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: #fff; min-width: 220px; font-weight: 600;">
-              <option value="1">GMERS Medical College &amp; Hospital</option>
+              <option value="1">SAL Hospital</option>
             </select>
           </div>
         </div>
@@ -1796,7 +1796,7 @@
               <div style="font-weight: 700; color: var(--text-primary);">${escapeHtml(s.name)}</div>
               <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(s.email || 'No email')}</div>
             </td>
-            <td>${escapeHtml(s.college_name || 'GMERS Medical College')}</td>
+            <td>${escapeHtml(s.college_name || 'SAL Hospital')}</td>
             <td>
               <span class="referral-pill" onclick="copyReferralCode('${escapeHtml(s.referral_code || '')}')" title="Click to copy Patient Adoption Referral Code">
                 <code>${escapeHtml(s.referral_code || 'N/A')}</code>
@@ -1873,7 +1873,7 @@
               <strong>${escapeHtml(f.student_name)}</strong>
               <span class="badge badge-primary" style="font-size: 0.68rem; margin-left: 4px;">Roll ${escapeHtml(f.roll_number)}</span>
             </td>
-            <td>${escapeHtml(f.college_name || 'GMERS')}</td>
+            <td>${escapeHtml(f.college_name || 'SAL')}</td>
             <td style="text-align: center;"><span class="badge badge-success">${f.members_count || 0} Members</span></td>
             <td style="text-align: center;">${calBadge}</td>
             <td>${f.survey_date || (f.created_at ? f.created_at.split(' ')[0] : '')}</td>
@@ -2209,7 +2209,7 @@
         const data = await res.json();
 
         document.getElementById('inspectCadetTitle').textContent = `Cadet ${data.student.name} (Roll ${data.student.roll_number})`;
-        document.getElementById('inspectCadetSub').textContent = `${data.student.college_name || 'GMERS'} • ${data.families.length} Assigned Households`;
+        document.getElementById('inspectCadetSub').textContent = `${data.student.college_name || 'SAL'} • ${data.families.length} Assigned Households`;
 
         if (!data.families || data.families.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">No surveyed households recorded for this cadet yet.</td></tr>';
@@ -2379,7 +2379,7 @@
             </td>
             <td><code>${escapeHtml(a.username)}</code></td>
             <td>${roleBadge}</td>
-            <td><span style="font-weight: 600; font-size: 0.82rem; color: var(--text-secondary);">${escapeHtml(a.university_name || 'GMERS')}</span></td>
+            <td><span style="font-weight: 600; font-size: 0.82rem; color: var(--text-secondary);">${escapeHtml(a.university_name || 'SAL')}</span></td>
             <td>
               <div style="font-size: 0.8rem; color: var(--text-primary);">${escapeHtml(a.email || '—')}</div>
               <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(a.phone || '')}</div>

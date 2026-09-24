@@ -30,7 +30,7 @@ function seedRoll235(targetDb) {
     // Ensure default College 1 exists
     db.prepare(`
         INSERT OR IGNORE INTO colleges (id, name, code, city, state)
-        VALUES (1, 'GMERS Medical College & Hospital', 'GMERS-01', 'Ahmedabad', 'Gujarat')
+        VALUES (1, 'SAL Hospital', 'SAL-01', 'Ahmedabad', 'Gujarat')
     `).run();
 
     // Ensure Student 1 (Roll 235 - Dhruv Patel) exists

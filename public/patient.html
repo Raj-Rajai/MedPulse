@@ -256,13 +256,13 @@
             Dr. Dhruv Patel (Roll 235)
           </div>
           <div id="cadetCollegeDisplay" style="font-size: 0.8rem; color: var(--text-muted);">
-            GMERS Medical College &amp; Hospital &bull; RHTC Posting Unit
+            SAL Hospital &bull; RHTC Posting Unit
           </div>
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
         <span class="badge badge-info" id="cadetReferralCodeBadge" style="font-family: monospace; font-size: 0.85rem; padding: 6px 12px;">
-          Ref: GMERS-235-DA9B
+          Ref: SAL-235-DA9B
         </span>
         <button class="btn btn-secondary" onclick="openLinkCadetModal()" style="font-size: 0.8rem; padding: 6px 12px;">
           Change Link
@@ -438,13 +438,13 @@
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
-        Enter your medical student's referral code (e.g. <code>GMERS-235-DA9B</code>) to link your patient account with their university surveillance cadre.
+        Enter your medical student's referral code (e.g. <code>SAL-235-DA9B</code>) to link your patient account with their university surveillance cadre.
       </p>
 
       <form id="linkCadetForm" onsubmit="event.preventDefault(); submitLinkCadet();">
         <div class="form-group" style="margin-bottom: 1rem;">
           <label for="linkRefCodeInput">Cadet Referral Code *</label>
-          <input type="text" id="linkRefCodeInput" required placeholder="e.g. GMERS-235-DA9B" oninput="debounceModalVerifyReferral()" style="font-family: monospace; font-weight: 750; text-transform: uppercase;">
+          <input type="text" id="linkRefCodeInput" required placeholder="e.g. SAL-235-DA9B" oninput="debounceModalVerifyReferral()" style="font-family: monospace; font-weight: 750; text-transform: uppercase;">
           <div id="modalRefFeedback" style="font-size: 0.8rem; margin-top: 8px; display: none;"></div>
         </div>
 

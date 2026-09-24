@@ -1,11 +1,11 @@
-const http = require('node:http');
+﻿const http = require('node:http');
 const express = require('express');
 const { db, initDatabase } = require('./db');
 const routes = require('./routes');
 
 async function runQuotaVerification() {
     console.log('====================================================');
-    console.log('🏛️ MEDPULSE UNIVERSITY ADMIN & QUOTA ENFORCEMENT TEST');
+    console.log('ðŸ›ï¸ MEDPULSE UNIVERSITY ADMIN & QUOTA ENFORCEMENT TEST');
     console.log('====================================================\n');
 
     initDatabase();
@@ -23,10 +23,10 @@ async function runQuotaVerification() {
 
     function assert(condition, message) {
         if (condition) {
-            console.log(`  ✅ PASS: ${message}`);
+            console.log(`  âœ… PASS: ${message}`);
             passed++;
         } else {
-            console.error(`  ❌ FAIL: ${message}`);
+            console.error(`  âŒ FAIL: ${message}`);
             failed++;
         }
     }
@@ -66,7 +66,7 @@ async function runQuotaVerification() {
     }
 
     try {
-        // 1. Check default quota response for University 1 (GMERS)
+        // 1. Check default quota response for University 1 (SAL)
         console.log('1. Checking University Admins Quota Endpoint:');
         const quotaRes = await makeRequest('/api/admin/university-admins?university_id=1');
         assert(quotaRes.statusCode === 200, 'GET /api/admin/university-admins returns 200 OK');
@@ -97,7 +97,7 @@ async function runQuotaVerification() {
                 name: `Faculty Admin ${i}`,
                 role: 'University Admin',
                 university_id: 1,
-                email: `faculty${i}@gmers.edu`,
+                email: `faculty${i}@SAL.edu`,
                 phone: `98765432${i.toString().padStart(2, '0')}`,
                 pin: '1234'
             });
@@ -159,7 +159,7 @@ async function runQuotaVerification() {
         const studentsRes = await makeRequest('/api/admin/students');
         assert(studentsRes.statusCode === 200, 'GET /api/admin/students returns 200 OK');
         const dhruv = studentsRes.body.find(s => s.roll_number === '235');
-        assert(dhruv && dhruv.referral_code && dhruv.referral_code.startsWith('GMERS-235-'), `Dhruv Patel has valid referral code: ${dhruv?.referral_code}`);
+        assert(dhruv && dhruv.referral_code && dhruv.referral_code.startsWith('SAL-235-'), `Dhruv Patel has valid referral code: ${dhruv?.referral_code}`);
 
         // Cleanup test admins
         for (const id of createdAdminIds) {
@@ -171,7 +171,7 @@ async function runQuotaVerification() {
     }
 
     console.log('\n====================================================');
-    console.log(`🏁 TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);
+    console.log(`ðŸ TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);
     console.log('====================================================');
 
     if (failed > 0) process.exit(1);

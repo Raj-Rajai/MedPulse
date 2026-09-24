@@ -5,7 +5,7 @@
 
 -- Insert Default Medical Colleges
 INSERT OR IGNORE INTO colleges (id, name, code, city, state)
-VALUES (1, 'GMERS Medical College & Hospital', 'GMERS-01', 'Ahmedabad', 'Gujarat');
+VALUES (1, 'SAL Hospital', 'SAL-01', 'Ahmedabad', 'Gujarat');
 
 INSERT OR IGNORE INTO colleges (id, name, code, city, state)
 VALUES (2, 'SAL Institute of Medical Sciences', 'SAL-01', 'Ahmedabad', 'Gujarat');

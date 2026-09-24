@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="preload-transitions">
 <head>
   <link rel="manifest" href="/manifest.webmanifest">
@@ -130,15 +130,15 @@
         <p class="page-subtitle">Survey households, record structured clinical profiles, and track longitudinal patient care</p>
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button class="btn btn-primary" onclick="showCreateFamilyForm()">➕ Add New Family</button>
+        <button class="btn btn-primary" onclick="showCreateFamilyForm()">âž• Add New Family</button>
       </div>
     </div>
 
     <!-- Create Family Form Card (Collapsible) -->
     <div class="card" id="createFamilyCard" style="display: none; border: 1px solid var(--primary-border); box-shadow: var(--shadow-md);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-        <h2 class="card-title" style="color: var(--primary); margin-bottom: 0;">➕ Register New Household</h2>
-        <button class="btn btn-secondary" onclick="hideCreateFamilyForm()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕ Close</button>
+        <h2 class="card-title" style="color: var(--primary); margin-bottom: 0;">âž• Register New Household</h2>
+        <button class="btn btn-secondary" onclick="hideCreateFamilyForm()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ• Close</button>
       </div>
       <p class="card-desc">Enter identification and geographic details for the household. Once created, you can immediately add individual members and structured health profiles.</p>
 
@@ -206,7 +206,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="hideCreateFamilyForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="createFamilyBtn">💾 Save Household Record</button>
+          <button type="submit" class="btn btn-primary" id="createFamilyBtn">ðŸ’¾ Save Household Record</button>
         </div>
       </form>
     </div>
@@ -215,7 +215,7 @@
     <div class="family-horizontal-bar anim-fade-up anim-delay-1">
       <div class="family-horizontal-header">
         <div style="display: flex; align-items: center; gap: 0.65rem;">
-          <span style="font-size: 1.25rem;">🏘️</span>
+          <span style="font-size: 1.25rem;">ðŸ˜ï¸</span>
           <div>
             <h2 class="card-title" style="margin-bottom: 0.1rem; font-size: 1.05rem;">Surveyed Households</h2>
             <div style="font-size: 0.75rem; color: var(--text-muted);">Select any household to inspect members and clinical records</div>
@@ -224,8 +224,8 @@
         </div>
         <div style="display: flex; gap: 0.6rem; align-items: center; flex: 1; max-width: 480px;">
           <div class="search-wrapper" style="margin-bottom: 0; flex: 1;">
-            <input type="text" id="familySearchInput" class="search-input" placeholder="🔍 Search family code, head of family, phone, village..." oninput="onFamilySearchInput()">
-            <button class="search-clear-btn" id="familySearchClear" onclick="clearFamilySearch()">✕</button>
+            <input type="text" id="familySearchInput" class="search-input" placeholder="ðŸ” Search family code, head of family, phone, village..." oninput="onFamilySearchInput()">
+            <button class="search-clear-btn" id="familySearchClear" onclick="clearFamilySearch()">âœ•</button>
           </div>
           <button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.45rem 0.85rem;" onclick="showCreateFamilyForm()">+ Add Family</button>
         </div>
@@ -234,7 +234,7 @@
       <!-- Horizontal scrollable strip of surveyed families -->
       <div id="familyListContainer" class="family-horizontal-strip">
         <div class="empty-state" style="padding: 1.5rem 0.5rem; width: 100%;">
-          <div class="empty-state-icon">📂</div>
+          <div class="empty-state-icon">ðŸ“‚</div>
           <h3>No Families Yet</h3>
           <p style="margin-bottom: 0.75rem;">No families recorded. Click "+ Add New Family" to create your first household.</p>
           <button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="showCreateFamilyForm()">+ Add New Family</button>
@@ -249,7 +249,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-            🎯
+            ðŸŽ¯
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -267,7 +267,7 @@
         </div>
 
         <button class="btn btn-secondary" onclick="loadCadetCampaignTasks()" style="font-size: 0.78rem; padding: 4px 10px; gap: 4px;">
-          🔄 Refresh Tasks
+          ðŸ”„ Refresh Tasks
         </button>
       </div>
 
@@ -278,12 +278,12 @@
 
     <!-- No Family Selected Placeholder -->
     <div class="card" id="noFamilySelectedCard" style="display: none; text-align: center; padding: 4rem 2rem; margin-bottom: 1.5rem;">
-      <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 0.75rem;">📋</div>
+      <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 0.75rem;">ðŸ“‹</div>
       <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">No Household Selected</h3>
       <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.25rem; font-size: 0.875rem;">
         Click on any surveyed household in the horizontal strip above, or click "+ Add New Family" to register a new household.
       </p>
-      <button class="btn btn-primary" onclick="showCreateFamilyForm()">➕ Register New Family</button>
+      <button class="btn btn-primary" onclick="showCreateFamilyForm()">âž• Register New Family</button>
     </div>
 
     <!-- ACTIVE FAMILY WORKSPACE (Shown when a family is selected) -->
@@ -303,9 +303,9 @@
               </div>
             </div>
             <div style="display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;">
-              <button class="btn btn-secondary" onclick="openEditFamilyModal()" title="Edit household identification and address" style="font-size: 0.8rem; padding: 0.4rem 0.7rem;">✏️ Edit Household</button>
-              <button class="btn btn-primary" onclick="openAddMemberModal()" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">➕ Add Member</button>
-              <button class="btn btn-danger" onclick="confirmDeleteFamily()" title="Delete this family and all its members" style="padding: 0.4rem 0.65rem; font-size: 0.8rem;">🗑️ Delete</button>
+              <button class="btn btn-secondary" onclick="openEditFamilyModal()" title="Edit household identification and address" style="font-size: 0.8rem; padding: 0.4rem 0.7rem;">âœï¸ Edit Household</button>
+              <button class="btn btn-primary" onclick="openAddMemberModal()" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">âž• Add Member</button>
+              <button class="btn btn-danger" onclick="confirmDeleteFamily()" title="Delete this family and all its members" style="padding: 0.4rem 0.65rem; font-size: 0.8rem;">ðŸ—‘ï¸ Delete</button>
             </div>
           </div>
 
@@ -332,12 +332,12 @@
 
           <!-- Member Search/Filter in Household -->
           <div class="search-wrapper" style="margin-bottom: 0.6rem;">
-            <input type="text" id="memberSearchInput" class="search-input" placeholder="🔍 Filter members by name, relation..." oninput="filterHouseholdMembers()">
-            <button class="search-clear-btn" id="memberSearchClear" onclick="clearMemberSearch()">✕</button>
+            <input type="text" id="memberSearchInput" class="search-input" placeholder="ðŸ” Filter members by name, relation..." oninput="filterHouseholdMembers()">
+            <button class="search-clear-btn" id="memberSearchClear" onclick="clearMemberSearch()">âœ•</button>
           </div>
 
           <div id="membersListContainer" class="member-cards-grid">
-            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No members in this family yet. Click "➕ Add Member" above to add one.</div>
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No members in this family yet. Click "âž• Add Member" above to add one.</div>
           </div>
         </div>
 
@@ -349,18 +349,18 @@
         <!-- No Member Selected Placeholder (Full Width) -->
         <div class="card fm-no-member-card" id="noMemberSelectedCard">
           <div class="empty-state" style="padding: 3rem 1.5rem;">
-            <div class="empty-state-icon" style="font-size: 2.75rem; margin-bottom: 0.75rem;">👤</div>
+            <div class="empty-state-icon" style="font-size: 2.75rem; margin-bottom: 0.75rem;">ðŸ‘¤</div>
             <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">No Member Selected</h3>
             <p style="color: var(--text-muted); max-width: 560px; margin: 0 auto 1.25rem; font-size: 0.875rem; line-height: 1.5;">
               Click on any member card in the household roster above to inspect their clinical profile, recorded medical conditions, active prescriptions, allergies, past history, and longitudinal follow-up examination visits.
             </p>
-            <button class="btn btn-primary" onclick="openAddMemberModal()">➕ Add Member to Household</button>
+            <button class="btn btn-primary" onclick="openAddMemberModal()">âž• Add Member to Household</button>
           </div>
         </div>
 
         <!-- Selected Member Segmented Profile Card (Image 2 - Full Width & Responsive) -->
         <div class="card fm-member-detail-card" id="memberDetailCard" style="display: none;">
-          
+
           <!-- Member Header -->
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
             <div>
@@ -368,20 +368,20 @@
               <div id="detailMemberMeta" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">-</div>
             </div>
             <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-              <button class="btn btn-secondary" onclick="openEditMemberModal()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">✏️ Edit Info</button>
-              <button class="btn btn-primary" onclick="openProvisionModalForCurrentMember()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem; background: linear-gradient(135deg, #0d9488, #2563eb); border: none; color: white;" title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
-              <button class="btn btn-danger" onclick="confirmDeleteMember()" title="Delete this member record" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">🗑️ Delete</button>
-              <button class="btn btn-secondary" onclick="closeMemberDetail()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">✕ Close</button>
+              <button class="btn btn-secondary" onclick="openEditMemberModal()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">âœï¸ Edit Info</button>
+              <button class="btn btn-primary" onclick="openProvisionModalForCurrentMember()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem; background: linear-gradient(135deg, #0d9488, #2563eb); border: none; color: white;" title="Provision or inspect Patient Health Portal credentials">ðŸ“± Provision Patient Account</button>
+              <button class="btn btn-danger" onclick="confirmDeleteMember()" title="Delete this member record" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">ðŸ—‘ï¸ Delete</button>
+              <button class="btn btn-secondary" onclick="closeMemberDetail()" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">âœ• Close</button>
             </div>
           </div>
 
           <!-- Health Summary Counter Chips -->
           <div class="summary-chips-row">
-            <div class="summary-chip" id="chipConditions">🏷️ Conditions: <strong>0</strong></div>
-            <div class="summary-chip" id="chipMedications">💊 Medications: <strong>0</strong></div>
-            <div class="summary-chip" id="chipAllergies">⚠️ Allergies: <strong>0</strong></div>
-            <div class="summary-chip" id="chipHistory">📜 History: <strong>0</strong></div>
-            <div class="summary-chip" id="chipFollowUps">🩺 Visits: <strong>0</strong></div>
+            <div class="summary-chip" id="chipConditions">ðŸ·ï¸ Conditions: <strong>0</strong></div>
+            <div class="summary-chip" id="chipMedications">ðŸ’Š Medications: <strong>0</strong></div>
+            <div class="summary-chip" id="chipAllergies">âš ï¸ Allergies: <strong>0</strong></div>
+            <div class="summary-chip" id="chipHistory">ðŸ“œ History: <strong>0</strong></div>
+            <div class="summary-chip" id="chipFollowUps">ðŸ©º Visits: <strong>0</strong></div>
           </div>
 
           <!-- RESPONSIVE SUB-ENTITIES GRID (Multi-column on desktop, 1-col on mobile) -->
@@ -390,7 +390,7 @@
             <!-- SEGMENT 1: Personal Demographics Overview (Spans Full Width across top of grid) -->
             <div class="sub-entity-card full-width">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">📋 Demographics &amp; Socio-Economic Profile</span>
+                <span class="sub-entity-title">ðŸ“‹ Demographics &amp; Socio-Economic Profile</span>
               </div>
               <div id="detailDemographicsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.825rem;"></div>
             </div>
@@ -398,7 +398,7 @@
             <!-- SEGMENT 2: Baseline Survey Physical Examination & Data Entry Link -->
             <div class="sub-entity-card">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">📝 Field Survey &amp; Baseline Vitals</span>
+                <span class="sub-entity-title">ðŸ“ Field Survey &amp; Baseline Vitals</span>
                 <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;" onclick="openInDataEntry()">
                   Open in Data Entry &rarr;
                 </button>
@@ -413,7 +413,7 @@
             <!-- SEGMENT 3: Medical Conditions -->
             <div class="sub-entity-card">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">🩺 Medical Conditions &amp; Diagnoses</span>
+                <span class="sub-entity-title">ðŸ©º Medical Conditions &amp; Diagnoses</span>
                 <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddConditionModal()">+ Add Condition</button>
               </div>
               <div id="conditionsListContainer" class="sub-entity-list">
@@ -424,7 +424,7 @@
             <!-- SEGMENT 4: Current Medications -->
             <div class="sub-entity-card">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">💊 Current Medications &amp; Adherence</span>
+                <span class="sub-entity-title">ðŸ’Š Current Medications &amp; Adherence</span>
                 <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddMedicationModal()">+ Add Medication</button>
               </div>
               <div id="medicationsListContainer" class="sub-entity-list">
@@ -435,7 +435,7 @@
             <!-- SEGMENT 5: Allergies & Adverse Reactions -->
             <div class="sub-entity-card">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">⚠️ Allergies &amp; Adverse Drug Reactions</span>
+                <span class="sub-entity-title">âš ï¸ Allergies &amp; Adverse Drug Reactions</span>
                 <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddAllergyModal()">+ Add Allergy</button>
               </div>
               <div id="allergiesListContainer" class="sub-entity-list">
@@ -446,7 +446,7 @@
             <!-- SEGMENT 6: Past Medical & Surgical History -->
             <div class="sub-entity-card">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">📜 Past Medical &amp; Surgical History</span>
+                <span class="sub-entity-title">ðŸ“œ Past Medical &amp; Surgical History</span>
                 <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openAddHistoryModal()">+ Add History</button>
               </div>
               <div id="historyListContainer" class="sub-entity-list">
@@ -457,8 +457,8 @@
             <!-- SEGMENT 7: Lifestyle & Habits -->
             <div class="sub-entity-card">
               <div class="sub-entity-header">
-                <span class="sub-entity-title">🏃 Lifestyle, Habits &amp; Risk Factors</span>
-                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openEditLifestyleModal()">✏️ Edit Lifestyle</button>
+                <span class="sub-entity-title">ðŸƒ Lifestyle, Habits &amp; Risk Factors</span>
+                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openEditLifestyleModal()">âœï¸ Edit Lifestyle</button>
               </div>
               <div id="lifestyleContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; font-size: 0.825rem;">
                 <div style="color: var(--text-muted);">No lifestyle information recorded yet.</div>
@@ -476,11 +476,11 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
             <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.35rem;">
-              🩺
+              ðŸ©º
             </div>
             <div>
               <h2 class="card-title" style="margin-bottom: 0.15rem; font-size: 1.25rem;">
-                Longitudinal Follow-up Visits — <span id="fuTargetMemberName" style="color: var(--primary);">No Member Selected</span>
+                Longitudinal Follow-up Visits â€” <span id="fuTargetMemberName" style="color: var(--primary);">No Member Selected</span>
               </h2>
               <div style="font-size: 0.825rem; color: var(--text-muted);">
                 Chronological examination visits, blood pressure/sugar control, medication compliance, and clinical progress
@@ -554,7 +554,7 @@
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
               <button type="button" class="btn btn-secondary" onclick="toggleFollowUpForm()">Cancel</button>
-              <button type="submit" class="btn btn-primary" id="saveFuBtn">💾 Save Follow-up Visit</button>
+              <button type="submit" class="btn btn-primary" id="saveFuBtn">ðŸ’¾ Save Follow-up Visit</button>
             </div>
           </form>
         </div>
@@ -577,8 +577,8 @@
   <div id="editFamilyModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="color: var(--primary); font-size: 1.3rem;">✏️ Edit Household Details</h2>
-        <button class="btn btn-secondary" onclick="closeEditFamilyModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <h2 style="color: var(--primary); font-size: 1.3rem;">âœï¸ Edit Household Details</h2>
+        <button class="btn btn-secondary" onclick="closeEditFamilyModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="editFamilyForm" onsubmit="event.preventDefault(); submitEditFamily();">
         <div class="form-grid">
@@ -636,7 +636,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
           <button type="button" class="btn btn-secondary" onclick="closeEditFamilyModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveEditFamilyBtn">💾 Update Household</button>
+          <button type="submit" class="btn btn-primary" id="saveEditFamilyBtn">ðŸ’¾ Update Household</button>
         </div>
       </form>
     </div>
@@ -648,13 +648,13 @@
   <div id="addMemberModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <h2 style="color: var(--primary); font-size: 1.3rem;">➕ Add Member to Family #<span id="modalFamilyNo"></span></h2>
-        <button class="btn btn-secondary" onclick="closeAddMemberModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <h2 style="color: var(--primary); font-size: 1.3rem;">âž• Add Member to Family #<span id="modalFamilyNo"></span></h2>
+        <button class="btn btn-secondary" onclick="closeAddMemberModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
 
       <!-- Draft Recovery Banner -->
       <div id="memberDraftAlert" class="draft-alert" style="display: none;">
-        <span>⚠️ Unsaved member draft found from previous session.</span>
+        <span>âš ï¸ Unsaved member draft found from previous session.</span>
         <div style="display: flex; gap: 0.4rem;">
           <button type="button" onclick="restoreMemberDraft()">Restore Draft</button>
           <button type="button" onclick="discardMemberDraft()" style="background: #e2e8f0; color: #475569;">Discard</button>
@@ -761,15 +761,15 @@
         </div>
 
         <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 0.825rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
-          <span>ℹ️</span>
+          <span>â„¹ï¸</span>
           <span>Member registered with basic demographics. Full clinical survey (vitals, screening, pediatric &amp; maternal records) is recorded on the <strong>Data Entry</strong> page.</span>
         </div>
 
         <!-- Action Buttons: Save vs Save & Add Another -->
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem; flex-wrap: wrap;">
           <button type="button" class="btn btn-secondary" onclick="closeAddMemberModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveMemberBtn">💾 Save Member</button>
-          <button type="button" class="btn btn-success" id="saveAddAnotherBtn" onclick="submitNewMember(true)">⚡ Save &amp; Add Another</button>
+          <button type="submit" class="btn btn-primary" id="saveMemberBtn">ðŸ’¾ Save Member</button>
+          <button type="button" class="btn btn-success" id="saveAddAnotherBtn" onclick="submitNewMember(true)">âš¡ Save &amp; Add Another</button>
         </div>
       </form>
     </div>
@@ -781,8 +781,8 @@
   <div id="editMemberModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="color: var(--primary); font-size: 1.3rem;">✏️ Edit Member Personal Info</h2>
-        <button class="btn btn-secondary" onclick="closeEditMemberModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <h2 style="color: var(--primary); font-size: 1.3rem;">âœï¸ Edit Member Personal Info</h2>
+        <button class="btn btn-secondary" onclick="closeEditMemberModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="editMemberForm" onsubmit="event.preventDefault(); submitEditMember();">
         <div class="form-grid">
@@ -871,7 +871,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem;">
           <button type="button" class="btn btn-secondary" onclick="closeEditMemberModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveEditMemberBtn">💾 Update Member</button>
+          <button type="submit" class="btn btn-primary" id="saveEditMemberBtn">ðŸ’¾ Update Member</button>
         </div>
       </form>
     </div>
@@ -884,7 +884,7 @@
     <div class="modal-content" style="max-width: 540px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2 id="conditionModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Medical Condition</h2>
-        <button class="btn btn-secondary" onclick="closeConditionModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeConditionModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="conditionForm" onsubmit="event.preventDefault(); submitCondition();">
         <input type="hidden" id="condEditId" value="">
@@ -934,12 +934,12 @@
           </div>
           <div class="form-group">
             <label for="condNotes">Clinical Notes</label>
-            <textarea id="condNotes" rows="2" placeholder="e.g. Diagnosed at Civil Hospital, on regular oral medication"></textarea>
+            <textarea id="condNotes" rows="2" placeholder="e.g. Diagnosed at SAL Hospital, on regular oral medication"></textarea>
           </div>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closeConditionModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveConditionBtn">💾 Save Condition</button>
+          <button type="submit" class="btn btn-primary" id="saveConditionBtn">ðŸ’¾ Save Condition</button>
         </div>
       </form>
     </div>
@@ -952,7 +952,7 @@
     <div class="modal-content" style="max-width: 540px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2 id="medicationModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Medication</h2>
-        <button class="btn btn-secondary" onclick="closeMedicationModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeMedicationModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="medicationForm" onsubmit="event.preventDefault(); submitMedication();">
         <input type="hidden" id="medEditId" value="">
@@ -1009,7 +1009,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closeMedicationModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveMedicationBtn">💾 Save Medication</button>
+          <button type="submit" class="btn btn-primary" id="saveMedicationBtn">ðŸ’¾ Save Medication</button>
         </div>
       </form>
     </div>
@@ -1022,7 +1022,7 @@
     <div class="modal-content" style="max-width: 500px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2 id="allergyModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Allergy / Adverse Reaction</h2>
-        <button class="btn btn-secondary" onclick="closeAllergyModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeAllergyModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="allergyForm" onsubmit="event.preventDefault(); submitAllergy();">
         <input type="hidden" id="algEditId" value="">
@@ -1058,7 +1058,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closeAllergyModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveAllergyBtn">💾 Save Allergy</button>
+          <button type="submit" class="btn btn-primary" id="saveAllergyBtn">ðŸ’¾ Save Allergy</button>
         </div>
       </form>
     </div>
@@ -1071,7 +1071,7 @@
     <div class="modal-content" style="max-width: 520px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2 id="historyModalTitle" style="color: var(--primary); font-size: 1.25rem;">+ Add Medical / Surgical History</h2>
-        <button class="btn btn-secondary" onclick="closeHistoryModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeHistoryModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="historyForm" onsubmit="event.preventDefault(); submitHistory();">
         <input type="hidden" id="histEditId" value="">
@@ -1097,7 +1097,7 @@
             </div>
             <div class="form-group">
               <label for="histFacility">Facility / Hospital</label>
-              <input type="text" id="histFacility" placeholder="e.g. Civil Hospital">
+              <input type="text" id="histFacility" placeholder="e.g. SAL Hospital">
             </div>
           </div>
           <div class="form-group">
@@ -1107,7 +1107,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closeHistoryModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveHistoryBtn">💾 Save History</button>
+          <button type="submit" class="btn btn-primary" id="saveHistoryBtn">ðŸ’¾ Save History</button>
         </div>
       </form>
     </div>
@@ -1119,8 +1119,8 @@
   <div id="lifestyleModal" class="modal-overlay" style="display: none;">
     <div class="modal-content" style="max-width: 540px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="color: var(--primary); font-size: 1.25rem;">🏃 Lifestyle &amp; Health Habits</h2>
-        <button class="btn btn-secondary" onclick="closeLifestyleModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <h2 style="color: var(--primary); font-size: 1.25rem;">ðŸƒ Lifestyle &amp; Health Habits</h2>
+        <button class="btn btn-secondary" onclick="closeLifestyleModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
       <form id="lifestyleForm" onsubmit="event.preventDefault(); submitLifestyle();">
         <div class="form-grid" style="grid-template-columns: 1fr;">
@@ -1191,7 +1191,7 @@
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closeLifestyleModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveLifestyleBtn">💾 Save Lifestyle Profile</button>
+          <button type="submit" class="btn btn-primary" id="saveLifestyleBtn">ðŸ’¾ Save Lifestyle Profile</button>
         </div>
       </form>
     </div>
@@ -1205,14 +1205,14 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.65rem;">
           <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
-            📱
+            ðŸ“±
           </div>
           <div>
             <h2 style="color: var(--primary); font-size: 1.25rem; font-weight: 800; margin: 0;">Patient Portal Account</h2>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Provision 1-click self-service access for this adopted family member</p>
           </div>
         </div>
-        <button class="btn btn-secondary" onclick="closeProvisionPatientModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">✕</button>
+        <button class="btn btn-secondary" onclick="closeProvisionPatientModal()" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">âœ•</button>
       </div>
 
       <div id="provisionFormSection">
@@ -1240,7 +1240,7 @@
           <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
             <button type="button" class="btn btn-secondary" onclick="closeProvisionPatientModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" id="btnSubmitProvision" style="background: linear-gradient(135deg, #0d9488, #2563eb); border: none;">
-              ✨ Generate Patient Access
+              âœ¨ Generate Patient Access
             </button>
           </div>
         </form>
@@ -1250,7 +1250,7 @@
       <div id="provisionSuccessSection" style="display: none;">
         <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
           <div style="display: flex; align-items: center; gap: 0.5rem; color: #065f46; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem;">
-            <span>✅</span> Account Ready &amp; Linked!
+            <span>âœ…</span> Account Ready &amp; Linked!
           </div>
           <p id="provSuccessMessage" style="font-size: 0.825rem; color: #047857; margin-bottom: 1rem; line-height: 1.4;">
             Patient account successfully provisioned and linked to your cadet supervision profile.
@@ -1267,11 +1267,11 @@
 
         <div style="display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap;">
           <button type="button" class="btn btn-secondary" onclick="copyProvisionCredentials()" id="btnCopyCreds">
-            📋 Copy Patient Credentials
+            ðŸ“‹ Copy Patient Credentials
           </button>
           <div style="display: flex; gap: 0.5rem;">
             <a href="/login.html?patient=1" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; text-decoration: none;">
-              🔗 Open Portal
+              ðŸ”— Open Portal
             </a>
             <button type="button" class="btn btn-primary" onclick="closeProvisionPatientModal()">
               Done
@@ -1287,7 +1287,7 @@
        ========================================================== -->
   <div id="customConfirmModal" class="modal-overlay" style="display: none;">
     <div class="confirm-box">
-      <h3 id="confirmTitle">⚠️ Confirm Action</h3>
+      <h3 id="confirmTitle">âš ï¸ Confirm Action</h3>
       <p id="confirmMessage">Are you sure you want to proceed?</p>
       <div class="confirm-actions">
         <button type="button" class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
@@ -1457,7 +1457,7 @@
       toast.className = `toast toast-${type}`;
       toast.innerHTML = `
         <span>${message}</span>
-        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+        <button class="toast-close" onclick="this.parentElement.remove()">âœ•</button>
       `;
       container.appendChild(toast);
       setTimeout(() => {
@@ -1578,7 +1578,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Save Household Record';
+        btn.textContent = 'ðŸ’¾ Save Household Record';
       }
     }
 
@@ -1657,7 +1657,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Update Household';
+        btn.textContent = 'ðŸ’¾ Update Household';
       }
     }
 
@@ -1718,7 +1718,7 @@
         if (currentFamilies.length === 0) {
           container.innerHTML = `
             <div class="empty-state" style="padding: 2rem 0.5rem; width: 100%;">
-              <div class="empty-state-icon">📂</div>
+              <div class="empty-state-icon">ðŸ“‚</div>
               <h3>${searchQuery ? 'No Results Found' : 'No Families Yet'}</h3>
               <p style="margin-bottom: 1rem;">${searchQuery ? `No households match "${searchQuery}". Try a different term.` : 'Click "+ Add New Family" to create your first household.'}</p>
               ${searchQuery ? `<button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="clearFamilySearch()">Clear Search</button>` : `<button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="showCreateFamilyForm()">+ Add New Family</button>`}
@@ -1735,12 +1735,12 @@
           const code = f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`;
           const isSelected = f.id === selectedFamilyId;
           const phoneVal = f.contact_phone || f.contact_number;
-          const phone = phoneVal ? ` • 📞 ${phoneVal}` : '';
+          const phone = phoneVal ? ` â€¢ ðŸ“ž ${phoneVal}` : '';
           return `
             <div class="family-strip-card ${isSelected ? 'active' : ''}" id="familyCard_${f.id}" onclick="selectFamily(${f.id})">
               <span class="badge badge-info" style="font-size: 0.72rem; padding: 0.15rem 0.45rem; width: fit-content; margin-bottom: 0.35rem;">${code}</span>
               <div class="family-strip-name">${f.head_of_family}</div>
-              <div class="family-strip-meta">${f.member_count || 0} members • ${f.village_ward || '-'}${phone}</div>
+              <div class="family-strip-meta">${f.member_count || 0} members â€¢ ${f.village_ward || '-'}${phone}</div>
             </div>
           `;
         }).join('');
@@ -1779,7 +1779,7 @@
         const code = family.family_code || `FAM-${String(family.family_no).padStart(4, '0')}`;
         document.getElementById('fWorkspaceCode').textContent = code;
         document.getElementById('fWorkspaceTitle').textContent = family.family_name ? `${family.family_name} (${family.head_of_family})` : family.head_of_family;
-        document.getElementById('fSubhead').textContent = `${family.village_ward || '-'} • ${family.members ? family.members.length : 0} Members Recorded`;
+        document.getElementById('fSubhead').textContent = `${family.village_ward || '-'} â€¢ ${family.members ? family.members.length : 0} Members Recorded`;
         document.getElementById('fHead').textContent = family.head_of_family;
         document.getElementById('fPhone').textContent = family.contact_phone || family.contact_number || 'None recorded';
         document.getElementById('fStudent').textContent = `Roll ${family.roll_number || '-'}`;
@@ -1830,9 +1830,9 @@
       if (!members || members.length === 0) {
         container.innerHTML = `
           <div style="padding: 2rem 1rem; text-align: center; color: var(--text-muted);">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👤</div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">ðŸ‘¤</div>
             <strong>No members found</strong>
-            <p style="font-size: 0.825rem; margin-top: 0.35rem;">Click <strong>"➕ Add Member"</strong> above to register household members.</p>
+            <p style="font-size: 0.825rem; margin-top: 0.35rem;">Click <strong>"âž• Add Member"</strong> above to register household members.</p>
           </div>
         `;
         return;
@@ -1842,7 +1842,7 @@
         const isSelected = m.id === selectedMemberId;
         const bpText = m.sbp && m.dbp ? `${m.sbp}/${m.dbp} mmHg` : null;
         const hbText = m.hb ? `Hb ${m.hb}` : null;
-        const contact = m.contact_number ? ` • 📞 ${m.contact_number}` : '';
+        const contact = m.contact_number ? ` â€¢ ðŸ“ž ${m.contact_number}` : '';
 
         // Build clinical tags
         const conditionTags = [];
@@ -1858,8 +1858,8 @@
         if (m.age_years <= 5) conditionTags.push('<span class="badge badge-info">Under 5</span>');
         if (m.anc_taken === 'Y') conditionTags.push('<span class="badge badge-success">ANC Reg</span>');
 
-        const tagsHtml = conditionTags.length > 0 
-          ? conditionTags.join(' ') 
+        const tagsHtml = conditionTags.length > 0
+          ? conditionTags.join(' ')
           : '<span style="font-size: 0.75rem; color: var(--text-light); font-style: italic;">No recorded conditions</span>';
 
         return `
@@ -1868,7 +1868,7 @@
               <div class="member-card-header">
                 <div>
                   <div class="member-name">${m.name}</div>
-                  <div class="member-relation">${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}</div>
+                  <div class="member-relation">${m.relation_to_hof || 'Member'} â€¢ ${m.age_years} yrs (${m.gender})${contact}</div>
                 </div>
                 <span class="badge badge-info">#${m.member_order}</span>
               </div>
@@ -1877,7 +1877,7 @@
               </div>
             </div>
             <div class="member-card-vitals">
-              <span>🩺 <strong>${bpText || 'BP: -'}</strong> • <strong>${hbText || 'Hb: -'}</strong> ${m.bmi ? `• BMI: <strong>${m.bmi}</strong>` : ''}</span>
+              <span>ðŸ©º <strong>${bpText || 'BP: -'}</strong> â€¢ <strong>${hbText || 'Hb: -'}</strong> ${m.bmi ? `â€¢ BMI: <strong>${m.bmi}</strong>` : ''}</span>
               <span style="color: var(--primary); font-weight: 700; font-size: 0.78rem;">Inspect &rarr;</span>
             </div>
           </div>
@@ -1913,7 +1913,7 @@
 
         // Header
         document.getElementById('detailMemberName').textContent = m.name;
-        document.getElementById('detailMemberMeta').textContent = `${m.relation_to_hof} • ${m.age_years} yrs (${m.gender}) • ${m.marital_status || 'Married'} • ${m.occupation || 'Occupation: Not specified'}`;
+        document.getElementById('detailMemberMeta').textContent = `${m.relation_to_hof} â€¢ ${m.age_years} yrs (${m.gender}) â€¢ ${m.marital_status || 'Married'} â€¢ ${m.occupation || 'Occupation: Not specified'}`;
 
         // Counter Chips
         updateSummaryChips(m);
@@ -1988,23 +1988,23 @@
       const fuCount = m.follow_ups ? m.follow_ups.length : 0;
 
       const c1 = document.getElementById('chipConditions');
-      c1.innerHTML = `🏷️ Conditions: <strong>${condCount}</strong>`;
+      c1.innerHTML = `ðŸ·ï¸ Conditions: <strong>${condCount}</strong>`;
       c1.className = `summary-chip ${condCount > 0 ? 'has-items' : ''}`;
 
       const c2 = document.getElementById('chipMedications');
-      c2.innerHTML = `💊 Medications: <strong>${medCount}</strong>`;
+      c2.innerHTML = `ðŸ’Š Medications: <strong>${medCount}</strong>`;
       c2.className = `summary-chip ${medCount > 0 ? 'has-items' : ''}`;
 
       const c3 = document.getElementById('chipAllergies');
-      c3.innerHTML = `⚠️ Allergies: <strong>${algCount}</strong>`;
+      c3.innerHTML = `âš ï¸ Allergies: <strong>${algCount}</strong>`;
       c3.className = `summary-chip ${algCount > 0 ? 'has-items' : ''}`;
 
       const c4 = document.getElementById('chipHistory');
-      c4.innerHTML = `📜 History: <strong>${histCount}</strong>`;
+      c4.innerHTML = `ðŸ“œ History: <strong>${histCount}</strong>`;
       c4.className = `summary-chip ${histCount > 0 ? 'has-items' : ''}`;
 
       const c5 = document.getElementById('chipFollowUps');
-      c5.innerHTML = `🩺 Visits: <strong>${fuCount}</strong>`;
+      c5.innerHTML = `ðŸ©º Visits: <strong>${fuCount}</strong>`;
       c5.className = `summary-chip ${fuCount > 0 ? 'has-items' : ''}`;
     }
 
@@ -2079,13 +2079,13 @@
               <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">(${c.category || 'General'})</span>
             </div>
             <div class="sub-item-meta">
-              ${c.diagnosis_date ? `Diagnosed: <strong>${c.diagnosis_date}</strong> • ` : ''}
+              ${c.diagnosis_date ? `Diagnosed: <strong>${c.diagnosis_date}</strong> â€¢ ` : ''}
               ${c.notes ? `<em>${c.notes}</em>` : 'No additional notes'}
             </div>
           </div>
           <div class="sub-item-actions">
-            <button class="btn-icon" onclick="openEditConditionModal(${c.id})" title="Edit condition">✏️</button>
-            <button class="btn-icon danger" onclick="deleteCondition(${c.id})" title="Delete condition">🗑️</button>
+            <button class="btn-icon" onclick="openEditConditionModal(${c.id})" title="Edit condition">âœï¸</button>
+            <button class="btn-icon danger" onclick="deleteCondition(${c.id})" title="Delete condition">ðŸ—‘ï¸</button>
           </div>
         </div>
       `).join('');
@@ -2113,7 +2113,7 @@
       document.getElementById('condDate').value = c.diagnosis_date || '';
       document.getElementById('condNotes').value = c.notes || '';
 
-      document.getElementById('conditionModalTitle').textContent = '✏️ Edit Medical Condition';
+      document.getElementById('conditionModalTitle').textContent = 'âœï¸ Edit Medical Condition';
       document.getElementById('conditionModal').style.display = 'flex';
     }
 
@@ -2161,7 +2161,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Save Condition';
+        btn.textContent = 'ðŸ’¾ Save Condition';
       }
     }
 
@@ -2194,20 +2194,20 @@
         <div class="sub-item-row">
           <div class="sub-item-content">
             <div class="sub-item-main">
-              <span>💊 ${m.medication_name}</span>
+              <span>ðŸ’Š ${m.medication_name}</span>
               ${m.dosage ? `<span style="color: var(--text-secondary); font-size: 0.8rem;">(${m.dosage})</span>` : ''}
               <span class="badge badge-info">${m.frequency || 'OD'}</span>
               <span class="badge ${m.adherence_status === 'Good' ? 'badge-success' : 'badge-warning'}">${m.adherence_status}</span>
             </div>
             <div class="sub-item-meta">
-              Route: <strong>${m.route || 'Oral'}</strong> •
-              ${m.prescribed_for ? `Indication: <em>${m.prescribed_for}</em> • ` : ''}
+              Route: <strong>${m.route || 'Oral'}</strong> â€¢
+              ${m.prescribed_for ? `Indication: <em>${m.prescribed_for}</em> â€¢ ` : ''}
               ${m.start_date ? `Started: ${m.start_date}` : ''}
             </div>
           </div>
           <div class="sub-item-actions">
-            <button class="btn-icon" onclick="openEditMedicationModal(${m.id})" title="Edit medication">✏️</button>
-            <button class="btn-icon danger" onclick="deleteMedication(${m.id})" title="Delete medication">🗑️</button>
+            <button class="btn-icon" onclick="openEditMedicationModal(${m.id})" title="Edit medication">âœï¸</button>
+            <button class="btn-icon danger" onclick="deleteMedication(${m.id})" title="Delete medication">ðŸ—‘ï¸</button>
           </div>
         </div>
       `).join('');
@@ -2236,7 +2236,7 @@
       document.getElementById('medStartDate').value = m.start_date || '';
       document.getElementById('medAdherence').value = m.adherence_status || 'Good';
 
-      document.getElementById('medicationModalTitle').textContent = '✏️ Edit Medication';
+      document.getElementById('medicationModalTitle').textContent = 'âœï¸ Edit Medication';
       document.getElementById('medicationModal').style.display = 'flex';
     }
 
@@ -2283,7 +2283,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Save Medication';
+        btn.textContent = 'ðŸ’¾ Save Medication';
       }
     }
 
@@ -2315,7 +2315,7 @@
         <div class="sub-item-row">
           <div class="sub-item-content">
             <div class="sub-item-main">
-              <span>⚠️ ${a.allergen}</span>
+              <span>âš ï¸ ${a.allergen}</span>
               <span class="badge badge-info">${a.allergy_type}</span>
               <span class="badge ${a.severity === 'Severe' || a.severity === 'Life-threatening' ? 'badge-danger' : 'badge-warning'}">${a.severity}</span>
             </div>
@@ -2324,8 +2324,8 @@
             </div>
           </div>
           <div class="sub-item-actions">
-            <button class="btn-icon" onclick="openEditAllergyModal(${a.id})" title="Edit allergy">✏️</button>
-            <button class="btn-icon danger" onclick="deleteAllergy(${a.id})" title="Delete allergy">🗑️</button>
+            <button class="btn-icon" onclick="openEditAllergyModal(${a.id})" title="Edit allergy">âœï¸</button>
+            <button class="btn-icon danger" onclick="deleteAllergy(${a.id})" title="Delete allergy">ðŸ—‘ï¸</button>
           </div>
         </div>
       `).join('');
@@ -2351,7 +2351,7 @@
       document.getElementById('algSeverity').value = a.severity || 'Moderate';
       document.getElementById('algReaction').value = a.reaction_description || '';
 
-      document.getElementById('allergyModalTitle').textContent = '✏️ Edit Allergy';
+      document.getElementById('allergyModalTitle').textContent = 'âœï¸ Edit Allergy';
       document.getElementById('allergyModal').style.display = 'flex';
     }
 
@@ -2395,7 +2395,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Save Allergy';
+        btn.textContent = 'ðŸ’¾ Save Allergy';
       }
     }
 
@@ -2427,18 +2427,18 @@
         <div class="sub-item-row">
           <div class="sub-item-content">
             <div class="sub-item-main">
-              <span>📜 ${h.description}</span>
+              <span>ðŸ“œ ${h.description}</span>
               <span class="badge badge-info">${h.event_type}</span>
               ${h.event_date ? `<span style="font-size: 0.78rem; color: var(--text-muted);">(${h.event_date})</span>` : ''}
             </div>
             <div class="sub-item-meta">
-              ${h.facility_name ? `Facility: <strong>${h.facility_name}</strong> • ` : ''}
+              ${h.facility_name ? `Facility: <strong>${h.facility_name}</strong> â€¢ ` : ''}
               ${h.outcome_notes ? `Notes: <em>${h.outcome_notes}</em>` : 'No post-op notes'}
             </div>
           </div>
           <div class="sub-item-actions">
-            <button class="btn-icon" onclick="openEditHistoryModal(${h.id})" title="Edit history">✏️</button>
-            <button class="btn-icon danger" onclick="deleteHistory(${h.id})" title="Delete history">🗑️</button>
+            <button class="btn-icon" onclick="openEditHistoryModal(${h.id})" title="Edit history">âœï¸</button>
+            <button class="btn-icon danger" onclick="deleteHistory(${h.id})" title="Delete history">ðŸ—‘ï¸</button>
           </div>
         </div>
       `).join('');
@@ -2465,7 +2465,7 @@
       document.getElementById('histFacility').value = h.facility_name || '';
       document.getElementById('histNotes').value = h.outcome_notes || '';
 
-      document.getElementById('historyModalTitle').textContent = '✏️ Edit Medical / Surgical History';
+      document.getElementById('historyModalTitle').textContent = 'âœï¸ Edit Medical / Surgical History';
       document.getElementById('historyModal').style.display = 'flex';
     }
 
@@ -2510,7 +2510,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Save History';
+        btn.textContent = 'ðŸ’¾ Save History';
       }
     }
 
@@ -2534,7 +2534,7 @@
     function renderLifestyleProfile(lifestyle) {
       const container = document.getElementById('lifestyleContent');
       if (!lifestyle) {
-        container.innerHTML = `<div style="color: var(--text-muted);">No lifestyle information recorded yet. Click "✏️ Edit Lifestyle" to record smoking, alcohol, exercise, and diet.</div>`;
+        container.innerHTML = `<div style="color: var(--text-muted);">No lifestyle information recorded yet. Click "âœï¸ Edit Lifestyle" to record smoking, alcohol, exercise, and diet.</div>`;
         return;
       }
 
@@ -2602,7 +2602,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Save Lifestyle Profile';
+        btn.textContent = 'ðŸ’¾ Save Lifestyle Profile';
       }
     }
 
@@ -2634,13 +2634,13 @@
                 <div class="timeline-content">
                   <div class="timeline-header">
                     <div>
-                      <strong style="color: var(--primary);">Visit #${fu.visit_number}</strong> • 
+                      <strong style="color: var(--primary);">Visit #${fu.visit_number}</strong> â€¢
                       <span class="timeline-date">${fu.visit_date}</span>
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
                       ${progressBadge}
                       <span class="badge badge-info">Compliance: ${fu.treatment_compliance}</span>
-                      <button onclick="deleteFollowUp(${fu.id})" title="Delete visit" style="background: none; border: none; color: var(--danger-text); cursor: pointer; font-size: 0.75rem; padding: 0.15rem 0.35rem;">✕</button>
+                      <button onclick="deleteFollowUp(${fu.id})" title="Delete visit" style="background: none; border: none; color: var(--danger-text); cursor: pointer; font-size: 0.75rem; padding: 0.15rem 0.35rem;">âœ•</button>
                     </div>
                   </div>
                   <div style="font-size: 0.825rem; margin: 0.4rem 0; display: flex; gap: 0.75rem; flex-wrap: wrap;">
@@ -2650,11 +2650,11 @@
                     ${fu.weight_kg ? `<span>Weight: <strong>${fu.weight_kg} kg</strong></span>` : ''}
                   </div>
                   <p style="font-size: 0.85rem; color: var(--text-main); margin-top: 0.4rem; background: var(--bg-subtle); padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
-                    📝 <em>"${fu.clinical_notes}"</em>
+                    ðŸ“ <em>"${fu.clinical_notes}"</em>
                   </p>
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between;">
                     <span>Recorded by: Roll ${fu.recorded_by_roll || '-'}</span>
-                    ${fu.next_visit_date ? `<span>📅 Next Visit: <strong>${fu.next_visit_date}</strong></span>` : ''}
+                    ${fu.next_visit_date ? `<span>ðŸ“… Next Visit: <strong>${fu.next_visit_date}</strong></span>` : ''}
                   </div>
                 </div>
               </div>
@@ -2715,7 +2715,7 @@
         showToast(err.message, 'error');
       } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = '💾 Save Follow-up Visit';
+        saveBtn.textContent = 'ðŸ’¾ Save Follow-up Visit';
       }
     }
 
@@ -2825,7 +2825,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '💾 Update Member';
+        btn.textContent = 'ðŸ’¾ Update Member';
       }
     }
 
@@ -3024,7 +3024,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = addAnother ? '⚡ Save & Add Another' : '💾 Save Member';
+        btn.textContent = addAnother ? 'âš¡ Save & Add Another' : 'ðŸ’¾ Save Member';
       }
     }
 
@@ -3046,7 +3046,7 @@
       document.getElementById('provisionFormSection').style.display = 'block';
       document.getElementById('provisionSuccessSection').style.display = 'none';
       document.getElementById('btnSubmitProvision').disabled = false;
-      document.getElementById('btnSubmitProvision').textContent = '✨ Generate Patient Access';
+      document.getElementById('btnSubmitProvision').textContent = 'âœ¨ Generate Patient Access';
 
       document.getElementById('provisionPatientModal').style.display = 'flex';
     }
@@ -3097,7 +3097,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '✨ Generate Patient Access';
+        btn.textContent = 'âœ¨ Generate Patient Access';
       }
     }
 
@@ -3108,12 +3108,12 @@
       const pin = document.getElementById('provResPin').textContent;
       const url = `${window.location.origin}/login.html?patient=1`;
 
-      const text = `🏥 MedPulse Patient Health Portal Access\n\nPatient: ${name}\nPatient UID: ${uid}\nLogin Phone: ${phone}\nAccess PIN: ${pin}\nPortal Link: ${url}`;
-      
+      const text = `ðŸ¥ MedPulse Patient Health Portal Access\n\nPatient: ${name}\nPatient UID: ${uid}\nLogin Phone: ${phone}\nAccess PIN: ${pin}\nPortal Link: ${url}`;
+
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('btnCopyCreds');
         const origText = btn.textContent;
-        btn.textContent = '✅ Copied to Clipboard!';
+        btn.textContent = 'âœ… Copied to Clipboard!';
         showToast('Credentials copied to clipboard!', 'success');
         setTimeout(() => { btn.textContent = origText; }, 2500);
       }).catch(() => {
@@ -3160,19 +3160,19 @@
 
         listEl.innerHTML = tasks.map(t => {
           const kwColor = t.matched_keyword === 'HTN' ? '#dc2626' : (t.matched_keyword === 'DM' ? '#9333ea' : (t.matched_keyword === 'ANAEMIA' ? '#d97706' : '#0284c7'));
-          
+
           const rsvpBadge = t.notification_status === 'Acknowledged'
-            ? `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient RSVP: Confirmed</span>`
+            ? `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">âœ… Patient RSVP: Confirmed</span>`
             : (t.notification_status === 'Declined'
               ? `<span class="badge" style="background: #fee2e2; color: #b91c1c;">Patient RSVP: Declined</span>`
-              : `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`);
+              : `<span class="badge" style="background: #f1f5f9; color: #64748b;">â³ Patient RSVP: Awaiting</span>`);
 
           const currentStatus = t.cadet_call_status || 'Pending';
           const statusBadge = currentStatus === 'Assisted'
-            ? `<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700;">🌟 Assisted</span>`
+            ? `<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700;">ðŸŒŸ Assisted</span>`
             : (currentStatus === 'Contacted'
-              ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">📞 Contacted</span>`
-              : `<span class="badge" style="background: #fffbeb; color: #b45309; font-weight: 700;">⏳ Pending Call</span>`);
+              ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">ðŸ“ž Contacted</span>`
+              : `<span class="badge" style="background: #fffbeb; color: #b45309; font-weight: 700;">â³ Pending Call</span>`);
 
           return `
             <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
@@ -3182,13 +3182,13 @@
                   <span style="font-weight: 750; font-size: 0.95rem; color: var(--text-primary);">${escapeHtml(t.campaign_title)}</span>
                 </div>
                 <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 3px;">
-                  <strong>Patient:</strong> ${escapeHtml(t.patient_name || '-')} 
-                  ${t.patient_phone ? `(📞 <a href="tel:${escapeHtml(t.patient_phone)}" style="color: var(--primary); font-weight: 600;">${escapeHtml(t.patient_phone)}</a>)` : ''}
+                  <strong>Patient:</strong> ${escapeHtml(t.patient_name || '-')}
+                  ${t.patient_phone ? `(ðŸ“ž <a href="tel:${escapeHtml(t.patient_phone)}" style="color: var(--primary); font-weight: 600;">${escapeHtml(t.patient_phone)}</a>)` : ''}
                 </div>
                 <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <span>🔍 ${escapeHtml(t.matched_condition_detail || 'Condition matched')}</span>
-                  <span>•</span>
-                  <span>📅 Camp: ${t.event_date || 'Upcoming'} (${escapeHtml(t.venue || 'Clinic')})</span>
+                  <span>ðŸ” ${escapeHtml(t.matched_condition_detail || 'Condition matched')}</span>
+                  <span>â€¢</span>
+                  <span>ðŸ“… Camp: ${t.event_date || 'Upcoming'} (${escapeHtml(t.venue || 'Clinic')})</span>
                 </div>
                 ${t.patient_response_note ? `<div style="font-size: 0.76rem; color: #047857; margin-top: 4px; font-style: italic; background: #f0fdf4; padding: 2px 8px; border-radius: 4px; display: inline-block;">Patient Note: "${escapeHtml(t.patient_response_note)}"</div>` : ''}
               </div>
@@ -3196,13 +3196,13 @@
               <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 ${rsvpBadge}
                 ${statusBadge}
-                
+
                 <div style="display: flex; gap: 6px;">
                   <button class="btn btn-secondary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Contacted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Contacted' ? 'disabled' : ''}>
-                    📞 Contacted
+                    ðŸ“ž Contacted
                   </button>
                   <button class="btn btn-primary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Assisted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Assisted' ? 'disabled' : ''}>
-                    🌟 Assisted
+                    ðŸŒŸ Assisted
                   </button>
                 </div>
               </div>

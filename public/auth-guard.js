@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MedPulse Universal Authentication & Route Guard
  * Enforces zero-trust page access, session management, and automated API authentication headers.
  */
@@ -350,11 +350,11 @@
       if (currentHospitalAdmin) {
         var hName = currentHospitalAdmin.name || currentHospitalAdmin.username;
         var hRole = currentHospitalAdmin.role || 'Hospital Staff';
-        var hHosp = currentHospitalAdmin.hospital_name || 'Civil Hospital';
+        var hHosp = currentHospitalAdmin.hospital_name || 'SAL Hospital';
         authArea.innerHTML = [
           '<div class="sidebar-user" style="border-color: rgba(13, 148, 136, 0.35); background: rgba(13, 148, 136, 0.08);" data-tooltip="' + hName + '" onclick="if(document.documentElement.classList.contains(\'sidebar-collapsed\')||document.body.classList.contains(\'sidebar-collapsed\')) window.logoutHospitalAdmin(); else window.location.href=\'/hospital.html\';" title="' + hName + ' (' + hRole + ' - ' + hHosp + ')">',
           '  <div class="user-avatar-badge" style="background: linear-gradient(135deg, #0d9488, #0f766e); color: #fff;">',
-          '    🏥',
+          '    ðŸ¥',
           '    <span class="role-dot" style="background: #2dd4bf; box-shadow: 0 0 8px #2dd4bf;" title="Active Hospital Session"></span>',
           '  </div>',
           '  <div class="user-info-text">',
@@ -392,7 +392,7 @@
         authArea.innerHTML = [
           '<div class="sidebar-user" style="border-color: rgba(14, 165, 233, 0.35); background: rgba(14, 165, 233, 0.08);" data-tooltip="' + pName + '" onclick="if(document.documentElement.classList.contains(\'sidebar-collapsed\')||document.body.classList.contains(\'sidebar-collapsed\')) window.logoutPatient(); else window.location.href=\'/patient.html\';" title="' + pName + ' (' + pModel + ')">',
           '  <div class="user-avatar-badge" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff;">',
-          '    🏥',
+          '    ðŸ¥',
           '    <span class="role-dot" style="background: #38bdf8; box-shadow: 0 0 8px #38bdf8;" title="Active Patient Session"></span>',
           '  </div>',
           '  <div class="user-info-text">',
@@ -431,7 +431,7 @@
         authArea.innerHTML = [
           '<div class="sidebar-user" style="border-color: rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.08);" data-tooltip="Admin (' + adminName + ')" onclick="handleSidebarAdminClick(event)" title="' + adminName + ' (' + adminRole + ')">',
           '  <div class="user-avatar-badge" style="background: linear-gradient(135deg, #eab308, #ca8a04); color: #000;">',
-          '    👑',
+          '    ðŸ‘‘',
           '    <span class="role-dot" style="background: #eab308; box-shadow: 0 0 8px #eab308;" title="Active Faculty Session"></span>',
           '  </div>',
           '  <div class="user-info-text">',

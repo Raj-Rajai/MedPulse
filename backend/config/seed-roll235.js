@@ -28,7 +28,7 @@ function seedRoll235(targetDb) {
     // Ensure default College 1 exists
     db.prepare(`
         INSERT OR IGNORE INTO colleges (id, name, code, city, state)
-        VALUES (1, 'GMERS Medical College & Hospital', 'GMERS-01', 'Ahmedabad', 'Gujarat')
+        VALUES (1, 'SAL Hospital', 'SAL-01', 'Ahmedabad', 'Gujarat')
     `).run();
 
     // Ensure Student 1 (Roll 235 - Dhruv Patel) exists
@@ -443,12 +443,12 @@ for (const item of followUpsToSeed) {
         if (!existingDemoPatient) {
             db.prepare(`
                 INSERT INTO patients (patient_uid, student_id, family_member_id, name, phone, pin, age_years, gender, model_type, referral_code_used)
-                VALUES ('PAT-ROLL235-001', ?, ?, ?, '9876543210', '1234', ?, ?, 'Dependent', 'GMERS-235-DA9B')
+                VALUES ('PAT-ROLL235-001', ?, ?, ?, '9876543210', '1234', ?, ?, 'Dependent', 'SAL-235-DA9B')
             `).run(studentId, radhuji.id, radhuji.name, radhuji.age_years || 60, radhuji.gender || 'Male');
         } else {
             db.prepare(`
                 UPDATE patients 
-                SET family_member_id = ?, name = ?, student_id = ?, model_type = 'Dependent', referral_code_used = 'GMERS-235-DA9B', age_years = ?, gender = ?
+                SET family_member_id = ?, name = ?, student_id = ?, model_type = 'Dependent', referral_code_used = 'SAL-235-DA9B', age_years = ?, gender = ?
                 WHERE id = ?
             `).run(radhuji.id, radhuji.name, studentId, radhuji.age_years || 60, radhuji.gender || 'Male', existingDemoPatient.id);
         }

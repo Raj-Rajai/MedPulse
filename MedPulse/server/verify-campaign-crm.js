@@ -64,7 +64,7 @@ async function runVerification() {
     if (!existing) {
       db.prepare(`
         INSERT INTO patients (patient_uid, student_id, family_member_id, name, phone, pin, age_years, gender, model_type, referral_code_used)
-        VALUES ('PAT-ROLL235-001', 1, ?, ?, '9876543210', '1234', ?, ?, 'Dependent', 'GMERS-235-DA9B')
+        VALUES ('PAT-ROLL235-001', 1, ?, ?, '9876543210', '1234', ?, ?, 'Dependent', 'SAL-235-DA9B')
       `).run(radhuji.id, radhuji.name, radhuji.age_years || 60, radhuji.gender || 'M');
     }
   }
