@@ -242,40 +242,6 @@
       </div>
     </div>
 
-    <!-- ==========================================================
-         CADET CAMPAIGN ACTION TASKS (DECISION-DIAMOND OUTREACH)
-         ========================================================== -->
-    <div id="cadetCampaignSection" class="card anim-fade-up anim-delay-1" style="display: none; border-top: 4px solid #0284c7; margin-bottom: 1.5rem; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(2, 132, 199, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-            🎯
-          </div>
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <h2 style="font-size: 1.1rem; font-weight: 750; margin: 0; color: var(--text-primary);">
-                Targeted Campaign Follow-Ups
-              </h2>
-              <span id="cadetPendingTasksBadge" class="badge badge-warning" style="font-size: 0.72rem; font-weight: 700;">
-                0 Pending Calls
-              </span>
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
-              Patients in your adopted households qualifying for active university health drives. Call to coordinate attendance!
-            </p>
-          </div>
-        </div>
-
-        <button class="btn btn-secondary" onclick="loadCadetCampaignTasks()" style="font-size: 0.78rem; padding: 4px 10px; gap: 4px;">
-          🔄 Refresh Tasks
-        </button>
-      </div>
-
-      <div id="cadetCampaignTasksList" style="display: flex; flex-direction: column; gap: 10px;">
-        <!-- Dynamic task cards injected here -->
-      </div>
-    </div>
-
     <!-- No Family Selected Placeholder -->
     <div class="card" id="noFamilySelectedCard" style="display: none; text-align: center; padding: 4rem 2rem; margin-bottom: 1.5rem;">
       <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 0.75rem;">📋</div>
@@ -1388,7 +1354,6 @@
 
       setupDraftAutosave();
       runWhenActive(loadFamilies);
-      runWhenActive(loadCadetCampaignTasks);
     });
 
     /* ---- Authentication State ---- */
