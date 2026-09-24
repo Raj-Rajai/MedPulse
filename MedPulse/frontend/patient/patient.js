@@ -18,6 +18,343 @@
   const genderLabel = (g) => ({ M: 'Male', F: 'Female', Male: 'Male', Female: 'Female' }[g] || (g ? 'Other' : ''));
   const AV_COLORS = ['#0284c7', '#7c3aed', '#db2777', '#059669', '#d97706', '#4f46e5', '#0d9488', '#b91c1c'];
   const avColor = (s) => AV_COLORS[[...String(s)].reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
+  const originalText = new WeakMap();
+  const originalAttr = new WeakMap();
+  let currentLang = 'en';
+  let translating = false;
+  let translateTimer = null;
+  let languageObserver = null;
+  const GU = {
+    exact: {
+      'Skip to patient content': 'દર્દી વિભાગ પર જાઓ',
+      'HEALTH PORTAL': 'હેલ્થ પોર્ટલ',
+      'Overview': 'સારાંશ',
+      'My Health Card': 'મારું હેલ્થ કાર્ડ',
+      'My Family': 'મારો પરિવાર',
+      'Call Hospital': 'હોસ્પિટલને કોલ કરો',
+      'Health Camps': 'હેલ્થ કેમ્પ',
+      'Health Records': 'હેલ્થ રેકોર્ડ',
+      'YOUR PATIENT PORTAL': 'તમારું દર્દી પોર્ટલ',
+      'Your health, in one place.': 'તમારી આરોગ્ય માહિતી, એક જ જગ્યાએ.',
+      'Stay connected to your care, your family and your hospital.': 'તમારી સારવાર, પરિવાર અને હોસ્પિટલ સાથે જોડાયેલા રહો.',
+      'Language': 'ભાષા',
+      'English': 'English',
+      'MedPulse Care': 'મેડપલ્સ કેર',
+      'Welcome': 'સ્વાગત છે',
+      'Loading...': 'લોડ થઈ રહ્યું છે...',
+      'My card': 'મારું કાર્ડ',
+      'Sign out': 'સાઇન આઉટ',
+      'Health Card': 'હેલ્થ કાર્ડ',
+      'Hospital': 'હોસ્પિટલ',
+      'Camps': 'કેમ્પ',
+      'Records': 'રેકોર્ડ',
+      'Needs your attention': 'તમારા ધ્યાનની જરૂર છે',
+      'Things waiting on you.': 'તમારી તરફથી બાકી બાબતો.',
+      'Your latest health numbers': 'તમારા તાજા આરોગ્ય આંકડા',
+      'From your last check-up.': 'તમારા છેલ્લા ચેકઅપમાંથી.',
+      'Your hospital': 'તમારી હોસ્પિટલ',
+      'Requests': 'વિનંતીઓ',
+      'Your family': 'તમારો પરિવાર',
+      'Open': 'ખોલો',
+      'Next health camp': 'આગામી હેલ્થ કેમ્પ',
+      'See all': 'બધું જુઓ',
+      'Print card': 'કાર્ડ પ્રિન્ટ કરો',
+      'Copy patient ID': 'દર્દી ID કોપી કરો',
+      'Your details': 'તમારી વિગતો',
+      "These appear on your card. Your phone number is your login, so it can't be changed here.": 'આ વિગતો તમારા કાર્ડ પર દેખાશે. તમારો ફોન નંબર લોગિન છે, તેથી અહીં બદલી શકાતો નથી.',
+      'Basic': 'મૂળભૂત',
+      'Full name *': 'પૂરું નામ *',
+      'Please enter your name.': 'કૃપા કરીને તમારું નામ દાખલ કરો.',
+      'Date of birth': 'જન્મ તારીખ',
+      "Date of birth can't be in the future.": 'જન્મ તારીખ ભવિષ્યની હોઈ શકતી નથી.',
+      'Gender': 'લિંગ',
+      'Male': 'પુરુષ',
+      'Female': 'સ્ત્રી',
+      'Other': 'અન્ય',
+      'Blood group': 'બ્લડ ગ્રુપ',
+      'Contact': 'સંપર્ક',
+      'Mobile (login)': 'મોબાઇલ (લોગિન)',
+      'Email': 'ઇમેઇલ',
+      'optional': 'વૈકલ્પિક',
+      'Enter a valid email.': 'માન્ય ઇમેઇલ દાખલ કરો.',
+      'Address': 'સરનામું',
+      'Emergency contact': 'આપાતકાલીન સંપર્ક',
+      'Name': 'નામ',
+      'Relation': 'સંબંધ',
+      'Select': 'પસંદ કરો',
+      'Spouse': 'જીવનસાથી',
+      'Son': 'પુત્ર',
+      'Daughter': 'પુત્રી',
+      'Father': 'પિતા',
+      'Mother': 'માતા',
+      'Brother': 'ભાઈ',
+      'Sister': 'બહેન',
+      'Friend': 'મિત્ર',
+      'Neighbour': 'પાડોશી',
+      'Mobile': 'મોબાઇલ',
+      "Enter a 10-digit mobile that isn't your own.": 'તમારા સિવાયનો 10 અંકનો મોબાઇલ દાખલ કરો.',
+      'Save details': 'વિગતો સાચવો',
+      'Request a call from the hospital': 'હોસ્પિટલથી કોલની વિનંતી કરો',
+      'The hospital helpdesk will call or message you back.': 'હોસ્પિટલ હેલ્પડેસ્ક તમને કોલ અથવા મેસેજ કરશે.',
+      'Who is it for?': 'આ કોના માટે છે?',
+      'Department': 'વિભાગ',
+      'What do you need?': 'તમને શું જોઈએ છે?',
+      'How should they reach you?': 'તેઓ તમને કેવી રીતે સંપર્ક કરે?',
+      'Call me back': 'મને પાછો કોલ કરો',
+      'WhatsApp': 'વોટ્સએપ',
+      'Best time': 'સારો સમય',
+      'Any time': 'કોઈપણ સમય',
+      'Morning (8-12)': 'સવાર (8-12)',
+      'Afternoon (12-4)': 'બપોર (12-4)',
+      'Evening (4-8)': 'સાંજ (4-8)',
+      'Message': 'સંદેશ',
+      '(optional)': '(વૈકલ્પિક)',
+      'For a medical emergency, seek immediate care at the nearest emergency department. Do not wait for a callback.': 'તાત્કાલિક તબીબી સ્થિતિમાં નજીકના ઇમરજન્સી વિભાગમાં તરત જ જાઓ. પાછા કોલની રાહ ન જુઓ.',
+      'Send to hospital': 'હોસ્પિટલને મોકલો',
+      'Your requests': 'તમારી વિનંતીઓ',
+      'Only what\'s relevant to you.': 'ફક્ત તમારા માટે સંબંધિત માહિતી.',
+      'You get a camp alert only when it matches a condition or reading in your health record.': 'તમારા હેલ્થ રેકોર્ડની સ્થિતિ અથવા રીડિંગ સાથે મેળ થાય ત્યારે જ તમને કેમ્પ એલર્ટ મળશે.',
+      'Upcoming': 'આગામી',
+      'Past camps': 'જૂના કેમ્પ',
+      'Medicines': 'દવાઓ',
+      'Conditions': 'સ્થિતિઓ',
+      'Allergies': 'એલર્જી',
+      'Check-up visits': 'ચેકઅપ મુલાકાતો',
+      'Follow-up visits recorded in your health survey.': 'તમારા હેલ્થ સર્વેમાં નોંધાયેલી ફોલો-અપ મુલાકાતો.',
+      'Add family member': 'પરિવાર સભ્ય ઉમેરો',
+      'Full name': 'પૂરું નામ',
+      'Relation to you *': 'તમારા સાથેનો સંબંધ *',
+      'Gender *': 'લિંગ *',
+      'or age (years)': 'અથવા ઉંમર (વર્ષ)',
+      'Marital status': 'વૈવાહિક સ્થિતિ',
+      'Unknown': 'ખબર નથી',
+      'Single': 'અવિવાહિત',
+      'Married': 'વિવાહિત',
+      'Widowed': 'વિધવા/વિધુર',
+      'Divorced': 'છૂટાછેડા લીધેલ',
+      'Occupation': 'વ્યવસાય',
+      'Education': 'શિક્ષણ',
+      'Cancel': 'રદ કરો',
+      'Save': 'સાચવો',
+      'Family details': 'પરિવાર વિગતો',
+      'Family name': 'પરિવારનું નામ',
+      'House / street': 'ઘર / શેરી',
+      'Village / area': 'ગામ / વિસ્તાર',
+      'City': 'શહેર',
+      'District': 'જિલ્લો',
+      'PIN code': 'પિન કોડ',
+      'Connect your health survey': 'તમારો હેલ્થ સર્વે જોડો',
+      'Connect': 'જોડો',
+      'Reply': 'જવાબ આપો',
+      'Anything else? (optional)': 'બીજું કંઈ? (વૈકલ્પિક)',
+      'Send': 'મોકલો',
+      'Are you sure?': 'શું તમે ખાતરી કરો છો?',
+      'Yes, remove': 'હા, દૂર કરો',
+      'Complete your health card': 'તમારું હેલ્થ કાર્ડ પૂર્ણ કરો',
+      'Complete': 'પૂર્ણ કરો',
+      "You're all caught up.": 'તમારું બધું અપડેટ છે.',
+      'Nothing needs your attention right now.': 'હાલમાં તમારા ધ્યાનની કોઈ જરૂર નથી.',
+      'Hospital details are not available.': 'હોસ્પિટલની વિગતો ઉપલબ્ધ નથી.',
+      'No requests yet. Use the form to ask the hospital to call you.': 'હજુ કોઈ વિનંતી નથી. હોસ્પિટલને કોલ કરવા કહેવા માટે ફોર્મ વાપરો.',
+      'No camps for you right now.': 'હાલમાં તમારા માટે કોઈ કેમ્પ નથી.',
+      "We'll let you know when a camp matches your health record.": 'તમારા હેલ્થ રેકોર્ડ સાથે કેમ્પ મેળ ખાશે ત્યારે અમે જાણ કરીશું.',
+      'No upcoming camps.': 'કોઈ આગામી કેમ્પ નથી.',
+      'You only get alerts that match your health.': 'તમને તમારા આરોગ્ય સાથે મેળ ખાતા એલર્ટ જ મળશે.',
+      'No past camps yet.': 'હજુ કોઈ જૂનો કેમ્પ નથી.',
+      'No medicines recorded.': 'કોઈ દવા નોંધાઈ નથી.',
+      'No long-term conditions recorded.': 'કોઈ લાંબા ગાળાની સ્થિતિ નોંધાઈ નથી.',
+      'No allergies recorded.': 'કોઈ એલર્જી નોંધાઈ નથી.',
+      'No visits recorded yet.': 'હજુ કોઈ મુલાકાત નોંધાઈ નથી.',
+      'Health survey': 'હેલ્થ સર્વે',
+      'Connect survey': 'સર્વે જોડો',
+      'Call helpdesk': 'હેલ્પડેસ્કને કોલ કરો',
+      'Call': 'કોલ કરો',
+      'No phone': 'ફોન નથી',
+      'Request call': 'કોલ વિનંતી',
+      'Yes': 'હા',
+      'No': 'ના',
+      'Not yet': 'હજુ નહીં',
+      'Other reply': 'બીજો જવાબ',
+      "I'll come": 'હું આવીશ',
+      'Need help to come': 'આવવા માટે મદદ જોઈએ',
+      "Can't come": 'આવી શકતો/શકતી નથી',
+      'Add to calendar': 'કેલેન્ડરમાં ઉમેરો',
+      'Edit': 'સંપાદિત કરો',
+      'Edit my details': 'મારી વિગતો સંપાદિત કરો',
+      'Call hospital': 'હોસ્પિટલને કોલ કરો',
+      'Remove': 'દૂર કરો',
+      'View only': 'માત્ર જુઓ',
+      'You manage this family': 'તમે આ પરિવાર સંભાળો છો'
+    },
+    phrase: {
+      'Good morning': 'સુપ્રભાત',
+      'Good afternoon': 'નમસ્તે',
+      'Good evening': 'શુભ સાંજ',
+      'Patient': 'દર્દી',
+      'Head of family': 'પરિવારના વડા',
+      'Family member': 'પરિવાર સભ્ય',
+      'Date to be announced': 'તારીખ જાહેર થવાની છે',
+      'Venue to be announced': 'સ્થળ જાહેર થવાનું છે',
+      'Today': 'આજે',
+      'Tomorrow': 'કાલે',
+      'day ago': 'દિવસ પહેલા',
+      'days ago': 'દિવસ પહેલા',
+      'In ': '',
+      ' days': ' દિવસમાં',
+      ' yrs': ' વર્ષ',
+      ' yr': ' વર્ષ',
+      'Age not set': 'ઉંમર સેટ નથી',
+      'Under 1 yr': '1 વર્ષથી ઓછું',
+      'Member': 'સભ્ય',
+      'members': 'સભ્યો',
+      'member': 'સભ્ય',
+      'Health (read-only)': 'આરોગ્ય (માત્ર વાંચવા માટે)',
+      'No readings yet': 'હજુ કોઈ રીડિંગ નથી',
+      'Has own account': 'પોતાનું એકાઉન્ટ છે',
+      'From health survey': 'હેલ્થ સર્વેથી',
+      'Added by family': 'પરિવાર દ્વારા ઉમેર્યું',
+      'Updated by you': 'તમારા દ્વારા અપડેટ',
+      'You are head of family': 'તમે પરિવારના વડા છો',
+      'Health readings and diagnoses come from the hospital and health survey team, so they can\'t be edited here.': 'આરોગ્ય રીડિંગ અને નિદાન હોસ્પિટલ અને હેલ્થ સર્વે ટીમ પાસેથી આવે છે, તેથી અહીં સંપાદિત કરી શકાતા નથી.',
+      'Call me back': 'મને પાછો કોલ કરો',
+      'Book appointment': 'અપોઇન્ટમેન્ટ બુક કરો',
+      'Doctor consultation': 'ડોક્ટર સલાહ',
+      'Test report': 'ટેસ્ટ રિપોર્ટ',
+      'Medicine query': 'દવા વિશે પ્રશ્ન',
+      'New symptom': 'નવું લક્ષણ',
+      'Follow-up visit': 'ફોલો-અપ મુલાકાત',
+      'General Medicine': 'જનરલ મેડિસિન',
+      'Cardiology': 'કાર્ડિયોલોજી',
+      'Orthopedics': 'ઓર્થોપેડિક્સ',
+      'Gynecology': 'ગાયનેકોલોજી',
+      'Pediatrics': 'પીડિયાટ્રિક્સ',
+      'Dermatology': 'ડર્મેટોલોજી',
+      'ENT': 'ENT',
+      'Ophthalmology': 'આંખ વિભાગ',
+      'Dental': 'દાંત વિભાગ',
+      'Emergency': 'ઇમરજન્સી',
+      'Sent': 'મોકલ્યું',
+      'Seen by hospital': 'હોસ્પિટલે જોયું',
+      'Appointment set': 'અપોઇન્ટમેન્ટ નક્કી',
+      'Done': 'પૂર્ણ',
+      'Cancelled': 'રદ',
+      'open': 'બાકી',
+      'Best time:': 'સારો સમય:',
+      'Appointment:': 'અપોઇન્ટમેન્ટ:',
+      'Hospital appointment:': 'હોસ્પિટલ અપોઇન્ટમેન્ટ:',
+      'Did the hospital sort this out?': 'શું હોસ્પિટલએ આ ઉકેલી દીધું?',
+      'You confirmed this was resolved.': 'તમે પુષ્ટિ કરી કે આ ઉકેલાયું છે.',
+      "You said this wasn't resolved, so it's open again.": 'તમે કહ્યું કે આ ઉકેલાયું નથી, તેથી ફરી ખુલ્લું છે.',
+      'Cancel request': 'વિનંતી રદ કરો',
+      'Attending': 'હાજરી આપશે',
+      'Asked for help': 'મદદ માંગી',
+      'Reply needed': 'જવાબ જરૂરી',
+      'Will you attend?': 'શું તમે હાજરી આપશો?',
+      'Why you got this:': 'તમને આ કેમ મળ્યું:',
+      'your health record shows': 'તમારા હેલ્થ રેકોર્ડમાં દર્શાવે છે',
+      'This camp is for people with this condition.': 'આ કેમ્પ આ સ્થિતિ ધરાવતા લોકો માટે છે.',
+      'Where:': 'સ્થળ:',
+      'Organised by:': 'આયોજક:',
+      'Your note:': 'તમારી નોંધ:',
+      'You confirmed the camp team called you.': 'તમે પુષ્ટિ કરી કે કેમ્પ ટીમે તમને કોલ કર્યો.',
+      'You said you would attend': 'તમે હાજરી આપશો એવું કહ્યું',
+      'No reply': 'જવાબ નથી',
+      'BP': 'બીપી',
+      'Sugar': 'શુગર',
+      'BMI': 'BMI',
+      'Hb': 'Hb',
+      'Taking': 'લઈ રહ્યા છો',
+      'Being monitored': 'નજર રાખવામાં આવી રહી છે',
+      'Active': 'સક્રિય',
+      'Reaction': 'પ્રતિક્રિયા',
+      'Moderate': 'મધ્યમ',
+      'Visit #': 'મુલાકાત #',
+      'Next visit:': 'આગામી મુલાકાત:',
+      'Routine check-up.': 'સામાન્ય ચેકઅપ.',
+      'Copied ': 'કોપી થયું ',
+      'Your card is updated': 'તમારું કાર્ડ અપડેટ થયું',
+      'Family details saved': 'પરિવાર વિગતો સાચવી',
+      'Request sent': 'વિનંતી મોકલાઈ',
+      'Request cancelled': 'વિનંતી રદ થઈ',
+      'Reply sent': 'જવાબ મોકલાયો',
+      'Thanks for confirming!': 'પુષ્ટિ કરવા બદલ આભાર!',
+      'Request re-opened. The hospital will follow up.': 'વિનંતી ફરી ખુલ્લી છે. હોસ્પિટલ ફોલો-અપ કરશે.',
+      'Health survey connected': 'હેલ્થ સર્વે જોડાયો',
+      'Saving...': 'સાચવી રહ્યું છે...',
+      'Sending...': 'મોકલી રહ્યું છે...',
+      'Connecting...': 'જોડી રહ્યું છે...'
+    }
+  };
+
+  function preserveOuter(original, translated) {
+    const start = original.match(/^\s*/)[0];
+    const end = original.match(/\s*$/)[0];
+    return start + translated + end;
+  }
+  function translateText(text) {
+    if (currentLang !== 'gu' || !text || !text.trim()) return text;
+    const trimmed = text.trim();
+    if (GU.exact[trimmed]) return preserveOuter(text, GU.exact[trimmed]);
+    let out = text;
+    Object.entries(GU.phrase).sort((a, b) => b[0].length - a[0].length).forEach(([en, gu]) => {
+      out = out.split(en).join(gu);
+    });
+    return out;
+  }
+  function applyLanguage(root = document.body) {
+    if (!root || translating) return;
+    translating = true;
+    document.documentElement.lang = currentLang === 'gu' ? 'gu' : 'en';
+    document.body.classList.toggle('lang-gu', currentLang === 'gu');
+    const sel = $('patientLanguage');
+    if (sel && sel.value !== currentLang) sel.value = currentLang;
+    root.querySelectorAll('option').forEach((option) => {
+      if (!option.hasAttribute('value')) option.setAttribute('value', option.textContent.trim());
+    });
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const p = node.parentElement;
+        if (!p || ['SCRIPT', 'STYLE', 'TEXTAREA'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+        return node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      if (!originalText.has(node)) originalText.set(node, node.nodeValue);
+      const nextText = currentLang === 'gu' ? translateText(originalText.get(node)) : originalText.get(node);
+      if (node.nodeValue !== nextText) node.nodeValue = nextText;
+    });
+    root.querySelectorAll('[placeholder],[title],[aria-label],[data-title]').forEach((el) => {
+      ['placeholder', 'title', 'aria-label', 'data-title'].forEach((attr) => {
+        if (!el.hasAttribute(attr)) return;
+        let store = originalAttr.get(el);
+        if (!store) { store = {}; originalAttr.set(el, store); }
+        if (!store[attr]) store[attr] = el.getAttribute(attr);
+        const nextAttr = currentLang === 'gu' ? translateText(store[attr]) : store[attr];
+        if (el.getAttribute(attr) !== nextAttr) el.setAttribute(attr, nextAttr);
+      });
+    });
+    translating = false;
+  }
+  function scheduleLanguageApply() {
+    if (currentLang !== 'gu' || translating) return;
+    clearTimeout(translateTimer);
+    translateTimer = setTimeout(() => applyLanguage(), 40);
+  }
+  function setupLanguage() {
+    try { currentLang = localStorage.getItem('medpulse_patient_lang') === 'gu' ? 'gu' : 'en'; } catch (e) { currentLang = 'en'; }
+    applyLanguage();
+    if (!languageObserver && window.MutationObserver) {
+      languageObserver = new MutationObserver(scheduleLanguageApply);
+      languageObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+  }
+  function setPatientLanguage(lang) {
+    currentLang = lang === 'gu' ? 'gu' : 'en';
+    try { localStorage.setItem('medpulse_patient_lang', currentLang); } catch (e) { /* ignore */ }
+    applyLanguage();
+  }
 
   function parseDay(s) {
     if (!s) return null;
@@ -71,14 +408,14 @@
   function showToast(message, type = 'info', duration = 3400) {
     const t = document.createElement('div');
     t.className = `toast toast-${type}`;
-    t.innerHTML = `<span>${esc(message)}</span><button class="toast-close" aria-label="Dismiss">✕</button>`;
+    t.innerHTML = `<span>${esc(translateText(message))}</span><button class="toast-close" aria-label="Dismiss">✕</button>`;
     t.querySelector('button').onclick = () => t.remove();
     $('toastContainer').appendChild(t);
     setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 200); }, duration);
   }
   function busy(btn, on, label) {
     if (!btn) return;
-    if (on) { btn.dataset.label = btn.textContent; btn.textContent = label || 'Saving…'; btn.disabled = true; }
+    if (on) { btn.dataset.label = btn.textContent; btn.textContent = translateText(label || 'Saving...'); btn.disabled = true; }
     else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; }
   }
 
@@ -97,7 +434,7 @@
   }
   function showTab(tab, push = true) {
     if (!TABS.includes(tab)) tab = 'overview';
-    document.querySelectorAll('.pt-tab').forEach((b) => { const on = b.dataset.tab === tab; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+    document.querySelectorAll('.pt-tab').forEach((b) => { const on = b.dataset.tab === tab; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
     document.querySelectorAll('.sidebar-link[data-tab]').forEach((a) => a.classList.toggle('active', a.dataset.tab === tab));
     document.querySelectorAll('.pt-panel').forEach((p) => p.classList.toggle('active', p.id === `panel-${tab}`));
     if (push && location.hash !== `#${tab}`) history.replaceState(null, '', `#${tab}`);
@@ -106,6 +443,17 @@
     closeSidebar();
     if (tab === 'campaigns') markRead();
   }
+  document.querySelector('.pt-tabs').addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const tabs = [...document.querySelectorAll('.pt-tab')];
+    const current = tabs.indexOf(document.activeElement);
+    if (current < 0) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+      : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    showTab(tabs[next].dataset.tab);
+    tabs[next].focus({ preventScroll: true });
+  });
   window.addEventListener('hashchange', () => showTab(location.hash.slice(1), false));
   document.querySelectorAll('.sidebar-link[data-tab]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); showTab(a.dataset.tab); }));
 
@@ -115,7 +463,7 @@
     location.href = '/login.html?patient=1';
   }
   const MODALS = ['memberModal', 'famModal', 'linkModal', 'rsvpModal', 'confirmModal'];
-  function openModal(id) { $(id).style.display = 'flex'; }
+  function openModal(id) { $(id).style.display = 'flex'; applyLanguage($(id)); }
   function closeModal(id) { $(id).style.display = 'none'; }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') MODALS.forEach(closeModal); });
   function confirmDialog(title, text, okLabel) {
@@ -162,6 +510,7 @@
   function renderAll() {
     renderHero(); renderCard(); fillProfileForm(); renderFamily(); renderHospital(); renderRequests();
     renderVitals(); renderCampaigns(); renderRecords(); renderOverview(); renderActionCentre();
+    applyLanguage();
     if ($('panel-campaigns').classList.contains('active')) markRead();
   }
 
@@ -430,7 +779,6 @@
         ${phone ? `<a class="pt-btn call" href="tel:${esc(phone)}">📞 Call${compact ? '' : ' helpdesk'}</a>` : '<button class="pt-btn" disabled>📞 No phone</button>'}
         ${isMobile(phone) ? `<a class="pt-btn wa" href="${esc(waLink(phone, `Hello, I am ${state.card ? state.card.name : ''} (${state.card ? state.card.patient_uid : ''}).`))}" target="_blank" rel="noopener">💬 WhatsApp</a>`
           : `<button class="pt-btn primary" onclick="showTab('hospital'); setTimeout(() => document.getElementById('reqMsg').focus(), 60)">✉️ Request call</button>`}
-        <a class="pt-btn sos" href="tel:108">🚑 108</a>
       </div>`;
   }
   function renderHospital() {
@@ -762,15 +1110,11 @@
     const c = state.card;
     if (c) {
       const comp = cardCompleteness(c);
-      if (comp.missing.length) items.push({ ic: '🪪', t: 'Complete your health card', d: `Add ${comp.missing.join(', ').toLowerCase()}`, btns: `<button class="pt-btn sm primary" onclick="showTab('profile')">Complete</button>` });
+      if (comp.missing.length) items.push({ ic: '▣', t: 'Complete your health card', d: `Add ${comp.missing.join(', ').toLowerCase()}`, btns: `<button class="pt-btn sm primary" onclick="showTab('profile')">Complete</button>` });
     }
     state.notifs.filter((n) => !isPast(n) && rsvpOf(n) === 'Pending').forEach((n) => items.push({
       ic: '📣', t: `Reply to: ${n.campaign_title}`, d: `${fmtDay(n.event_date) || 'Date TBA'} · matched ${n.matched_keyword}`,
       btns: `<button class="pt-btn sm primary" onclick="PT.sendRsvp(${n.notification_id}, 'Attending')">✅ I'll come</button><button class="pt-btn sm" onclick="PT.openCamp(${n.notification_id})">Other reply</button>`
-    }));
-    state.notifs.filter((n) => !isPast(n) && needsContactConfirm(n)).forEach((n) => items.push({
-      ic: '📞', t: 'Did the camp team call you?', d: `About: ${n.campaign_title}`,
-      btns: `<button class="pt-btn sm" onclick="PT.confirmCampContact(${n.notification_id}, true)">👍 Yes</button><button class="pt-btn sm ghost-danger" onclick="PT.confirmCampContact(${n.notification_id}, false)">No</button>`
     }));
     state.requests.filter((r) => r.status === 'Resolved' && !r.patient_confirmation).forEach((r) => items.push({
       ic: '🏥', t: 'Did the hospital sort this out?', d: `${r.reason} · ${r.department}${r.hospital_note ? ` · “${r.hospital_note}”` : ''}`,
@@ -816,10 +1160,11 @@
 
   /* ================= Expose for inline handlers ================= */
   window.PT = { editFamily, addMember, editMember, removeMember, requestFor, confirmRequest, cancelRequest, sendRsvp, askRsvp, confirmCampContact, downloadIcs, openCamp, openLink };
-  Object.assign(window, { toggleSidebar, closeSidebar, showTab, logoutPatient, closeModal, printCard, copyUid, saveProfile, saveMember, saveFamily, submitRequest, submitRsvpNote, submitLink, debounceVerify });
+  Object.assign(window, { toggleSidebar, closeSidebar, showTab, logoutPatient, closeModal, printCard, copyUid, saveProfile, saveMember, saveFamily, submitRequest, submitRsvpNote, submitLink, debounceVerify, setPatientLanguage });
 
   /* ================= Boot ================= */
   const start = () => {
+    setupLanguage();
     const tab = location.hash.slice(1);
     showTab(TABS.includes(tab) ? tab : 'overview', false);
     loadAll();

@@ -12,7 +12,7 @@ module.exports = {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 code TEXT UNIQUE NOT NULL,
-                type TEXT DEFAULT 'Government Civil Hospital',
+                type TEXT DEFAULT 'Private Multi-Specialty Hospital',
                 city TEXT NOT NULL,
                 district TEXT,
                 state TEXT DEFAULT 'Gujarat',
@@ -91,13 +91,13 @@ module.exports = {
         // Seed default hospital
         db.prepare(`
             INSERT OR IGNORE INTO hospitals (id, name, code, type, city, district, state, bed_capacity, contact_email, contact_phone, max_super_admins, max_admins, status)
-            VALUES (1, 'GMERS Civil Hospital & Research Institute', 'HOSP-GMERS-01', 'Government Civil Hospital', 'Gandhinagar', 'Gandhinagar', 'Gujarat', 750, 'civil.hospital@gmers.edu', '079-23221234', 3, 20, 'Active')
+            VALUES (1, 'SAL Hospital', 'HOSP-SAL-01', 'Private Multi-Specialty Hospital', 'Ahmedabad', 'Ahmedabad', 'Gujarat', 750, 'info@salhospital.com', '9664552098', 3, 20, 'Active')
         `).run();
 
         // Seed default Hospital Super Admin
         db.prepare(`
             INSERT OR IGNORE INTO hospital_admins (id, hospital_id, username, name, email, phone, pin, role, department, status)
-            VALUES (1, 1, 'hosp_superadmin', 'Dr. Ramesh Patel (Medical Superintendent)', 'ms.civil@gmers.edu', '9876500001', '8888', 'Hospital Super Admin', 'Hospital Administration & Clinical Oversight', 'Active')
+            VALUES (1, 1, 'hosp_superadmin', 'Dr. Ramesh Patel (Medical Superintendent)', 'ms@salhospital.com', '9876500001', '8888', 'Hospital Super Admin', 'Hospital Administration & Clinical Oversight', 'Active')
         `).run();
     }
 };
