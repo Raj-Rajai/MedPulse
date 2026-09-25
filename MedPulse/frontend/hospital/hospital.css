@@ -239,3 +239,9 @@
 @media(max-width:1200px){.hospital-logo-band{margin:-28px -23px 30px;padding:28px 23px 28px}}
 @media(max-width:800px){.hospital-logo-band{margin:-26px -20px 28px;padding:26px 20px 26px}}
 @media(max-width:560px){.hospital-logo-band{margin:-23px -14px 24px;padding:23px 14px 24px}}
+
+/* Default desktop density: equivalent element sizing to 90% browser zoom. */
+@media screen and (min-width: 1024px) {
+  html { zoom: 0.9; }
+  body { min-height: calc(100vh / 0.9); }
+}

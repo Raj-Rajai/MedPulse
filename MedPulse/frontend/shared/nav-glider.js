@@ -7,11 +7,13 @@
     if (!link || !nav) return null;
     const navRect = nav.getBoundingClientRect();
     const linkRect = link.getBoundingClientRect();
+    // DOM rectangles include CSS zoom; absolute positioning uses local CSS pixels.
+    const scale = navRect.width / parseFloat(getComputedStyle(nav).width) || 1;
     return {
-      top: linkRect.top - navRect.top + nav.scrollTop,
-      left: linkRect.left - navRect.left,
-      width: linkRect.width,
-      height: linkRect.height
+      top: (linkRect.top - navRect.top) / scale + nav.scrollTop - nav.clientTop,
+      left: (linkRect.left - navRect.left) / scale + nav.scrollLeft - nav.clientLeft,
+      width: linkRect.width / scale,
+      height: linkRect.height / scale
     };
   }
 
@@ -110,14 +112,7 @@
     if (!targetMetrics) return;
 
     // Capture the current live position of glider before moving
-    const navRect = nav.getBoundingClientRect();
-    const gRect = glider.getBoundingClientRect();
-    const currentMetrics = {
-      top: gRect.top - navRect.top + nav.scrollTop,
-      left: gRect.left - navRect.left,
-      width: gRect.width,
-      height: gRect.height
-    };
+    const currentMetrics = getLinkMetrics(glider, nav);
 
     // Store departure position for destination page
     sessionStorage.setItem('medpulse_glider_pos', JSON.stringify(currentMetrics));
@@ -167,15 +162,9 @@
     const glider = document.getElementById('sidebarGlider');
     const nav = document.querySelector('.sidebar-nav');
     if (glider && nav) {
-      const navRect = nav.getBoundingClientRect();
-      const gRect = glider.getBoundingClientRect();
-      if (gRect.width > 0 && gRect.height > 0) {
-        sessionStorage.setItem('medpulse_glider_pos', JSON.stringify({
-          top: gRect.top - navRect.top + nav.scrollTop,
-          left: gRect.left - navRect.left,
-          width: gRect.width,
-          height: gRect.height
-        }));
+      const metrics = getLinkMetrics(glider, nav);
+      if (metrics && metrics.width > 0 && metrics.height > 0) {
+        sessionStorage.setItem('medpulse_glider_pos', JSON.stringify(metrics));
       }
     }
   });

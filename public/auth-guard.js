@@ -531,4 +531,37 @@
   } else {
     renderSidebarUserBadge();
   }
+
+  /* ── Automated Rogue / Injected Right-Side Panel Purger ── */
+  function purgeRogueRightPanels() {
+    var knownIds = ['sidebar', 'sidebarOverlay', 'mobileNavToggle', 'toastContainer', 'globalAlert'];
+    var allowedTags = ['MAIN', 'ASIDE', 'SCRIPT', 'STYLE', 'LINK', 'HEADER', 'NAV'];
+
+    if (document.body) {
+      var children = Array.prototype.slice.call(document.body.children);
+      for (var i = 0; i < children.length; i++) {
+        var el = children[i];
+        if (knownIds.indexOf(el.id) !== -1 || allowedTags.indexOf(el.tagName) !== -1) continue;
+        if (el.classList && el.classList.contains('modal-overlay')) continue;
+
+        try {
+          var cs = window.getComputedStyle(el);
+          if (cs.position === 'fixed' || cs.position === 'absolute') {
+            var rect = el.getBoundingClientRect();
+            if (rect.right >= window.innerWidth - 60 && rect.width > 20) {
+              el.remove();
+            }
+          }
+        } catch (e) {}
+      }
+    }
+  }
+
+  if (window.MutationObserver && document.documentElement) {
+    var obs = new MutationObserver(purgeRogueRightPanels);
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  }
+  window.addEventListener('DOMContentLoaded', purgeRogueRightPanels);
+  window.addEventListener('load', purgeRogueRightPanels);
+  setInterval(purgeRogueRightPanels, 1000);
 })();

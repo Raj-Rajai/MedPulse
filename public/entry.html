@@ -405,9 +405,11 @@
       color: #b45309;
     }
     .sticky-actions-bar {
-      position: sticky;
+      position: fixed;
       bottom: 1.5rem;
-      background: rgba(255, 255, 255, 0.92);
+      left: calc(var(--sidebar-w) + 1.5rem);
+      right: 1.5rem;
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(10px);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -418,8 +420,23 @@
       flex-wrap: wrap;
       gap: 0.75rem;
       box-shadow: var(--shadow-lg);
-      z-index: 100;
-      margin-top: 1.5rem;
+      z-index: 1000;
+      transition: left 0.48s cubic-bezier(0.25, 1, 0.35, 1);
+    }
+    html.sidebar-collapsed .sticky-actions-bar,
+    body.sidebar-collapsed .sticky-actions-bar {
+      left: calc(var(--sidebar-w-collapsed) + 1.5rem);
+    }
+    @media (max-width: 860px) {
+      .sticky-actions-bar {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+      }
+    }
+    /* Ensure page content isn't hidden behind the fixed action bar */
+    #surveyForm {
+      padding-bottom: 6rem;
     }
   </style>
 </head>
