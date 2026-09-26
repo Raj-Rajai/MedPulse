@@ -463,3 +463,27 @@
     - Added remote origin `https://github.com/Raj-Rajai/MedPulse.git`.
     - Executed `git push -u origin main` with successful upstream tracking.
 
+
+## 2026-09-26: Simplified student families navigation
+- Families now opens with Add family and a searchable list containing only household names. Selecting a household opens its existing details, with Back to households navigation.
+- Removed automatic first-household selection; added loading and failure feedback. Updated both frontend and public copies, including the nested MedPulse mirror.
+- Verified desktop/mobile navigation, add/cancel, search and empty results, and failed-detail recovery with isolated browser fixtures (scratch/check-families.cjs).
+
+
+## 2026-09-26: Families visual refinement
+- Added page-scoped families.css across frontend/public and nested mirrors: neutral surfaces, muted green actions, restrained sidebar, typographic hierarchy, compact registration section, and divided name-only household rows.
+- Moved the existing location verification controls below the directory and reduced their visual prominence without changing verification behavior.
+- Browser navigation checks passed; reviewed desktop and mobile screenshots and corrected inherited mobile header styling.
+
+
+## 2026-09-26: Household cards and original theme
+- Restored shared MedPulse purple colors and original sidebar styling by removing the page-specific green palette.
+- Replaced household rows with a responsive card grid, decorative house icons, name-only labels, and keyboard/hover feedback. Household details still open only on selection.
+- Browser checks passed for desktop/mobile layout, search, add/cancel, detail/back navigation, and error recovery.
+
+
+## 2026-09-26: Data-entry survey action footer
+- Replaced viewport-fixed survey controls with an in-flow sticky footer; removed incorrect #surveyForm padding and targeted #memberSurveyForm.
+- Separated member context and actions, simplified labels, and provided a mobile button grid while retaining existing save/reset handlers and theme.
+- Verified footer/button bounds and unobscured final fields at 1440, 900, 687, 390 and 320px with browser fixtures; no JavaScript errors.
+

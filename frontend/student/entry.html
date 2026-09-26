@@ -406,38 +406,39 @@
       color: #b45309;
     }
     .sticky-actions-bar {
-      position: fixed;
-      bottom: 1.5rem;
-      left: calc(var(--sidebar-w) + 1.5rem);
-      right: 1.5rem;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.5rem;
+      position: sticky;
+      bottom: max(12px, env(safe-area-inset-bottom));
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       flex-wrap: wrap;
-      gap: 0.75rem;
-      box-shadow: var(--shadow-lg);
-      z-index: 1000;
-      transition: left 0.48s cubic-bezier(0.25, 1, 0.35, 1);
+      gap: 16px 24px;
+      margin-top: 32px;
+      padding: 18px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 -4px 24px rgba(30, 27, 75, 0.08);
+      z-index: 20;
     }
-    html.sidebar-collapsed .sticky-actions-bar,
-    body.sidebar-collapsed .sticky-actions-bar {
-      left: calc(var(--sidebar-w-collapsed) + 1.5rem);
+    .survey-action-context { flex: 1 1 180px; min-width: 0; }
+    .survey-action-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+    #actionTargetMemberName { display: block; font-size: 14px; line-height: 1.45; color: var(--text-primary); overflow-wrap: anywhere; }
+    .survey-action-buttons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .survey-action-buttons .btn { min-height: 42px; padding: 10px 16px; border-radius: 8px; font-size: 13px; line-height: 1.4; justify-content: center; box-shadow: none; }
+    .survey-action-buttons .btn:hover { transform: none; }
+    #memberSurveyForm { padding-bottom: 12px; }
+    #memberSurveyForm :is(input, select, textarea) { scroll-margin-bottom: 190px; }
+    @media (max-width: 1100px) {
+      .survey-action-context { flex-basis: 100%; }
+      .survey-action-buttons { width: 100%; justify-content: flex-end; }
     }
-    @media (max-width: 860px) {
-      .sticky-actions-bar {
-        left: 1rem;
-        right: 1rem;
-        bottom: 1rem;
-      }
-    }
-    /* Ensure page content isn't hidden behind the fixed action bar */
-    #surveyForm {
-      padding-bottom: 6rem;
+    @media (max-width: 540px) {
+      .sticky-actions-bar { padding: 14px; gap: 12px; bottom: max(8px, env(safe-area-inset-bottom)); }
+      .survey-action-buttons { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+      .survey-action-buttons .btn { padding: 10px 12px; width: 100%; white-space: normal; }
+      #btnSaveNext { grid-column: 1 / -1; }
+      #memberSurveyForm :is(input, select, textarea) { scroll-margin-bottom: 230px; }
     }
   </style>
 </head>
@@ -1043,14 +1044,15 @@
           </div>
 
           <!-- Sticky Action Bar -->
-          <div class="sticky-actions-bar">
-            <div style="font-size: 0.825rem; color: var(--text-secondary);">
-              Editing Survey Record: <strong id="actionTargetMemberName">-</strong>
+          <div class="sticky-actions-bar" role="region" aria-label="Survey actions">
+            <div class="survey-action-context">
+              <span class="survey-action-label">Editing survey</span>
+              <strong id="actionTargetMemberName">-</strong>
             </div>
-            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-              <button type="button" class="btn btn-secondary" onclick="reloadMemberData()">🔄 Reset</button>
-              <button type="button" class="btn btn-primary" id="btnSaveMember" onclick="saveMemberSurvey(false)">💾 Save Member Survey</button>
-              <button type="button" class="btn btn-success" id="btnSaveNext" onclick="saveMemberSurvey(true)">⚡ Save &amp; Next Member &rarr;</button>
+            <div class="survey-action-buttons">
+              <button type="button" class="btn btn-secondary" onclick="reloadMemberData()">Reset</button>
+              <button type="button" class="btn btn-primary" id="btnSaveMember" onclick="saveMemberSurvey(false)">Save survey</button>
+              <button type="button" class="btn btn-success" id="btnSaveNext" onclick="saveMemberSurvey(true)">Save &amp; next member &rarr;</button>
             </div>
           </div>
 
@@ -1896,7 +1898,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = nextMember ? '⚡ Save & Next Member →' : '💾 Save Member Survey';
+        btn.textContent = nextMember ? 'Save & next member →' : 'Save survey';
       }
     }
 

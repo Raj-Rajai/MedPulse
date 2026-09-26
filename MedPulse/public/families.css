@@ -1,0 +1,65 @@
+/* Household cards inherit the shared MedPulse palette. */
+.families-page .main-content { padding: 48px clamp(24px, 4vw, 64px); }
+.families-page .page-header { margin-bottom: 32px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
+.families-page .page-header > div { display: block !important; width: 100%; }
+.families-page .page-title { font-size: 32px; letter-spacing: -1px; font-weight: 650; }
+.families-page .page-subtitle { margin-top: 8px; font-size: 14px; color: var(--text-secondary); }
+.families-eyebrow { display: block; margin-bottom: 10px; font-size: 11px; font-weight: 650; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-muted); }
+.families-page .card, .families-page .card:hover { border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-xs); transform: none; }
+.families-page .btn { min-height: 40px; border-radius: 6px; font-weight: 600; box-shadow: none; transition: background .15s, border-color .15s; }
+.families-page .btn:hover { transform: none; box-shadow: none; }
+.families-page .btn-primary { background: var(--accent-gradient); border: 1px solid var(--accent); }
+.families-page .btn-primary:hover { background: var(--accent-hover); }
+.families-page .btn-primary::after { display: none; }
+.families-page .btn-secondary { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); }
+.families-page .btn-secondary:hover { background: var(--bg-hover); }
+.families-page button:focus-visible, .families-page input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.family-add-section { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 28px; margin-bottom: 32px; }
+.families-page .family-add-section h2 { margin: 0 0 5px; font-size: 16px; font-weight: 650; letter-spacing: -.2px; }
+.families-page .family-add-section p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+.family-add-section .btn { flex-shrink: 0; padding: 9px 18px; }
+.families-page .family-horizontal-bar { padding: 0; background: transparent; border: 0; box-shadow: none; margin-bottom: 24px; }
+.household-directory-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding: 0 0 20px; }
+.household-directory-title { display: flex; align-items: center; gap: 10px; }
+.household-directory-title h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -.3px; }
+.household-count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 5px; background: var(--accent-subtle); border: 1px solid var(--border); color: var(--accent); font-size: 12px; font-variant-numeric: tabular-nums; }
+.household-search { position: relative; width: 260px; max-width: 100%; margin: 0; }
+.household-search > svg { position: absolute; left: 12px; top: 12px; color: var(--text-muted); pointer-events: none; }
+.families-page .household-search input { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 36px; height: 40px; font-size: 13px; box-shadow: none; }
+.household-name-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 18px; padding: 0; }
+.household-name-list > .empty-state, .household-name-list > [role="alert"] { grid-column: 1 / -1; }
+.household-name { position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 22px; width: 100%; min-width: 0; min-height: 174px; text-align: left; padding: 24px 44px 24px 24px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); box-shadow: var(--shadow-sm); color: var(--text-primary); font: inherit; font-size: 16px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; cursor: pointer; transition: border-color .18s, box-shadow .18s, transform .18s; }
+.household-name::before { content: ''; display: block; width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; background-color: var(--accent-subtle); background-position: center; background-repeat: no-repeat; background-size: 24px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d28d9' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7'/%3E%3C/svg%3E"); }
+.household-name::after { content: ''; position: absolute; right: 24px; bottom: 31px; width: 7px; height: 7px; border-top: 1.5px solid var(--accent); border-right: 1.5px solid var(--accent); transform: rotate(45deg); }
+.household-name:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.household-name:active { transform: translateY(0); }
+.families-page #createFamilyCard { padding: 28px; box-shadow: none !important; margin-bottom: 32px; }
+.families-page #locationVerificationCard { padding: 16px 0 !important; border: 0 !important; border-top: 1px solid var(--border) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; margin: 32px 0 0 !important; }
+.families-page #locationVerificationCard strong { font-size: 12px !important; font-weight: 600 !important; color: var(--text-secondary) !important; }
+.families-page #locationVerificationCard p { font-size: 12px !important; }
+.families-page #locationVerificationCard > div > div { min-width: 0 !important; }
+.families-page #locationVerificationCard span { display: none; }
+.families-page #btnLocationCheck { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); font-size: 12px !important; }
+.families-page .empty-state-icon { display: none; }
+.families-page .empty-state { padding: 40px 16px !important; }
+.families-page .anim-fade-up { animation: none; opacity: 1; transform: none; }
+@media (max-width: 860px) {
+  .families-page .main-content { padding: 80px 24px 32px; }
+}
+@media (max-width: 540px) {
+  .families-page .main-content { padding: 76px 18px 24px; }
+  .families-page .page-header { margin-bottom: 24px; padding-bottom: 22px; }
+  .families-page .page-title { font-size: 28px; }
+  .family-add-section { align-items: flex-start; flex-direction: column; gap: 18px; padding: 22px; margin-bottom: 24px; }
+  .household-directory-header { padding: 0 0 18px; gap: 18px; }
+  .household-search { width: 100%; }
+  .household-name-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .household-name { min-height: 164px; padding: 18px 28px 20px 18px; font-size: 14px; gap: 20px; }
+  .household-name::after { right: 15px; bottom: 27px; width: 6px; height: 6px; }
+  .families-page #createFamilyCard { padding: 20px; }
+  .families-page #locationVerificationCard > div { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .household-name { transition: none; }
+  .household-name:hover { transform: none; }
+}
