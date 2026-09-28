@@ -387,6 +387,15 @@ html.preload-transitions *::after {
 .sidebar-link[data-route="home"] .nav-icon-box {
   color: #a78bfa;
 }
+.sidebar-link[data-route="profile"] .nav-icon-box {
+  color: #a78bfa;
+}
+.sidebar-link[data-route="attendance"] .nav-icon-box {
+  color: #38bdf8;
+}
+.sidebar-link[data-route="exams"] .nav-icon-box {
+  color: #c084fc;
+}
 .sidebar-link[data-route="families"] .nav-icon-box {
   color: #60a5fa;
 }
@@ -395,9 +404,6 @@ html.preload-transitions *::after {
 }
 .sidebar-link[data-route="analytics"] .nav-icon-box {
   color: #fbbf24;
-}
-.sidebar-link[data-route="profile"] .nav-icon-box {
-  color: #f43f5e;
 }
 
 .sidebar-link:hover .nav-icon-box {

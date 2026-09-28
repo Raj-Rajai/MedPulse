@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#121026">
   <title>Family &amp; Member Management | MedPulse</title>
   <script src="/auth-guard.js"></script>
+  <script src="/field-location.js"></script>
   <script>
     (function() {
       try {
@@ -56,14 +57,38 @@
       </button>
     </div>
     <nav class="sidebar-nav">
-      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
         <div class="nav-icon-box">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <span class="link-label">Home</span>
+        <span class="link-label">Profile</span>
+      </a>
+      <a href="/attendance.html" class="sidebar-link" data-route="attendance" data-title="Attendance">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <polyline points="9 16 11 18 15 14"/>
+          </svg>
+        </div>
+        <span class="link-label">Attendance</span>
+      </a>
+      <a href="/exams.html" class="sidebar-link" data-route="exams" data-title="Exams">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <span class="link-label">Exams</span>
       </a>
       <a href="/family-manage.html" class="sidebar-link active" data-route="families" data-title="Families">
         <div class="nav-icon-box">
@@ -98,15 +123,6 @@
           </svg>
         </div>
         <span class="link-label">Analytics</span>
-      </a>
-      <a href="/profile.html" class="sidebar-link" data-route="profile" data-title="Profile">
-        <div class="nav-icon-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <span class="link-label">Profile</span>
       </a>
     </nav>
     <div class="sidebar-footer" id="authNavArea"></div>
@@ -1843,6 +1859,8 @@
                 <div>
                   <div class="member-name">${m.name}</div>
                   <div class="member-relation">${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}</div>
+                  ${m.added_by_patient_id ? '<span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:0.68rem;margin-top:4px;" title="Added by the family from the patient portal">✍️ Added by family</span>'
+                    : (m.patient_updated_at ? '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:0.68rem;margin-top:4px;" title="Basic details were updated by the family from the patient portal">✍️ Updated by family</span>' : '')}
                 </div>
                 <span class="badge badge-info">#${m.member_order}</span>
               </div>
@@ -3135,11 +3153,19 @@
         listEl.innerHTML = tasks.map(t => {
           const kwColor = t.matched_keyword === 'HTN' ? '#dc2626' : (t.matched_keyword === 'DM' ? '#9333ea' : (t.matched_keyword === 'ANAEMIA' ? '#d97706' : '#0284c7'));
 
-          const rsvpBadge = t.notification_status === 'Acknowledged'
-            ? `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient RSVP: Confirmed</span>`
-            : (t.notification_status === 'Declined'
-              ? `<span class="badge" style="background: #fee2e2; color: #b91c1c;">Patient RSVP: Declined</span>`
-              : `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`);
+          const rsvpVal = (t.rsvp && t.rsvp !== 'Pending') ? t.rsvp
+            : (t.notification_status === 'Acknowledged' ? 'Attending' : (t.notification_status === 'Declined' ? 'Not Attending' : 'Pending'));
+          const rsvpBadge = {
+            'Attending': `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient: Attending</span>`,
+            'Not Attending': `<span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700;">❌ Patient: Can't attend</span>`,
+            'Need Help': `<span class="badge" style="background: #fef3c7; color: #92400e; font-weight: 700;">🙋 Patient needs help</span>`,
+            'Pending': `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`
+          }[rsvpVal];
+          const verifyBadge = t.patient_contact_confirmation === 'Confirmed'
+            ? `<span class="badge" style="background: #ecfdf5; color: #065f46; font-weight: 700;" title="Patient confirmed you contacted them">✔ Patient verified</span>`
+            : (t.patient_contact_confirmation === 'Disputed'
+              ? `<span class="badge" style="background: #fef2f2; color: #b91c1c; font-weight: 700;" title="Patient says they were not contacted">⚠ Patient disputes call</span>`
+              : ((t.contacted_at || currentStatusRaw(t) !== 'Pending') ? `<span class="badge" style="background: #f8fafc; color: #64748b;">Awaiting patient confirmation</span>` : ''));
 
           const currentStatus = t.cadet_call_status || 'Pending';
           const statusBadge = currentStatus === 'Assisted'
@@ -3170,6 +3196,7 @@
               <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 ${rsvpBadge}
                 ${statusBadge}
+                ${verifyBadge}
 
                 <div style="display: flex; gap: 6px;">
                   <button class="btn btn-secondary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Contacted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Contacted' ? 'disabled' : ''}>
@@ -3188,6 +3215,9 @@
         console.error('Error fetching cadet campaign tasks:', err);
       }
     }
+
+
+    function currentStatusRaw(t) { return t.cadet_call_status || 'Pending'; }
 
     async function updateCadetTaskStatus(notifId, status) {
       try {

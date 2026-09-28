@@ -22,6 +22,82 @@
     })();
   </script>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    .profile-att-kpis-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 900px) {
+      .profile-att-kpis-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 520px) {
+      .profile-att-kpis-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+    .prof-att-kpi-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      transition: all 0.2s ease;
+    }
+    .prof-att-kpi-box:hover {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .prof-att-kpi-box.highlight {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .prof-att-kpi-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .prof-att-kpi-val {
+      font-size: 1.35rem;
+      font-weight: 850;
+      color: #1e1b4b;
+      margin-top: 3px;
+      line-height: 1.2;
+    }
+    .prof-att-kpi-sub {
+      font-size: 0.74rem;
+      color: #475569;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+    .profile-att-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    .profile-att-table th {
+      padding: 12px 14px;
+      font-weight: 750;
+      color: #334155;
+      background: #f8fafc;
+      border-bottom: 1.5px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .profile-att-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      vertical-align: middle;
+    }
+    .profile-att-table tbody tr:hover {
+      background: #fcfaff;
+    }
+  </style>
 </head>
 <body>
 
@@ -54,14 +130,38 @@
       </button>
     </div>
     <nav class="sidebar-nav">
-      <a href="/" class="sidebar-link" data-route="home" data-title="Home">
+      <a href="/profile.html" class="sidebar-link active" data-route="profile" data-title="Profile">
         <div class="nav-icon-box">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <span class="link-label">Home</span>
+        <span class="link-label">Profile</span>
+      </a>
+      <a href="/attendance.html" class="sidebar-link" data-route="attendance" data-title="Attendance">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <polyline points="9 16 11 18 15 14"/>
+          </svg>
+        </div>
+        <span class="link-label">Attendance</span>
+      </a>
+      <a href="/exams.html" class="sidebar-link" data-route="exams" data-title="Exams">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <span class="link-label">Exams</span>
       </a>
       <a href="/family-manage.html" class="sidebar-link" data-route="families" data-title="Families">
         <div class="nav-icon-box">
@@ -96,15 +196,6 @@
           </svg>
         </div>
         <span class="link-label">Analytics</span>
-      </a>
-      <a href="/profile.html" class="sidebar-link active" data-route="profile" data-title="Profile">
-        <div class="nav-icon-box">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <span class="link-label">Profile</span>
       </a>
     </nav>
     <div class="sidebar-footer" id="authNavArea"></div>
@@ -198,6 +289,89 @@
           <div class="kpi-num" id="kpiConditions">0</div>
           <div class="kpi-label">Diagnoses &amp; Prescriptions</div>
         </div>
+      </div>
+    </div>
+
+    <!-- Overall Attendance Summary Card (Top Section of Profile) -->
+    <div class="card anim-fade-up" style="margin-bottom: 24px; padding: 22px 26px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+            📅
+          </div>
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 3px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span>Overall Academic &amp; Clinical Attendance</span>
+              <span class="badge" style="background: rgba(109, 40, 217, 0.08); color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.2); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px;">3rd Year MBBS (2026)</span>
+              <span class="badge badge-success" id="profAttStatusBadge" style="font-size: 0.74rem; padding: 3px 10px;">
+                ✅ NMC Eligible (≥75%)
+              </span>
+            </h2>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">
+              Current Academic Year (3rd Year MBBS) lecture &amp; clinical posting records under National Medical Commission regulations
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="/attendance.html" class="btn btn-primary btn-sm" style="font-weight: 650; display: inline-flex; align-items: center; gap: 6px;">
+            <span>📅 Day-Wise Attendance</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Attendance Overview Pills / Metrics Strip -->
+      <div class="profile-att-kpis-strip">
+        <div class="prof-att-kpi-box">
+          <div class="prof-att-kpi-label">Overall Attendance</div>
+          <div class="prof-att-kpi-val" id="profAttOverallPct">--%</div>
+          <div class="prof-att-kpi-sub" id="profAttTotalFraction">-- / -- Sessions</div>
+        </div>
+
+        <div class="prof-att-kpi-box">
+          <div class="prof-att-kpi-label" style="color: #0284c7;">Theory Classes</div>
+          <div class="prof-att-kpi-val" style="color: #0284c7;" id="profAttTheoryPct">--%</div>
+          <div class="prof-att-kpi-sub" id="profAttTheoryFraction">-- / -- (Min 75%)</div>
+        </div>
+
+        <div class="prof-att-kpi-box">
+          <div class="prof-att-kpi-label" style="color: #7c3aed;">Practical &amp; Clinics</div>
+          <div class="prof-att-kpi-val" style="color: #7c3aed;" id="profAttPracticalPct">--%</div>
+          <div class="prof-att-kpi-sub" id="profAttPracticalFraction">-- / -- (Min 80%)</div>
+        </div>
+
+        <div class="prof-att-kpi-box highlight">
+          <div class="prof-att-kpi-label" style="color: #059669;">NMC Examination Status</div>
+          <div class="prof-att-kpi-val" style="color: #059669;" id="profAttComplianceText">Eligible</div>
+          <div class="prof-att-kpi-sub">University Exam Approved</div>
+        </div>
+      </div>
+
+      <!-- Simple Overall Attendance Table -->
+      <div class="table-wrapper" style="border: 1px solid #e2e8f0; border-radius: var(--radius-md); overflow-x: auto; margin-top: 14px;">
+        <table class="profile-att-table" id="profileAttendanceTable">
+          <thead>
+            <tr>
+              <th style="min-width: 240px;">Subject Name</th>
+              <th style="min-width: 180px;">Faculty In-Charge</th>
+              <th style="text-align: center; width: 140px;">Theory (75% Min)</th>
+              <th style="text-align: center; width: 140px;">Practical (80% Min)</th>
+              <th style="text-align: center; width: 130px;">Total Attended</th>
+              <th style="text-align: center; width: 100px;">Overall %</th>
+              <th style="text-align: center; width: 120px;">NMC Status</th>
+            </tr>
+          </thead>
+          <tbody id="profileAttendanceTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 28px; color: var(--text-muted);">
+                Loading overall attendance...
+              </td>
+            </tr>
+          </tbody>
+          <tfoot id="profileAttendanceTableFoot" style="display: none; background: #f8fafc; font-weight: 750; border-top: 2px solid #e2e8f0;">
+          </tfoot>
+        </table>
       </div>
     </div>
 
@@ -654,7 +828,8 @@
       document.getElementById('valFullName').textContent = s.name || '-';
       document.getElementById('valRollNumber').textContent = s.roll_number || '-';
       document.getElementById('valBatchYear').textContent = s.batch_year || '3rd Year MBBS';
-      document.getElementById('valCollege').textContent = `${s.college_name || 'Medical College'} (${s.college_city || 'City'}, ${s.college_state || 'State'})`;
+      const locPart = (s.college_city && s.college_state) ? ` (${s.college_city}, ${s.college_state})` : (s.college_city ? ` (${s.college_city})` : '');
+      document.getElementById('valCollege').textContent = `${s.college_name || 'Medical College'}${locPart}`;
       document.getElementById('valPostingUnit').textContent = s.posting_unit || 'RHTC - Sanand Block';
       document.getElementById('valPhone').textContent = s.phone || 'Not provided';
       document.getElementById('valEmail').textContent = s.email || 'Not provided';
@@ -973,6 +1148,182 @@
       }
     }
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /* ---- Load & Render Overall Attendance Table ---- */
+    async function loadProfileAttendance() {
+      try {
+        const query = loggedInUser?.roll_number ? `?roll_number=${encodeURIComponent(loggedInUser.roll_number)}` : '';
+        const res = await fetch(`/api/academic/attendance/subject-wise${query}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        renderProfileAttendance(data);
+      } catch (err) {
+        console.error('Failed to load profile attendance:', err);
+        const tbody = document.getElementById('profileAttendanceTableBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: #ef4444;">Failed to load attendance records.</td></tr>`;
+        }
+      }
+    }
+
+    function renderProfileAttendance(data) {
+      const summary = data.summary || data.overall_summary || {};
+      const theory = data.theory || {};
+      const practical = data.practical || {};
+      const subjects = (data.subjects || []).filter(s => s.total > 0);
+
+      // Compute aggregates directly from subjects if top-level fields are missing
+      let thTot = theory.total || 0;
+      let thAtt = theory.attended || 0;
+      let prTot = practical.total || 0;
+      let prAtt = practical.attended || 0;
+
+      for (const s of subjects) {
+        if (!theory.total && s.theory) {
+          thTot += (s.theory.total || 0);
+          thAtt += (s.theory.attended || 0);
+        }
+        if (!practical.total && s.practical) {
+          prTot += (s.practical.total || 0);
+          prAtt += (s.practical.attended || 0);
+        }
+      }
+
+      const totSessions = summary.total_sessions || summary.total_classes || (thTot + prTot);
+      const attSessions = summary.attended_sessions || summary.attended_classes || (thAtt + prAtt);
+      const overallPct = summary.overall_percentage !== undefined ? summary.overall_percentage : (totSessions > 0 ? parseFloat(((attSessions / totSessions) * 100).toFixed(1)) : 0);
+      const thPct = theory.percentage !== undefined ? theory.percentage : (thTot > 0 ? parseFloat(((thAtt / thTot) * 100).toFixed(1)) : 0);
+      const prPct = practical.percentage !== undefined ? practical.percentage : (prTot > 0 ? parseFloat(((prAtt / prTot) * 100).toFixed(1)) : 0);
+
+      // Update Top Attendance KPIs Strip
+      const elOverall = document.getElementById('profAttOverallPct');
+      if (elOverall) {
+        elOverall.textContent = overallPct + '%';
+        elOverall.style.color = overallPct >= 75 ? '#10b981' : (overallPct >= 65 ? '#f59e0b' : '#ef4444');
+      }
+
+      const elTotFrac = document.getElementById('profAttTotalFraction');
+      if (elTotFrac) elTotFrac.textContent = `${attSessions} / ${totSessions} Sessions`;
+
+      const elThPct = document.getElementById('profAttTheoryPct');
+      if (elThPct) elThPct.textContent = thPct + '%';
+      const elThFrac = document.getElementById('profAttTheoryFraction');
+      if (elThFrac) elThFrac.textContent = `${thAtt} / ${thTot} (Min 75%)`;
+
+      const elPrPct = document.getElementById('profAttPracticalPct');
+      if (elPrPct) elPrPct.textContent = prPct + '%';
+      const elPrFrac = document.getElementById('profAttPracticalFraction');
+      if (elPrFrac) elPrFrac.textContent = `${prAtt} / ${prTot} (Min 80%)`;
+
+      const elComp = document.getElementById('profAttComplianceText');
+      const badgeStatus = document.getElementById('profAttStatusBadge');
+      const nmcStatus = summary.nmc_status || (overallPct >= 75 && thPct >= 75 && prPct >= 80 ? 'Eligible' : 'Warning');
+      if (elComp) {
+        elComp.textContent = nmcStatus === 'Eligible' ? 'Eligible' : nmcStatus;
+        elComp.style.color = nmcStatus === 'Eligible' ? '#059669' : (nmcStatus === 'Warning' ? '#d97706' : '#dc2626');
+      }
+      if (badgeStatus) {
+        badgeStatus.className = nmcStatus === 'Eligible' ? 'badge badge-success' : (nmcStatus === 'Warning' ? 'badge badge-warning' : 'badge badge-danger');
+        badgeStatus.textContent = nmcStatus === 'Eligible' ? '✅ NMC Eligible (≥75%)' : (nmcStatus === 'Warning' ? '⚠️ Condonation Required' : '❌ Shortage / Ineligible');
+      }
+
+      // Render Subject-Wise Table Rows
+      const tbody = document.getElementById('profileAttendanceTableBody');
+      const tfoot = document.getElementById('profileAttendanceTableFoot');
+      if (!tbody) return;
+
+      if (subjects.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">No attendance records found for current academic year.</td></tr>`;
+        if (tfoot) tfoot.style.display = 'none';
+        return;
+      }
+
+      let rowsHtml = '';
+      for (const s of subjects) {
+        const thText = s.theory && s.theory.total > 0
+          ? `${s.theory.attended} / ${s.theory.total} <span style="font-weight: 750; color: ${s.theory.met ? '#0284c7' : '#ef4444'};">(${s.theory.percentage}%)</span>`
+          : '<span style="color: #94a3b8;">—</span>';
+
+        const prText = s.practical && s.practical.total > 0
+          ? `${s.practical.attended} / ${s.practical.total} <span style="font-weight: 750; color: ${s.practical.met ? '#7c3aed' : '#ef4444'};">(${s.practical.percentage}%)</span>`
+          : '<span style="color: #94a3b8;">—</span>';
+
+        const statusBadge = s.nmc_status === 'Eligible'
+          ? '<span class="badge badge-success" style="font-size: 0.72rem; padding: 3px 8px;">✅ Eligible</span>'
+          : (s.nmc_status === 'Warning'
+            ? '<span class="badge badge-warning" style="font-size: 0.72rem; padding: 3px 8px;">⚠️ Warning</span>'
+            : '<span class="badge badge-danger" style="font-size: 0.72rem; padding: 3px 8px;">❌ Shortage</span>');
+
+        const pctColor = s.overall_percentage >= 75 ? '#10b981' : (s.overall_percentage >= 65 ? '#f59e0b' : '#ef4444');
+
+        rowsHtml += `
+          <tr>
+            <td style="font-weight: 750; color: var(--text-primary);">
+              ${escapeHtml(s.subject)}
+            </td>
+            <td style="color: #475569; font-size: 0.8rem;">
+              ${escapeHtml(s.faculty_name || 'Faculty Member')}
+            </td>
+            <td style="text-align: center;">${thText}</td>
+            <td style="text-align: center;">${prText}</td>
+            <td style="text-align: center; font-weight: 700; color: #1e1b4b;">
+              ${s.attended} / ${s.total}
+            </td>
+            <td style="text-align: center; font-weight: 850; color: ${pctColor};">
+              ${s.overall_percentage}%
+            </td>
+            <td style="text-align: center;">
+              ${statusBadge}
+            </td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = rowsHtml;
+
+      // Render Aggregate Summary Row in tfoot
+      if (tfoot) {
+        tfoot.style.display = 'table-row-group';
+        const thAgg = thTot > 0 ? `${thAtt} / ${thTot} (${thPct}%)` : '—';
+        const prAgg = prTot > 0 ? `${prAtt} / ${prTot} (${prPct}%)` : '—';
+        tfoot.innerHTML = `
+          <tr>
+            <td style="padding: 12px 14px; color: #1e1b4b; font-weight: 800;">
+              Total Aggregate Attendance
+            </td>
+            <td style="padding: 12px 14px; color: #64748b; font-size: 0.78rem;">
+              Current Year Subjects Combined
+            </td>
+            <td style="padding: 12px 14px; text-align: center; color: #0284c7; font-weight: 800;">
+              ${thAgg}
+            </td>
+            <td style="padding: 12px 14px; text-align: center; color: #7c3aed; font-weight: 800;">
+              ${prAgg}
+            </td>
+            <td style="padding: 12px 14px; text-align: center; color: #1e1b4b; font-weight: 850;">
+              ${attSessions} / ${totSessions}
+            </td>
+            <td style="padding: 12px 14px; text-align: center; font-weight: 900; color: ${overallPct >= 75 ? '#10b981' : '#ef4444'}; font-size: 0.95rem;">
+              ${overallPct}%
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <span class="badge ${nmcStatus === 'Eligible' ? 'badge-success' : 'badge-warning'}" style="font-size: 0.74rem; padding: 4px 10px;">
+                ${nmcStatus === 'Eligible' ? '✅ ' + nmcStatus : '⚠️ ' + nmcStatus}
+              </span>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
     /* ---- Bootstrap on Active Window ---- */
     document.addEventListener('DOMContentLoaded', () => {
       initSidebar();
@@ -981,7 +1332,10 @@
         MedPulseValidation.attachEmail('epEmail', true);
         MedPulseValidation.attachPhone('epPhone', true);
       }
-      runWhenActive(loadStudentProfile);
+      runWhenActive(() => {
+        loadStudentProfile();
+        loadProfileAttendance();
+      });
     });
   </script>
 
