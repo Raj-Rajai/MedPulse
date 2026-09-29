@@ -3873,7 +3873,7 @@ table tbody tr:hover {
 /* 2-Column Responsive Profile Content Layout */
 .profile-content-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
   align-items: start;
 }
@@ -3884,7 +3884,7 @@ table tbody tr:hover {
   }
 }
 
-/* Left Sidebar Info Cards */
+/* Profile Info Cards */
 .profile-info-card {
   background: #ffffff;
   border: 1px solid var(--border);
