@@ -25,8 +25,18 @@ function toggleNavGroup(groupId) {
     try {
         localStorage.setItem('medpulse_' + groupId + '_open', isOpen ? '1' : '0');
     } catch (e) {}
+
+    const glider = document.getElementById('sidebarGlider');
+    if (glider && !isOpen) {
+        const activeInGroup = group.querySelector('.sidebar-link.active');
+        if (activeInGroup) {
+            glider.style.opacity = '0';
+            glider.style.pointerEvents = 'none';
+        }
+    }
+
     if (window.updateSidebarGlider) {
-        setTimeout(window.updateSidebarGlider, 280);
+        setTimeout(window.updateSidebarGlider, isOpen ? 220 : 0);
     }
 }
 

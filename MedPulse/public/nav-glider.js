@@ -28,6 +28,22 @@
     return glider;
   }
 
+  function isLinkVisible(link) {
+    if (!link) return false;
+    if (link.offsetParent === null) return false;
+    const parentGroup = link.closest('.sidebar-nav-group');
+    if (parentGroup && !parentGroup.classList.contains('open')) return false;
+    const subnav = link.closest('.sidebar-subnav');
+    if (subnav) {
+      if (window.getComputedStyle && window.getComputedStyle(subnav).visibility === 'hidden') return false;
+      const subnavRect = subnav.getBoundingClientRect();
+      if (subnavRect.height <= 0) return false;
+    }
+    const rect = link.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return false;
+    return true;
+  }
+
   function initGlider() {
     const nav = document.querySelector('.sidebar-nav');
     if (!nav) return;
@@ -44,7 +60,7 @@
 
     const glider = getOrCreateGlider(nav);
     const activeLink = nav.querySelector('.sidebar-link.active');
-    if (!activeLink) {
+    if (!activeLink || !isLinkVisible(activeLink)) {
       glider.style.opacity = '0';
       glider.style.pointerEvents = 'none';
       return;
@@ -155,8 +171,9 @@
     const glider = document.getElementById('sidebarGlider');
     if (!nav || !glider) return;
     const activeLink = nav.querySelector('.sidebar-link.active');
-    if (!activeLink) {
+    if (!activeLink || !isLinkVisible(activeLink)) {
       glider.style.opacity = '0';
+      glider.style.pointerEvents = 'none';
       return;
     }
     const metrics = getLinkMetrics(activeLink, nav);
@@ -166,6 +183,9 @@
       glider.style.width = `${metrics.width}px`;
       glider.style.height = `${metrics.height}px`;
       glider.style.opacity = '1';
+    } else {
+      glider.style.opacity = '0';
+      glider.style.pointerEvents = 'none';
     }
   }
 
@@ -214,8 +234,18 @@
     try {
       localStorage.setItem('medpulse_' + groupId + '_open', isOpen ? '1' : '0');
     } catch(e) {}
+
+    const glider = document.getElementById('sidebarGlider');
+    if (glider && !isOpen) {
+      const activeInGroup = group.querySelector('.sidebar-link.active');
+      if (activeInGroup) {
+        glider.style.opacity = '0';
+        glider.style.pointerEvents = 'none';
+      }
+    }
+
     if (window.updateSidebarGlider) {
-      setTimeout(window.updateSidebarGlider, 280);
+      setTimeout(window.updateSidebarGlider, isOpen ? 220 : 0);
     }
   };
 
