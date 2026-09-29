@@ -1,35 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" class="preload-transitions">
+<html lang="en">
 <head>
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/icons/app-192.png">
-  <script src="/pwa.js" defer></script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#121026">
-  <title>MedPulse | Medical College Health Survey Portal</title>
-  <script src="/auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedPulse — Community Medicine Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
   <script>
     (function() {
-      try {
-        var c = localStorage.getItem('sidebar_collapsed');
-        if (c === '1' || c === 'true') {
-          document.documentElement.classList.add('sidebar-collapsed');
-        }
-      } catch (e) {}
+      document.documentElement.classList.add('preload-transitions');
+      window.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => {
+          document.documentElement.classList.remove('preload-transitions');
+        });
+      });
+      const savedCollapsed = localStorage.getItem('medpulse_sidebar_collapsed');
+      if (savedCollapsed === '1') {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
     })();
   </script>
-  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
   <!-- Backdrop Overlay for Mobile Sliding Nav -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- Sleek Left Sliding Sidebar Navigation -->
-  <!-- Sidebar Navigation (Collapsible Icon Dock) -->
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Collapsible Icon Dock Navigation -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
@@ -154,7 +153,8 @@
     </nav>
     <div class="sidebar-footer" id="authNavArea"></div>
   </aside>
-  <!-- Mobile Drawer Toggle -->
+
+  <!-- Mobile Nav Toggle -->
   <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleSidebar()" title="Toggle Navigation">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -164,270 +164,162 @@
   <!-- Main Content -->
   <main class="main-content">
 
-    <!-- Hero Section -->
-    <div class="hero anim-fade-up">
-      <div class="hero-text">
-        <div class="anim-float-subtle" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(109, 40, 217, 0.08); border: 1.5px solid rgba(109, 40, 217, 0.22); padding: 4px 14px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; letter-spacing: 0.03em;">
-          <span class="role-dot" style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #10b981;"></span>
-          <span>PSM · Community Medicine Surveillance</span>
-        </div>
-        <div id="heroUserBadge" style="display: none; align-items: center; gap: 8px; margin-bottom: 12px; background: rgba(109, 40, 217, 0.12); border: 1.5px solid rgba(109, 40, 217, 0.28); border-radius: 100px; padding: 5px 16px; width: fit-content;">
-          <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent);">👤 Authenticated Cadet:</span>
-          <span id="heroCadetInfo" style="font-size: 0.82rem; font-weight: 650; color: #1e1b4b;"></span>
-        </div>
-        <h1 class="page-title-animated">Community Medicine Field Health System</h1>
-        <p>
-          A standardized, clinical data-entry and surveillance platform for medical colleges and MBBS students. 
-          Record household socio-demographics, screen for non-communicable diseases, evaluate nutritional adequacy, 
-          and track longitudinal patient follow-up visits in rural and urban field practice areas.
-        </p>
-        <div class="hero-actions">
-          <a href="/family-manage.html" class="btn btn-primary btn-lg">👥 Manage Families</a>
-          <a href="/entry.html" class="btn btn-secondary btn-lg">📝 Survey Data Entry</a>
-          <a href="/analytics.html" class="btn btn-secondary btn-lg">📊 Analytics</a>
-        </div>
+    <!-- Page Header -->
+    <div class="page-header anim-fade-up">
+      <div>
+        <span class="families-eyebrow">Community Medicine &bull; Field Surveillance</span>
+        <h1 class="page-title">Community Medicine Dashboard</h1>
+        <p class="page-subtitle">Field household surveillance portfolio, enrolled families, and clinical activity overview.</p>
       </div>
-      <img class="hero-sal-logo" src="/hospital/sal-hospital-logo.webp" alt="SAL Hospital - Healthcare with Human Touch" width="2559" height="1493">
-    </div>
-
-    <!-- Quick Stats Grid -->
-    <div class="stats-grid anim-fade-up anim-delay-1">
-      <div class="stat-box">
-        <div class="title">Families Surveyed</div>
-        <div class="value" id="statFamilies">0</div>
-        <div class="subtext">Active household units</div>
-      </div>
-      <div class="stat-box">
-        <div class="title">Total Individuals</div>
-        <div class="value" id="statMembers">0</div>
-        <div class="subtext">Registered individuals</div>
-      </div>
-      <div class="stat-box stat-warning">
-        <div class="title">Adult HTN Prevalence</div>
-        <div class="value" id="statHtn">0%</div>
-        <div class="subtext">SBP &ge; 140 or DBP &ge; 90 mmHg</div>
-      </div>
-      <div class="stat-box stat-warning">
-        <div class="title">Adult DM Prevalence</div>
-        <div class="value" id="statDm">0%</div>
-        <div class="subtext">Random Blood Sugar &ge; 200 mg/dl</div>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <a href="/family-manage.html" class="btn btn-secondary" style="font-weight: 650; display: inline-flex; align-items: center; gap: 6px;">
+          <span>👥 Manage Families</span>
+        </a>
+        <a href="/entry.html" class="btn btn-primary" style="font-weight: 650; display: inline-flex; align-items: center; gap: 6px;">
+          <span>➕ New Survey Entry</span>
+        </a>
+        <a href="/analytics.html" class="btn btn-secondary" style="font-weight: 650; display: inline-flex; align-items: center; gap: 6px;">
+          <span>📊 Analytics</span>
+        </a>
       </div>
     </div>
 
-    <!-- Feature Modules Grid -->
-    <div class="features-grid anim-fade-up anim-delay-2">
-      <a href="/family-manage.html" class="feature-card">
-        <span class="feature-icon">👥</span>
-        <h3>Family &amp; Member Management</h3>
-        <p>Create households from scratch, stage family members, inspect baseline clinical records, and manage individual patient charts.</p>
-      </a>
-      <a href="/entry.html" class="feature-card">
-        <span class="feature-icon">📋</span>
-        <h3>Standardized Field Survey Entry</h3>
-        <p>Full 3-step structured digitization form with dynamic age-adaptive builders for adult NCDs, pediatric growth, and maternal RMNCH+A.</p>
-      </a>
-      <a href="/family-manage.html" class="feature-card">
-        <span class="feature-icon">🩺</span>
-        <h3>Longitudinal Follow-up Visits</h3>
-        <p>Log chronological patient re-examinations, track blood pressure and sugar control, therapy compliance, and clinical progress notes.</p>
-      </a>
-      <a href="/analytics.html" class="feature-card">
-        <span class="feature-icon">📊</span>
-        <h3>Epidemiological Audit Queries</h3>
-        <p>Run pre-built relational SQL reports for student survey audits, sex ratios, community anaemia burden, and malnutrition distributions.</p>
-      </a>
-    </div>
-
-    <!-- Medical & Clinical Reference Guide for Field Students -->
-    <div class="card anim-fade-up anim-delay-3">
-      <div class="section-title">
-        <span>Clinical Screening Criteria</span>
-        <span class="badge badge-info">Reference</span>
+    <!-- Clinical Surveillance KPIs Grid (Image 1) -->
+    <div class="profile-kpis-grid anim-fade-up">
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-families">🏡</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="kpiFamilies">0</div>
+          <div class="kpi-label">Assigned Households</div>
+        </div>
       </div>
-      <p class="card-desc">Quick diagnostic reference values and field examination benchmarks used during family health postings:</p>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
-        
-        <!-- Adult NCD Criteria -->
-        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-          <strong style="color: var(--primary); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
-            Adult NCD Screening (Age &ge; 18)
-          </strong>
-          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
-            <li><strong>Hypertension:</strong> SBP &ge; 140 mmHg or DBP &ge; 90 mmHg</li>
-            <li><strong>Pre-Hypertension:</strong> SBP 120-139 or DBP 80-89</li>
-            <li><strong>Diabetes Mellitus:</strong> RBS &ge; 200 mg/dl (with symptoms)</li>
-            <li><strong>Severe Anaemia:</strong> Hb &lt; 7.0 g/dl | Moderate: 7.0-9.9 g/dl</li>
-            <li><strong>WHR Risk:</strong> &gt; 0.90 in Males, &gt; 0.85 in Females</li>
-          </ul>
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-patients">👥</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="kpiMembers">0</div>
+          <div class="kpi-label">Enrolled Family Members</div>
         </div>
-
-        <!-- Pediatric Nutrition -->
-        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-          <strong style="color: var(--warning-text); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
-            Pediatric Malnutrition (0-5 Yrs)
-          </strong>
-          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
-            <li><strong>MUAC &lt; 11.5 cm:</strong> Severe Acute Malnutrition (SAM)</li>
-            <li><strong>MUAC 11.5 - 12.5 cm:</strong> Moderate Malnutrition (MAM)</li>
-            <li><strong>MUAC &gt; 12.5 cm:</strong> Normal nutritional status</li>
-            <li><strong>Growth Screening:</strong> Verify Mamta Card &amp; Immunization</li>
-            <li><strong>Head vs Chest Circ:</strong> HC = CC at approx. 1 year of age</li>
-          </ul>
+      </div>
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-followups">🩺</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="kpiFollowups">0</div>
+          <div class="kpi-label">Follow-Up Visits Logged</div>
         </div>
-
-        <!-- ICMR Dietary Assessment -->
-        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-          <strong style="color: var(--success-text); font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
-            ICMR Dietary Units (CU Reference)
-          </strong>
-          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
-            <li><strong>Reference Adult Male (Sedentary):</strong> 1.0 CU (2400 kcal)</li>
-            <li><strong>Moderate Worker:</strong> 1.2 CU | <strong>Heavy Worker:</strong> 1.6 CU</li>
-            <li><strong>Adult Female:</strong> 0.8 CU (Sedentary) | 0.9 CU (Moderate)</li>
-            <li><strong>Calorie Adequacy:</strong> Deficient if daily intake &lt; requirement</li>
-            <li><strong>Dietary Advice:</strong> Balanced diet counseling for deficient households</li>
-          </ul>
+      </div>
+      <div class="profile-kpi-card">
+        <div class="profile-kpi-icon kpi-icon-conditions">💊</div>
+        <div class="profile-kpi-info">
+          <div class="kpi-num" id="kpiConditions">0</div>
+          <div class="kpi-label">Diagnoses &amp; Prescriptions</div>
         </div>
-
-        <!-- Maternal Health RMNCH+A -->
-        <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-          <strong style="color: #7c3aed; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
-            Maternal Health (RMNCH+A)
-          </strong>
-          <ul style="font-size: 0.825rem; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.7;">
-            <li><strong>Antenatal Care:</strong> Minimum 4 ANC checkups recommended</li>
-            <li><strong>Institutional Delivery:</strong> Hospital/PHC vs Home birth</li>
-            <li><strong>Postnatal Care:</strong> Follow-up within 48h and 7 days</li>
-            <li><strong>Family Planning:</strong> Modern spacing / terminal methods</li>
-            <li><strong>IFA Supplementation:</strong> 180 tablets during pregnancy</li>
-          </ul>
-        </div>
-
       </div>
     </div>
 
-    <!-- Student Field Workflow Guide -->
-    <div class="card anim-fade-up anim-delay-4">
-      <h2 class="card-title">MBBS Field Survey Step-by-Step Workflow</h2>
-      <p class="card-desc">Standard operating procedure for manual survey record entry in community medicine:</p>
+    <!-- Assigned Field Households Card (Image 2) -->
+    <div class="card anim-fade-up" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 750; color: var(--text-primary); margin-bottom: 4px;">
+            🏡 Assigned Field Households
+          </h2>
+          <p class="card-desc" style="margin: 0;">
+            All households registered under your roll number with surveillance completion status.
+          </p>
+        </div>
+        <a href="/family-manage.html" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 650;">
+          Manage Families &rarr;
+        </a>
+      </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
-          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">01</div>
-          <strong style="display: block; margin-bottom: 0.25rem;">Create Household</strong>
-          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
-            Register the family number, head of household, ward/village, and total family consumption units (CU).
+      <div class="profile-households-grid" id="profileFamiliesGrid">
+        <div style="padding: 24px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">
+          Loading assigned households...
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Clinical Surveillance Activity Card (Image 3) -->
+    <div class="card anim-fade-up" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 750; color: var(--text-primary); margin-bottom: 4px;">
+            🩺 Recent Clinical Surveillance Activity
+          </h2>
+          <p class="card-desc" style="margin: 0;">
+            Log of recent follow-up visits, vitals checks, and clinical interventions performed in the field.
           </p>
         </div>
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
-          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">02</div>
-          <strong style="display: block; margin-bottom: 0.25rem;">Add Family Members</strong>
-          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
-            Record demographics and clinical screening for each individual. The form adapts automatically by age group.
+        <a href="/entry.html" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 650;">
+          New Survey Entry &rarr;
+        </a>
+      </div>
+
+      <div class="activity-timeline" id="profileActivityTimeline">
+        <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+          Loading recent field visits...
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Field Survey Proforma Card -->
+    <div class="card anim-fade-up" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(109, 40, 217, 0.04), rgba(79, 70, 229, 0.02)); border: 1px solid rgba(109, 40, 217, 0.15);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+            📄 Official Field Survey Proforma Exports
+          </h3>
+          <p style="font-size: 0.83rem; color: var(--text-muted); margin: 0;">
+            Download the official Community Medicine (PSM) survey proforma containing all 43 columns, baseline socio-demographics, and clinical follow-up records.
           </p>
         </div>
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
-          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">03</div>
-          <strong style="display: block; margin-bottom: 0.25rem;">Log Follow-Up Visits</strong>
-          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
-            Revisit hypertensive, diabetic, or anaemic individuals to record follow-up blood pressure, sugar, and compliance.
-          </p>
-        </div>
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1rem;">
-          <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem; margin-bottom: 0.25rem;">04</div>
-          <strong style="display: block; margin-bottom: 0.25rem;">Run College Audits</strong>
-          <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">
-            Execute relational SQL queries to analyze morbidity rates, sex ratios, and nutritional trends across batches.
-          </p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="cardExportCsvBtn" onclick="exportProformaCsv()" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 650;">
+            📥 Download CSV (43 Cols)
+          </button>
+          <button class="btn btn-primary" id="cardExportPdfBtn" onclick="exportProformaPdf()" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 650; background: linear-gradient(135deg, #0284c7, #0369a1); border: none; box-shadow: 0 4px 12px rgba(2,132,199,0.35);">
+            📄 Download PDF Report
+          </button>
         </div>
       </div>
     </div>
 
   </main>
 
+  <script src="/app.js"></script>
+  <script src="/validation.js"></script>
+  <script src="/nav-glider.js"></script>
   <script>
-    // Remove preload transitions suppression after double RAF so initial paint has no transition jumps
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        document.documentElement.classList.remove('preload-transitions');
-      });
-    });
+    let loggedInUser = null;
+    let dashboardData = null;
 
-    // Execute callback only when document is active/visible, and after loading, nothing
-    function runWhenActive(callback) {
-      if (document.visibilityState === 'visible') {
-        callback();
-      } else {
-        const onVisible = () => {
-          if (document.visibilityState === 'visible') {
-            document.removeEventListener('visibilitychange', onVisible);
-            callback();
-          }
-        };
-        document.addEventListener('visibilitychange', onVisible);
-      }
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
-    function toggleSidebar() {
-      const sb = document.getElementById('sidebar');
-      const ov = document.getElementById('sidebarOverlay');
-      if (window.innerWidth <= 860) {
-        const isOpen = sb.classList.toggle('open');
-        if (ov) ov.classList.toggle('active', isOpen);
-      } else {
-        const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
-        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
-        localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+    function showToast(message, type = 'info', duration = 3200) {
+      let container = document.getElementById('toastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
       }
-    }
-
-    function closeSidebar() {
-      const sb = document.getElementById('sidebar');
-      const ov = document.getElementById('sidebarOverlay');
-      if (window.innerWidth <= 860) {
-        if (sb) sb.classList.remove('open');
-        if (ov) ov.classList.remove('active');
-      } else {
-        document.documentElement.classList.add('sidebar-collapsed');
-        document.body.classList.add('sidebar-collapsed');
-        localStorage.setItem('sidebar_collapsed', '1');
-      }
-    }
-
-    function initSidebar() {
-      const isCollapsed = (localStorage.getItem('sidebar_collapsed') === '1' || localStorage.getItem('sidebar_collapsed') === 'true') && window.innerWidth > 860;
-      if (isCollapsed) {
-        document.documentElement.classList.add('sidebar-collapsed');
-        document.body.classList.add('sidebar-collapsed');
-      } else {
-        document.documentElement.classList.remove('sidebar-collapsed');
-        document.body.classList.remove('sidebar-collapsed');
-      }
-    }
-
-    async function loadDashboard() {
-      try {
-        const activeUser = window.getMedPulseUser ? window.getMedPulseUser() : null;
-        if (activeUser) {
-          const badge = document.getElementById('heroUserBadge');
-          const info = document.getElementById('heroCadetInfo');
-          if (badge && info) {
-            info.textContent = `${activeUser.name || 'Cadet'} (Roll ${activeUser.roll_number}) • ${activeUser.posting_unit || 'Community Medicine'}`;
-            badge.style.display = 'inline-flex';
-          }
-        }
-
-        const statsRes = await fetch('/api/analytics/summary');
-        const stats = await statsRes.json();
-
-        document.getElementById('statFamilies').textContent = (stats && stats.totals && stats.totals.families) || 0;
-        document.getElementById('statMembers').textContent = (stats && stats.totals && stats.totals.members) || 0;
-        document.getElementById('statHtn').textContent = ((stats && stats.adults && stats.adults.htn_pct) || 0) + '%';
-        document.getElementById('statDm').textContent = ((stats && stats.adults && stats.adults.dm_pct) || 0) + '%';
-      } catch (err) {
-        console.error('Failed to load dashboard:', err);
-      }
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 250);
+      }, duration);
     }
 
     function initAuth() {
@@ -436,61 +328,240 @@
       if (!authArea) return;
       if (userStr) {
         try {
-          const user = JSON.parse(userStr);
+          loggedInUser = JSON.parse(userStr);
           authArea.innerHTML = `
-            <div class="sidebar-user" data-tooltip="Roll ${user.roll_number} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logoutUser();}else{window.location.href='/profile.html';}" title="Roll ${user.roll_number}">
+            <div class="sidebar-user" data-tooltip="Roll ${loggedInUser.roll_number || '235'} (View Profile)" onclick="if(document.documentElement.classList.contains('sidebar-collapsed')||document.body.classList.contains('sidebar-collapsed')){logout();}else{window.location.href='/profile.html';}" title="Roll ${loggedInUser.roll_number || '235'}">
               <div class="user-avatar-badge">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                <span class="role-dot"></span>
               </div>
               <div class="user-info-text">
-                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); display: block;">Student</span>
-                <span style="font-weight: 700; color: #fff;">Roll ${user.roll_number}</span>
+                <div class="user-name">${escapeHtml(loggedInUser.name || 'Dhruv Patel')}</div>
+                <div class="user-role">Roll ${escapeHtml(loggedInUser.roll_number || '235')}</div>
               </div>
-              <button class="logout-btn" onclick="event.stopPropagation(); logoutUser();" title="Logout">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-              </button>
             </div>
           `;
-        } catch (e) {
-          showLoginLink(authArea);
+        } catch(e) {
+          loggedInUser = null;
         }
       } else {
-        showLoginLink(authArea);
+        authArea.innerHTML = `
+          <a href="/login.html" class="sidebar-login-link" title="Sign In">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span class="login-label">Sign In</span>
+          </a>
+        `;
       }
     }
 
-    function showLoginLink(authArea) {
-      authArea.innerHTML = `
-        <a href="/login.html" class="sidebar-login-link" title="Sign In">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          <span class="login-label">Sign In</span>
-        </a>
-      `;
+    function logout() {
+      localStorage.removeItem('medpulse_user');
+      window.location.href = '/login.html';
     }
 
-    function logoutUser() {
-      localStorage.removeItem('medpulse_user');
-      window.location.reload();
+    async function loadDashboard() {
+      try {
+        const query = loggedInUser?.roll_number ? `?roll_number=${encodeURIComponent(loggedInUser.roll_number)}` : '';
+        const res = await fetch(`/api/students/profile${query}`);
+        if (!res.ok) throw new Error('Failed to load Community Medicine data');
+        dashboardData = await res.json();
+        renderDashboard(dashboardData);
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+        showToast(err.message, 'error');
+      }
+    }
+
+    function renderDashboard(data) {
+      const st = data.stats || {};
+      const families = data.families || [];
+      const activities = data.recentActivity || [];
+
+      // 1. KPI Metrics Cards
+      const kpiFamiliesEl = document.getElementById('kpiFamilies');
+      if (kpiFamiliesEl) kpiFamiliesEl.textContent = st.total_families || 0;
+      const kpiMembersEl = document.getElementById('kpiMembers');
+      if (kpiMembersEl) kpiMembersEl.textContent = st.total_members || 0;
+      const kpiFollowupsEl = document.getElementById('kpiFollowups');
+      if (kpiFollowupsEl) kpiFollowupsEl.textContent = st.total_followups || 0;
+      const kpiConditionsEl = document.getElementById('kpiConditions');
+      if (kpiConditionsEl) kpiConditionsEl.textContent = (st.total_conditions || 0) + (st.total_medications || 0);
+
+      // 2. Assigned Households Grid
+      const famGrid = document.getElementById('profileFamiliesGrid');
+      if (famGrid) {
+        if (families.length === 0) {
+          famGrid.innerHTML = `
+            <div style="padding: 24px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">
+              No households assigned to this student roll yet.
+            </div>
+          `;
+        } else {
+          famGrid.innerHTML = families.map(f => {
+            const totalM = f.member_count || 0;
+            const survM = f.surveyed_members || 0;
+            const pct = totalM > 0 ? Math.round((survM / totalM) * 100) : 0;
+            const calStatus = f.calorie_status === 'Normal' ? 'badge-success' : (f.calorie_status === 'Deficient' ? 'badge-danger' : 'badge-warning');
+
+            return `
+              <div class="profile-household-card">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <span class="badge badge-info" style="font-size: 0.72rem; font-weight: 750;">${escapeHtml(f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`)}</span>
+                    <span class="badge ${calStatus}" style="font-size: 0.7rem;">CU: ${escapeHtml(f.calorie_status || 'Normal')}</span>
+                  </div>
+                  <h3 style="font-size: 1rem; font-weight: 750; color: var(--text-primary); margin-bottom: 2px;">
+                    ${escapeHtml(f.head_of_family)}
+                  </h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">
+                    📍 ${escapeHtml(f.village || f.village_ward || 'Field Area')} &bull; ${totalM} Members
+                  </div>
+                  <div class="household-progress-bar">
+                    <div class="household-progress-fill" style="width: ${pct}%;"></div>
+                  </div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                    <span>Survey Completion</span>
+                    <span><strong>${survM}</strong> / ${totalM} (${pct}%)</span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; margin-top: 12px;">
+                  <a href="/family-manage.html?familyId=${f.id}" class="btn btn-secondary" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 5px 8px; font-weight: 650;">
+                    Manage
+                  </a>
+                  <a href="/entry.html?familyId=${f.id}" class="btn btn-primary" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 5px 8px; font-weight: 650;">
+                    Survey
+                  </a>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3. Recent Activity Timeline
+      const actTimeline = document.getElementById('profileActivityTimeline');
+      if (actTimeline) {
+        if (activities.length === 0) {
+          actTimeline.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+              No recent follow-up activity logged yet.
+            </div>
+          `;
+        } else {
+          actTimeline.innerHTML = activities.map(a => {
+            const bpText = a.sbp && a.dbp ? `${a.sbp}/${a.dbp} mmHg` : null;
+            const rbsText = a.rbs ? `RBS: ${a.rbs} mg/dL` : null;
+
+            return `
+              <div class="timeline-item">
+                <div class="timeline-header">
+                  <span class="timeline-title">${escapeHtml(a.member_name)} (${escapeHtml(a.gender)}, ${a.age_years}y) &bull; ${escapeHtml(a.head_of_family)}'s Family</span>
+                  <span class="timeline-time">${escapeHtml(a.visit_date)} (Visit #${a.visit_number || 1})</span>
+                </div>
+                <div class="timeline-body">
+                  <div>${escapeHtml(a.clinical_notes || 'Routine follow-up assessment conducted.')}</div>
+                  <div class="vitals-pills">
+                    ${bpText ? `<span class="vitals-pill">BP: ${escapeHtml(bpText)}</span>` : ''}
+                    ${rbsText ? `<span class="vitals-pill" style="background:#fef3c7; color:#b45309;">${escapeHtml(rbsText)}</span>` : ''}
+                    <span class="vitals-pill" style="background:#ecfdf5; color:#065f46;">${escapeHtml(a.health_progress || 'Stable')}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    async function exportProformaCsv() {
+      const cardBtn = document.getElementById('cardExportCsvBtn');
+      const originalCardHtml = cardBtn ? cardBtn.innerHTML : '';
+      try {
+        if (cardBtn) { cardBtn.disabled = true; cardBtn.innerHTML = '⏳ Exporting...'; }
+        showToast('Preparing Field Survey CSV export...', 'info');
+
+        const student = loggedInUser || JSON.parse(localStorage.getItem('medpulse_user') || '{}');
+        const studentId = student.id || 1;
+        const roll = student.roll_number || '235';
+
+        const res = await fetch(`/api/export/csv?student_id=${encodeURIComponent(studentId)}&roll_number=${encodeURIComponent(roll)}`);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Export failed with status ${res.status}`);
+        }
+
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = `Roll_${roll}_Health_Survey_Export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          a.remove();
+          window.URL.revokeObjectURL(blobUrl);
+        }, 1500);
+
+        showToast('Survey CSV downloaded successfully!', 'success');
+      } catch (err) {
+        console.error('CSV Export failed:', err);
+        showToast('CSV export failed: ' + err.message, 'error');
+      } finally {
+        if (cardBtn) { cardBtn.disabled = false; cardBtn.innerHTML = originalCardHtml; }
+      }
+    }
+
+    async function exportProformaPdf() {
+      const cardBtn = document.getElementById('cardExportPdfBtn');
+      const originalCardHtml = cardBtn ? cardBtn.innerHTML : '';
+      try {
+        if (cardBtn) { cardBtn.disabled = true; cardBtn.innerHTML = '⏳ Generating...'; }
+        showToast('Generating official Clinical Survey PDF...', 'info');
+
+        const student = loggedInUser || JSON.parse(localStorage.getItem('medpulse_user') || '{}');
+        const studentId = student.id || 1;
+        const roll = student.roll_number || '235';
+
+        const res = await fetch(`/api/export/pdf?student_id=${encodeURIComponent(studentId)}&roll_number=${encodeURIComponent(roll)}`);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Export failed with status ${res.status}`);
+        }
+
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = `Roll_${roll}_Field_Survey_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          a.remove();
+          window.URL.revokeObjectURL(blobUrl);
+        }, 1500);
+
+        showToast('Survey PDF generated and downloaded!', 'success');
+      } catch (err) {
+        console.error('PDF Export failed:', err);
+        showToast('PDF export failed: ' + err.message, 'error');
+      } finally {
+        if (cardBtn) { cardBtn.disabled = false; cardBtn.innerHTML = originalCardHtml; }
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initSidebar();
       initAuth();
-      runWhenActive(loadDashboard);
+      loadDashboard();
     });
   </script>
-
-  <script src="/nav-glider.js"></script>
 </body>
 </html>

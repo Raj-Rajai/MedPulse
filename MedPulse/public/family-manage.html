@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#121026">
   <title>Family &amp; Member Management | MedPulse</title>
   <script src="/auth-guard.js"></script>
+  <script src="/field-location.js"></script>
   <script>
     (function() {
       try {
@@ -1401,7 +1402,14 @@
       }
 
       setupDraftAutosave();
-      runWhenActive(loadFamilies);
+      runWhenActive(async () => {
+        await loadFamilies();
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoFamId = urlParams.get('familyId');
+        if (autoFamId) {
+          selectFamily(parseInt(autoFamId, 10) || autoFamId);
+        }
+      });
     });
 
     /* ---- Authentication State ---- */
@@ -1887,6 +1895,8 @@
                 <div>
                   <div class="member-name">${m.name}</div>
                   <div class="member-relation">${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}</div>
+                  ${m.added_by_patient_id ? '<span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:0.68rem;margin-top:4px;" title="Added by the family from the patient portal">✍️ Added by family</span>'
+                    : (m.patient_updated_at ? '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:0.68rem;margin-top:4px;" title="Basic details were updated by the family from the patient portal">✍️ Updated by family</span>' : '')}
                 </div>
                 <span class="badge badge-info">#${m.member_order}</span>
               </div>
@@ -3179,11 +3189,19 @@
         listEl.innerHTML = tasks.map(t => {
           const kwColor = t.matched_keyword === 'HTN' ? '#dc2626' : (t.matched_keyword === 'DM' ? '#9333ea' : (t.matched_keyword === 'ANAEMIA' ? '#d97706' : '#0284c7'));
 
-          const rsvpBadge = t.notification_status === 'Acknowledged'
-            ? `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient RSVP: Confirmed</span>`
-            : (t.notification_status === 'Declined'
-              ? `<span class="badge" style="background: #fee2e2; color: #b91c1c;">Patient RSVP: Declined</span>`
-              : `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`);
+          const rsvpVal = (t.rsvp && t.rsvp !== 'Pending') ? t.rsvp
+            : (t.notification_status === 'Acknowledged' ? 'Attending' : (t.notification_status === 'Declined' ? 'Not Attending' : 'Pending'));
+          const rsvpBadge = {
+            'Attending': `<span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700;">✅ Patient: Attending</span>`,
+            'Not Attending': `<span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700;">❌ Patient: Can't attend</span>`,
+            'Need Help': `<span class="badge" style="background: #fef3c7; color: #92400e; font-weight: 700;">🙋 Patient needs help</span>`,
+            'Pending': `<span class="badge" style="background: #f1f5f9; color: #64748b;">⏳ Patient RSVP: Awaiting</span>`
+          }[rsvpVal];
+          const verifyBadge = t.patient_contact_confirmation === 'Confirmed'
+            ? `<span class="badge" style="background: #ecfdf5; color: #065f46; font-weight: 700;" title="Patient confirmed you contacted them">✔ Patient verified</span>`
+            : (t.patient_contact_confirmation === 'Disputed'
+              ? `<span class="badge" style="background: #fef2f2; color: #b91c1c; font-weight: 700;" title="Patient says they were not contacted">⚠ Patient disputes call</span>`
+              : ((t.contacted_at || currentStatusRaw(t) !== 'Pending') ? `<span class="badge" style="background: #f8fafc; color: #64748b;">Awaiting patient confirmation</span>` : ''));
 
           const currentStatus = t.cadet_call_status || 'Pending';
           const statusBadge = currentStatus === 'Assisted'
@@ -3214,6 +3232,7 @@
               <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 ${rsvpBadge}
                 ${statusBadge}
+                ${verifyBadge}
 
                 <div style="display: flex; gap: 6px;">
                   <button class="btn btn-secondary" onclick="updateCadetTaskStatus(${t.notification_id}, 'Contacted')" style="font-size: 0.74rem; padding: 5px 9px;" ${currentStatus === 'Contacted' ? 'disabled' : ''}>
@@ -3232,6 +3251,9 @@
         console.error('Error fetching cadet campaign tasks:', err);
       }
     }
+
+
+    function currentStatusRaw(t) { return t.cadet_call_status || 'Pending'; }
 
     async function updateCadetTaskStatus(notifId, status) {
       try {

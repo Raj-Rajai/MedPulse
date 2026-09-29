@@ -1402,7 +1402,14 @@
       }
 
       setupDraftAutosave();
-      runWhenActive(loadFamilies);
+      runWhenActive(async () => {
+        await loadFamilies();
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoFamId = urlParams.get('familyId');
+        if (autoFamId) {
+          selectFamily(parseInt(autoFamId, 10) || autoFamId);
+        }
+      });
     });
 
     /* ---- Authentication State ---- */
