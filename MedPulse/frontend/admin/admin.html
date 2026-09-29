@@ -15,7 +15,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <script src="/auth-guard.js"></script>
-  <script src="/admin-geofence.js"></script>
   <script>
     (function() {
       try {
@@ -430,6 +429,32 @@
         <span class="link-label">Student Cadre</span>
       </a>
 
+      <a href="javascript:void(0)" class="sidebar-link" data-tab="attendance" onclick="switchAdminTab('attendance')" data-title="Attendance">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <path d="m9 16 2 2 4-4"/>
+          </svg>
+        </div>
+        <span class="link-label">Student Attendance</span>
+      </a>
+
+      <a href="javascript:void(0)" class="sidebar-link" data-tab="exams" onclick="switchAdminTab('exams')" data-title="Exam Marks">
+        <div class="nav-icon-box">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <span class="link-label">Exam Results & Marks</span>
+      </a>
+
       <a href="javascript:void(0)" class="sidebar-link" data-tab="households" onclick="switchAdminTab('households')" data-title="Households">
         <div class="nav-icon-box">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -731,6 +756,381 @@
               <tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading student cadre roster...</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================
+         VIEW 2B: STUDENT ATTENDANCE REGISTER & TIMETABLE
+         ========================================================== -->
+    <div id="viewAttendance" class="admin-view-pane">
+
+      <!-- Sub-Nav Switcher: Mark Attendance vs Attendance History -->
+      <div class="admin-subnav-bar">
+        <button type="button" class="admin-subnav-btn active" id="btnSubnavAttMark" onclick="switchAttendanceSubView('mark')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="m9 14 2 2 4-4"/>
+          </svg>
+          Mark Daily Lecture Attendance
+        </button>
+        <button type="button" class="admin-subnav-btn" id="btnSubnavAttHistory" onclick="switchAttendanceSubView('history')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Attendance Audit History
+        </button>
+      </div>
+
+      <!-- SUB-PANE 1: MARK ATTENDANCE -->
+      <div id="attMarkPane">
+        <div class="card" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 class="card-title" style="margin-bottom: 4px; font-size: 1.25rem;">
+                📅 Lecture Schedule &amp; Session Configuration
+              </h2>
+              <p class="card-desc" style="margin: 0;">
+                Select lecture slot, batch, and subject to populate student cohort. Use 1-click status pills to mark attendance.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span class="badge" style="background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35); padding: 5px 12px; font-weight: 700;">
+                🏛️ NMC Minimum: 75% Theory • 80% Practical
+              </span>
+            </div>
+          </div>
+
+          <!-- Configuration Controls Grid -->
+          <div class="att-config-grid">
+            <!-- Date Picker with Step Buttons -->
+            <div class="att-config-item">
+              <label>Attendance Date</label>
+              <div class="date-step-control">
+                <button type="button" class="date-step-btn" onclick="stepAttendanceDate(-1)" title="Previous Day">◀</button>
+                <input type="date" id="attDateInput" onchange="loadAdminAttendanceSheet()">
+                <button type="button" class="date-step-btn" onclick="stepAttendanceDate(1)" title="Next Day">▶</button>
+              </div>
+            </div>
+
+            <!-- Batch Selection -->
+            <div class="att-config-item">
+              <label>Student Batch / Cohort</label>
+              <select id="attBatchSelect" onchange="loadAdminAttendanceSheet()">
+                <option value="all">All Registered Cadets</option>
+                <option value="3rd Year MBBS" selected>3rd Year MBBS (PSM)</option>
+                <option value="2nd Year MBBS">2nd Year MBBS</option>
+                <option value="1st Year MBBS">1st Year MBBS</option>
+                <option value="Final Year MBBS Part 1">Final Year MBBS Part 1</option>
+                <option value="CRMI Intern Doctor">CRMI Intern Doctor</option>
+              </select>
+            </div>
+
+            <!-- Subject Selection -->
+            <div class="att-config-item">
+              <label>Curriculum Subject</label>
+              <select id="attSubjectSelect" onchange="onAttSubjectChange()">
+                <option value="2010043342" selected>2010043342 – Community Medicine (PSM)</option>
+                <option value="2010043410">2010043410 – Ophthalmology</option>
+                <option value="2010043425">2010043425 – ENT (Otorhinolaryngology)</option>
+                <option value="2010043320">2010043320 – Forensic Medicine (FMT)</option>
+                <option value="2010043375">2010043375 – General Surgery</option>
+                <option value="2010043350">2010043350 – General Medicine</option>
+                <option value="2010043360">2010043360 – Obstetrics &amp; Gynaecology</option>
+                <option value="2010043380">2010043380 – Paediatrics</option>
+              </select>
+            </div>
+
+            <!-- Session Type -->
+            <div class="att-config-item">
+              <label>Session Format</label>
+              <select id="attSessionType" onchange="loadAdminAttendanceSheet()">
+                <option value="Theory" selected>Theory Lecture</option>
+                <option value="Practical">Practical &amp; Clinical Posting</option>
+              </select>
+            </div>
+
+            <!-- Lecture Slot -->
+            <div class="att-config-item">
+              <label>Lecture Slot</label>
+              <select id="attLectureSlot" onchange="loadAdminAttendanceSheet()">
+                <option value="1" selected>Lecture 1 (08:10 to 08:55)</option>
+                <option value="2">Lecture 2 (08:55 to 09:40)</option>
+                <option value="3">Lecture 3 (09:50 to 10:35)</option>
+                <option value="4">Lecture 4 (10:35 to 11:20)</option>
+                <option value="5">Lecture 5 (11:30 to 12:15)</option>
+                <option value="6">Lecture 6 (12:15 to 01:00)</option>
+                <option value="7">Clinical / Practical (02:00 to 04:00)</option>
+              </select>
+            </div>
+
+            <!-- Room No -->
+            <div class="att-config-item">
+              <label>Lecture Hall / Room</label>
+              <input type="text" id="attRoomNo" value="LT-2" placeholder="e.g. LT-2 / Demo Room">
+            </div>
+
+            <!-- Faculty Name -->
+            <div class="att-config-item">
+              <label>Faculty In-Charge</label>
+              <input type="text" id="attFacultyName" value="DRASHTI R SONI" placeholder="e.g. Dr. Ramesh Sharma">
+            </div>
+
+            <!-- Topic Covered -->
+            <div class="att-config-item" style="grid-column: span 2;">
+              <label>Lecture Topic / Clinical Case</label>
+              <input type="text" id="attTopicInput" value="Epidemiological Surveillance &amp; Outbreak Investigation" placeholder="e.g. Vector-borne Disease Surveillance, Cold Chain Management">
+            </div>
+          </div>
+        </div>
+
+        <!-- Live KPI Strip & Bulk Actions -->
+        <div class="att-summary-strip">
+          <div class="att-badges-row">
+            <span class="att-count-pill total">
+              Total Cadets: <strong id="attCountTotal">0</strong>
+            </span>
+            <span class="att-count-pill present">
+              ✓ Present: <strong id="attCountPresent">0</strong>
+            </span>
+            <span class="att-count-pill absent">
+              ✗ Absent: <strong id="attCountAbsent">0</strong>
+            </span>
+            <span class="att-count-pill leave">
+              ⏳ Leave: <strong id="attCountLeave">0</strong>
+            </span>
+            <span class="att-count-pill field-duty">
+              🏥 Field Duty: <strong id="attCountFieldDuty">0</strong>
+            </span>
+          </div>
+
+          <!-- Bulk Quick Toggles -->
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAttendance('Present')" style="color: #059669; font-weight: 750;">
+              ⚡ Mark All Present
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAttendance('Absent')" style="color: #dc2626; font-weight: 750;">
+              ⚡ Mark All Absent
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAttendance('Not Marked')" style="font-weight: 650;">
+              ↺ Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="card">
+          <div class="table-wrapper">
+            <table id="adminAttendanceTable">
+              <thead>
+                <tr>
+                  <th style="width: 80px; text-align: center;">Roll</th>
+                  <th>Cadet Name</th>
+                  <th>Batch / Institution</th>
+                  <th style="text-align: center; width: 310px;">Attendance Status</th>
+                  <th>Remarks / Official Notes</th>
+                </tr>
+              </thead>
+              <tbody id="adminAttendanceTbody">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading attendance roster...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Sticky Save Bar -->
+          <div class="admin-sticky-action-bar">
+            <div>
+              <span style="font-size: 0.85rem; font-weight: 600; color: #475569;">
+                Status changes will be recorded in student attendance ledgers and updated in real-time.
+              </span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn btn-primary" onclick="saveAdminAttendance()" id="btnSaveAttendance" style="background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); font-weight: 750; padding: 0.65rem 1.4rem;">
+                💾 Save &amp; Publish Attendance
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-PANE 2: ATTENDANCE AUDIT HISTORY -->
+      <div id="attHistoryPane" style="display: none;">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 class="card-title" style="margin-bottom: 4px; font-size: 1.25rem;">
+                📜 Attendance Audit History &amp; Session Logs
+              </h2>
+              <p class="card-desc" style="margin: 0;">
+                Review, filter, and audit past lecture attendance records.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <input type="date" id="attHistDateFilter" onchange="loadAttendanceHistory()" style="padding: 0.45rem 0.8rem; font-size: 0.82rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <select id="attHistStatusFilter" onchange="loadAttendanceHistory()" style="padding: 0.45rem 0.8rem; font-size: 0.82rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: #fff;">
+                <option value="all">All Statuses</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Leave">Leave</option>
+                <option value="Field Duty">Field Duty</option>
+              </select>
+              <input type="text" id="attHistSearchInput" placeholder="🔍 Search cadet, topic, faculty..." oninput="loadAttendanceHistory()" style="max-width: 220px; font-size: 0.82rem; padding: 0.45rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <button class="btn btn-secondary" onclick="loadAttendanceHistory()" style="font-size: 0.82rem; padding: 0.45rem 0.8rem;">
+                ↺ Refresh
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Date</th>
+                  <th style="width: 70px; text-align: center;">Lecture</th>
+                  <th style="width: 70px;">Roll</th>
+                  <th>Student Name</th>
+                  <th>Subject</th>
+                  <th>Topic</th>
+                  <th style="text-align: center; width: 110px;">Status</th>
+                  <th>Faculty</th>
+                  <th style="text-align: right; width: 80px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="attHistoryTbody">
+                <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading attendance history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================
+         VIEW 2C: EXAMINATION RESULTS & MARKSHEET ENTRY
+         ========================================================== -->
+    <div id="viewExams" class="admin-view-pane">
+
+      <!-- Exam Configuration Card -->
+      <div class="card" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 class="card-title" style="margin-bottom: 4px; font-size: 1.25rem;">
+              📋 Examination &amp; Marksheet Assessment Console
+            </h2>
+            <p class="card-desc" style="margin: 0;">
+              Input student assessment scores for Internal Assessments (IA-1, IA-2), Preliminary, and University exams with real-time NMC compliance.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="autofillSampleMarks()" style="font-weight: 700;">
+              ⚡ Autofill Sample Marks
+            </button>
+          </div>
+        </div>
+
+        <!-- Exam Filter Controls -->
+        <div class="att-config-grid">
+          <div class="att-config-item">
+            <label>Academic Year</label>
+            <select id="examYearLevel" onchange="loadAdminExamSheet()">
+              <option value="3" selected>3rd Year MBBS (2026)</option>
+              <option value="2">2nd Year MBBS (2025)</option>
+              <option value="1">1st Year MBBS (2024)</option>
+            </select>
+          </div>
+
+          <div class="att-config-item">
+            <label>Examination Type</label>
+            <select id="examTypeSelect" onchange="loadAdminExamSheet()">
+              <option value="IA-1" selected>Internal Assessment I (Theory &amp; Practical)</option>
+              <option value="IA-2">Internal Assessment II (Theory &amp; Practical)</option>
+              <option value="Preliminary">Preliminary Examination (Paper 1 + 2 + Practical)</option>
+              <option value="University">University Examination (Paper 1 + 2 + Practical)</option>
+            </select>
+          </div>
+
+          <div class="att-config-item">
+            <label>Subject</label>
+            <select id="examSubjectSelect" onchange="loadAdminExamSheet()">
+              <option value="2010043342" selected>2010043342 – Community Medicine (PSM)</option>
+              <option value="2010043410">2010043410 – Ophthalmology</option>
+              <option value="2010043425">2010043425 – ENT (Otorhinolaryngology)</option>
+              <option value="2010043320">2010043320 – Forensic Medicine (FMT)</option>
+              <option value="2010043375">2010043375 – General Surgery</option>
+              <option value="2010043350">2010043350 – General Medicine</option>
+              <option value="2010043360">2010043360 – Obstetrics &amp; Gynaecology</option>
+              <option value="2010043380">2010043380 – Paediatrics</option>
+            </select>
+          </div>
+
+          <div class="att-config-item">
+            <label>Examination Date</label>
+            <input type="date" id="examDateInput" value="2026-09-15">
+          </div>
+
+          <div class="att-config-item" style="grid-column: span 2;">
+            <label>Examination Code &amp; Title</label>
+            <input type="text" id="examCodeInput" value="PSM-2026-IA1" placeholder="e.g. PSM-2026-IA1 (Internal Assessment I)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Performance KPI Cards -->
+      <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 20px;">
+        <div class="card kpi-card" style="padding: 16px 20px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Class Average</div>
+          <div style="font-size: 1.8rem; font-weight: 850; color: #1e1b4b; margin: 4px 0;" id="examClassAvg">0%</div>
+          <div style="font-size: 0.75rem; color: #059669; font-weight: 700;">Aggregate Performance</div>
+        </div>
+
+        <div class="card kpi-card" style="padding: 16px 20px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pass Percentage</div>
+          <div style="font-size: 1.8rem; font-weight: 850; color: #059669; margin: 4px 0;" id="examPassPct">0%</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">NMC Eligible Cadets</div>
+        </div>
+
+        <div class="card kpi-card" style="padding: 16px 20px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Distinctions (≥ 75%)</div>
+          <div style="font-size: 1.8rem; font-weight: 850; color: #7c3aed; margin: 4px 0;" id="examDistinctionCount">0</div>
+          <div style="font-size: 0.75rem; color: #6d28d9; font-weight: 600;">Academic Honours</div>
+        </div>
+
+        <div class="card kpi-card" style="padding: 16px 20px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Remedial Attention</div>
+          <div style="font-size: 1.8rem; font-weight: 850; color: #dc2626; margin: 4px 0;" id="examRemedialCount">0</div>
+          <div style="font-size: 0.75rem; color: #ef4444; font-weight: 600;">Scores &lt; 50% combined</div>
+        </div>
+      </div>
+
+      <!-- Marksheet Table Card -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table id="adminExamsTable">
+            <thead id="adminExamsThead">
+              <!-- Dynamically populated depending on single-paper (IA-1, IA-2) or two-paper (Prelims, Univ) -->
+            </thead>
+            <tbody id="adminExamsTbody">
+              <tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading marksheet entry grid...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sticky Save Bar -->
+        <div class="admin-sticky-action-bar">
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 600; color: #475569;">
+              Scores will be published directly to student examination reports and marksheets.
+            </span>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-primary" onclick="saveAdminExams()" id="btnSaveExams" style="background: linear-gradient(135deg, #d97706, #b45309); border: none; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4); font-weight: 750; padding: 0.65rem 1.4rem;">
+              💾 Save &amp; Publish Exam Results
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1627,6 +2027,8 @@
     const tabHeaders = {
       overview: { title: 'Executive Surveillance Overview', sub: 'Departmental Community Medicine (PSM) oversight, multi-cadet rosters, and population health surveillance' },
       students: { title: 'Student Cadre Roster & Assignments', sub: 'Manage medical trainees, track survey submission completion, and adjust institutional credentials' },
+      attendance: { title: 'Student Attendance Register & Timetable', sub: 'Mark daily lecture attendance, track clinical session presence, and maintain NMC compliance' },
+      exams: { title: 'Examination Results & Marksheet Management', sub: 'Input and publish Internal Assessment (IA-1, IA-2), Preliminary, and University examination marks' },
       households: { title: 'Global Household Surveillance Registry', sub: 'Comprehensive roster of all families surveyed across all student cohorts' },
       campaigns: { title: 'Targeted Health Campaign Command Center', sub: 'Broadcast disease-specific health drives, monitor automated patient matching, and coordinate cadet follow-ups' },
       colleges: { title: 'Institutions & Field Postings', sub: 'Affiliated medical colleges, hospital blocks, and rural/urban health training centers' },
@@ -1667,6 +2069,8 @@
       // Load view data
       if (tabId === 'overview') loadOverviewStats();
       else if (tabId === 'students') loadCadetsRoster();
+      else if (tabId === 'attendance') loadAdminAttendance();
+      else if (tabId === 'exams') loadAdminExams();
       else if (tabId === 'households') loadGlobalHouseholds();
       else if (tabId === 'campaigns') { loadAdminCampaigns(); previewCampaignKeyword('HTN'); }
       else if (tabId === 'colleges') loadCollegesMaster();
@@ -1812,6 +2216,8 @@
             <td style="text-align: center;">${statusBadge}</td>
             <td style="text-align: right;">
               <div class="table-actions-cell">
+                <button class="table-act-btn" onclick="quickOpenStudentAttendance(${s.id}, '${escapeHtml(s.roll_number)}')" title="Mark / View Attendance">📅</button>
+                <button class="table-act-btn" onclick="quickOpenStudentExams(${s.id}, '${escapeHtml(s.roll_number)}')" title="Input / View Exam Marks">📋</button>
                 <button class="table-act-btn" onclick="openEditStudentModal(${s.id})" title="Edit Cadet">✏️</button>
                 <button class="table-act-btn" onclick="openResetPinModal(${s.id}, '${escapeHtml(s.name)}', '${escapeHtml(s.roll_number)}')" title="Reset PIN">🔒</button>
                 <button class="table-act-btn" onclick="inspectStudentFamilies(${s.id})" title="View Households">👁️</button>
@@ -1836,6 +2242,733 @@
       });
 
       renderCadetsTable(filtered);
+    }
+
+    /* ==========================================================================
+       2B. STUDENT ATTENDANCE MANAGEMENT (FACULTY CONSOLE)
+       ========================================================================== */
+    let currentAttendanceSheetData = null;
+    let cachedAcademicMeta = null;
+
+    async function loadAdminAttendance() {
+      // Ensure date is set to today's date if empty
+      const dateInput = document.getElementById('attDateInput');
+      if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+      
+      // Load curriculum metadata if not already loaded
+      if (!cachedAcademicMeta) {
+        try {
+          const res = await fetch('/api/admin/academic/meta');
+          if (res.ok) {
+            cachedAcademicMeta = await res.json();
+          }
+        } catch (_) {}
+      }
+
+      await loadAdminAttendanceSheet();
+    }
+
+    async function loadAdminAttendanceSheet() {
+      const dateInput = document.getElementById('attDateInput');
+      const batchSelect = document.getElementById('attBatchSelect');
+      const lectureSelect = document.getElementById('attLectureSlot');
+      const subjectSelect = document.getElementById('attSubjectSelect');
+      const sessionSelect = document.getElementById('attSessionType');
+      const tbody = document.getElementById('adminAttendanceTbody');
+
+      if (!dateInput || !lectureSelect) return;
+      const targetDate = dateInput.value || new Date().toISOString().split('T')[0];
+      const lectureNo = lectureSelect.value || 1;
+      const batch = batchSelect ? batchSelect.value : 'all';
+
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading attendance roster...</td></tr>';
+
+      try {
+        const url = `/api/admin/academic/attendance/sheet?date=${encodeURIComponent(targetDate)}&lecture_no=${encodeURIComponent(lectureNo)}&batch=${encodeURIComponent(batch)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to load attendance sheet');
+        const data = await res.json();
+        currentAttendanceSheetData = data;
+
+        // Populate session info if previously recorded
+        if (data.session_info) {
+          if (data.session_info.subject_code && subjectSelect) {
+            subjectSelect.value = data.session_info.subject_code;
+          }
+          if (data.session_info.session_type && sessionSelect) {
+            sessionSelect.value = data.session_info.session_type;
+          }
+          if (data.session_info.room_no) {
+            document.getElementById('attRoomNo').value = data.session_info.room_no;
+          }
+          if (data.session_info.faculty_name) {
+            document.getElementById('attFacultyName').value = data.session_info.faculty_name;
+          }
+          if (data.session_info.topic) {
+            document.getElementById('attTopicInput').value = data.session_info.topic;
+          }
+        }
+
+        updateAttendanceSummaryCounters();
+        renderAttendanceRosterTable();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 24px;">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function renderAttendanceRosterTable() {
+      const tbody = document.getElementById('adminAttendanceTbody');
+      if (!currentAttendanceSheetData || !currentAttendanceSheetData.students || currentAttendanceSheetData.students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">No student cadets registered for this batch</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = currentAttendanceSheetData.students.map(s => {
+        const curStatus = s.status || 'Not Marked';
+        const isP = curStatus === 'Present';
+        const isA = curStatus === 'Absent';
+        const isL = curStatus === 'Leave';
+        const isFD = curStatus === 'Field Duty';
+
+        return `
+          <tr id="attRow-${s.student_id}">
+            <td style="text-align: center;">
+              <strong style="color: var(--accent); font-family: monospace; font-size: 0.95rem;">${escapeHtml(s.roll_number)}</strong>
+            </td>
+            <td>
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 0.92rem;">${escapeHtml(s.name)}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(s.posting_unit || 'RHTC')}</div>
+            </td>
+            <td>
+              <span style="font-size: 0.82rem; font-weight: 600; color: #475569;">${escapeHtml(s.batch_year || '3rd Year MBBS')}</span>
+            </td>
+            <td style="text-align: center;">
+              <div class="att-status-group">
+                <button type="button" class="att-status-btn btn-p ${isP ? 'active' : ''}" onclick="setStudentAttendanceStatus(${s.student_id}, 'Present')" title="Mark Present">
+                  ✓ Present
+                </button>
+                <button type="button" class="att-status-btn btn-a ${isA ? 'active' : ''}" onclick="setStudentAttendanceStatus(${s.student_id}, 'Absent')" title="Mark Absent">
+                  ✗ Absent
+                </button>
+                <button type="button" class="att-status-btn btn-l ${isL ? 'active' : ''}" onclick="setStudentAttendanceStatus(${s.student_id}, 'Leave')" title="Mark On Leave">
+                  ⏳ Leave
+                </button>
+                <button type="button" class="att-status-btn btn-fd ${isFD ? 'active' : ''}" onclick="setStudentAttendanceStatus(${s.student_id}, 'Field Duty')" title="Mark Field Survey Duty">
+                  🏥 Field Duty
+                </button>
+              </div>
+            </td>
+            <td>
+              <input type="text" id="attRemarks-${s.student_id}" value="${escapeHtml(s.remarks || '')}" placeholder="Optional note..." style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: var(--radius-sm);" onchange="updateStudentAttendanceRemarks(${s.student_id}, this.value)">
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function setStudentAttendanceStatus(studentId, newStatus) {
+      if (!currentAttendanceSheetData || !currentAttendanceSheetData.students) return;
+      const cadet = currentAttendanceSheetData.students.find(s => s.student_id === studentId);
+      if (!cadet) return;
+      cadet.status = newStatus;
+
+      // Update button visual states in row
+      const row = document.getElementById(`attRow-${studentId}`);
+      if (row) {
+        row.querySelectorAll('.att-status-btn').forEach(btn => btn.classList.remove('active'));
+        if (newStatus === 'Present') row.querySelector('.btn-p')?.classList.add('active');
+        else if (newStatus === 'Absent') row.querySelector('.btn-a')?.classList.add('active');
+        else if (newStatus === 'Leave') row.querySelector('.btn-l')?.classList.add('active');
+        else if (newStatus === 'Field Duty') row.querySelector('.btn-fd')?.classList.add('active');
+      }
+
+      updateAttendanceSummaryCounters();
+    }
+
+    function updateStudentAttendanceRemarks(studentId, remarks) {
+      if (!currentAttendanceSheetData || !currentAttendanceSheetData.students) return;
+      const cadet = currentAttendanceSheetData.students.find(s => s.student_id === studentId);
+      if (cadet) cadet.remarks = remarks;
+    }
+
+    function markAllAttendance(status) {
+      if (!currentAttendanceSheetData || !currentAttendanceSheetData.students) return;
+      currentAttendanceSheetData.students.forEach(s => {
+        s.status = status;
+      });
+      renderAttendanceRosterTable();
+      updateAttendanceSummaryCounters();
+    }
+
+    function updateAttendanceSummaryCounters() {
+      if (!currentAttendanceSheetData || !currentAttendanceSheetData.students) return;
+      let present = 0, absent = 0, leave = 0, fieldDuty = 0;
+      for (const s of currentAttendanceSheetData.students) {
+        if (s.status === 'Present') present++;
+        else if (s.status === 'Absent') absent++;
+        else if (s.status === 'Leave') leave++;
+        else if (s.status === 'Field Duty') fieldDuty++;
+      }
+      document.getElementById('attCountTotal').textContent = currentAttendanceSheetData.students.length;
+      document.getElementById('attCountPresent').textContent = present;
+      document.getElementById('attCountAbsent').textContent = absent;
+      document.getElementById('attCountLeave').textContent = leave;
+      document.getElementById('attCountFieldDuty').textContent = fieldDuty;
+    }
+
+    function stepAttendanceDate(offsetDays) {
+      const dateInput = document.getElementById('attDateInput');
+      if (!dateInput) return;
+      const cur = new Date(dateInput.value || new Date());
+      cur.setDate(cur.getDate() + offsetDays);
+      dateInput.value = cur.toISOString().split('T')[0];
+      loadAdminAttendanceSheet();
+    }
+
+    function onAttSubjectChange() {
+      const subjectSelect = document.getElementById('attSubjectSelect');
+      if (!subjectSelect || !cachedAcademicMeta || !cachedAcademicMeta.subjects) return;
+      const code = subjectSelect.value;
+      const s = cachedAcademicMeta.subjects.find(sub => sub.code === code);
+      if (s) {
+        if (s.default_faculty) document.getElementById('attFacultyName').value = s.default_faculty;
+        if (s.default_room) document.getElementById('attRoomNo').value = s.default_room;
+      }
+    }
+
+    async function saveAdminAttendance() {
+      if (!currentAttendanceSheetData || !currentAttendanceSheetData.students) return;
+      const btn = document.getElementById('btnSaveAttendance');
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Saving Attendance...';
+
+      const dateInput = document.getElementById('attDateInput');
+      const lectureSelect = document.getElementById('attLectureSlot');
+      const subjectSelect = document.getElementById('attSubjectSelect');
+      const sessionSelect = document.getElementById('attSessionType');
+      const roomInput = document.getElementById('attRoomNo');
+      const facultyInput = document.getElementById('attFacultyName');
+      const topicInput = document.getElementById('attTopicInput');
+
+      const subjectOption = subjectSelect ? subjectSelect.options[subjectSelect.selectedIndex] : null;
+      const subjectText = subjectOption ? subjectOption.text : 'Community Medicine (PSM)';
+
+      const payload = {
+        date: dateInput.value,
+        lecture_no: parseInt(lectureSelect.value, 10),
+        room_no: roomInput.value.trim(),
+        time_slot: lectureSelect.options[lectureSelect.selectedIndex]?.text.split('(')[1]?.replace(')', '') || '08:10 to 08:55',
+        subject_code: subjectSelect.value,
+        subject: subjectText,
+        session_type: sessionSelect.value,
+        faculty_name: facultyInput.value.trim(),
+        topic: topicInput.value.trim(),
+        attendance: currentAttendanceSheetData.students.map(s => ({
+          student_id: s.student_id,
+          status: s.status === 'Not Marked' ? 'Present' : s.status,
+          remarks: (document.getElementById(`attRemarks-${s.student_id}`)?.value || s.remarks || '').trim()
+        }))
+      };
+
+      try {
+        const res = await fetch('/api/admin/academic/attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save attendance');
+        showToast(data.message || 'Attendance saved and synchronized successfully!', 'success');
+        await loadAdminAttendanceSheet();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    function switchAttendanceSubView(subView) {
+      const btnMark = document.getElementById('btnSubnavAttMark');
+      const btnHist = document.getElementById('btnSubnavAttHistory');
+      const markPane = document.getElementById('attMarkPane');
+      const histPane = document.getElementById('attHistoryPane');
+
+      if (subView === 'mark') {
+        btnMark.classList.add('active');
+        btnHist.classList.remove('active');
+        markPane.style.display = 'block';
+        histPane.style.display = 'none';
+      } else {
+        btnMark.classList.remove('active');
+        btnHist.classList.add('active');
+        markPane.style.display = 'none';
+        histPane.style.display = 'block';
+        loadAttendanceHistory();
+      }
+    }
+
+    async function loadAttendanceHistory() {
+      const tbody = document.getElementById('attHistoryTbody');
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading attendance logs...</td></tr>';
+
+      const dateVal = document.getElementById('attHistDateFilter')?.value || '';
+      const statusVal = document.getElementById('attHistStatusFilter')?.value || 'all';
+      const searchVal = document.getElementById('attHistSearchInput')?.value.trim() || '';
+
+      let url = '/api/admin/academic/attendance/history?limit=100';
+      if (dateVal) url += `&date=${encodeURIComponent(dateVal)}`;
+      if (statusVal && statusVal !== 'all') url += `&status=${encodeURIComponent(statusVal)}`;
+      if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to load history');
+        const data = await res.json();
+
+        if (!data.records || data.records.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">No historical attendance records found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.records.map(r => {
+          let statusBadge = '<span class="badge badge-success">Present</span>';
+          if (r.status === 'Absent') statusBadge = '<span class="badge badge-danger">Absent</span>';
+          else if (r.status === 'Leave') statusBadge = '<span class="badge badge-warning">Leave</span>';
+          else if (r.status === 'Field Duty') statusBadge = '<span class="badge" style="background: rgba(124, 58, 237, 0.12); color: #7c3aed; border: 1px solid rgba(124,58,237,0.3);">Field Duty</span>';
+
+          return `
+            <tr>
+              <td><code>${escapeHtml(r.date)}</code></td>
+              <td style="text-align: center;"><strong>L-${r.lecture_no}</strong></td>
+              <td><strong style="color: var(--accent); font-family: monospace;">${escapeHtml(r.roll_number)}</strong></td>
+              <td><strong>${escapeHtml(r.student_name)}</strong></td>
+              <td><span style="font-size: 0.8rem;">${escapeHtml(r.subject)}</span></td>
+              <td><span style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(r.topic || 'N/A')}</span></td>
+              <td style="text-align: center;">${statusBadge}</td>
+              <td><span style="font-size: 0.78rem;">${escapeHtml(r.faculty_name || '')}</span></td>
+              <td style="text-align: right;">
+                <button type="button" class="table-act-btn act-delete" onclick="deleteAttendanceRecord(${r.id})" title="Delete record">🗑️</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 24px;">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    async function deleteAttendanceRecord(recordId) {
+      if (!confirm('Are you sure you want to remove this attendance entry?')) return;
+      try {
+        const res = await fetch(`/api/admin/academic/attendance/${recordId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete attendance record');
+        showToast('Record removed successfully', 'success');
+        loadAttendanceHistory();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function quickOpenStudentAttendance(studentId, rollNumber) {
+      switchAdminTab('attendance');
+      setTimeout(() => {
+        const row = document.getElementById(`attRow-${studentId}`);
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.style.background = '#fef3c7';
+          setTimeout(() => { row.style.background = ''; }, 2500);
+        }
+      }, 350);
+    }
+
+    /* ==========================================================================
+       2C. EXAMINATION RESULTS & MARKSHEET ENTRY (FACULTY CONSOLE)
+       ========================================================================== */
+    let currentExamSheetData = null;
+
+    async function loadAdminExams() {
+      await loadAdminExamSheet();
+    }
+
+    async function loadAdminExamSheet() {
+      const yearSelect = document.getElementById('examYearLevel');
+      const typeSelect = document.getElementById('examTypeSelect');
+      const subjectSelect = document.getElementById('examSubjectSelect');
+      const thead = document.getElementById('adminExamsThead');
+      const tbody = document.getElementById('adminExamsTbody');
+
+      if (!yearSelect || !typeSelect || !subjectSelect) return;
+      const yLevel = yearSelect.value || 3;
+      const eType = typeSelect.value || 'IA-1';
+      const sCode = subjectSelect.value || '2010043342';
+      const isTwoPaper = eType === 'Preliminary' || eType === 'University';
+
+      // Update exam code input default
+      const examCodeInput = document.getElementById('examCodeInput');
+      if (examCodeInput) {
+        const subShort = subjectSelect.options[subjectSelect.selectedIndex]?.text.split('–')[1]?.trim().split(' ')[0] || 'EXAM';
+        examCodeInput.value = `${subShort}-${yLevel === '3' ? '2026' : (yLevel === '2' ? '2025' : '2024')}-${eType}`;
+      }
+
+      // Render Table Header dynamically
+      if (isTwoPaper) {
+        thead.innerHTML = `
+          <tr>
+            <th style="width: 70px; text-align: center;">Roll</th>
+            <th>Cadet Name</th>
+            <th style="text-align: center; width: 85px;">Paper 1 (100)</th>
+            <th style="text-align: center; width: 85px;">Paper 2 (100)</th>
+            <th style="text-align: center; width: 95px;">Theory (200)</th>
+            <th style="text-align: center; width: 85px;">Practical (100)</th>
+            <th style="text-align: center; width: 85px;">Viva (20)</th>
+            <th style="text-align: center; width: 90px;">Total (300)</th>
+            <th style="text-align: center; width: 75px;">% Score</th>
+            <th style="text-align: center; width: 90px;">Status</th>
+            <th style="text-align: center; width: 110px;">NMC Criteria</th>
+            <th>Faculty Remarks</th>
+          </tr>
+        `;
+      } else {
+        thead.innerHTML = `
+          <tr>
+            <th style="width: 70px; text-align: center;">Roll</th>
+            <th>Cadet Name</th>
+            <th style="text-align: center; width: 95px;">Theory (100)</th>
+            <th style="text-align: center; width: 95px;">Practical (100)</th>
+            <th style="text-align: center; width: 85px;">Viva (20)</th>
+            <th style="text-align: center; width: 95px;">Total (200)</th>
+            <th style="text-align: center; width: 75px;">% Score</th>
+            <th style="text-align: center; width: 90px;">Status</th>
+            <th style="text-align: center; width: 110px;">NMC Criteria</th>
+            <th>Faculty Remarks</th>
+          </tr>
+        `;
+      }
+
+      tbody.innerHTML = `<tr><td colspan="${isTwoPaper ? 12 : 10}" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading marksheet data...</td></tr>`;
+
+      try {
+        const url = `/api/admin/academic/exams/sheet?year_level=${encodeURIComponent(yLevel)}&exam_type=${encodeURIComponent(eType)}&subject_code=${encodeURIComponent(sCode)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to load exam marksheet');
+        const data = await res.json();
+        currentExamSheetData = data;
+
+        renderExamMarksheetTable();
+        updateExamKPIs();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="${isTwoPaper ? 12 : 10}" style="text-align: center; color: #ef4444; padding: 24px;">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function renderExamMarksheetTable() {
+      const tbody = document.getElementById('adminExamsTbody');
+      if (!currentExamSheetData || !currentExamSheetData.marksheet || currentExamSheetData.marksheet.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">No student records found</td></tr>';
+        return;
+      }
+
+      const isTwoPaper = currentExamSheetData.is_two_paper;
+
+      tbody.innerHTML = currentExamSheetData.marksheet.map(m => {
+        const sId = m.student_id;
+        const p1Val = m.paper1_obtained != null ? m.paper1_obtained : '';
+        const p2Val = m.paper2_obtained != null ? m.paper2_obtained : '';
+        const thVal = m.theory_obtained != null ? m.theory_obtained : '';
+        const prVal = m.practical_obtained != null ? m.practical_obtained : '';
+        const vvVal = m.viva_obtained != null ? m.viva_obtained : '';
+        const totVal = m.total_obtained != null ? m.total_obtained : '-';
+        const pctVal = m.percentage != null ? `${m.percentage}%` : '-';
+
+        return `
+          <tr id="examRow-${sId}">
+            <td style="text-align: center;">
+              <strong style="color: var(--accent); font-family: monospace; font-size: 0.95rem;">${escapeHtml(m.roll_number)}</strong>
+            </td>
+            <td>
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 0.92rem;">${escapeHtml(m.name)}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(m.batch_year || '3rd Year MBBS')}</div>
+            </td>
+            ${isTwoPaper ? `
+              <td style="text-align: center;">
+                <input type="number" class="marks-input" id="exP1-${sId}" value="${p1Val}" min="0" max="100" step="0.5" placeholder="0-100" oninput="recalculateExamRow(${sId})">
+              </td>
+              <td style="text-align: center;">
+                <input type="number" class="marks-input" id="exP2-${sId}" value="${p2Val}" min="0" max="100" step="0.5" placeholder="0-100" oninput="recalculateExamRow(${sId})">
+              </td>
+              <td style="text-align: center;">
+                <span id="exThCalc-${sId}" style="font-weight: 800; color: #1e1b4b;">${thVal || '-'}</span>
+              </td>
+            ` : `
+              <td style="text-align: center;">
+                <input type="number" class="marks-input" id="exTh-${sId}" value="${thVal}" min="0" max="100" step="0.5" placeholder="0-100" oninput="recalculateExamRow(${sId})">
+              </td>
+            `}
+            <td style="text-align: center;">
+              <input type="number" class="marks-input" id="exPr-${sId}" value="${prVal}" min="0" max="100" step="0.5" placeholder="0-100" oninput="recalculateExamRow(${sId})">
+            </td>
+            <td style="text-align: center;">
+              <input type="number" class="marks-input" id="exVv-${sId}" value="${vvVal}" min="0" max="20" step="0.5" placeholder="0-20" oninput="recalculateExamRow(${sId})">
+            </td>
+            <td style="text-align: center;">
+              <strong id="exTot-${sId}" style="font-size: 0.95rem; color: #1e1b4b;">${totVal}</strong>
+            </td>
+            <td style="text-align: center;">
+              <strong id="exPct-${sId}" style="font-size: 0.95rem; color: #059669;">${pctVal}</strong>
+            </td>
+            <td style="text-align: center;">
+              <span id="exStatusBadge-${sId}">${getExamStatusBadgeHtml(m.status)}</span>
+            </td>
+            <td style="text-align: center;">
+              <span id="exNmcChip-${sId}">${getExamNmcChipHtml(m.status, m.theory_obtained, m.practical_obtained, m.percentage, isTwoPaper)}</span>
+            </td>
+            <td>
+              <input type="text" id="exRemarks-${sId}" value="${escapeHtml(m.faculty_remarks || '')}" placeholder="Clinical remarks..." style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: var(--radius-sm);" onchange="updateExamRemarks(${sId}, this.value)">
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function getExamStatusBadgeHtml(status) {
+      if (!status || status === 'Not Entered') return '<span class="badge" style="background:#f1f5f9; color:#64748b;">Not Entered</span>';
+      if (status === 'Distinction') return '<span class="badge" style="background:rgba(124,58,237,0.14); color:#7c3aed; border:1px solid rgba(124,58,237,0.35); font-weight:750;">Distinction</span>';
+      if (status === 'Pass') return '<span class="badge badge-success">Pass</span>';
+      if (status === 'Fail') return '<span class="badge badge-danger">Fail</span>';
+      if (status === 'Absent') return '<span class="badge badge-warning">Absent</span>';
+      return `<span class="badge badge-info">${escapeHtml(status)}</span>`;
+    }
+
+    function getExamNmcChipHtml(status, th, pr, pct, isTwoPaper) {
+      if (!status || status === 'Not Entered') return '<span class="badge" style="background:#f8fafc; color:#94a3b8;">Pending</span>';
+      const tMin = isTwoPaper ? 80 : 40;
+      const pMin = 40;
+      const tPass = (th || 0) >= tMin;
+      const pPass = (pr || 0) >= pMin;
+      const combinedPass = (pct || 0) >= 50.0;
+
+      if (tPass && pPass && combinedPass) {
+        return '<span class="nmc-chip-pass">✓ NMC Eligible</span>';
+      }
+      return '<span class="nmc-chip-fail">✗ Remedial</span>';
+    }
+
+    function recalculateExamRow(studentId) {
+      if (!currentExamSheetData) return;
+      const isTwoPaper = currentExamSheetData.is_two_paper;
+
+      let p1 = 0, p2 = 0, th = 0, pr = 0, vv = 0;
+      let hasInput = false;
+
+      if (isTwoPaper) {
+        const p1El = document.getElementById(`exP1-${studentId}`);
+        const p2El = document.getElementById(`exP2-${studentId}`);
+        if (p1El && p1El.value !== '') { p1 = parseFloat(p1El.value); hasInput = true; }
+        if (p2El && p2El.value !== '') { p2 = parseFloat(p2El.value); hasInput = true; }
+        th = p1 + p2;
+        const thCalcEl = document.getElementById(`exThCalc-${studentId}`);
+        if (thCalcEl) thCalcEl.textContent = hasInput ? th.toFixed(1) : '-';
+      } else {
+        const thEl = document.getElementById(`exTh-${studentId}`);
+        if (thEl && thEl.value !== '') { th = parseFloat(thEl.value); hasInput = true; }
+      }
+
+      const prEl = document.getElementById(`exPr-${studentId}`);
+      if (prEl && prEl.value !== '') { pr = parseFloat(prEl.value); hasInput = true; }
+
+      const vvEl = document.getElementById(`exVv-${studentId}`);
+      if (vvEl && vvEl.value !== '') { vv = parseFloat(vvEl.value); }
+
+      const totMax = isTwoPaper ? 300 : 200;
+      const totObt = th + pr;
+      const pct = totMax > 0 ? parseFloat(((totObt / totMax) * 100).toFixed(1)) : 0;
+
+      let status = 'Fail';
+      if (!hasInput) {
+        status = 'Not Entered';
+      } else if (pct >= 75.0) {
+        status = 'Distinction';
+      } else if (pct >= 50.0 && (!isTwoPaper || (p1 >= 40 && p2 >= 40)) && (pr >= 40)) {
+        status = 'Pass';
+      } else {
+        status = 'Fail';
+      }
+
+      // Update in memory
+      const cadet = currentExamSheetData.marksheet.find(m => m.student_id === studentId);
+      if (cadet) {
+        cadet.paper1_obtained = isTwoPaper ? p1 : null;
+        cadet.paper2_obtained = isTwoPaper ? p2 : null;
+        cadet.theory_obtained = th;
+        cadet.practical_obtained = pr;
+        cadet.viva_obtained = vv;
+        cadet.total_obtained = hasInput ? totObt : null;
+        cadet.percentage = hasInput ? pct : null;
+        cadet.status = status;
+      }
+
+      // Update row DOM
+      const totEl = document.getElementById(`exTot-${studentId}`);
+      if (totEl) totEl.textContent = hasInput ? totObt.toFixed(1) : '-';
+
+      const pctEl = document.getElementById(`exPct-${studentId}`);
+      if (pctEl) {
+        pctEl.textContent = hasInput ? `${pct}%` : '-';
+        pctEl.style.color = pct >= 75 ? '#7c3aed' : (pct >= 50 ? '#059669' : '#dc2626');
+      }
+
+      const badgeEl = document.getElementById(`exStatusBadge-${studentId}`);
+      if (badgeEl) badgeEl.innerHTML = getExamStatusBadgeHtml(status);
+
+      const nmcEl = document.getElementById(`exNmcChip-${studentId}`);
+      if (nmcEl) nmcEl.innerHTML = getExamNmcChipHtml(status, th, pr, pct, isTwoPaper);
+
+      updateExamKPIs();
+    }
+
+    function updateExamRemarks(studentId, val) {
+      if (!currentExamSheetData) return;
+      const cadet = currentExamSheetData.marksheet.find(m => m.student_id === studentId);
+      if (cadet) cadet.faculty_remarks = val;
+    }
+
+    function updateExamKPIs() {
+      if (!currentExamSheetData || !currentExamSheetData.marksheet) return;
+      let scored = 0, passed = 0, distinctions = 0, remedial = 0, sumPct = 0;
+
+      for (const m of currentExamSheetData.marksheet) {
+        if (m.total_obtained != null) {
+          scored++;
+          sumPct += m.percentage;
+          if (m.status === 'Distinction') distinctions++;
+          if (m.status === 'Pass' || m.status === 'Distinction') passed++;
+          else remedial++;
+        }
+      }
+
+      const avg = scored > 0 ? (sumPct / scored).toFixed(1) : 0;
+      const passPct = scored > 0 ? ((passed / scored) * 100).toFixed(1) : 0;
+
+      document.getElementById('examClassAvg').textContent = `${avg}%`;
+      document.getElementById('examPassPct').textContent = `${passPct}%`;
+      document.getElementById('examDistinctionCount').textContent = distinctions;
+      document.getElementById('examRemedialCount').textContent = remedial;
+    }
+
+    function autofillSampleMarks() {
+      if (!currentExamSheetData || !currentExamSheetData.marksheet) return;
+      const isTwoPaper = currentExamSheetData.is_two_paper;
+
+      const samples = [
+        { p1: 82, p2: 84, th: 83, pr: 88, vv: 18, rem: 'Excellent clinical acumen and viva response.' },
+        { p1: 76, p2: 78, th: 77, pr: 80, vv: 16, rem: 'Good grasp of preventive epidemiology.' },
+        { p1: 72, p2: 74, th: 73, pr: 76, vv: 15, rem: 'Consistent clinical logbook and case work.' },
+        { p1: 88, p2: 86, th: 87, pr: 92, vv: 19, rem: 'Outstanding honors performance across modules.' },
+        { p1: 68, p2: 70, th: 69, pr: 72, vv: 14, rem: 'Satisfactory performance; reinforce statistics.' }
+      ];
+
+      currentExamSheetData.marksheet.forEach((m, idx) => {
+        const s = samples[idx % samples.length];
+        const sId = m.student_id;
+
+        if (isTwoPaper) {
+          const p1El = document.getElementById(`exP1-${sId}`);
+          const p2El = document.getElementById(`exP2-${sId}`);
+          if (p1El) p1El.value = s.p1;
+          if (p2El) p2El.value = s.p2;
+        } else {
+          const thEl = document.getElementById(`exTh-${sId}`);
+          if (thEl) thEl.value = s.th;
+        }
+
+        const prEl = document.getElementById(`exPr-${sId}`);
+        if (prEl) prEl.value = s.pr;
+
+        const vvEl = document.getElementById(`exVv-${sId}`);
+        if (vvEl) vvEl.value = s.vv;
+
+        const remEl = document.getElementById(`exRemarks-${sId}`);
+        if (remEl) remEl.value = s.rem;
+
+        recalculateExamRow(sId);
+      });
+
+      showToast('Sample realistic assessment marks populated!', 'info');
+    }
+
+    async function saveAdminExams() {
+      if (!currentExamSheetData || !currentExamSheetData.marksheet) return;
+      const btn = document.getElementById('btnSaveExams');
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Saving &amp; Publishing...';
+
+      const yearSelect = document.getElementById('examYearLevel');
+      const typeSelect = document.getElementById('examTypeSelect');
+      const subjectSelect = document.getElementById('examSubjectSelect');
+      const dateInput = document.getElementById('examDateInput');
+      const codeInput = document.getElementById('examCodeInput');
+
+      const yLevel = parseInt(yearSelect.value, 10) || 3;
+      const eType = typeSelect.value || 'IA-1';
+      const sCode = subjectSelect.value || '2010043342';
+      const sText = subjectSelect.options[subjectSelect.selectedIndex]?.text || 'Community Medicine (PSM)';
+
+      const payload = {
+        academic_year: yearSelect.options[yearSelect.selectedIndex]?.text || '3rd Year MBBS (2026)',
+        year_level: yLevel,
+        exam_type: eType,
+        exam_code: codeInput.value.trim() || `${sCode}-${eType}`,
+        exam_name: typeSelect.options[typeSelect.selectedIndex]?.text || `${eType} Examination`,
+        exam_date: dateInput.value,
+        subject_code: sCode,
+        subject: sText,
+        results: currentExamSheetData.marksheet.map(m => {
+          const sId = m.student_id;
+          return {
+            student_id: sId,
+            paper1_obtained: currentExamSheetData.is_two_paper ? document.getElementById(`exP1-${sId}`)?.value : null,
+            paper2_obtained: currentExamSheetData.is_two_paper ? document.getElementById(`exP2-${sId}`)?.value : null,
+            theory_obtained: currentExamSheetData.is_two_paper ? null : document.getElementById(`exTh-${sId}`)?.value,
+            practical_obtained: document.getElementById(`exPr-${sId}`)?.value || 0,
+            viva_obtained: document.getElementById(`exVv-${sId}`)?.value || 0,
+            faculty_remarks: document.getElementById(`exRemarks-${sId}`)?.value.trim() || ''
+          };
+        })
+      };
+
+      try {
+        const res = await fetch('/api/admin/academic/exams', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save examination marks');
+        showToast(data.message || 'Examination marks successfully published to student marksheets!', 'success');
+        await loadAdminExamSheet();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    function quickOpenStudentExams(studentId, rollNumber) {
+      switchAdminTab('exams');
+      setTimeout(() => {
+        const row = document.getElementById(`examRow-${studentId}`);
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.style.background = '#fef3c7';
+          setTimeout(() => { row.style.background = ''; }, 2500);
+        }
+      }, 350);
     }
 
     /* ---- 3. Global Household Registry Loader ---- */

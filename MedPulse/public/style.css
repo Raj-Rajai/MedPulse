@@ -4041,3 +4041,304 @@ html > *:not(head):not(body) {
   display: none !important;
   visibility: hidden !important;
 }
+
+/* ==========================================================================
+   ADMIN ACADEMIC MANAGEMENT (STUDENT ATTENDANCE & EXAM MARKSHEET)
+   ========================================================================== */
+
+/* Sub-tab navigation in Admin views */
+.admin-subnav-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-subnav-btn {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 8px 16px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.18s ease;
+}
+
+.admin-subnav-btn:hover {
+  background: #f1f5f9;
+  color: #1e1b4b;
+  border-color: #cbd5e1;
+}
+
+.admin-subnav-btn.active {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #ffffff;
+  border-color: #312e81;
+  box-shadow: 0 4px 14px rgba(49, 46, 129, 0.25);
+}
+
+/* Timetable & Attendance Controls Strip */
+.att-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.att-config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.att-config-item label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.att-config-item input,
+.att-config-item select {
+  padding: 7px 11px;
+  font-size: 0.86rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.att-config-item input:focus,
+.att-config-item select:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+/* Date Step Control Group */
+.date-step-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.date-step-control input[type="date"] {
+  border: none;
+  padding: 6px 8px;
+  font-weight: 750;
+  font-size: 0.88rem;
+  outline: none;
+  color: #1e293b;
+}
+
+.date-step-btn {
+  background: #f8fafc;
+  border: none;
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.date-step-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Status Pill Toggle Group */
+.att-status-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  border: 1px solid #e2e8f0;
+}
+
+.att-status-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.02em;
+}
+
+.att-status-btn:hover {
+  color: #0f172a;
+}
+
+/* Status Active States */
+.att-status-btn.btn-p.active {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.45);
+}
+
+.att-status-btn.btn-a.active {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.45);
+}
+
+.att-status-btn.btn-l.active {
+  background: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45);
+}
+
+.att-status-btn.btn-fd.active {
+  background: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.45);
+}
+
+/* Summary Badge Counters */
+.att-summary-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.att-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.att-count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
+  font-weight: 750;
+  border: 1px solid transparent;
+}
+
+.att-count-pill.total {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #e2e8f0;
+}
+
+.att-count-pill.present {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.att-count-pill.absent {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.att-count-pill.leave {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.att-count-pill.field-duty {
+  background: rgba(124, 58, 237, 0.12);
+  color: #6d28d9;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+/* Marksheet Numeric Input */
+.marks-input {
+  width: 70px;
+  padding: 5px 8px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: #1e293b;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.marks-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background: #ffffff;
+}
+
+.marks-input.invalid-mark {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+}
+
+/* NMC Compliance Pills */
+.nmc-chip-pass {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  font-size: 0.72rem;
+  font-weight: 750;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.nmc-chip-fail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  font-size: 0.72rem;
+  font-weight: 750;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Sticky Action Footer Bar in Admin Panels */
+.admin-sticky-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  flex-wrap: wrap;
+  gap: 14px;
+}

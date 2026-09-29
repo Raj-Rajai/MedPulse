@@ -62,6 +62,8 @@ module.exports = {
 
             CREATE INDEX IF NOT EXISTS idx_student_exams_student 
                 ON student_exams(student_id, exam_date);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_student_attendance_slot
+                ON student_attendance(student_id, date, lecture_no);
         `);
 
         // Migration check for datewise columns
@@ -113,6 +115,9 @@ module.exports = {
             try { db.exec("ALTER TABLE student_exams ADD COLUMN year_level INTEGER DEFAULT 3;"); } catch (_) {}
         }
 
+        // Ensure 5-student clinical cohort exists for multi-student attendance and marksheet
+        ensureClinicalCohort(db);
+
         // Check if we need to seed datewise data (or if upcoming days 29 & 30 are missing)
         const hasDatewise = db.prepare("SELECT COUNT(*) as count FROM student_attendance WHERE date = '2026-09-29' AND student_id = 1").get();
         if (!hasDatewise || hasDatewise.count === 0) {
@@ -126,6 +131,34 @@ module.exports = {
         }
     }
 };
+
+/**
+ * Ensure clinical batch cohort of 5 medical students exists for multi-cadet attendance and exam results
+ */
+function ensureClinicalCohort(db) {
+    const students = [
+        { roll: '235', name: 'Dhruv Patel', batch: '3rd Year MBBS', posting: 'Community Medicine Unit 3', email: 'dhruv.patel@medpulse.edu', phone: '+91 98765 43210' },
+        { roll: '236', name: 'Dr. Ananya Sharma', batch: '3rd Year MBBS', posting: 'Community Medicine Unit 1', email: 'ananya.sharma@medpulse.edu', phone: '+91 98765 43211' },
+        { roll: '237', name: 'Rohan Mehta', batch: '3rd Year MBBS', posting: 'Community Medicine Unit 2', email: 'rohan.mehta@medpulse.edu', phone: '+91 98765 43212' },
+        { roll: '238', name: 'Priya Nair', batch: '3rd Year MBBS', posting: 'Community Medicine Unit 3', email: 'priya.nair@medpulse.edu', phone: '+91 98765 43213' },
+        { roll: '239', name: 'Arjun Patel', batch: '3rd Year MBBS', posting: 'Community Medicine Unit 4', email: 'arjun.patel@medpulse.edu', phone: '+91 98765 43214' }
+    ];
+
+    const check = db.prepare("SELECT id FROM students WHERE roll_number = ?");
+    const insert = db.prepare(`
+        INSERT INTO students (roll_number, name, pin, batch_year, college_id, email, phone, posting_unit, status)
+        VALUES (@roll, @name, '1234', @batch, 1, @email, @phone, @posting, 'Active')
+    `);
+
+    for (const s of students) {
+        const existing = check.get(s.roll);
+        if (!existing) {
+            try {
+                insert.run(s);
+            } catch (_) {}
+        }
+    }
+}
 
 /**
  * Seed realistic datewise timetable & multi-subject attendance records
