@@ -322,16 +322,10 @@
             📅
           </div>
           <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 3px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <span>Overall Academic &amp; Clinical Attendance</span>
-              <span class="badge" style="background: rgba(109, 40, 217, 0.08); color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.2); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px;">3rd Year MBBS (2026)</span>
-              <span class="badge badge-success" id="profAttStatusBadge" style="font-size: 0.74rem; padding: 3px 10px;">
-                ✅ NMC Eligible (≥75%)
-              </span>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span>Attendance</span>
+              <span class="badge" style="background: rgba(109, 40, 217, 0.08); color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.2); font-size: 0.74rem; padding: 3px 9px; border-radius: 6px;">3rd Year MBBS (2026)</span>
             </h2>
-            <div style="font-size: 0.82rem; color: var(--text-muted);">
-              Current Academic Year (3rd Year MBBS) lecture &amp; clinical posting records under National Medical Commission regulations
-            </div>
           </div>
         </div>
 
@@ -348,62 +342,75 @@
 
       <!-- 1. OVERALL ATTENDANCE VIEW -->
       <div id="profOverallView">
-        <!-- Quick Attendance Overview Pills / Metrics Strip -->
-        <div class="profile-att-kpis-strip">
-          <div class="prof-att-kpi-box">
-            <div class="prof-att-kpi-label">Overall Attendance</div>
-            <div class="prof-att-kpi-val" id="profAttOverallPct">--%</div>
-            <div class="prof-att-kpi-sub" id="profAttTotalFraction">-- / -- Sessions</div>
+        <div class="datewise-container-card" style="margin-bottom: 0;">
+          <!-- Dark Blue/Navy Top Bar matching screenshot -->
+          <div class="datewise-top-bar" style="display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+            <h2>Overall Summary</h2>
+            <a href="/attendance.html" style="color: #ffffff; opacity: 0.92; font-size: 0.8rem; font-weight: 650; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <span>Full Attendance Portal</span>
+              <span>&rarr;</span>
+            </a>
           </div>
 
-          <div class="prof-att-kpi-box">
-            <div class="prof-att-kpi-label" style="color: #0284c7;">Theory Classes</div>
-            <div class="prof-att-kpi-val" style="color: #0284c7;" id="profAttTheoryPct">--%</div>
-            <div class="prof-att-kpi-sub" id="profAttTheoryFraction">-- / -- (Min 75%)</div>
-          </div>
+          <div class="datewise-body-content">
+            <!-- Quick Attendance Overview Pills / Metrics Strip -->
+            <div class="profile-att-kpis-strip">
+              <div class="prof-att-kpi-box">
+                <div class="prof-att-kpi-label">Overall Attendance</div>
+                <div class="prof-att-kpi-val" id="profAttOverallPct">--%</div>
+                <div class="prof-att-kpi-sub" id="profAttTotalFraction">-- / -- Sessions</div>
+              </div>
 
-          <div class="prof-att-kpi-box">
-            <div class="prof-att-kpi-label" style="color: #7c3aed;">Practical &amp; Clinics</div>
-            <div class="prof-att-kpi-val" style="color: #7c3aed;" id="profAttPracticalPct">--%</div>
-            <div class="prof-att-kpi-sub" id="profAttPracticalFraction">-- / -- (Min 80%)</div>
-          </div>
+              <div class="prof-att-kpi-box">
+                <div class="prof-att-kpi-label" style="color: #0284c7;">Theory Classes</div>
+                <div class="prof-att-kpi-val" style="color: #0284c7;" id="profAttTheoryPct">--%</div>
+                <div class="prof-att-kpi-sub" id="profAttTheoryFraction">-- / -- (Min 75%)</div>
+              </div>
 
-          <div class="prof-att-kpi-box highlight">
-            <div class="prof-att-kpi-label" style="color: #059669;">NMC Examination Status</div>
-            <div class="prof-att-kpi-val" style="color: #059669;" id="profAttComplianceText">Eligible</div>
-            <div class="prof-att-kpi-sub">University Exam Approved</div>
-          </div>
-        </div>
+              <div class="prof-att-kpi-box">
+                <div class="prof-att-kpi-label" style="color: #7c3aed;">Practical &amp; Clinics</div>
+                <div class="prof-att-kpi-val" style="color: #7c3aed;" id="profAttPracticalPct">--%</div>
+                <div class="prof-att-kpi-sub" id="profAttPracticalFraction">-- / -- (Min 80%)</div>
+              </div>
 
-        <!-- Simple Overall Attendance Table -->
-        <div class="table-wrapper" style="border: 1px solid #e2e8f0; border-radius: var(--radius-md); overflow-x: auto; margin-top: 14px;">
-          <table class="profile-att-table" id="profileAttendanceTable">
-            <thead>
-              <tr>
-                <th style="min-width: 240px;">Subject Name</th>
-                <th style="min-width: 180px;">Faculty In-Charge</th>
-                <th style="text-align: center; width: 140px;">Theory (75% Min)</th>
-                <th style="text-align: center; width: 140px;">Practical (80% Min)</th>
-                <th style="text-align: center; width: 130px;">Total Attended</th>
-                <th style="text-align: center; width: 100px;">Overall %</th>
-                <th style="text-align: center; width: 120px;">NMC Status</th>
-              </tr>
-            </thead>
-            <tbody id="profileAttendanceTableBody">
-              <tr>
-                <td colspan="7" style="text-align: center; padding: 28px; color: var(--text-muted);">
-                  Loading overall attendance...
-                </td>
-              </tr>
-            </tbody>
-            <tfoot id="profileAttendanceTableFoot" style="display: none; background: #f8fafc; font-weight: 750; border-top: 2px solid #e2e8f0;">
-            </tfoot>
-          </table>
+              <div class="prof-att-kpi-box highlight">
+                <div class="prof-att-kpi-label" style="color: #059669;">NMC Examination Status</div>
+                <div class="prof-att-kpi-val" style="color: #059669;" id="profAttComplianceText">Eligible</div>
+                <div class="prof-att-kpi-sub">University Exam Approved</div>
+              </div>
+            </div>
+
+            <!-- Simple Overall Attendance Table -->
+            <div class="table-wrapper" style="border: 1px solid #e2e8f0; border-radius: var(--radius-md); overflow-x: auto; margin-top: 14px;">
+              <table class="profile-att-table" id="profileAttendanceTable">
+                <thead>
+                  <tr>
+                    <th style="min-width: 240px;">Subject Name</th>
+                    <th style="min-width: 180px;">Faculty In-Charge</th>
+                    <th style="text-align: center; width: 140px;">Theory (75% Min)</th>
+                    <th style="text-align: center; width: 140px;">Practical (80% Min)</th>
+                    <th style="text-align: center; width: 130px;">Total Attended</th>
+                    <th style="text-align: center; width: 100px;">Overall %</th>
+                    <th style="text-align: center; width: 120px;">NMC Status</th>
+                  </tr>
+                </thead>
+                <tbody id="profileAttendanceTableBody">
+                  <tr>
+                    <td colspan="7" style="text-align: center; padding: 28px; color: var(--text-muted);">
+                      Loading overall attendance...
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot id="profileAttendanceTableFoot" style="display: none; background: #f8fafc; font-weight: 750; border-top: 2px solid #e2e8f0;">
+                </tfoot>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- 2. DAY-WISE ATTENDANCE VIEW (EMBEDDED TOGGLEABLE CARD) -->
-      <div id="profDaywiseView" style="display: none; margin-top: 14px;">
+      <div id="profDaywiseView" style="display: none;">
         <div class="datewise-container-card" style="margin-bottom: 0;">
           <!-- Dark Blue/Navy Top Bar -->
           <div class="datewise-top-bar" style="display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
