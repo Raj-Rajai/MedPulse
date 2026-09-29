@@ -382,12 +382,12 @@
   <!-- Collapsible Dock Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/admin.html" class="sidebar-logo">
-        <div class="logo-icon" style="background: linear-gradient(135deg, #d97706, #b45309);">
-          👑
+      <a href="/admin.html" class="sidebar-logo" title="SAL Education • Admin Console">
+        <div class="logo-icon" style="background: #ffffff; padding: 2px;">
+          <img src="/images/sal-logo.png" alt="SAL Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md);">
         </div>
         <div class="logo-text-group">
-          <span class="logo-title">MedPulse</span>
+          <span class="logo-title">SAL Education</span>
           <span class="logo-subtitle" style="color: #f59e0b; font-weight: 750;">ADMIN CONSOLE</span>
         </div>
       </a>
@@ -527,16 +527,23 @@
 
     <!-- Top Action Bar -->
     <div class="page-header anim-fade-up" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <div class="admin-pill" style="margin-bottom: 8px;">
-          <span>👑</span> Faculty &amp; Administrative Command Center
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <img src="/images/sal-logo.png" alt="SAL Logo" class="header-brand-logo">
+        <div>
+          <div class="admin-pill" style="margin-bottom: 8px;">
+            <span>👑</span> SAL Faculty &amp; Administrative Command Center
+          </div>
+          <h1 class="page-title page-title-animated" id="adminPageHeading">Executive Surveillance Overview</h1>
+          <p class="page-subtitle" id="adminPageSubheading">
+            SAL Institute of Medical Sciences &amp; Hospital &bull; Departmental Community Medicine (PSM) oversight
+          </p>
         </div>
-        <h1 class="page-title page-title-animated" id="adminPageHeading">Executive Surveillance Overview</h1>
-        <p class="page-subtitle" id="adminPageSubheading">
-          Departmental Community Medicine (PSM) oversight, multi-cadet rosters, and population health surveillance
-        </p>
       </div>
       <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+        <a href="tel:6357009495" class="emergency-header-badge" title="Hospital Emergency Hotline">
+          <span class="pulse-dot"></span>
+          <span>Emergency: <strong>6357009495</strong></span>
+        </a>
         <button class="btn btn-secondary" onclick="openAddStudentModal()" style="font-weight: 650;">
           ➕ Register Cadet
         </button>

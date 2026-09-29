@@ -3,12 +3,9 @@
 -- Can be loaded for demo/testing purposes
 -- ==========================================================
 
--- Insert Default Medical Colleges
+-- Insert Default Medical College
 INSERT OR IGNORE INTO colleges (id, name, code, city, state)
-VALUES (1, 'SAL Hospital', 'SAL-01', 'Ahmedabad', 'Gujarat');
-
-INSERT OR IGNORE INTO colleges (id, name, code, city, state)
-VALUES (2, 'SAL Institute of Medical Sciences', 'SAL-01', 'Ahmedabad', 'Gujarat');
+VALUES (1, 'SAL Institute of Medical Sciences & Hospital', 'SAL-01', 'Ahmedabad', 'Gujarat');
 
 -- Insert Sample Student (Roll 235 - Dhruv Patel)
 INSERT OR IGNORE INTO students (id, roll_number, name, pin, batch_year, college_id)

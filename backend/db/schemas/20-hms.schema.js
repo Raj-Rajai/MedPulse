@@ -91,7 +91,7 @@ module.exports = {
         // Seed default hospital
         db.prepare(`
             INSERT OR IGNORE INTO hospitals (id, name, code, type, city, district, state, bed_capacity, contact_email, contact_phone, max_super_admins, max_admins, status)
-            VALUES (1, 'SAL Hospital', 'HOSP-SAL-01', 'Private Multi-Specialty Hospital', 'Ahmedabad', 'Ahmedabad', 'Gujarat', 750, 'info@salhospital.com', '9664552098', 3, 20, 'Active')
+            VALUES (1, 'SAL Hospital', 'HOSP-SAL-01', 'Private Multi-Specialty Hospital', 'Ahmedabad', 'Ahmedabad', 'Gujarat', 750, 'info@salhospital.com', '6357009495', 3, 20, 'Active')
         `).run();
 
         // Seed default Hospital Super Admin

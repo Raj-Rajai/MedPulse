@@ -23,7 +23,26 @@ module.exports = {
                 'Ahmedabad',
                 'Gujarat',
                 'info@salhospital.com',
-                '9664552098'
+                '6357009495'
             );
+
+        // Ensure college is SAL Institute of Medical Sciences & Hospital and no GMERS remains
+        db.prepare(`UPDATE colleges
+            SET name = 'SAL Institute of Medical Sciences & Hospital',
+                code = 'SAL-01',
+                city = 'Ahmedabad',
+                state = 'Gujarat'
+            WHERE id = 1`).run();
+
+        // Migrate any remaining students to college 1
+        db.prepare(`UPDATE students SET college_id = 1 WHERE college_id IS NULL OR college_id != 1`).run();
+        // Migrate any remaining admins to university_id 1
+        try {
+            db.prepare(`UPDATE admins SET university_id = 1 WHERE university_id IS NULL OR university_id != 1`).run();
+        } catch (e) {}
+        // Remove any college with id != 1 or mentioning GMERS
+        try {
+            db.prepare(`DELETE FROM colleges WHERE id != 1 OR name LIKE '%GMERS%'`).run();
+        } catch (e) {}
     }
 };

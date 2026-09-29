@@ -107,14 +107,12 @@
   <!-- Collapsible Icon Dock Navigation -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/" class="sidebar-logo" title="MedPulse Health Portal">
-        <div class="logo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-          </svg>
+      <a href="/" class="sidebar-logo" title="SAL Education • MedPulse Health Portal">
+        <div class="logo-icon" style="background: #ffffff; padding: 2px;">
+          <img src="/images/sal-logo.png" alt="SAL Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md);">
         </div>
         <div class="logo-text-group">
-          <span class="logo-label">MedPulse</span>
+          <span class="logo-label">SAL Education</span>
           <span class="logo-sublabel">HEALTH PORTAL</span>
         </div>
       </a>
@@ -247,6 +245,7 @@
     <div class="profile-hero anim-fade-up">
       <div class="profile-hero-content">
         <div class="profile-identity-group">
+          <img src="/images/sal-logo.png" alt="SAL Logo" class="header-brand-logo" style="height: 64px; width: 64px; border-radius: 12px; background: #ffffff; padding: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
           <div class="profile-avatar-wrapper">
             <div class="profile-avatar-inner" id="heroAvatarIcon">
               👨‍⚕️
@@ -260,7 +259,7 @@
               <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 9px; border-radius: 6px; background: rgba(16, 185, 129, 0.22); border: 1px solid rgba(16, 185, 129, 0.45); color: #6ee7b7; font-weight: 700; letter-spacing: 0.02em;">Verified</span>
             </h1>
             <div class="profile-sub-pills" style="margin-bottom: 6px;">
-              <span id="heroCollegeName">GMERS Medical College &amp; Hospital</span>
+              <span id="heroCollegeName">SAL Institute of Medical Sciences &amp; Hospital</span>
               <span>&bull;</span>
               <span id="heroPostingUnit">Community Medicine Unit 3</span>
               <span>&bull;</span>
@@ -292,6 +291,10 @@
           </div>
         </div>
         <div class="profile-hero-actions">
+          <a href="tel:6357009495" class="emergency-header-badge" style="box-shadow: 0 4px 16px rgba(239,68,68,0.4); font-weight: 750;" title="Hospital Emergency Hotline">
+            <span class="pulse-dot"></span>
+            <span>Emergency: <strong>6357009495</strong></span>
+          </a>
           <button class="btn btn-secondary" id="heroExportCsvBtn" onclick="exportProformaCsv()" style="background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); color: #fff; font-weight: 650;" title="Download Roll 235 Field Survey CSV">
             📥 Export CSV
           </button>
@@ -739,7 +742,7 @@
       const collegeEl = document.getElementById('heroCollegeName');
       if (collegeEl) {
         const locPart = (s.college_city && s.college_state) ? ` (${s.college_city}, ${s.college_state})` : (s.college_city ? ` (${s.college_city})` : '');
-        collegeEl.textContent = `${s.college_name || 'GMERS Medical College & Hospital'}${locPart}`;
+        collegeEl.textContent = `${s.college_name || 'SAL Institute of Medical Sciences & Hospital'}${locPart}`;
       }
 
       const postEl = document.getElementById('heroPostingUnit');
