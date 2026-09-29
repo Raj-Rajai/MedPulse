@@ -880,7 +880,7 @@
             </div>
 
             <!-- Topic Covered -->
-            <div class="att-config-item" style="grid-column: span 2;">
+            <div class="att-config-item col-span-2">
               <label>Lecture Topic / Clinical Case</label>
               <input type="text" id="attTopicInput" value="Epidemiological Surveillance &amp; Outbreak Investigation" placeholder="e.g. Vector-borne Disease Surveillance, Cold Chain Management">
             </div>
@@ -909,13 +909,13 @@
 
           <!-- Bulk Quick Toggles -->
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAttendance('Present')" style="color: #059669; font-weight: 750;">
+            <button type="button" class="btn-bulk-present" onclick="markAllAttendance('Present')">
               ⚡ Mark All Present
             </button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAttendance('Absent')" style="color: #dc2626; font-weight: 750;">
+            <button type="button" class="btn-bulk-absent" onclick="markAllAttendance('Absent')">
               ⚡ Mark All Absent
             </button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAttendance('Not Marked')" style="font-weight: 650;">
+            <button type="button" class="btn-bulk-reset" onclick="markAllAttendance('Not Marked')">
               ↺ Reset
             </button>
           </div>
@@ -969,16 +969,16 @@
               </p>
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <input type="date" id="attHistDateFilter" onchange="loadAttendanceHistory()" style="padding: 0.45rem 0.8rem; font-size: 0.82rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-              <select id="attHistStatusFilter" onchange="loadAttendanceHistory()" style="padding: 0.45rem 0.8rem; font-size: 0.82rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: #fff;">
+              <input type="date" id="attHistDateFilter" onchange="loadAttendanceHistory()" style="height: 38px; padding: 0 10px; font-size: 0.82rem; border-radius: 8px; border: 1.5px solid #cbd5e1; outline: none;">
+              <select id="attHistStatusFilter" class="filter-select" onchange="loadAttendanceHistory()" style="max-width: 160px; height: 38px;">
                 <option value="all">All Statuses</option>
                 <option value="Present">Present</option>
                 <option value="Absent">Absent</option>
                 <option value="Leave">Leave</option>
                 <option value="Field Duty">Field Duty</option>
               </select>
-              <input type="text" id="attHistSearchInput" placeholder="🔍 Search cadet, topic, faculty..." oninput="loadAttendanceHistory()" style="max-width: 220px; font-size: 0.82rem; padding: 0.45rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-              <button class="btn btn-secondary" onclick="loadAttendanceHistory()" style="font-size: 0.82rem; padding: 0.45rem 0.8rem;">
+              <input type="text" id="attHistSearchInput" placeholder="🔍 Search cadet, topic, faculty..." oninput="loadAttendanceHistory()" style="height: 38px; max-width: 220px; font-size: 0.82rem; padding: 0 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; outline: none;">
+              <button class="btn btn-secondary" onclick="loadAttendanceHistory()" style="height: 38px; font-size: 0.82rem; padding: 0 14px; border-radius: 8px; font-weight: 700;">
                 ↺ Refresh
               </button>
             </div>
@@ -1033,7 +1033,7 @@
         </div>
 
         <!-- Exam Filter Controls -->
-        <div class="att-config-grid">
+        <div class="att-config-grid exam-config-grid">
           <div class="att-config-item">
             <label>Academic Year</label>
             <select id="examYearLevel" onchange="loadAdminExamSheet()">
@@ -1069,10 +1069,10 @@
 
           <div class="att-config-item">
             <label>Examination Date</label>
-            <input type="date" id="examDateInput" value="2026-09-15">
+            <input type="date" id="examDateInput" value="2026-09-15" onchange="loadAdminExamSheet()">
           </div>
 
-          <div class="att-config-item" style="grid-column: span 2;">
+          <div class="att-config-item col-span-2">
             <label>Examination Code &amp; Title</label>
             <input type="text" id="examCodeInput" value="PSM-2026-IA1" placeholder="e.g. PSM-2026-IA1 (Internal Assessment I)">
           </div>
@@ -2361,7 +2361,7 @@
               </div>
             </td>
             <td>
-              <input type="text" id="attRemarks-${s.student_id}" value="${escapeHtml(s.remarks || '')}" placeholder="Optional note..." style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: var(--radius-sm);" onchange="updateStudentAttendanceRemarks(${s.student_id}, this.value)">
+              <input type="text" class="att-remarks-input" id="attRemarks-${s.student_id}" value="${escapeHtml(s.remarks || '')}" placeholder="Optional note..." onchange="updateStudentAttendanceRemarks(${s.student_id}, this.value)">
             </td>
           </tr>
         `;
@@ -2727,7 +2727,7 @@
               <span id="exNmcChip-${sId}">${getExamNmcChipHtml(m.status, m.theory_obtained, m.practical_obtained, m.percentage, isTwoPaper)}</span>
             </td>
             <td>
-              <input type="text" id="exRemarks-${sId}" value="${escapeHtml(m.faculty_remarks || '')}" placeholder="Clinical remarks..." style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: var(--radius-sm);" onchange="updateExamRemarks(${sId}, this.value)">
+              <input type="text" class="marks-remarks-input" id="exRemarks-${sId}" value="${escapeHtml(m.faculty_remarks || '')}" placeholder="Clinical remarks..." onchange="updateExamRemarks(${sId}, this.value)">
             </td>
           </tr>
         `;

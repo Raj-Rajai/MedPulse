@@ -3935,83 +3935,105 @@ input:not([type="checkbox"]):not([type="radio"]).is-valid {
 }
 
 /* ==========================================================
-   UNIVERSAL SELECT & OPTIONS THEME
+   UNIVERSAL SELECT & DROPDOWN LIST THEME
    Replaces default OS controls with cohesive MedPulse styling
    ========================================================== */
 select,
 .form-group select,
-.filter-select {
+.filter-select,
+.att-config-item select,
+.custom-select,
+.pt-select {
   appearance: none !important;
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
   color-scheme: light;
+  display: block;
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 38px 0 13px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
   background-color: #ffffff !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 14px center !important;
   background-size: 14px 14px !important;
-  padding-right: 40px !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   cursor: pointer !important;
-  border: 1.5px solid var(--border) !important;
-  border-radius: var(--radius-md) !important;
-  font-family: inherit !important;
-  font-size: 0.88rem !important;
-  color: var(--text-primary) !important;
-  outline: none !important;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast) !important;
+  line-height: normal !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 select:hover,
 .form-group select:hover,
-.filter-select:hover {
-  border-color: var(--accent) !important;
-  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.08) !important;
+.filter-select:hover,
+.att-config-item select:hover,
+.pt-select:hover {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
 }
 
 select:focus,
 .form-group select:focus,
-.filter-select:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3.5px var(--accent-ring), 0 8px 20px -4px rgba(109, 40, 217, 0.18) !important;
-  transform: translateY(-2px) !important;
+.filter-select:focus,
+.att-config-item select:focus,
+.pt-select:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3.5px rgba(124, 58, 237, 0.16) !important;
+  outline: none !important;
+  transform: none !important;
 }
 
-/* Options Styling Everywhere */
+select:disabled {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Options Styling Everywhere in Dropdown Lists */
 select option,
 .form-group select option,
-.filter-select option {
+.filter-select option,
+.att-config-item select option,
+.pt-select option {
   background-color: #ffffff !important;
-  color: #1e1b4b !important;
+  color: #0f172a !important;
   font-family: inherit !important;
   font-size: 0.9rem !important;
   font-weight: 500 !important;
   padding: 10px 14px !important;
   line-height: 1.6 !important;
-  border-bottom: 1px solid #f1f5f9;
 }
 
 select option:checked,
-select option:hover,
-select option:focus,
 .form-group select option:checked,
-.filter-select option:checked {
-  background-color: #7c3aed !important;
-  background: #7c3aed linear-gradient(135deg, #7c3aed 0%, #6366f1 100%) !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
+.filter-select option:checked,
+.att-config-item select option:checked,
+.pt-select option:checked {
+  background-color: #ede9fe !important;
+  color: #6d28d9 !important;
+  font-weight: 700 !important;
 }
 
 select option:disabled,
 .form-group select option:disabled {
-  color: var(--text-muted) !important;
+  color: #94a3b8 !important;
   background-color: #f8fafc !important;
   font-style: italic;
 }
 
 select optgroup,
 .form-group select optgroup {
-  font-weight: 700 !important;
-  color: var(--accent) !important;
+  font-weight: 750 !important;
+  color: #4f46e5 !important;
   background-color: #f8fafc !important;
   padding: 8px 12px !important;
 }
@@ -4048,142 +4070,202 @@ html > *:not(head):not(body) {
 
 /* Sub-tab navigation in Admin views */
 .admin-subnav-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  margin-bottom: 22px;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .admin-subnav-btn {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: var(--radius-lg);
-  padding: 8px 16px;
-  font-size: 0.84rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 0.86rem;
   font-weight: 700;
-  color: #475569;
+  color: #64748b;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   transition: all 0.18s ease;
 }
 
 .admin-subnav-btn:hover {
   background: #f1f5f9;
   color: #1e1b4b;
-  border-color: #cbd5e1;
 }
 
 .admin-subnav-btn.active {
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
   color: #ffffff;
-  border-color: #312e81;
-  box-shadow: 0 4px 14px rgba(49, 46, 129, 0.25);
+  border-color: #3730a3;
+  box-shadow: 0 3px 12px rgba(79, 70, 229, 0.3);
+}
+
+.admin-subnav-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Timetable & Attendance Controls Strip */
 .att-config-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
   margin-bottom: 18px;
+}
+
+.att-config-grid.exam-config-grid {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .att-config-item {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.att-config-item.col-span-2 {
+  grid-column: span 2;
+}
+
+.att-config-item.col-span-full {
+  grid-column: 1 / -1;
 }
 
 .att-config-item label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 750;
+  color: #475569;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.att-config-item input,
-.att-config-item select {
-  padding: 7px 11px;
-  font-size: 0.86rem;
-  border: 1.5px solid #cbd5e1;
-  border-radius: var(--radius-md);
-  background: #ffffff;
-  color: #1e293b;
+.att-config-item input[type="text"],
+.att-config-item input[type="date"] {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: 0.88rem;
   font-weight: 600;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
   outline: none;
+  box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.att-config-item input:focus,
-.att-config-item select:focus {
+.att-config-item input:focus {
   border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  box-shadow: 0 0 0 3.5px rgba(124, 58, 237, 0.16);
 }
 
 /* Date Step Control Group */
 .date-step-control {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: stretch;
   border: 1.5px solid #cbd5e1;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   overflow: hidden;
   background: #ffffff;
+  height: 42px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-step-control:focus-within {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3.5px rgba(124, 58, 237, 0.16);
 }
 
 .date-step-control input[type="date"] {
-  border: none;
-  padding: 6px 8px;
-  font-weight: 750;
-  font-size: 0.88rem;
-  outline: none;
-  color: #1e293b;
+  border: none !important;
+  flex: 1;
+  padding: 0 8px !important;
+  font-weight: 750 !important;
+  font-size: 0.88rem !important;
+  outline: none !important;
+  color: #0f172a !important;
+  height: 100% !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  text-align: center;
 }
 
 .date-step-btn {
   background: #f8fafc;
   border: none;
-  padding: 7px 10px;
+  padding: 0 12px;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 750;
   color: #475569;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.date-step-btn:first-child {
+  border-left: none;
+}
+
+.date-step-btn:last-child {
+  border-right: none;
 }
 
 .date-step-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: #ede9fe;
+  color: #6d28d9;
 }
 
 /* Status Pill Toggle Group */
 .att-status-group {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: #f1f5f9;
-  padding: 3px;
-  border-radius: var(--radius-full);
+  padding: 4px;
+  border-radius: 100px;
   border: 1px solid #e2e8f0;
 }
 
 .att-status-btn {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 0.76rem;
-  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 750;
   color: #64748b;
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .att-status-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
   color: #0f172a;
 }
 
@@ -4191,25 +4273,29 @@ html > *:not(head):not(body) {
 .att-status-btn.btn-p.active {
   background: #10b981;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.45);
+  border-color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
 .att-status-btn.btn-a.active {
   background: #ef4444;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.45);
+  border-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
 .att-status-btn.btn-l.active {
   background: #f59e0b;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45);
+  border-color: #d97706;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
 .att-status-btn.btn-fd.active {
   background: #7c3aed;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.45);
+  border-color: #6d28d9;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
 }
 
 /* Summary Badge Counters */
@@ -4218,12 +4304,13 @@ html > *:not(head):not(body) {
   align-items: center;
   justify-content: space-between;
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   padding: 12px 18px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .att-badges-row {
@@ -4237,9 +4324,9 @@ html > *:not(head):not(body) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-md);
-  font-size: 0.78rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
   font-weight: 750;
   border: 1px solid transparent;
 }
@@ -4251,48 +4338,118 @@ html > *:not(head):not(body) {
 }
 
 .att-count-pill.present {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(16, 185, 129, 0.1);
   color: #059669;
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.25);
 }
 
 .att-count-pill.absent {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(239, 68, 68, 0.1);
   color: #dc2626;
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .att-count-pill.leave {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.1);
   color: #d97706;
-  border-color: rgba(245, 158, 11, 0.3);
+  border-color: rgba(245, 158, 11, 0.25);
 }
 
 .att-count-pill.field-duty {
-  background: rgba(124, 58, 237, 0.12);
+  background: rgba(124, 58, 237, 0.1);
   color: #6d28d9;
-  border-color: rgba(124, 58, 237, 0.3);
+  border-color: rgba(124, 58, 237, 0.25);
+}
+
+/* Bulk Buttons */
+.btn-bulk-present {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+  color: #059669;
+  font-weight: 750;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.btn-bulk-present:hover {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-bulk-absent {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  font-weight: 750;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.btn-bulk-absent:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+}
+
+.btn-bulk-reset {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.btn-bulk-reset:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
 }
 
 /* Marksheet Numeric Input */
 .marks-input {
-  width: 70px;
-  padding: 5px 8px;
+  width: 76px;
+  height: 38px;
+  padding: 0 8px;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.94rem;
   font-weight: 750;
-  color: #1e293b;
+  color: #1e1b4b;
   border: 1.5px solid #cbd5e1;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
+  border-radius: 8px;
+  background: #f8fafc;
   outline: none;
-  transition: all 0.15s ease;
+  box-sizing: border-box;
+  transition: all 0.18s ease;
+}
+
+.marks-input:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
 }
 
 .marks-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: #6366f1;
   background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .marks-input.invalid-mark {
@@ -4301,16 +4458,46 @@ html > *:not(head):not(body) {
   color: #dc2626 !important;
 }
 
+/* Remarks Inputs */
+.att-remarks-input,
+.marks-remarks-input {
+  width: 100%;
+  min-width: 180px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1e293b;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.18s ease;
+}
+
+.att-remarks-input:hover,
+.marks-remarks-input:hover {
+  border-color: #94a3b8;
+}
+
+.att-remarks-input:focus,
+.marks-remarks-input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  background: #ffffff;
+}
+
 /* NMC Compliance Pills */
 .nmc-chip-pass {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.1);
   color: #059669;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 750;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
@@ -4318,12 +4505,12 @@ html > *:not(head):not(body) {
 .nmc-chip-fail {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  background: rgba(239, 68, 68, 0.12);
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
   color: #dc2626;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 750;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
@@ -4336,9 +4523,29 @@ html > *:not(head):not(body) {
   margin-top: 24px;
   padding: 16px 20px;
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
   flex-wrap: wrap;
   gap: 14px;
+}
+
+/* Responsive Breakpoints for Grid */
+@media (max-width: 1200px) {
+  .att-config-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .att-config-grid.exam-config-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .att-config-grid,
+  .att-config-grid.exam-config-grid {
+    grid-template-columns: 1fr;
+  }
+  .att-config-item.col-span-2 {
+    grid-column: span 1;
+  }
 }
