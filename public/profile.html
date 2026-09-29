@@ -255,17 +255,39 @@
           </div>
           <div class="profile-details-area">
             <h1>
-              <span id="heroStudentName">Student Clinician</span>
+              <span id="heroStudentName">Dhruv Patel</span>
               <span class="profile-roll-tag" id="heroRollBadge">Roll 235</span>
+              <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 9px; border-radius: 6px; background: rgba(16, 185, 129, 0.22); border: 1px solid rgba(16, 185, 129, 0.45); color: #6ee7b7; font-weight: 700; letter-spacing: 0.02em;">Verified</span>
             </h1>
-            <div class="profile-sub-pills">
-              <span id="heroCollegeName">SAL Hospital</span>
+            <div class="profile-sub-pills" style="margin-bottom: 6px;">
+              <span id="heroCollegeName">GMERS Medical College &amp; Hospital</span>
               <span>&bull;</span>
-              <span id="heroPostingUnit">RHTC - Rural Health Training Center</span>
+              <span id="heroPostingUnit">Community Medicine Unit 3</span>
               <span>&bull;</span>
               <span style="color: #6ee7b7; font-weight: 650;">Active Field Posting</span>
               <span>&bull;</span>
               <span class="referral-pill" id="heroReferralBadge" onclick="copyCadetReferralCode()" title="Click to copy Patient Adoption Referral Code" style="cursor: pointer; background: rgba(14, 165, 233, 0.25); border: 1px solid rgba(14, 165, 233, 0.4); color: #bae6fd; font-family: monospace; font-weight: 700; padding: 2px 8px; border-radius: 6px;">Ref: Pending</span>
+            </div>
+            <div class="profile-sub-pills" style="font-size: 0.82rem; color: rgba(255, 255, 255, 0.88); gap: 10px; flex-wrap: wrap;">
+              <span style="display: inline-flex; align-items: center; gap: 5px;">
+                <span>🎓</span>
+                <span id="heroBatchYear">3rd Year MBBS (PSM Batch 2024-25)</span>
+              </span>
+              <span>&bull;</span>
+              <span style="display: inline-flex; align-items: center; gap: 5px;">
+                <span>🏥</span>
+                <span id="heroDepartment">Community Medicine (PSM)</span>
+              </span>
+              <span>&bull;</span>
+              <a id="heroEmailLink" href="mailto:dhruv.patel@medpulse.edu" style="display: inline-flex; align-items: center; gap: 5px; color: #bae6fd; text-decoration: none;" title="Institutional Email">
+                <span>✉️</span>
+                <span id="heroEmail">dhruv.patel@medpulse.edu</span>
+              </a>
+              <span>&bull;</span>
+              <a id="heroPhoneLink" href="tel:+919876543210" style="display: inline-flex; align-items: center; gap: 5px; color: #bae6fd; text-decoration: none;" title="Official Contact Phone">
+                <span>📞</span>
+                <span id="heroPhone">+91 98765 43210</span>
+              </a>
             </div>
           </div>
         </div>
@@ -372,60 +394,12 @@
       </div>
     </div>
 
-    <!-- 2-Column Responsive Layout -->
+    <!-- 3-Column Responsive Profile Cards Layout -->
     <div class="profile-content-grid anim-fade-up">
 
-      <!-- Left Column: Academic Credentials & Adoption Referral -->
-      <div class="profile-col-left">
-
-        <!-- Personal & Academic Details Card -->
-        <div class="profile-info-card">
-          <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
-            <span>📋 Academic Credentials</span>
-            <span class="badge badge-success" style="font-size: 0.72rem;">Verified</span>
-          </h2>
-          <div class="profile-info-list">
-            <div class="profile-info-row">
-              <span class="profile-info-label">Full Trainee Name</span>
-              <span class="profile-info-val" id="valFullName">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Survey Roll Number</span>
-              <span class="profile-info-val" id="valRollNumber" style="font-family: monospace; font-size: 1rem; color: var(--accent);">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Adoption Referral Code</span>
-              <span class="profile-info-val" id="valReferralCode" style="font-family: monospace; font-size: 0.95rem; font-weight: 750; color: #0284c7;">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Medical Degree &amp; Batch</span>
-              <span class="profile-info-val" id="valBatchYear">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Affiliated Medical Institution</span>
-              <span class="profile-info-val" id="valCollege">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Field Health Training Center (Posting Unit)</span>
-              <span class="profile-info-val" id="valPostingUnit">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Official Contact Phone</span>
-              <span class="profile-info-val" id="valPhone">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Institutional Email</span>
-              <span class="profile-info-val" id="valEmail">-</span>
-            </div>
-            <div class="profile-info-row">
-              <span class="profile-info-label">Clinical Department</span>
-              <span class="profile-info-val">Community Medicine (PSM)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Patient Adoption Referral Code Card -->
-        <div class="profile-info-card" style="border: 1px solid rgba(14, 165, 233, 0.35); background: linear-gradient(135deg, rgba(14, 165, 233, 0.06), rgba(99, 102, 241, 0.04)); position: relative; overflow: hidden; margin-bottom: 0;">
+      <!-- 1. Patient Adoption Referral Code Card -->
+      <div class="profile-info-card" style="border: 1px solid rgba(14, 165, 233, 0.35); background: linear-gradient(135deg, rgba(14, 165, 233, 0.06), rgba(99, 102, 241, 0.04)); position: relative; overflow: hidden; margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h2 style="font-size: 1.15rem; font-weight: 750; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
               <span>🏷️ Patient Adoption Referral Code</span>
@@ -450,54 +424,55 @@
               <span id="copyReferralText">Copy</span>
             </button>
           </div>
-          <div style="font-size: 0.76rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
-            <span>💡 Automatically routes the patient's vitals &amp; consultations to your portfolio and institutional hospital.</span>
-          </div>
         </div>
-
+        <div style="font-size: 0.76rem; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 10px;">
+          <span>💡 Automatically routes the patient's vitals &amp; consultations to your portfolio and institutional hospital.</span>
+        </div>
       </div>
 
-      <!-- Right Column: Access & Security & Official Proforma Exports -->
-      <div class="profile-col-right">
-
-        <!-- Security & PIN Management Card -->
-        <div class="profile-info-card">
-          <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 12px; color: var(--text-primary);">
-            🔒 Access &amp; Security
-          </h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-            Your portal session is authenticated using your 4-digit Student PIN. Change your PIN anytime to maintain data security.
-          </p>
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Login PIN</div>
-              <div style="font-size: 1.1rem; font-weight: 800; letter-spacing: 0.3em; color: var(--text-primary);">••••</div>
-            </div>
-            <span class="badge badge-success">Protected</span>
+      <!-- 2. Security & PIN Management Card -->
+      <div class="profile-info-card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="font-size: 1.15rem; font-weight: 750; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+              <span>🔒 Access &amp; Security</span>
+            </h2>
+            <span class="badge badge-success" style="font-size: 0.72rem;">PIN Protected</span>
           </div>
-          <button class="btn btn-secondary" onclick="openChangePinModal()" style="width: 100%; justify-content: center;">
-            Update Access PIN
-          </button>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
+            Your portal session is authenticated using your 4-digit Student PIN. Change your PIN anytime to maintain data security and clinical record privacy.
+          </p>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Portal Access PIN</div>
+              <div style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.35em; color: var(--text-primary);">••••</div>
+            </div>
+            <span class="badge badge-success">Active</span>
+          </div>
         </div>
+        <button class="btn btn-secondary" onclick="openChangePinModal()" style="width: 100%; justify-content: center; margin-top: 10px; font-weight: 650;">
+          Update Access PIN
+        </button>
+      </div>
 
-        <!-- Official Survey Proforma Exports Card -->
-        <div class="profile-info-card" style="margin-bottom: 0;">
+      <!-- 3. Official Survey Proforma Exports Card -->
+      <div class="profile-info-card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
           <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 8px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-            📄 Official Field Survey Proforma
+            <span>📄 Official Field Survey Proforma</span>
           </h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
             Download the official Community Medicine (PSM) survey proforma containing all 43 columns, baseline socio-demographics, and latest clinical follow-up records.
           </p>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn btn-secondary" id="cardExportCsvBtn" onclick="exportProformaCsv()" style="width: 100%; justify-content: center; font-weight: 650; display: inline-flex; align-items: center; gap: 8px;">
-              📥 Download Survey CSV (43 Cols)
-            </button>
-            <button class="btn btn-primary" id="cardExportPdfBtn" onclick="exportProformaPdf()" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #0284c7, #0369a1); border: none; box-shadow: 0 4px 12px rgba(2,132,199,0.35); font-weight: 650; display: inline-flex; align-items: center; gap: 8px;">
-              📄 Download Polished PDF Report
-            </button>
-          </div>
         </div>
-
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+          <button class="btn btn-secondary" id="cardExportCsvBtn" onclick="exportProformaCsv()" style="width: 100%; justify-content: center; font-weight: 650; display: inline-flex; align-items: center; gap: 8px;">
+            📥 Download Survey CSV (43 Cols)
+          </button>
+          <button class="btn btn-primary" id="cardExportPdfBtn" onclick="exportProformaPdf()" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #0284c7, #0369a1); border: none; box-shadow: 0 4px 12px rgba(2,132,199,0.35); font-weight: 650; display: inline-flex; align-items: center; gap: 8px;">
+            📄 Download Polished PDF Report
+          </button>
+        </div>
       </div>
 
     </div>
@@ -754,11 +729,21 @@
       const families = data.families || [];
       const activities = data.recentActivity || [];
 
-      // Hero Banner
-      document.getElementById('heroStudentName').textContent = s.name || 'Trainee Clinician';
-      document.getElementById('heroRollBadge').textContent = `Roll ${s.roll_number}`;
-      document.getElementById('heroCollegeName').textContent = s.college_name || 'SAL Hospital';
-      document.getElementById('heroPostingUnit').textContent = s.posting_unit || 'RHTC - Community Health Posting';
+      // Hero Banner Identity
+      const nameEl = document.getElementById('heroStudentName');
+      if (nameEl) nameEl.textContent = s.name || 'Dhruv Patel';
+
+      const rollEl = document.getElementById('heroRollBadge');
+      if (rollEl) rollEl.textContent = `Roll ${s.roll_number || '235'}`;
+
+      const collegeEl = document.getElementById('heroCollegeName');
+      if (collegeEl) {
+        const locPart = (s.college_city && s.college_state) ? ` (${s.college_city}, ${s.college_state})` : (s.college_city ? ` (${s.college_city})` : '');
+        collegeEl.textContent = `${s.college_name || 'GMERS Medical College & Hospital'}${locPart}`;
+      }
+
+      const postEl = document.getElementById('heroPostingUnit');
+      if (postEl) postEl.textContent = s.posting_unit || 'Community Medicine Unit 3';
 
       // Patient Adoption Referral Code
       const refCode = s.referral_code || 'Pending';
@@ -766,18 +751,23 @@
       if (refEl) refEl.textContent = refCode;
       const heroRefEl = document.getElementById('heroReferralBadge');
       if (heroRefEl) heroRefEl.textContent = `Ref: ${refCode}`;
-      const valRefEl = document.getElementById('valReferralCode');
-      if (valRefEl) valRefEl.textContent = refCode;
 
-      // Credentials Card
-      document.getElementById('valFullName').textContent = s.name || '-';
-      document.getElementById('valRollNumber').textContent = s.roll_number || '-';
-      document.getElementById('valBatchYear').textContent = s.batch_year || '3rd Year MBBS';
-      const locPart = (s.college_city && s.college_state) ? ` (${s.college_city}, ${s.college_state})` : (s.college_city ? ` (${s.college_city})` : '');
-      document.getElementById('valCollege').textContent = `${s.college_name || 'Medical College'}${locPart}`;
-      document.getElementById('valPostingUnit').textContent = s.posting_unit || 'RHTC - Sanand Block';
-      document.getElementById('valPhone').textContent = s.phone || 'Not provided';
-      document.getElementById('valEmail').textContent = s.email || 'Not provided';
+      // Academic Credentials in Hero Top Card
+      const batchEl = document.getElementById('heroBatchYear');
+      if (batchEl) batchEl.textContent = s.batch_year || '3rd Year MBBS (PSM Batch 2024-25)';
+
+      const deptEl = document.getElementById('heroDepartment');
+      if (deptEl) deptEl.textContent = 'Community Medicine (PSM)';
+
+      const emailEl = document.getElementById('heroEmail');
+      if (emailEl) emailEl.textContent = s.email || 'dhruv.patel@medpulse.edu';
+      const emailLink = document.getElementById('heroEmailLink');
+      if (emailLink && s.email) emailLink.href = `mailto:${s.email}`;
+
+      const phoneEl = document.getElementById('heroPhone');
+      if (phoneEl) phoneEl.textContent = s.phone || '+91 98765 43210';
+      const phoneLink = document.getElementById('heroPhoneLink');
+      if (phoneLink && s.phone) phoneLink.href = `tel:${s.phone}`;
     }
 
     /* ---- Edit Profile Modal ---- */

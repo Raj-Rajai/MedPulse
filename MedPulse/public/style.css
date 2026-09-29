@@ -3808,6 +3808,7 @@ table tbody tr:hover {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: 14px;
 }
 
 /* Profile KPI Metrics Cards Grid */
@@ -3870,12 +3871,12 @@ table tbody tr:hover {
   margin-top: 3px;
 }
 
-/* 2-Column Responsive Profile Content Layout */
+/* 3-Column Responsive Profile Content Layout */
 .profile-content-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (max-width: 1024px) {
