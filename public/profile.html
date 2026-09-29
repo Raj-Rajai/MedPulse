@@ -335,65 +335,170 @@
           </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <a href="/attendance.html" class="btn btn-primary btn-sm" style="font-weight: 650; display: inline-flex; align-items: center; gap: 6px;">
+        <!-- Segmented Attendance Mode Toggle Pill -->
+        <div class="att-view-toggle-pill" id="profAttToggleGroup">
+          <button type="button" class="btn-toggle-att active" id="btnToggleOverall" onclick="setProfileAttendanceTab('overall')">
+            <span>📊 Overall Summary</span>
+          </button>
+          <button type="button" class="btn-toggle-att" id="btnToggleDaywise" onclick="setProfileAttendanceTab('daywise')">
             <span>📅 Day-Wise Attendance</span>
-            <span>&rarr;</span>
-          </a>
+          </button>
         </div>
       </div>
 
-      <!-- Quick Attendance Overview Pills / Metrics Strip -->
-      <div class="profile-att-kpis-strip">
-        <div class="prof-att-kpi-box">
-          <div class="prof-att-kpi-label">Overall Attendance</div>
-          <div class="prof-att-kpi-val" id="profAttOverallPct">--%</div>
-          <div class="prof-att-kpi-sub" id="profAttTotalFraction">-- / -- Sessions</div>
+      <!-- 1. OVERALL ATTENDANCE VIEW -->
+      <div id="profOverallView">
+        <!-- Quick Attendance Overview Pills / Metrics Strip -->
+        <div class="profile-att-kpis-strip">
+          <div class="prof-att-kpi-box">
+            <div class="prof-att-kpi-label">Overall Attendance</div>
+            <div class="prof-att-kpi-val" id="profAttOverallPct">--%</div>
+            <div class="prof-att-kpi-sub" id="profAttTotalFraction">-- / -- Sessions</div>
+          </div>
+
+          <div class="prof-att-kpi-box">
+            <div class="prof-att-kpi-label" style="color: #0284c7;">Theory Classes</div>
+            <div class="prof-att-kpi-val" style="color: #0284c7;" id="profAttTheoryPct">--%</div>
+            <div class="prof-att-kpi-sub" id="profAttTheoryFraction">-- / -- (Min 75%)</div>
+          </div>
+
+          <div class="prof-att-kpi-box">
+            <div class="prof-att-kpi-label" style="color: #7c3aed;">Practical &amp; Clinics</div>
+            <div class="prof-att-kpi-val" style="color: #7c3aed;" id="profAttPracticalPct">--%</div>
+            <div class="prof-att-kpi-sub" id="profAttPracticalFraction">-- / -- (Min 80%)</div>
+          </div>
+
+          <div class="prof-att-kpi-box highlight">
+            <div class="prof-att-kpi-label" style="color: #059669;">NMC Examination Status</div>
+            <div class="prof-att-kpi-val" style="color: #059669;" id="profAttComplianceText">Eligible</div>
+            <div class="prof-att-kpi-sub">University Exam Approved</div>
+          </div>
         </div>
 
-        <div class="prof-att-kpi-box">
-          <div class="prof-att-kpi-label" style="color: #0284c7;">Theory Classes</div>
-          <div class="prof-att-kpi-val" style="color: #0284c7;" id="profAttTheoryPct">--%</div>
-          <div class="prof-att-kpi-sub" id="profAttTheoryFraction">-- / -- (Min 75%)</div>
-        </div>
-
-        <div class="prof-att-kpi-box">
-          <div class="prof-att-kpi-label" style="color: #7c3aed;">Practical &amp; Clinics</div>
-          <div class="prof-att-kpi-val" style="color: #7c3aed;" id="profAttPracticalPct">--%</div>
-          <div class="prof-att-kpi-sub" id="profAttPracticalFraction">-- / -- (Min 80%)</div>
-        </div>
-
-        <div class="prof-att-kpi-box highlight">
-          <div class="prof-att-kpi-label" style="color: #059669;">NMC Examination Status</div>
-          <div class="prof-att-kpi-val" style="color: #059669;" id="profAttComplianceText">Eligible</div>
-          <div class="prof-att-kpi-sub">University Exam Approved</div>
+        <!-- Simple Overall Attendance Table -->
+        <div class="table-wrapper" style="border: 1px solid #e2e8f0; border-radius: var(--radius-md); overflow-x: auto; margin-top: 14px;">
+          <table class="profile-att-table" id="profileAttendanceTable">
+            <thead>
+              <tr>
+                <th style="min-width: 240px;">Subject Name</th>
+                <th style="min-width: 180px;">Faculty In-Charge</th>
+                <th style="text-align: center; width: 140px;">Theory (75% Min)</th>
+                <th style="text-align: center; width: 140px;">Practical (80% Min)</th>
+                <th style="text-align: center; width: 130px;">Total Attended</th>
+                <th style="text-align: center; width: 100px;">Overall %</th>
+                <th style="text-align: center; width: 120px;">NMC Status</th>
+              </tr>
+            </thead>
+            <tbody id="profileAttendanceTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 28px; color: var(--text-muted);">
+                  Loading overall attendance...
+                </td>
+              </tr>
+            </tbody>
+            <tfoot id="profileAttendanceTableFoot" style="display: none; background: #f8fafc; font-weight: 750; border-top: 2px solid #e2e8f0;">
+            </tfoot>
+          </table>
         </div>
       </div>
 
-      <!-- Simple Overall Attendance Table -->
-      <div class="table-wrapper" style="border: 1px solid #e2e8f0; border-radius: var(--radius-md); overflow-x: auto; margin-top: 14px;">
-        <table class="profile-att-table" id="profileAttendanceTable">
-          <thead>
-            <tr>
-              <th style="min-width: 240px;">Subject Name</th>
-              <th style="min-width: 180px;">Faculty In-Charge</th>
-              <th style="text-align: center; width: 140px;">Theory (75% Min)</th>
-              <th style="text-align: center; width: 140px;">Practical (80% Min)</th>
-              <th style="text-align: center; width: 130px;">Total Attended</th>
-              <th style="text-align: center; width: 100px;">Overall %</th>
-              <th style="text-align: center; width: 120px;">NMC Status</th>
-            </tr>
-          </thead>
-          <tbody id="profileAttendanceTableBody">
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 28px; color: var(--text-muted);">
-                Loading overall attendance...
-              </td>
-            </tr>
-          </tbody>
-          <tfoot id="profileAttendanceTableFoot" style="display: none; background: #f8fafc; font-weight: 750; border-top: 2px solid #e2e8f0;">
-          </tfoot>
-        </table>
+      <!-- 2. DAY-WISE ATTENDANCE VIEW (EMBEDDED TOGGLEABLE CARD) -->
+      <div id="profDaywiseView" style="display: none; margin-top: 14px;">
+        <div class="datewise-container-card" style="margin-bottom: 0;">
+          <!-- Dark Blue/Navy Top Bar -->
+          <div class="datewise-top-bar" style="display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+            <h2>Datewise Attendance</h2>
+            <a href="/attendance.html" style="color: #ffffff; opacity: 0.92; font-size: 0.8rem; font-weight: 650; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <span>Full Attendance Portal</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
+
+          <div class="datewise-body-content">
+            <!-- Date Selector Navigation Row -->
+            <div class="date-nav-row">
+              <div class="date-input-pill">
+                <input type="date" id="profDatewiseInput" onchange="onProfDateChanged()">
+                <button type="button" class="date-calendar-btn" onclick="openProfDatePicker()" title="Select date">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </button>
+              </div>
+
+              <button type="button" class="date-step-btn" onclick="stepProfDay(-1)" title="Previous Day">
+                ◀ Previous Day
+              </button>
+              <button type="button" class="date-step-btn" onclick="goProfToToday()" title="View Today">
+                Today
+              </button>
+              <button type="button" class="date-step-btn" onclick="stepProfDay(1)" title="Next Day">
+                Next Day ▶
+              </button>
+
+              <div style="margin-left: auto; display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="exportProfDatewiseCsv()" title="Download Datewise CSV">
+                  📥 Export CSV
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.print()" title="Print Datewise Sheet">
+                  🖨️ Print
+                </button>
+              </div>
+            </div>
+
+            <!-- Summary Strip matching user's screenshot -->
+            <div class="datewise-summary-strip">
+              <span id="profDatewiseSemesterTag">Semester - 5</span>
+              <span class="strip-divider">|</span>
+              <span>Date : <span id="profDatewiseFormattedLabel">28/09/2026</span></span>
+              <span class="strip-divider">|</span>
+              <div class="summary-badge-group">
+                <span>Total :</span>
+                <span class="summary-badge-val total" id="profBadgeTotalLectures">0</span>
+              </div>
+              <div class="summary-badge-group">
+                <span>Present :</span>
+                <span class="summary-badge-val present" id="profBadgePresentCount">0</span>
+              </div>
+              <div class="summary-badge-group">
+                <span>Absent :</span>
+                <span class="summary-badge-val absent" id="profBadgeAbsentCount">0</span>
+              </div>
+              <div class="summary-badge-group">
+                <span>Leave :</span>
+                <span class="summary-badge-val leave" id="profBadgeLeaveCount">0</span>
+              </div>
+            </div>
+
+            <!-- Exact Datewise Lectures Table -->
+            <div class="datewise-table-wrapper">
+              <table class="datewise-table" id="profDatewiseTable">
+                <thead>
+                  <tr>
+                    <th class="center" style="width: 100px;">Lecture No.</th>
+                    <th style="width: 100px;">Room No.</th>
+                    <th style="width: 130px;">Time</th>
+                    <th style="width: 130px;">Subject Code</th>
+                    <th>Subject Name</th>
+                    <th class="center" style="width: 140px;">Theory / Practical</th>
+                    <th style="width: 180px;">Faculty Name</th>
+                    <th class="center" style="width: 120px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="profDatewiseTableBody">
+                  <tr>
+                    <td colspan="8" style="text-align: center; padding: 36px; color: #64748b;">
+                      Loading datewise attendance...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1181,6 +1286,201 @@
       }
     }
 
+    /* ---- Date-Wise Attendance Toggle & Interactive Functionality ---- */
+    let profCurrentDateIso = '2026-09-28';
+    let profCachedDatewiseData = null;
+    let profCurrentAttTab = 'overall';
+
+    function setProfileAttendanceTab(mode) {
+      profCurrentAttTab = mode;
+      const btnOverall = document.getElementById('btnToggleOverall');
+      const btnDaywise = document.getElementById('btnToggleDaywise');
+      const viewOverall = document.getElementById('profOverallView');
+      const viewDaywise = document.getElementById('profDaywiseView');
+
+      if (mode === 'daywise') {
+        if (btnOverall) btnOverall.classList.remove('active');
+        if (btnDaywise) btnDaywise.classList.add('active');
+        if (viewOverall) viewOverall.style.display = 'none';
+        if (viewDaywise) viewDaywise.style.display = 'block';
+
+        if (!profCachedDatewiseData) {
+          loadProfDatewiseAttendance(profCurrentDateIso);
+        }
+      } else {
+        if (btnOverall) btnOverall.classList.add('active');
+        if (btnDaywise) btnDaywise.classList.remove('active');
+        if (viewOverall) viewOverall.style.display = 'block';
+        if (viewDaywise) viewDaywise.style.display = 'none';
+      }
+    }
+
+    async function loadProfDatewiseAttendance(dateIso) {
+      if (dateIso) profCurrentDateIso = dateIso;
+      const inp = document.getElementById('profDatewiseInput');
+      if (inp) inp.value = profCurrentDateIso;
+
+      try {
+        const rollParam = loggedInUser?.roll_number ? `&roll_number=${encodeURIComponent(loggedInUser.roll_number)}` : '';
+        const res = await fetch(`/api/academic/attendance/datewise?date=${encodeURIComponent(profCurrentDateIso)}${rollParam}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        profCachedDatewiseData = data;
+
+        const elSem = document.getElementById('profDatewiseSemesterTag');
+        if (elSem) elSem.textContent = data.semester || 'Semester - 5';
+
+        const elDateLbl = document.getElementById('profDatewiseFormattedLabel');
+        if (elDateLbl) elDateLbl.textContent = data.date_formatted || profCurrentDateIso;
+
+        const s = data.summary || {};
+        const bTot = document.getElementById('profBadgeTotalLectures');
+        const bPres = document.getElementById('profBadgePresentCount');
+        const bAbs = document.getElementById('profBadgeAbsentCount');
+        const bLeave = document.getElementById('profBadgeLeaveCount');
+
+        if (bTot) bTot.textContent = s.total || 0;
+        if (bPres) bPres.textContent = (s.present || 0) + (s.field_duty || 0);
+        if (bAbs) bAbs.textContent = s.absent || 0;
+        if (bLeave) bLeave.textContent = s.leave || 0;
+
+        renderProfDatewiseTable(data.lectures || []);
+
+      } catch (err) {
+        console.error('Failed to load profile datewise attendance:', err);
+        const tbody = document.getElementById('profDatewiseTableBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: #ef4444;">Failed to load attendance for this date. (${escapeHtml(err.message)})</td></tr>`;
+        }
+      }
+    }
+
+    function renderProfDatewiseTable(lectures) {
+      const tbody = document.getElementById('profDatewiseTableBody');
+      if (!tbody) return;
+
+      if (!lectures || lectures.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 36px; color: #64748b;">
+              <div style="font-size: 1.6rem; margin-bottom: 6px;">📅</div>
+              <strong>No lectures or clinical postings scheduled on this date.</strong>
+              <div style="font-size: 0.8rem; margin-top: 4px; color: #94a3b8;">Use the date navigator above to browse academic days.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      for (const item of lectures) {
+        let statusHtml = '';
+        if (item.status === 'Not Marked') {
+          statusHtml = `
+            <div class="status-cell-wrapper">
+              <span class="status-icon-notmarked"></span>
+              <span class="status-text-notmarked">Not Marked</span>
+            </div>
+          `;
+        } else if (item.status === 'Present') {
+          statusHtml = `<span class="status-pill-present">✅ Present</span>`;
+        } else if (item.status === 'Field Duty') {
+          statusHtml = `<span class="status-pill-fieldduty">🏡 Field Duty</span>`;
+        } else if (item.status === 'Absent') {
+          statusHtml = `<span class="status-pill-absent">❌ Absent</span>`;
+        } else if (item.status === 'Leave') {
+          statusHtml = `<span class="status-pill-leave">🟡 Leave</span>`;
+        }
+
+        const isTheory = (item.theory_practical || '').toLowerCase().includes('theory');
+        const tpBadge = isTheory ? `<span class="tag-theory">Theory</span>` : `<span class="tag-practical">Practical</span>`;
+
+        html += `
+          <tr>
+            <td class="center" style="font-weight: 700; color: #0f172a;">${item.lecture_no}</td>
+            <td style="color: #334155; font-weight: 600;">${escapeHtml(item.room_no || '')}</td>
+            <td style="color: #334155; font-weight: 600; white-space: nowrap;">${escapeHtml(item.time)}</td>
+            <td style="font-weight: 700; color: #1e293b; font-family: monospace; font-size: 0.85rem;">
+              ${escapeHtml(item.subject_code)}
+            </td>
+            <td style="font-weight: 650; color: #0f172a;">
+              ${escapeHtml(item.subject_name)}
+            </td>
+            <td class="center">${tpBadge}</td>
+            <td style="font-weight: 700; color: #1e293b; text-transform: uppercase; font-size: 0.82rem;">
+              ${escapeHtml(item.faculty_name)}
+            </td>
+            <td class="center">${statusHtml}</td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = html;
+    }
+
+    function onProfDateChanged() {
+      const val = document.getElementById('profDatewiseInput').value;
+      if (val) {
+        profCurrentDateIso = val;
+        loadProfDatewiseAttendance(profCurrentDateIso);
+      }
+    }
+
+    function openProfDatePicker() {
+      const inp = document.getElementById('profDatewiseInput');
+      if (!inp) return;
+      if (inp.showPicker) inp.showPicker();
+      else inp.focus();
+    }
+
+    function stepProfDay(offset) {
+      const parts = profCurrentDateIso.split('-');
+      if (parts.length === 3) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        const dateObj = new Date(y, m, d + offset);
+        const nextY = dateObj.getFullYear();
+        const nextM = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const nextD = String(dateObj.getDate()).padStart(2, '0');
+        profCurrentDateIso = `${nextY}-${nextM}-${nextD}`;
+      }
+      loadProfDatewiseAttendance(profCurrentDateIso);
+    }
+
+    function goProfToToday() {
+      profCurrentDateIso = '2026-09-28';
+      loadProfDatewiseAttendance(profCurrentDateIso);
+    }
+
+    function exportProfDatewiseCsv() {
+      if (!profCachedDatewiseData || !profCachedDatewiseData.lectures || profCachedDatewiseData.lectures.length === 0) {
+        if (typeof showToast === 'function') showToast('No datewise lectures to export.', 'error');
+        else alert('No datewise lectures to export.');
+        return;
+      }
+      const headers = ['Lecture No', 'Room No', 'Time', 'Subject Code', 'Subject Name', 'Theory / Practical', 'Faculty Name', 'Status'];
+      const rows = profCachedDatewiseData.lectures.map(l => [
+        `"${l.lecture_no}"`,
+        `"${l.room_no || ''}"`,
+        `"${l.time}"`,
+        `"${l.subject_code}"`,
+        `"${(l.subject_name || '').replace(/"/g, '""')}"`,
+        `"${l.theory_practical}"`,
+        `"${(l.faculty_name || '').replace(/"/g, '""')}"`,
+        `"${l.status}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `Datewise_Attendance_${profCurrentDateIso}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      if (typeof showToast === 'function') showToast('Datewise CSV exported successfully!', 'success');
+    }
+
     /* ---- Bootstrap on Active Window ---- */
     document.addEventListener('DOMContentLoaded', () => {
       initSidebar();
@@ -1192,6 +1492,7 @@
       runWhenActive(() => {
         loadStudentProfile();
         loadProfileAttendance();
+        loadProfDatewiseAttendance(profCurrentDateIso);
       });
     });
   </script>
