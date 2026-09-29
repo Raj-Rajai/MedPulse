@@ -15,6 +15,21 @@ function closeSidebar() {
     if (ov) ov.classList.remove('active');
 }
 
+function toggleNavGroup(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    if (document.documentElement.classList.contains('sidebar-collapsed') || document.body.classList.contains('sidebar-collapsed')) {
+        if (typeof toggleSidebar === 'function') toggleSidebar();
+    }
+    const isOpen = group.classList.toggle('open');
+    try {
+        localStorage.setItem('medpulse_' + groupId + '_open', isOpen ? '1' : '0');
+    } catch (e) {}
+    if (window.updateSidebarGlider) {
+        setTimeout(window.updateSidebarGlider, 280);
+    }
+}
+
 // Set default survey date to today & handle student auth
 document.addEventListener('DOMContentLoaded', () => {
     const surveyDateInput = document.getElementById('surveyDate');

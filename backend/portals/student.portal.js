@@ -5,6 +5,7 @@ const express = require('express');
 module.exports = (app) => {
     const dir = path.join(__dirname, '..', '..', 'frontend', 'student');
     app.get(['/student', '/student/'], (req, res) => res.sendFile(path.join(dir, 'profile.html')));
+    app.get(['/student/index.html', '/index.html'], (req, res) => res.sendFile(path.join(dir, 'index.html')));
     app.get(['/student/family-manage.html', '/family-manage.html'], (req, res) => res.sendFile(path.join(dir, 'family-manage.html')));
     app.get(['/student/entry.html', '/entry.html'], (req, res) => res.sendFile(path.join(dir, 'entry.html')));
     app.get(['/student/analytics.html', '/analytics.html'], (req, res) => res.sendFile(path.join(dir, 'analytics.html')));

@@ -32,6 +32,16 @@
     const nav = document.querySelector('.sidebar-nav');
     if (!nav) return;
 
+    // Auto-expand any nav group that contains an active sublink or has-active-child
+    nav.querySelectorAll('.sidebar-nav-group').forEach(group => {
+      if (group.querySelector('.sidebar-sublink.active') || group.classList.contains('has-active-child')) {
+        group.classList.add('open', 'has-active-child');
+      } else {
+        const saved = localStorage.getItem('medpulse_' + group.id + '_open');
+        if (saved === '1') group.classList.add('open');
+      }
+    });
+
     const glider = getOrCreateGlider(nav);
     const activeLink = nav.querySelector('.sidebar-link.active');
     if (!activeLink) {
@@ -102,6 +112,8 @@
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
     const link = this;
+    if (link.classList.contains('sidebar-group-toggle')) return;
+
     const nav = document.querySelector('.sidebar-nav');
     const glider = document.getElementById('sidebarGlider');
     if (!glider || !nav) return;
@@ -189,6 +201,23 @@
   }
 
   window.updateSidebarGlider = updateGlider;
+
+  window.toggleNavGroup = function(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    if (document.documentElement.classList.contains('sidebar-collapsed') || document.body.classList.contains('sidebar-collapsed')) {
+      if (typeof window.toggleSidebar === 'function') {
+        window.toggleSidebar();
+      }
+    }
+    const isOpen = group.classList.toggle('open');
+    try {
+      localStorage.setItem('medpulse_' + groupId + '_open', isOpen ? '1' : '0');
+    } catch(e) {}
+    if (window.updateSidebarGlider) {
+      setTimeout(window.updateSidebarGlider, 280);
+    }
+  };
 
   if (document.querySelector('.sidebar-nav')) {
     initGlider();

@@ -26,6 +26,9 @@ fs.readdirSync(portalDir)
     .sort()
     .forEach((f) => require(path.join(portalDir, f))(app));
 
+// Default root route opens student profile directly
+app.get('/', (req, res) => res.redirect('/profile.html'));
+
 // Public Auth Aliases
 app.get('/login', (req, res) => res.redirect('/login.html'));
 app.get('/register', (req, res) => res.redirect('/register.html'));
