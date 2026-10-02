@@ -310,6 +310,101 @@ router.get(['/academic/attendance/datewise', '/api/academic/attendance/datewise'
 });
 
 /**
+ * GET /api/academic/schedule
+ * Returns academic teaching schedule with NMC competencies, topics, faculty, teaching types (Large Group, DOAP),
+ * and dates/times. Orders sessions so that Today's schedule is the leftmost card (index 0).
+ */
+router.get(['/academic/schedule', '/api/academic/schedule'], (req, res) => {
+    try {
+        const { department, teaching_type, date } = req.query;
+
+        let sql = 'SELECT * FROM academic_schedule WHERE 1=1';
+        const params = [];
+
+        if (department && department !== 'all') {
+            sql += ' AND department LIKE ?';
+            params.push(`%${department}%`);
+        }
+
+        if (teaching_type && teaching_type !== 'all') {
+            sql += ' AND teaching_type = ?';
+            params.push(teaching_type);
+        }
+
+        if (date) {
+            sql += ' AND date = ?';
+            params.push(date);
+        }
+
+        sql += ' ORDER BY date ASC, time_slot ASC, id ASC';
+
+        const allSchedules = db.prepare(sql).all(...params);
+
+        const todayIso = new Date().toISOString().slice(0, 10); // '2026-10-02'
+        
+        let todaySessions = allSchedules.filter(s => s.date === todayIso || s.status === 'Today');
+        let upcomingSessions = allSchedules.filter(s => (s.date >= todayIso && s.status !== 'Today') || (s.date > todayIso));
+        let pastSessions = allSchedules.filter(s => s.date < todayIso && s.status !== 'Today');
+
+        let orderedSchedules = [];
+        if (todaySessions.length > 0) {
+            orderedSchedules = [...todaySessions, ...upcomingSessions, ...pastSessions];
+        } else if (upcomingSessions.length > 0) {
+            orderedSchedules = [...upcomingSessions, ...pastSessions];
+        } else {
+            orderedSchedules = allSchedules;
+        }
+
+        const formattedList = orderedSchedules.map((item, idx) => {
+            let dObj = new Date(item.date + 'T00:00:00');
+            let displayDate = item.date;
+            let displayDay = item.day || 'Day';
+            if (!isNaN(dObj.getTime())) {
+                const dayNum = String(dObj.getDate()).padStart(2, '0');
+                const monthName = dObj.toLocaleDateString('en-US', { month: 'short' });
+                displayDate = `${dayNum} ${monthName}`;
+                if (!item.day) {
+                    displayDay = dObj.toLocaleDateString('en-US', { weekday: 'long' });
+                }
+            }
+
+            return {
+                id: item.id,
+                date_iso: item.date,
+                card_date: displayDate,
+                card_day: displayDay,
+                card_time: item.time_slot,
+                department: item.department,
+                topic: item.topic,
+                competency_no: item.competency_no,
+                faculty_name: item.faculty_name,
+                teaching_type: item.teaching_type,
+                venue: item.venue || 'Lecture Theatre 1 (LT-1)',
+                subject: item.subject || 'Pathology',
+                semester: item.semester || 'Semester - 5',
+                batch_year: item.batch_year || '3rd Year MBBS',
+                is_today: item.date === todayIso || item.status === 'Today' || idx === 0,
+                status: item.status || 'Scheduled'
+            };
+        });
+
+        const depts = db.prepare('SELECT DISTINCT department FROM academic_schedule ORDER BY department ASC').all().map(d => d.department);
+
+        res.json({
+            today_date: todayIso,
+            total_sessions: formattedList.length,
+            departments: depts,
+            active_index: 0,
+            active_schedule: formattedList.length > 0 ? formattedList[0] : null,
+            schedules: formattedList
+        });
+    } catch (err) {
+        console.error('Academic Schedule Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * GET /api/academic/attendance/daily
  * Filterable day-wise attendance ledger.
  */

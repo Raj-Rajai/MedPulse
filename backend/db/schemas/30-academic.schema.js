@@ -64,6 +64,30 @@ module.exports = {
                 ON student_exams(student_id, exam_date);
             CREATE UNIQUE INDEX IF NOT EXISTS idx_student_attendance_slot
                 ON student_attendance(student_id, date, lecture_no);
+
+            -- =================================================================
+            -- 3. Academic Teaching Schedule & Curriculum Competencies
+            -- =================================================================
+            CREATE TABLE IF NOT EXISTS academic_schedule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                department TEXT NOT NULL DEFAULT 'Department of Pathology',
+                date TEXT NOT NULL,                     -- ISO 'YYYY-MM-DD'
+                day TEXT NOT NULL,                      -- e.g. 'Monday', 'Tuesday'
+                time_slot TEXT NOT NULL,                -- e.g. '2pm to 3pm'
+                topic TEXT NOT NULL,
+                competency_no TEXT,                     -- e.g. 'PA29.5'
+                faculty_name TEXT NOT NULL,             -- e.g. 'Dr Ushma'
+                teaching_type TEXT NOT NULL,            -- e.g. 'LARGE GROUP TEACHING', 'DOAP'
+                venue TEXT DEFAULT 'Lecture Theatre 1 (LT-1)',
+                subject TEXT DEFAULT 'Pathology',
+                semester TEXT DEFAULT 'Semester - 5',
+                batch_year TEXT DEFAULT '3rd Year MBBS',
+                status TEXT DEFAULT 'Scheduled',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_academic_schedule_date ON academic_schedule(date);
+            CREATE INDEX IF NOT EXISTS idx_academic_schedule_dept ON academic_schedule(department);
         `);
 
         // Migration check for datewise columns
@@ -128,6 +152,12 @@ module.exports = {
         const hasMultiYear = db.prepare("SELECT COUNT(*) as count FROM student_exams WHERE year_level = 1 AND student_id = 1").get();
         if (!hasMultiYear || hasMultiYear.count === 0) {
             seedExamsData(db);
+        }
+
+        // Check if teaching schedule needs to be seeded
+        const hasSchedule = db.prepare("SELECT COUNT(*) as count FROM academic_schedule").get();
+        if (!hasSchedule || hasSchedule.count === 0) {
+            seedScheduleData(db);
         }
     }
 };
@@ -1363,4 +1393,582 @@ function seedExamsData(db) {
     }
 
     console.log(`✅ Seeded ${examsList.length} Multi-Year MBBS Examination records successfully.`);
+}
+
+/**
+ * Seed Academic Teaching Schedule & Curriculum Competencies
+ * Includes complete 25 sessions from Pathology Teaching Schedule reference and current schedule
+ */
+function seedScheduleData(db) {
+    const insertSchedule = db.prepare(`
+        INSERT INTO academic_schedule (
+            department, date, day, time_slot, topic, competency_no, faculty_name, teaching_type, venue, subject, semester, batch_year, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const schedules = [
+        // ── Today & Immediate Upcoming Academic Schedule (October 2026) ──
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-02',
+            day: 'Friday',
+            time_slot: '2:00 PM to 3:00 PM',
+            topic: 'Describe the etiology, pathogenesis, pathology and clinical course of viral hepatitis & hepatic encephalopathy with clinical case discussion',
+            competency_no: 'PA 24.3',
+            faculty_name: 'Dr. Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Today'
+        },
+        {
+            department: 'Department of Community Medicine',
+            date: '2026-10-02',
+            day: 'Friday',
+            time_slot: '3:30 PM to 5:00 PM',
+            topic: 'Epidemiological surveillance, field survey analysis, and clinical diagnostic workflow in Community Health Centers (CHC)',
+            competency_no: 'CM 5.2',
+            faculty_name: 'DRASHTI R SONI',
+            teaching_type: 'DOAP',
+            venue: 'Community Medicine Demo Room 2',
+            subject: 'Community Medicine (PSM)',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Today'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-03',
+            day: 'Saturday',
+            time_slot: '9:00 AM to 12:00 Noon',
+            topic: 'Classify and describe the epidemiology, pathogenesis, morphological & microscopic features, prognostic factors, and staging of carcinoma of the breast; identify Phyllodes tumor',
+            competency_no: 'PA 30.2, PA 30.3',
+            faculty_name: 'Dr. Sanjay',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Auditorium LT-2',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-05',
+            day: 'Monday',
+            time_slot: '2:00 PM to 3:00 PM',
+            topic: 'Describe the etiology, pathogenesis, pathology, microbiology, clinical and microscopic features of carcinoma esophagus and oral cancers',
+            competency_no: 'PA 23.1, PA 23.2',
+            faculty_name: 'Dr. Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-06',
+            day: 'Tuesday',
+            time_slot: '3:00 PM to 5:00 PM',
+            topic: 'Diseases of Thyroid gland (Part 2) – Histopathology glass slides demonstration and OSPE assessment',
+            competency_no: 'PA 31.1, PA 31.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Pathology Practical Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-07',
+            day: 'Wednesday',
+            time_slot: '2:00 PM to 3:00 PM',
+            topic: 'Describe etiology, pathogenesis and pathologic features of carcinoma of the stomach',
+            competency_no: 'PA 23.4',
+            faculty_name: 'Dr. Sanjay',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-08',
+            day: 'Thursday',
+            time_slot: '12:00 Noon to 1:00 PM',
+            topic: 'Describe the etiology, pathogenesis, pathology, microbiology, clinical and microscopic features of peptic ulcer disease',
+            competency_no: 'PA 23.3',
+            faculty_name: 'Dr. Suchita',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-08',
+            day: 'Thursday',
+            time_slot: '3:00 PM to 5:00 PM',
+            topic: 'Diseases of Thyroid gland (Part 2) – Gross specimens and microscopy',
+            competency_no: 'PA 31.1, PA 31.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Histopathology Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-09',
+            day: 'Friday',
+            time_slot: '3:00 PM to 5:00 PM',
+            topic: 'Describe and etiology and pathogenesis and pathologic features of Tuberculosis of the intestine and appendicitis',
+            competency_no: 'PA 23.5',
+            faculty_name: 'Dr. Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-12',
+            day: 'Monday',
+            time_slot: '2:00 PM to 3:00 PM',
+            topic: 'Enumerate causes and describe laboratory diagnosis of malabsorption syndrome',
+            competency_no: 'PA 23.7',
+            faculty_name: 'Dr. Suchita',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-10-13',
+            day: 'Tuesday',
+            time_slot: '3:00 PM to 5:00 PM',
+            topic: 'Interpret liver function and viral hepatitis serology panel. Distinguish obstructive from non-obstructive jaundice based on clinical features and liver function tests',
+            competency_no: 'PA 24.6',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Clinical Pathology Demo Room',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Scheduled'
+        },
+
+        // ── 25 Exact Sessions from Reference Document (Department of Pathology Teaching Schedule) ──
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-01',
+            day: 'Monday',
+            time_slot: '2pm to 3pm',
+            topic: 'Describe the etiology, pathogenesis, pathology, morphology, clinical course, spread and complications of gestational trophoblastic neoplasms',
+            competency_no: 'PA29.5',
+            faculty_name: 'Dr Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-02',
+            day: 'Tuesday',
+            time_slot: '3 pm to 5 pm',
+            topic: 'Neoplasms of Gonads',
+            competency_no: 'PA 28.1, PA 29.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Pathology Practical Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-03',
+            day: 'Wednesday',
+            time_slot: '2pm to 3pm',
+            topic: 'Classify testicular tumors and describe the pathogenesis, pathology, presenting and distinguishing features, diagnostic tests, progression and spread of testicular tumors',
+            competency_no: 'PA28.1',
+            faculty_name: 'Dr Sanjay',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-04',
+            day: 'Thursday',
+            time_slot: '12Noon to 1 pm',
+            topic: 'Describe the etiology, hormonal dependence, features and morphology of endometriosis, endometrial hyperplasia and endometriosis',
+            competency_no: 'PA 29.7.8.9',
+            faculty_name: 'Dr Suchita',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-04',
+            day: 'Thursday',
+            time_slot: '3 pm to 5 pm',
+            topic: 'Neoplasms of Gonads',
+            competency_no: 'PA 28.1, PA 29.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Histopathology Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-05',
+            day: 'Friday',
+            time_slot: '3pm to 5pm',
+            topic: 'Describe the pathogenesis, pathology, hormonal dependency presenting and distinguishing features, diagnostic tests, progression and spread of carcinoma of the prostate and Penis',
+            competency_no: 'PA 28.2, PA 28.4',
+            faculty_name: 'Dr Smit',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-08',
+            day: 'Monday',
+            time_slot: '2pm to 3pm',
+            topic: 'Classify and describe the types, etiology, pathogenesis, hormonal dependency of breast pathology and benign disease. Enumerate and describe the etiology, hormonal dependency and pathogenesis of Gynaecomastia',
+            competency_no: 'PA 30.1, PA 30.4',
+            faculty_name: 'Dr Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-09',
+            day: 'Tuesday',
+            time_slot: '3pm to 5pm',
+            topic: 'Diseases of Thyroid gland (Part 1)',
+            competency_no: 'PA31.1, PA 31.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Endocrine Pathology Demo Room',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-10',
+            day: 'Wednesday',
+            time_slot: '2pm to 3pm',
+            topic: 'Enumerate, classify and describe the etiology, pathogenesis, pathology and iodine dependency of thyroid swellings and Describe the etiology, cause, iodine dependency, pathogenesis, manifestations, laboratory and imaging features and course of thyrotoxicosis',
+            competency_no: 'PA 31.1, PA 31.2',
+            faculty_name: 'Dr Smit',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-11',
+            day: 'Thursday',
+            time_slot: '12pm to 1pm',
+            topic: 'Describe the etiology, pathogenesis, manifestations, laboratory and imaging features and course of thyrotoxicosis/ hypothyroidism',
+            competency_no: 'PA 31.3',
+            faculty_name: 'Dr Suchita',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-11',
+            day: 'Thursday',
+            time_slot: '3pm to 5pm',
+            topic: 'Diseases of Thyroid gland (Part 1)',
+            competency_no: 'PA31.1, PA 31.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Pathology Practical Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-13',
+            day: 'Saturday',
+            time_slot: '9 am to 12 Noon',
+            topic: 'Classify and describe the epidemiology, pathogenesis, classification, morphologic and microscopic features, prognostic factors, hormonal dependency, staging and spread of carcinoma of the breast. And Describe and identify the morphologic and microscopic features of Phyllodes tumor of the breast',
+            competency_no: 'PA 30.2, PA 30.3',
+            faculty_name: 'Dr Sanjay',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Auditorium LT-2',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-15',
+            day: 'Monday',
+            time_slot: '2pm to 3pm',
+            topic: 'Describe the etiology, pathogenesis, pathology, microbiology, clinical and microscopic features of carcinoma esophagus and oral cancers',
+            competency_no: 'PA 23.1, PA 23.2',
+            faculty_name: 'Dr Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-16',
+            day: 'Tuesday',
+            time_slot: '3pm to 5pm',
+            topic: 'Diseases of Thyroid gland (Part 2)',
+            competency_no: 'PA31.1, PA 31.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Pathology Practical Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-17',
+            day: 'Wednesday',
+            time_slot: '2pm to 3pm',
+            topic: 'Describe and etiology and pathogenesis and pathologic features of carcinoma of the stomach',
+            competency_no: 'PA 23.4',
+            faculty_name: 'Dr Sanjay',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-18',
+            day: 'Thursday',
+            time_slot: '12pm to 1pm',
+            topic: 'Describe the etiology, pathogenesis, pathology, microbiology, clinical and microscopic features of peptic ulcer disease',
+            competency_no: 'PA 23.3',
+            faculty_name: 'Dr Suchita',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-18',
+            day: 'Thursday',
+            time_slot: '3pm to 5pm',
+            topic: 'Diseases of Thyroid gland (Part 2)',
+            competency_no: 'PA31.1, PA 31.4',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Histopathology Lab',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-19',
+            day: 'Friday',
+            time_slot: '3pm to 5pm',
+            topic: 'Describe and etiology and pathogenesis and pathologic features of Tuberculosis of the intestine and appendicitis',
+            competency_no: 'PA 23.5',
+            faculty_name: 'Dr Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-22',
+            day: 'Monday',
+            time_slot: '2pm to 3pm',
+            topic: 'Enumerate causes and describe laboratory diagnosis of malabsorption syndrome',
+            competency_no: 'PA 23.7',
+            faculty_name: 'Dr Suchita',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-23',
+            day: 'Tuesday',
+            time_slot: '3pm to 5pm',
+            topic: 'Interpret liver function and viral hepatitis serology panel. Distinguish obstructive from non-obstructive jaundice based on clinical features and liver function tests',
+            competency_no: 'PA 24.6',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Clinical Pathology Demo Room',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-24',
+            day: 'Wednesday',
+            time_slot: '2pm to 3pm',
+            topic: 'Describe the etiology, pathogenesis, pathology and distinguishing features of carcinoma of the colon',
+            competency_no: 'PA 23.8',
+            faculty_name: 'Dr Sanjay',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-25',
+            day: 'Thursday',
+            time_slot: '12pm to 1pm',
+            topic: 'Describe the pathophysiology and pathologic changes seen in hepatic failure and their clinical manifestations, complications and consequences',
+            competency_no: 'PA 24.2',
+            faculty_name: 'DR Ushma',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-25',
+            day: 'Thursday',
+            time_slot: '3pm to 5pm',
+            topic: 'Interpret liver function and viral hepatitis serology panel. Distinguish obstructive from non-obstructive jaundice based on clinical features and liver function tests',
+            competency_no: 'PA 24.6',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Clinical Pathology Demo Room',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-29',
+            day: 'Monday',
+            time_slot: '2pm to 3pm',
+            topic: 'Describe the etiology and pathogenesis of viral and toxic hepatitis; distinguish the causes of hepatitis based on the clinical and laboratory features. Describe the pathology, complications and consequences of hepatitis',
+            competency_no: 'PA 24.3',
+            faculty_name: 'Dr Smit',
+            teaching_type: 'LARGE GROUP TEACHING',
+            venue: 'Lecture Theatre 1 (LT-1)',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        },
+        {
+            department: 'Department of Pathology',
+            date: '2026-06-30',
+            day: 'Tuesday',
+            time_slot: '3pm to 5pm',
+            topic: 'Interpret liver function and viral hepatitis serology panel. Distinguish obstructive from non-obstructive jaundice based on clinical features and liver function tests',
+            competency_no: 'PA 24.6',
+            faculty_name: 'Dr. Riya, Dr. Maulee, Dr. Krishna, Dr. Suchita, Dr. Ushma, Dr. Sanjay',
+            teaching_type: 'DOAP',
+            venue: 'Clinical Pathology Demo Room',
+            subject: 'Pathology',
+            semester: 'Semester - 5',
+            batch_year: '3rd Year MBBS',
+            status: 'Completed'
+        }
+    ];
+
+    for (const sc of schedules) {
+        insertSchedule.run(
+            sc.department,
+            sc.date,
+            sc.day,
+            sc.time_slot,
+            sc.topic,
+            sc.competency_no,
+            sc.faculty_name,
+            sc.teaching_type,
+            sc.venue || 'Lecture Theatre 1 (LT-1)',
+            sc.subject || 'Pathology',
+            sc.semester || 'Semester - 5',
+            sc.batch_year || '3rd Year MBBS',
+            sc.status || 'Scheduled'
+        );
+    }
+
+    console.log(`✅ Seeded ${schedules.length} Academic Teaching Schedule records successfully.`);
 }
