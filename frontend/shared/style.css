@@ -378,14 +378,18 @@ html.preload-transitions *::after {
 }
 
 .sidebar-link.active {
-  background: transparent !important;
-  box-shadow: none !important;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(99, 102, 241, 0.92));
   color: #ffffff !important;
   font-weight: 600;
+  border-radius: var(--radius-md);
+}
+
+.sidebar-nav:has(#sidebarGlider) .sidebar-link.active {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .sidebar-link.active:hover {
-  background: transparent !important;
   transform: none;
 }
 
@@ -5327,5 +5331,72 @@ html > *:not(head):not(body) {
   font-weight: 750;
   letter-spacing: 0.03em;
 }
+
+/* ── Hero Banner Layout for Attendance & Schedule Portals ── */
+.attendance-hero {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #4c1d95 100%);
+  border-radius: var(--radius-xl);
+  padding: 26px 30px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(49, 46, 129, 0.45);
+  margin-bottom: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.attendance-hero::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(124, 58, 237, 0) 70%);
+  pointer-events: none;
+}
+.hero-split-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+  flex-wrap: wrap;
+}
+@media (max-width: 900px) {
+  .hero-split-grid {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.hero-left-col {
+  flex: 1;
+  min-width: 260px;
+}
+.hero-gauge-box {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  padding: 14px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  margin-left: auto;
+}
+@media (max-width: 900px) {
+  .hero-gauge-box {
+    margin-left: 0;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+  }
+}
+
 
 
