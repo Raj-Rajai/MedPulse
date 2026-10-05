@@ -2,7 +2,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
     "declaration": false,
     "removeComments": false,
     "emitDecoratorMetadata": true,
