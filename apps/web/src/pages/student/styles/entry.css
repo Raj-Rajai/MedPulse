@@ -1,0 +1,419 @@
+/* Inline <style> of the original student/entry.html, verbatim. */
+
+    /* Dedicated Data Entry Workspace Enhancements */
+    /* ==========================================================
+       COMMERCIAL SAAS SELECTION BOARD & CUSTOM DROPDOWN
+       ========================================================== */
+    .family-selector-board {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .selector-board-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .custom-select-container {
+      position: relative;
+      flex: 1;
+      max-width: 540px;
+      min-width: 280px;
+    }
+    .family-selector-label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    .custom-select-trigger {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.65rem 0.95rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      text-align: left;
+      min-height: 48px;
+    }
+    .custom-select-trigger:hover {
+      border-color: var(--border-hover);
+      background: #faf9ff;
+    }
+    .custom-select-trigger.open {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+      background: #ffffff;
+    }
+    .custom-trigger-content {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex: 1;
+      overflow: hidden;
+    }
+    .trigger-placeholder {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .trigger-active-card {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .trigger-active-title {
+      font-weight: 700;
+      font-size: 0.925rem;
+      color: var(--text-primary);
+    }
+    .trigger-active-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .custom-trigger-arrow {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+      transition: transform 0.2s ease;
+      user-select: none;
+    }
+    .custom-select-trigger.open .custom-trigger-arrow {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+
+    /* Custom Selection Board Dropdown Menu */
+    .custom-select-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width: 100%;
+      min-width: 320px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 45px -8px rgba(30, 27, 75, 0.18), 0 8px 16px -4px rgba(30, 27, 75, 0.08);
+      z-index: 1050;
+      overflow: hidden;
+      animation: selectFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes selectFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .custom-select-search-wrap {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .custom-select-search-wrap .search-icon {
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+    .custom-select-search {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: var(--text-primary);
+    }
+    .custom-select-header {
+      padding: 0.45rem 0.85rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .custom-select-list {
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 0.35rem;
+    }
+    .custom-select-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border-left: 3px solid transparent;
+    }
+    .custom-select-item:hover {
+      background: var(--bg-hover);
+    }
+    .custom-select-item.active {
+      background: var(--accent-subtle);
+      border-left-color: var(--accent);
+    }
+    .custom-select-item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      overflow: hidden;
+    }
+    .custom-select-item-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      line-height: 1.25;
+    }
+    .custom-select-item-name {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .custom-select-item.active .custom-select-item-name {
+      color: var(--accent);
+    }
+    .custom-select-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .custom-select-item-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .custom-select-check {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .custom-select-footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      padding: 0.5rem 0.85rem;
+    }
+    .custom-select-footer-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .custom-select-footer-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Horizontal Quick-Switch Strip */
+    .selector-board-strip-wrap {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px dashed var(--border);
+    }
+    .strip-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.45rem;
+    }
+    .strip-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .household-summary-quick {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 1rem;
+      flex-shrink: 0;
+    }
+    .household-summary-info {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .household-summary-item {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    @media (max-width: 900px) {
+      .selector-board-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .custom-select-container {
+        max-width: 100%;
+      }
+      .household-summary-quick {
+        justify-content: space-between;
+      }
+    }
+    .roster-carousel {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding: 14px 10px 18px 8px;
+      margin-bottom: 1.5rem;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100px;
+    }
+    .roster-card {
+      min-width: 185px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.95rem 1.1rem;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+      position: relative;
+      overflow: visible !important;
+    }
+    .roster-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px -4px rgba(109, 40, 217, 0.18);
+    }
+    .roster-card.active {
+      border-color: var(--accent);
+      background: var(--accent-subtle);
+      box-shadow: 0 0 0 2px var(--accent), 0 8px 24px -4px rgba(109, 40, 217, 0.25);
+    }
+    .roster-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .roster-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+    }
+    .gender-card-female {
+      background: #fff;
+      border: 1.5px solid rgba(236, 72, 153, 0.35);
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.08);
+    }
+    .gender-card-female .section-title {
+      color: #be185d;
+    }
+    .gender-card-male {
+      background: #fff;
+      border: 1.5px solid rgba(59, 130, 246, 0.35);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+    }
+    .gender-card-male .section-title {
+      color: #1d4ed8;
+    }
+    .pediatric-card {
+      background: #fff;
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
+    }
+    .pediatric-card .section-title {
+      color: #b45309;
+    }
+    .sticky-actions-bar {
+      position: sticky;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px 24px;
+      margin-top: 32px;
+      padding: 18px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 -4px 24px rgba(30, 27, 75, 0.08);
+      z-index: 20;
+    }
+    .survey-action-context { flex: 1 1 180px; min-width: 0; }
+    .survey-action-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+    #actionTargetMemberName { display: block; font-size: 14px; line-height: 1.45; color: var(--text-primary); overflow-wrap: anywhere; }
+    .survey-action-buttons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .survey-action-buttons .btn { min-height: 42px; padding: 10px 16px; border-radius: 8px; font-size: 13px; line-height: 1.4; justify-content: center; box-shadow: none; }
+    .survey-action-buttons .btn:hover { transform: none; }
+    #memberSurveyForm { padding-bottom: 12px; }
+    #memberSurveyForm :is(input, select, textarea) { scroll-margin-bottom: 190px; }
+    @media (max-width: 1100px) {
+      .survey-action-context { flex-basis: 100%; }
+      .survey-action-buttons { width: 100%; justify-content: flex-end; }
+    }
+    @media (max-width: 540px) {
+      .sticky-actions-bar { padding: 14px; gap: 12px; bottom: max(8px, env(safe-area-inset-bottom)); }
+      .survey-action-buttons { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+      .survey-action-buttons .btn { padding: 10px 12px; width: 100%; white-space: normal; }
+      #btnSaveNext { grid-column: 1 / -1; }
+      #memberSurveyForm :is(input, select, textarea) { scroll-margin-bottom: 230px; }
+    }
+  

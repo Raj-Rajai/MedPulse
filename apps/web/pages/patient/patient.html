@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" class="preload-transitions">
+<head>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/app-192.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f766e">
+  <title>Patient Health Portal | MedPulse</title>
+  <script>
+    (function () {
+      try {
+        var c = localStorage.getItem('sidebar_collapsed');
+        if (c === '1' || c === 'true') document.documentElement.classList.add('sidebar-collapsed');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="patient-portal">
+  <div id="root"></div>
+  <script type="module" src="../../src/pages/patient/patient.main.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedPulse — Community Medicine Dashboard</title>
+  <script>
+    (function() {
+      document.documentElement.classList.add('preload-transitions');
+      window.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => {
+          document.documentElement.classList.remove('preload-transitions');
+        });
+      });
+      const savedCollapsed = localStorage.getItem('medpulse_sidebar_collapsed');
+      if (savedCollapsed === '1') {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+    })();
+  </script>
+  <script type="module" src="../../src/pages/student/index/index.main.tsx"></script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>

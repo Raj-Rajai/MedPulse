@@ -1,9 +1,3 @@
 node_modules/
-*.log
-database/*.db-journal
-database/*.db-wal
-database/*.db-shm
-.DS_Store
-Thumbs.db
-.vscode/
-scratch/
+dist/
+database/*.db

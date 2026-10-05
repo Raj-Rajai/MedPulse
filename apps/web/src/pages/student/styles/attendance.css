@@ -1,0 +1,431 @@
+/* Inline <style> of the original student/attendance.html, verbatim. */
+
+    /* Premium MedPulse Design System Harmonized with Exact Datewise Attendance View */
+    .attendance-hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #4c1d95 100%);
+      border-radius: var(--radius-xl);
+      padding: 26px 30px;
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -15px rgba(49, 46, 129, 0.45);
+      margin-bottom: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .attendance-hero::before {
+      content: "";
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(124, 58, 237, 0) 70%);
+      pointer-events: none;
+    }
+    .hero-split-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    @media (max-width: 900px) {
+      .hero-split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .hero-gauge-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg);
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    .gauge-circle {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0;
+    }
+    .gauge-circle svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .gauge-circle circle {
+      fill: none;
+      stroke-width: 7;
+    }
+    .gauge-bg {
+      stroke: rgba(255, 255, 255, 0.15);
+    }
+    .gauge-fill {
+      stroke: #10b981;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-out;
+    }
+    .gauge-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    /* =================================================================== */
+    /* DATEWISE ATTENDANCE CARD STYLING (EXACT TO USER'S SPECIFICATION)     */
+    /* =================================================================== */
+    .datewise-container-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 26px;
+      overflow: hidden;
+      border-top: none;
+    }
+    .datewise-top-bar {
+      background: #475a84; /* Deep Navy Indigo as in university portals */
+      background: linear-gradient(90deg, #3c4b75, #475a84);
+      padding: 14px 24px;
+      color: #ffffff;
+    }
+    .datewise-top-bar h2 {
+      font-size: 1.1rem;
+      font-weight: 750;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    .datewise-body-content {
+      padding: 22px 24px;
+    }
+
+    /* Date Picker Row with Prev/Next Controls */
+    .date-nav-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .date-input-pill {
+      display: inline-flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 100px;
+      padding: 4px 6px 4px 18px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .date-input-pill:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      background: #ffffff;
+    }
+    .date-input-pill input[type="date"] {
+      border: none;
+      background: transparent;
+      font-size: 0.95rem;
+      font-weight: 750;
+      color: #1e293b;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .date-calendar-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #3b507d;
+      color: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 8px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .date-calendar-btn:hover {
+      background: #253352;
+      transform: scale(1.05);
+    }
+    .date-step-btn {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      font-weight: 650;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .date-step-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
+
+    /* Summary Bar below Date Picker */
+    .datewise-summary-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #334155;
+    }
+    .strip-divider {
+      color: #cbd5e1;
+      font-weight: 400;
+    }
+    .summary-badge-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .summary-badge-val {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .summary-badge-val.total {
+      background: #475569;
+    }
+    .summary-badge-val.present {
+      background: #10b981;
+    }
+    .summary-badge-val.absent {
+      background: #ef4444;
+    }
+    .summary-badge-val.leave {
+      background: #f59e0b;
+    }
+
+    /* Exact Datewise Table Styling */
+    .datewise-table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid #e2e8f0;
+    }
+    .datewise-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+    .datewise-table th {
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 750;
+      font-size: 0.84rem;
+      padding: 13px 16px;
+      border: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .datewise-table th.center, .datewise-table td.center {
+      text-align: center;
+    }
+    .datewise-table td {
+      padding: 13px 16px;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
+      vertical-align: middle;
+      font-size: 0.87rem;
+    }
+    .datewise-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    /* Theory & Practical Pills */
+    .tag-theory {
+      display: inline-block;
+      padding: 3px 12px;
+      background: #475569;
+      color: #ffffff;
+      font-size: 0.76rem;
+      font-weight: 750;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+    .tag-practical {
+      display: inline-block;
+      padding: 3px 12px;
+      background: #7c3aed;
+      color: #ffffff;
+      font-size: 0.76rem;
+      font-weight: 750;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Status Display matching Screenshot */
+    .status-cell-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+    .status-icon-notmarked {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid #f87171;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.75;
+    }
+    .status-icon-notmarked::before {
+      content: "";
+      width: 18px;
+      height: 2px;
+      background: #f87171;
+      transform: rotate(-45deg);
+    }
+    .status-text-notmarked {
+      font-size: 0.74rem;
+      color: #64748b;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-pill-present {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      font-weight: 750;
+      font-size: 0.78rem;
+    }
+    .status-pill-absent {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      font-weight: 750;
+      font-size: 0.78rem;
+    }
+    .status-pill-leave {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      font-weight: 750;
+      font-size: 0.78rem;
+    }
+    .status-pill-fieldduty {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: #f5f3ff;
+      color: #6d28d9;
+      border: 1px solid #ddd6fe;
+      font-weight: 750;
+      font-size: 0.78rem;
+    }
+
+    /* Overall Subject-Wise Table Cards */
+    .subject-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 26px;
+      overflow: hidden;
+    }
+    .subject-card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .subject-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    .subject-table th {
+      background: #faf8ff;
+      color: var(--text-secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      padding: 14px 18px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .subject-table td {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+    .subject-table tr:hover {
+      background: #fbfaff;
+    }
+    .mini-prog-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+    .mini-prog-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: #10b981;
+    }
+    .mini-prog-fill.warn { background: #f59e0b; }
+    .mini-prog-fill.danger { background: #ef4444; }
+
+    @media print {
+      body { background: #ffffff !important; }
+      .sidebar, .mobile-nav-toggle, .sidebar-overlay, .btn, .date-step-btn { display: none !important; }
+      .main-content { margin: 0 !important; padding: 0 !important; }
+      .datewise-container-card, .subject-card { box-shadow: none !important; }
+    }
+  

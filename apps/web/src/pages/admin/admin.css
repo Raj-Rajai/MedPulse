@@ -1,0 +1,346 @@
+    /* ── Admin Dashboard Theme & Advanced Micro-Interactions ── */
+    :root {
+      --admin-amber: #f59e0b;
+      --admin-amber-dark: #d97706;
+      --admin-amber-glow: rgba(245, 158, 11, 0.35);
+      --admin-amber-subtle: rgba(245, 158, 11, 0.12);
+    }
+
+    body {
+      position: relative;
+      overflow-x: hidden;
+    }
+    .main-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Admin Pill with Pulsing Gold Aura */
+    .admin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(217, 119, 6, 0.12);
+      border: 1.5px solid rgba(217, 119, 6, 0.38);
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 750;
+      color: #d97706;
+      letter-spacing: 0.03em;
+      animation: pulseAuraAmber 2.6s infinite;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
+    }
+
+    /* Royal Amber Sliding Glider in Admin Console */
+    #adminSidebarNav #sidebarGlider,
+    .sidebar-glider {
+      background: rgba(245, 158, 11, 0.16) !important;
+      border: 1.5px solid rgba(245, 158, 11, 0.5) !important;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.32) !important;
+    }
+
+    #adminSidebarNav .sidebar-link.active {
+      color: #fbbf24 !important;
+      font-weight: 700 !important;
+    }
+
+    #adminSidebarNav .sidebar-link.active .nav-icon-box svg {
+      color: #fbbf24 !important;
+      stroke: #fbbf24 !important;
+    }
+
+    #adminSidebarNav .sidebar-link:hover {
+      background: rgba(245, 158, 11, 0.08) !important;
+      color: #fbbf24 !important;
+      transform: translateX(4px);
+    }
+
+    #adminSidebarNav .sidebar-link:hover .nav-icon-box svg {
+      stroke: #fbbf24 !important;
+      transform: scale(1.15);
+    }
+
+    /* Views & Tab Transition Physics */
+    .admin-view-pane {
+      display: none;
+    }
+    .admin-view-pane.active {
+      display: block;
+      animation: fadeInUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Status Badges */
+    .stat-badge-active {
+      background: rgba(16, 185, 129, 0.14);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 2px 9px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+    .stat-badge-inactive {
+      background: rgba(100, 116, 139, 0.14);
+      color: #64748b;
+      border: 1px solid rgba(100, 116, 139, 0.35);
+      padding: 2px 9px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    /* Patient Adoption Referral Code Badge */
+    .referral-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(37, 99, 235, 0.08);
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      color: #1d4ed8;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .referral-pill:hover {
+      background: rgba(37, 99, 235, 0.16);
+      border-color: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+    }
+    .referral-pill code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    /* Executive KPI Cards Glowing Lift */
+    .kpi-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transform: translateX(-200%) skewX(-20deg);
+      pointer-events: none;
+    }
+    .kpi-card:hover::after {
+      animation: shimmerSweep 0.85s ease-out;
+    }
+    .kpi-gold {
+      border-left: 4px solid #f59e0b;
+    }
+    .kpi-gold .kpi-icon {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .kpi-gold:hover {
+      box-shadow: 0 20px 40px -8px rgba(245, 158, 11, 0.28), 0 0 0 1.5px rgba(245, 158, 11, 0.45);
+      transform: translateY(-6px) scale(1.02);
+    }
+    .kpi-gold:hover .kpi-icon {
+      transform: scale(1.25);
+    }
+
+    /* Catchment Disease Burden Cards */
+    .burden-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .burden-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-xs);
+      cursor: default;
+    }
+    .burden-card:hover {
+      transform: translateY(-4px) scale(1.02);
+    }
+    .burden-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+      transform: translateX(-200%) skewX(-20deg);
+      pointer-events: none;
+    }
+    .burden-card:hover::after {
+      animation: shimmerSweep 0.85s ease-out;
+    }
+    .burden-htn { border-left: 4px solid #ef4444; }
+    .burden-htn:hover {
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 0 14px 30px -6px rgba(239, 68, 68, 0.22);
+    }
+    .burden-dm { border-left: 4px solid #f59e0b; }
+    .burden-dm:hover {
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 14px 30px -6px rgba(245, 158, 11, 0.22);
+    }
+    .burden-anaemia { border-left: 4px solid #8b5cf6; }
+    .burden-anaemia:hover {
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: 0 14px 30px -6px rgba(139, 92, 246, 0.22);
+    }
+    .burden-malnutrition { border-left: 4px solid #0284c7; }
+    .burden-malnutrition:hover {
+      border-color: rgba(2, 132, 199, 0.4);
+      box-shadow: 0 14px 30px -6px rgba(2, 132, 199, 0.22);
+    }
+    .burden-card .burden-num {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin: 4px 0;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: inline-block;
+    }
+    .burden-card:hover .burden-num {
+      transform: scale(1.1);
+    }
+
+    /* Live Activity Stream Items */
+    .activity-stream-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+      transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+    .activity-stream-item:hover {
+      background: #faf8ff;
+      border-color: rgba(124, 58, 237, 0.35);
+      transform: translateX(5px);
+      box-shadow: 0 6px 18px -4px rgba(109, 40, 217, 0.12);
+    }
+
+    /* Action Buttons in Data Tables */
+    .table-actions-cell {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .table-act-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .table-act-btn:hover {
+      transform: translateY(-2px) scale(1.08);
+      border-color: var(--accent);
+      background: var(--bg-hover);
+      color: var(--accent);
+      box-shadow: 0 4px 12px rgba(109, 40, 217, 0.18);
+    }
+    .table-act-btn.act-danger:hover {
+      border-color: #ef4444;
+      background: #fef2f2;
+      color: #ef4444;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.22);
+    }
+
+    /* Master Export Action Cards */
+    .export-card {
+      transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .export-card:hover {
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 20px 40px -10px rgba(109, 40, 217, 0.18);
+    }
+    .export-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transform: translateX(-200%) skewX(-20deg);
+      pointer-events: none;
+    }
+    .export-card:hover::after {
+      animation: shimmerSweep 0.85s ease-out;
+    }
+
+    /* Modal Styling with Glassmorphism */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(18, 16, 38, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 24px;
+      animation: fadeIn 0.15s ease-out;
+    }
+    .modal-content {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-modal);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      animation: popScaleIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @media (max-width: 1024px) {
+      .admin-grid-2col {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    @media (max-width: 640px) {
+      .burden-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+      .burden-card {
+        padding: 12px 10px !important;
+      }
+      .burden-card .burden-num {
+        font-size: 1.35rem !important;
+      }
+      .modal-content {
+        padding: 20px 16px !important;
+        border-radius: var(--radius-lg) !important;
+      }
+    }
+    @media (max-width: 420px) {
+      .burden-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }

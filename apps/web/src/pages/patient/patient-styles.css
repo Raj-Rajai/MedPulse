@@ -1,0 +1,5 @@
+/* One stylesheet for the patient pages, in the original <link> order (style.css, then patient.css).
+   Importing both from JS lets Vite split style.css into a shared chunk that it links AFTER patient.css,
+   which reverses the cascade. */
+@import '../../styles/style.css';
+@import '../../styles/patient.css';

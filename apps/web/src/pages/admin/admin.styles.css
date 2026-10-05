@@ -1,0 +1,8 @@
+/*
+ * Cascade order of the original page: /style.css, then the page's inline <style> (admin.css).
+ * Both are pulled into one stylesheet because Vite emits the shared style.css chunk *after*
+ * the entry's own CSS when they are imported separately, which would flip the cascade.
+ */
+@import '../../styles/style.css';
+@import './admin.css';
+@import '../student/styles/schedule.css';

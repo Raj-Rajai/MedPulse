@@ -1,0 +1,9 @@
+{
+    "antigravity-plus.autoApprove.enabled": true,
+    "antigravity-plus.autoApprove.allowList": [
+        "run_command",
+        "run_code",
+        "read_file",
+        "write_to_file"
+    ]
+}
