@@ -1,3 +1,5 @@
 /* One stylesheet for student/entry.html in the original order: style.css, then the page's inline <style>. */
 @import '../../../styles/style.css';
 @import './entry.css';
+@import './student-responsive.css';
+

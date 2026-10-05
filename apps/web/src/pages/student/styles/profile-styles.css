@@ -1,3 +1,5 @@
 /* One stylesheet for student/profile.html in the original order: style.css, then the page's inline <style>. */
 @import '../../../styles/style.css';
 @import './profile.css';
+@import './student-responsive.css';
+

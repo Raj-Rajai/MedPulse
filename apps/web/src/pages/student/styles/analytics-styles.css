@@ -1,2 +1,4 @@
 /* student/analytics.html only linked style.css. */
 @import '../../../styles/style.css';
+@import './student-responsive.css';
+

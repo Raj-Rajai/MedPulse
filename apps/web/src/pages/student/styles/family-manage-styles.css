@@ -1,3 +1,5 @@
 /* student/family-manage.html linked style.css, then families.css. */
 @import '../../../styles/style.css';
 @import '../../../styles/families.css';
+@import './student-responsive.css';
+
