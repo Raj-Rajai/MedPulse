@@ -99,5 +99,17 @@ export const academicSchema: SchemaModule = {
             );
             CREATE INDEX IF NOT EXISTS idx_academic_exam_marks_student ON academic_exam_marks(student_id);
         `);
+
+        // Migration: add attendance_requested columns to academic_lectures if not present
+        try {
+            db.exec('ALTER TABLE academic_lectures ADD COLUMN attendance_requested INTEGER DEFAULT 0;');
+        } catch {
+            // column already exists
+        }
+        try {
+            db.exec('ALTER TABLE academic_lectures ADD COLUMN attendance_requested_at TEXT;');
+        } catch {
+            // column already exists
+        }
     },
 };

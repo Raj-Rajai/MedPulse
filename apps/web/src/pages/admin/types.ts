@@ -27,6 +27,8 @@ export interface AdminScheduleItem {
     batch_year?: string;
     semester?: string;
     attendance_count?: number;
+    attendance_requested?: boolean;
+    attendance_requested_at?: string | null;
 }
 
 export interface CollegeStat {

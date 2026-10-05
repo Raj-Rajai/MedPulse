@@ -149,4 +149,14 @@ export class AcademicAdminController {
             throw academicError(err);
         }
     }
+
+    @Post('admin/academic/schedule/:id/request-attendance')
+    @HttpCode(200)
+    requestAttendance(@Req() req: Request) {
+        try {
+            return this.academic.requestAttendance(this.college(req), req.adminId, req.params.id);
+        } catch (err) {
+            throw academicError(err);
+        }
+    }
 }

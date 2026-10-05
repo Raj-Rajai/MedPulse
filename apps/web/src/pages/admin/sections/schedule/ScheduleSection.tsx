@@ -243,6 +243,30 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
         showToast('Calendar event (.ics) downloaded!', 'success');
     };
 
+    const [requestingId, setRequestingId] = useState<number | null>(null);
+
+    const handleRequestAttendance = async (item: AdminScheduleItem) => {
+        if (!item.id) return;
+        setRequestingId(item.id);
+        try {
+            const res = await fetch(`/api/admin/academic/schedule/${item.id}/request-attendance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Failed to send attendance request');
+            showToast(data.message || 'Attendance request sent to all enrolled students!', 'success');
+            setItems((prev) =>
+                prev.map((it) => (it.id === item.id ? { ...it, attendance_requested: true, attendance_requested_at: new Date().toISOString() } : it))
+            );
+        } catch (err) {
+            console.error('Attendance request error:', err);
+            showToast(errMessage(err), 'error');
+        } finally {
+            setRequestingId(null);
+        }
+    };
+
     const d = items[selectedIdx] || null;
 
     return (
@@ -378,6 +402,11 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                         <div className="cubic-date">{item.card_date || item.date_iso}</div>
                                         <div className="cubic-day">{item.card_day || ''}</div>
                                         <div className="cubic-time">{item.card_time || item.time_slot || ''}</div>
+                                        {item.attendance_requested && (
+                                            <div style={{ fontSize: '0.64rem', color: '#047857', fontWeight: '750', marginTop: '4px', background: '#d1fae5', borderRadius: '4px', padding: '1px 4px', textAlign: 'center' }}>
+                                                ✅ Att. Requested
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             )}
@@ -511,8 +540,32 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                         </button>
                                     </div>
                                     <div>
-                                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => window.print()} title="Print lecture sheet">
-                                            🖨️ Print Lecture Plan
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary btn-sm"
+                                            disabled={requestingId === d.id}
+                                            onClick={() => handleRequestAttendance(d)}
+                                            style={{
+                                                background: d.attendance_requested
+                                                    ? 'linear-gradient(135deg, #059669, #10b981)'
+                                                    : 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                                                border: 'none',
+                                                boxShadow: d.attendance_requested
+                                                    ? '0 2px 8px rgba(16,185,129,0.35)'
+                                                    : '0 2px 8px rgba(79,70,229,0.35)',
+                                                fontWeight: '650',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                color: '#ffffff',
+                                            }}
+                                            title="Send attendance notification & request to students"
+                                        >
+                                            {requestingId === d.id
+                                                ? '⏳ Sending Request...'
+                                                : d.attendance_requested
+                                                ? '✅ Re-send Attendance Request'
+                                                : '📢 Send Attendance Request'}
                                         </button>
                                     </div>
                                 </div>
@@ -584,6 +637,22 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                             {item.venue || item.room_no || '--'}
                                         </td>
                                         <td style={{ padding: '10px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                            <button
+                                                type="button"
+                                                className={`btn btn-sm ${item.attendance_requested ? 'btn-success' : 'btn-primary'}`}
+                                                style={{
+                                                    marginRight: '6px',
+                                                    padding: '4px 8px',
+                                                    background: item.attendance_requested ? '#059669' : '#4f46e5',
+                                                    borderColor: item.attendance_requested ? '#059669' : '#4f46e5',
+                                                    color: '#ffffff',
+                                                }}
+                                                disabled={requestingId === item.id}
+                                                onClick={() => handleRequestAttendance(item)}
+                                                title={item.attendance_requested ? 'Re-send Attendance Request' : 'Send Attendance Request'}
+                                            >
+                                                {requestingId === item.id ? '⏳' : item.attendance_requested ? '✅' : '📢'}
+                                            </button>
                                             <button
                                                 type="button"
                                                 className="btn btn-sm btn-secondary"

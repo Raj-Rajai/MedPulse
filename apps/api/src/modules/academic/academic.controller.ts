@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { StudentGuard } from '../../auth/guards';
 import { fail, serverError, statusOf, StatusError } from '../../common/http-error';
@@ -71,6 +71,16 @@ export class AcademicController {
         try {
             const dept = req.query.department === undefined ? 'all' : String(req.query.department).trim();
             return this.academic.getSchedule(req.student, dept || 'all');
+        } catch (err) {
+            throw academicError(err);
+        }
+    }
+
+    @Post('academic/attendance/fill')
+    @HttpCode(200)
+    fillAttendance(@Req() req: Request) {
+        try {
+            return this.academic.fillAttendance(req.student, req.body || {});
         } catch (err) {
             throw academicError(err);
         }

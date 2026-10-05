@@ -11,8 +11,11 @@ import { scheduleSidebar } from '../common/sidebar';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
 import { errMsg } from '../common/utils';
 import { MedPulseAuth } from '../../../shared/session';
+import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
 
 interface ScheduleItem {
+    id?: number;
+    lecture_no?: number | string;
     card_date?: string;
     card_day?: string;
     card_time?: string;
@@ -22,11 +25,15 @@ interface ScheduleItem {
     teaching_type?: string;
     venue?: string;
     subject?: string;
+    subject_code?: string;
     topic?: string;
     competency_no?: string;
     faculty_name?: string;
     batch_year?: string;
     semester?: string;
+    attendance_requested?: boolean;
+    attendance_requested_at?: string | null;
+    attendance_status?: string | null;
 }
 
 type Strip = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'list'; items: ScheduleItem[] };
@@ -47,6 +54,7 @@ export function ScheduleApp() {
     const [strip, setStrip] = useState<Strip>({ kind: 'loading' });
     const [selected, setSelected] = useState(0);
     const [detail, setDetail] = useState<ScheduleItem | null>(null);
+    const [fillModalOpen, setFillModalOpen] = useState(false);
     const [emptyTopic, setEmptyTopic] = useState(false);
     const [total, setTotal] = useState<number | null>(null);
     const stripRef = useRef<HTMLDivElement>(null);
@@ -207,6 +215,11 @@ export function ScheduleApp() {
                                     <div className="cubic-date">{item.card_date || ''}</div>
                                     <div className="cubic-day">{item.card_day || ''}</div>
                                     <div className="cubic-time">{item.card_time || ''}</div>
+                                    {item.attendance_requested && (
+                                        <div style={{ fontSize: '0.66rem', color: '#b45309', fontWeight: '750', marginTop: '4px', background: 'rgba(254, 243, 199, 0.9)', borderRadius: '4px', padding: '1px 5px', textAlign: 'center' }}>
+                                            📢 Att. Req
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
@@ -274,14 +287,55 @@ export function ScheduleApp() {
                                 <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>Clinical Posting Group</div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                {d?.attendance_status && d.attendance_status !== 'Not Marked' ? (
+                                    <span style={{ fontSize: '0.82rem', fontWeight: '700', padding: '6px 12px', borderRadius: '20px', background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        <span>Status:</span>
+                                        <span>{d.attendance_status === 'Present' ? '✅ Present' : d.attendance_status === 'Field Duty' ? '🏡 Field Duty' : d.attendance_status === 'Leave' ? '🟡 Leave' : d.attendance_status}</span>
+                                    </span>
+                                ) : d?.attendance_requested ? (
+                                    <span style={{ fontSize: '0.82rem', fontWeight: '700', padding: '6px 12px', borderRadius: '20px', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        <span>📢 Attendance Requested by Faculty</span>
+                                    </span>
+                                ) : null}
+                            </div>
                             <div>
-                                <button type="button" className="btn btn-primary btn-sm" onClick={() => window.print()} title="Print lecture sheet">🖨️ Print Lecture Plan</button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    disabled={!d}
+                                    onClick={() => setFillModalOpen(true)}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                                        border: 'none',
+                                        boxShadow: '0 4px 14px rgba(79,70,229,0.35)',
+                                        fontWeight: '700',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '9px 18px',
+                                        fontSize: '0.9rem',
+                                        borderRadius: '10px',
+                                    }}
+                                    title="Fill Attendance for this scheduled lecture"
+                                >
+                                    📝 Fill Attendance
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </main>
+            <FillAttendanceModal
+                open={fillModalOpen}
+                session={d as FillableLecture | null}
+                onClose={() => setFillModalOpen(false)}
+                onSuccess={(msg) => {
+                    showToast(msg, 'success');
+                    loadScheduleData(activePill);
+                }}
+            />
         </BodyPortal>
     );
 }

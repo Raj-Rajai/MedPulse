@@ -11,6 +11,7 @@ import { DatewiseTableBody, type DatewiseData } from '../common/Datewise';
 import { downloadCsvDataUri, errMsg, runWhenActive, shiftIsoDay } from '../common/utils';
 import { MedPulseAuth } from '../../../shared/session';
 import { SubjectRows, type AttSubject } from './SubjectRows';
+import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
 
 const TODAY = '2026-09-28';
 
@@ -34,6 +35,8 @@ export function AttendanceApp() {
     const [dw, setDw] = useState<{ data: DatewiseData; iso: string } | null>(null);
     const [sw, setSw] = useState<SubjectWise | null>(null);
     const [subjects, setSubjects] = useState<AttSubject[] | null>(null);
+    const [fillOpen, setFillOpen] = useState(false);
+    const [selectedSession, setSelectedSession] = useState<FillableLecture | null>(null);
 
     const loadDatewise = async (iso: string) => {
         dateIso.current = iso;
@@ -88,6 +91,34 @@ export function AttendanceApp() {
         ]);
         downloadCsvDataUri([headers.join(','), ...rows.map((e) => e.join(','))].join('\n'), `Datewise_Attendance_${dateIso.current}.csv`);
         showToast('Datewise CSV exported successfully!', 'success');
+    };
+
+    const openFillModal = () => {
+        if (dw && dw.data && dw.data.lectures && dw.data.lectures.length > 0) {
+            const notMarked = dw.data.lectures.find((l) => l.status === 'Not Marked') || dw.data.lectures[0];
+            setSelectedSession({
+                lecture_id: (notMarked as any).lecture_id,
+                lecture_no: notMarked.lecture_no,
+                subject_name: notMarked.subject_name,
+                subject_code: notMarked.subject_code,
+                date_iso: dateIso.current,
+                time_slot: notMarked.time,
+                faculty_name: notMarked.faculty_name,
+                room_no: notMarked.room_no,
+                attendance_status: notMarked.status,
+            });
+        } else {
+            setSelectedSession({
+                date_iso: dateIso.current,
+                subject_name: 'Scheduled Department Lecture',
+                lecture_no: 1,
+                time_slot: '09:00 - 10:00 AM',
+                venue: 'Lecture Theatre 1 (LT-1)',
+                faculty_name: 'Department Faculty',
+                attendance_requested: true,
+            });
+        }
+        setFillOpen(true);
     };
 
     const exportSubjectWiseCsv = () => {
@@ -201,7 +232,22 @@ export function AttendanceApp() {
                         <button className="date-step-btn" onClick={() => loadDatewise(shiftIsoDay(dateIso.current, 1))} title="Next Day">Next Day ▶</button>
                         <div style={{ marginLeft: "auto", display: "flex", gap: "8px" }}>
                             <button className="btn btn-secondary btn-sm" onClick={exportDatewiseCsv} title="Download Datewise CSV">📥 Export CSV</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => window.print()} title="Print Datewise Sheet">🖨️ Print</button>
+                            <button
+                                className="btn btn-primary btn-sm"
+                                onClick={openFillModal}
+                                style={{
+                                    background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                                    border: 'none',
+                                    boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
+                                    fontWeight: '650',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                }}
+                                title="Fill Attendance for scheduled lectures"
+                            >
+                                📝 Fill Attendance
+                            </button>
                         </div>
                     </div>
                     <div className="datewise-summary-strip">
@@ -293,6 +339,16 @@ export function AttendanceApp() {
                 </div>
             </div>
         </main>
+        <FillAttendanceModal
+            open={fillOpen}
+            session={selectedSession}
+            onClose={() => setFillOpen(false)}
+            onSuccess={(msg) => {
+                showToast(msg, 'success');
+                loadDatewise(dateIso.current);
+                loadSubjectWiseTable();
+            }}
+        />
         </BodyPortal>
     );
 }

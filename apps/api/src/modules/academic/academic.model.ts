@@ -536,14 +536,17 @@ export class AcademicModel {
     /* ======================= Student: attendance ======================= */
 
     getDatewise(student: Row, date: string): Row {
+        const collegeId = student.college_id || 1;
         const lectures = cleanList(this.db.prepare(`
-            SELECT a.lecture_no, l.room_no, COALESCE(l.time_slot, '') AS time, l.subject_code, l.subject_name,
-                   l.session_type AS theory_practical, l.faculty_name, l.topic, a.status, a.remarks
-            FROM academic_attendance a
-            JOIN academic_lectures l ON l.id = a.lecture_id
-            WHERE a.student_id = ? AND a.lecture_date = ?
-            ORDER BY a.lecture_no
-        `).all(student.id, date));
+            SELECT l.id AS lecture_id, l.lecture_no, l.room_no, COALESCE(l.time_slot, '') AS time, l.subject_code, l.subject_name,
+                   l.session_type AS theory_practical, l.faculty_name, l.topic,
+                   COALESCE(a.status, 'Not Marked') AS status, a.remarks,
+                   l.attendance_requested, l.attendance_requested_at
+            FROM academic_lectures l
+            LEFT JOIN academic_attendance a ON l.id = a.lecture_id AND a.student_id = ?
+            WHERE l.college_id = ? AND l.lecture_date = ?
+            ORDER BY l.lecture_no
+        `).all(student.id, collegeId, date));
         const summary = { total: lectures.length, present: 0, absent: 0, leave: 0, field_duty: 0, not_marked: 0 };
         for (const l of lectures) {
             if (l.status === 'Present') summary.present++;
@@ -756,7 +759,7 @@ export class AcademicModel {
         }
         const rows = this.db.prepare(`
             SELECT l.id, l.lecture_date, l.lecture_no, l.time_slot, l.subject_code, l.subject_name, l.session_type,
-                   l.room_no, l.faculty_name, l.topic, a.status
+                   l.room_no, l.faculty_name, l.topic, l.attendance_requested, l.attendance_requested_at, a.status
             FROM academic_lectures l
             LEFT JOIN academic_attendance a ON l.id = a.lecture_id AND a.student_id = ?
             WHERE l.college_id = ?${filter}
@@ -784,6 +787,8 @@ export class AcademicModel {
                 faculty_name: r.faculty_name || null,
                 batch_year: student.batch_year || DEFAULT_BATCH,
                 semester: semesterOf(student.batch_year),
+                attendance_requested: r.attendance_requested === 1 || r.attendance_requested === '1' || r.attendance_requested === true,
+                attendance_requested_at: r.attendance_requested_at || null,
                 attendance_status: r.status,
             };
         });
@@ -801,7 +806,7 @@ export class AcademicModel {
         }
         const rows = this.db.prepare(`
             SELECT l.id, l.college_id, l.lecture_date, l.lecture_no, l.time_slot, l.subject_code, l.subject_name,
-                   l.session_type, l.room_no, l.faculty_name, l.topic, l.created_at, l.updated_at,
+                   l.session_type, l.room_no, l.faculty_name, l.topic, l.attendance_requested, l.attendance_requested_at, l.created_at, l.updated_at,
                    (SELECT COUNT(*) FROM academic_attendance a WHERE a.lecture_id = l.id) AS attendance_count
             FROM academic_lectures l
             WHERE l.college_id = ?${filter}
@@ -834,6 +839,8 @@ export class AcademicModel {
                 faculty_name: r.faculty_name || '',
                 batch_year: '3rd Year MBBS',
                 semester: 'Semester 5',
+                attendance_requested: r.attendance_requested === 1 || r.attendance_requested === '1' || r.attendance_requested === true,
+                attendance_requested_at: r.attendance_requested_at || null,
                 attendance_count: r.attendance_count || 0,
             };
         });
@@ -919,5 +926,63 @@ export class AcademicModel {
         const id = Number(lectureId);
         const res = this.db.prepare('DELETE FROM academic_lectures WHERE id = ? AND college_id = ?').run(id, collegeId);
         return res.changes > 0;
+    }
+
+    requestAttendance(collegeId: number, _adminId: number | null, lectureId: unknown): Row {
+        const id = Number(lectureId);
+        if (!Number.isFinite(id) || id <= 0) throw new StatusError('Invalid lecture session ID', 400);
+
+        const lecture = this.db.prepare('SELECT id, subject_name, lecture_date, time_slot FROM academic_lectures WHERE id = ? AND college_id = ?').get(id, collegeId) as Row | undefined;
+        if (!lecture) throw new StatusError('Lecture session not found', 404);
+
+        this.db.prepare(`
+            UPDATE academic_lectures
+            SET attendance_requested = 1, attendance_requested_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(id);
+
+        return {
+            success: true,
+            message: `Attendance request sent to students for ${lecture.subject_name} (${lecture.lecture_date}).`,
+            lecture_id: id,
+            attendance_requested: true,
+        };
+    }
+
+    fillAttendance(student: Row, body: Record<string, unknown>): Row {
+        const lectureId = Number(body.lecture_id);
+        let lecture: Row | undefined;
+        if (Number.isFinite(lectureId) && lectureId > 0) {
+            lecture = this.db.prepare('SELECT * FROM academic_lectures WHERE id = ?').get(lectureId) as Row | undefined;
+        } else {
+            const date = text(body.date || body.lecture_date);
+            const lectureNo = Number(body.lecture_no || 1);
+            if (isIsoDate(date)) {
+                lecture = this.db.prepare('SELECT * FROM academic_lectures WHERE college_id = ? AND lecture_date = ? AND lecture_no = ?').get(student.college_id || 1, date, lectureNo) as Row | undefined;
+            }
+        }
+
+        if (!lecture) throw new StatusError('Scheduled lecture session not found', 404);
+
+        const status = text(body.status) || 'Present';
+        if (!['Present', 'Absent', 'Leave', 'Field Duty'].includes(status)) {
+            throw new StatusError('Invalid attendance status', 400);
+        }
+        const remarks = text(body.remarks) || 'Self-marked by student via portal';
+
+        this.db.prepare(`
+            INSERT INTO academic_attendance (lecture_id, student_id, lecture_date, lecture_no, status, remarks)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT (student_id, lecture_date, lecture_no) DO UPDATE SET
+                lecture_id = excluded.lecture_id, status = excluded.status, remarks = excluded.remarks,
+                updated_at = CURRENT_TIMESTAMP
+        `).run(lecture.id, student.id, lecture.lecture_date, lecture.lecture_no, status, remarks);
+
+        return {
+            success: true,
+            message: `Attendance marked as ${status} for ${lecture.subject_name}!`,
+            lecture_id: lecture.id,
+            status,
+        };
     }
 }

@@ -14,6 +14,7 @@ import { useValidatedField, validateEmail, validatePhone } from '../../../shared
 import { DatewiseTableBody, type DatewiseData } from '../common/Datewise';
 import { OverallAttendance, type SubjectWiseData } from './OverallAttendance';
 import { EditProfileModal, ChangePinModal, type ProfileForm } from './ProfileModals';
+import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
 
 interface Student {
     name?: string;
@@ -52,6 +53,8 @@ export function ProfileApp() {
     const [saving, setSaving] = useState(false);
     const [pin, setPin] = useState({ cur: '', n1: '', n2: '' });
     const [pinSaving, setPinSaving] = useState(false);
+    const [fillAttOpen, setFillAttOpen] = useState(false);
+    const [selectedFillSession, setSelectedFillSession] = useState<FillableLecture | null>(null);
     const emailField = useValidatedField('email', true);
     const phoneField = useValidatedField('phone', true);
     const emailRef = useRef<HTMLInputElement>(null);
@@ -110,6 +113,46 @@ export function ProfileApp() {
 
     const s = profile?.student;
     const refCode = profile ? s?.referral_code || 'Pending' : null;
+
+    const openFillAttendance = (lec?: FillableLecture) => {
+        if (lec) {
+            setSelectedFillSession(lec);
+        } else if (dw && dw.lectures && dw.lectures.length > 0) {
+            const notMarked = dw.lectures.find((l) => l.status === 'Not Marked') || dw.lectures[0];
+            setSelectedFillSession({
+                lecture_id: (notMarked as any).lecture_id,
+                lecture_no: notMarked.lecture_no,
+                subject_name: notMarked.subject_name,
+                subject_code: notMarked.subject_code,
+                date_iso: dateIso,
+                time_slot: notMarked.time,
+                faculty_name: notMarked.faculty_name,
+                room_no: notMarked.room_no,
+                topic: (notMarked as any).topic,
+                attendance_requested: (notMarked as any).attendance_requested,
+                attendance_status: notMarked.status,
+            });
+        } else {
+            setSelectedFillSession({
+                date_iso: dateIso,
+                subject_name: 'Department of Pathology (PA-301)',
+                subject_code: 'PA-301',
+                lecture_no: 1,
+                time_slot: '09:00 - 10:00 AM',
+                venue: 'Lecture Theatre 1 (LT-1)',
+                faculty_name: 'Dr. Ramesh Mehta (Prof & HOD)',
+                topic: 'PA 12.1: Etiopathogenesis and laboratory diagnosis of Iron Deficiency Anaemia',
+                attendance_requested: true,
+            });
+        }
+        setFillAttOpen(true);
+    };
+
+    const handleFillSuccess = (msg: string) => {
+        showToast(msg, 'success');
+        loadDatewise(dateIso);
+        loadProfileAttendance();
+    };
 
     const copyCadetReferralCode = () => {
         const code = (refCode ?? 'Loading...').trim() || s?.referral_code;
@@ -332,11 +375,8 @@ export function ProfileApp() {
                             </div>
                         </div>
                         <div className="profile-hero-actions">
-                            <button className="btn btn-secondary" id="heroExportCsvBtn" disabled={csvBusy} onClick={exportProformaCsv} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }} title="Download Roll 235 Field Survey CSV">{csvBusy ? '⏳ Exporting...' : '📥 Export CSV'}</button>
-                            <button className="btn btn-secondary" id="heroExportPdfBtn" disabled={pdfBusy} onClick={exportProformaPdf} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }} title="Download Polished Roll 235 Field Survey PDF">{pdfBusy ? '⏳ Generating...' : '📄 Export PDF'}</button>
-                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)', color: '#fff' }}>✏️ Edit Profile</button>
-                            <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)', color: '#fff' }}>🔒 Change PIN</button>
-                            <button className="btn btn-primary" onClick={() => window.print()} style={{ background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 14px rgba(244,63,94,0.4)' }}>🖨️ Export Logbook</button>
+                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>✏️ Edit Profile</button>
+                            <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>🔒 Change PIN</button>
                         </div>
                     </div>
                 </div>
@@ -392,7 +432,23 @@ export function ProfileApp() {
                                     <button type="button" className="date-step-btn" onClick={() => loadDatewise(TODAY)} title="View Today">Today</button>
                                     <button type="button" className="date-step-btn" onClick={() => loadDatewise(shiftIsoDay(dateIso, 1))} title="Next Day">Next Day ▶</button>
                                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-                                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => window.print()} title="Print Datewise Sheet">🖨️ Print</button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => openFillAttendance()}
+                                            style={{
+                                                background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                                                border: 'none',
+                                                boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
+                                                fontWeight: '650',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                            }}
+                                            title="Fill Attendance for Today's Scheduled Lectures"
+                                        >
+                                            📝 Fill Attendance
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="datewise-summary-strip">
@@ -514,6 +570,7 @@ export function ProfileApp() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
                             <button className="btn btn-secondary" id="cardExportCsvBtn" disabled={csvBusy} onClick={exportProformaCsv} style={{ width: '100%', justifyContent: 'center', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{csvBusy ? '⏳ Generating CSV...' : '📥 Download Survey CSV (43 Cols)'}</button>
                             <button className="btn btn-primary" id="cardExportPdfBtn" disabled={pdfBusy} onClick={exportProformaPdf} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', boxShadow: '0 4px 12px rgba(2,132,199,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{pdfBusy ? '⏳ Generating PDF...' : '📄 Download Polished PDF Report'}</button>
+                            <button className="btn btn-primary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 12px rgba(244,63,94,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨️ Export Logbook</button>
                         </div>
                     </div>
                 </div>
@@ -524,6 +581,12 @@ export function ProfileApp() {
                 onClose={() => setEditOpen(false)} onSubmit={submitEditProfile}
             />
             <ChangePinModal open={pinOpen} pin={pin} setPin={setPin} saving={pinSaving} onClose={() => setPinOpen(false)} onSubmit={submitChangePin} />
+            <FillAttendanceModal
+                open={fillAttOpen}
+                session={selectedFillSession}
+                onClose={() => setFillAttOpen(false)}
+                onSuccess={handleFillSuccess}
+            />
         </BodyPortal>
     );
 }
