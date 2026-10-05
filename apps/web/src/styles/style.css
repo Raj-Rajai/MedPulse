@@ -4249,7 +4249,7 @@ body {
 }
 
 /* ── Prevent Rogue / Injected Right-Side Panels ─────────── */
-body > *:not(#sidebar):not(#sidebarOverlay):not(#mobileNavToggle):not(.main-content):not(header):not(main):not(aside):not(.modal-overlay):not(.toast-container):not(script):not(style):not(link) {
+body > *:not(#sidebar):not(#sidebarOverlay):not(#mobileNavToggle):not(.main-content):not(header):not(main):not(aside):not(.modal-overlay):not(.mp-attendance):not(.toast-container):not(script):not(style):not(link) {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

@@ -3,6 +3,7 @@ import type { Request } from 'express';
 import { StudentGuard } from '../../auth/guards';
 import { fail, serverError, statusOf, StatusError } from '../../common/http-error';
 import { AcademicModel, isIsoDate, todayIso } from './academic.model';
+import { AttendanceClusterService } from './attendance-cluster.service';
 
 /** Model validation errors keep their status; anything else is a 500. */
 export const academicError = (err: unknown) => (err instanceof StatusError ? fail(statusOf(err), err.message) : serverError(err));
@@ -20,7 +21,37 @@ const yearParam = (v: unknown): string => {
 @Controller()
 @UseGuards(StudentGuard)
 export class AcademicController {
-    constructor(private readonly academic: AcademicModel) {}
+    constructor(private readonly academic: AcademicModel, private readonly clusters: AttendanceClusterService) {}
+
+    @Get('academic/attendance/clusters')
+    @Header('Cache-Control', 'no-store')
+    getClusters(@Req() req: Request) {
+        try { return { clusters: this.clusters.list(req.student) }; }
+        catch (err) { throw academicError(err); }
+    }
+
+    @Post('academic/attendance/clusters/:id/challenge')
+    @HttpCode(200)
+    @Header('Cache-Control', 'no-store')
+    getClusterChallenge(@Req() req: Request) {
+        try { return this.clusters.challenge(req.student, req.params.id); }
+        catch (err) { throw academicError(err); }
+    }
+
+    @Get('academic/attendance/clusters/:id')
+    @Header('Cache-Control', 'no-store')
+    getClusterRoom(@Req() req: Request) {
+        try { return this.clusters.studentRoom(req.student, req.params.id); }
+        catch (err) { throw academicError(err); }
+    }
+
+    @Post('academic/attendance/clusters/:id/join')
+    @HttpCode(200)
+    @Header('Cache-Control', 'no-store')
+    joinClusterRoom(@Req() req: Request) {
+        try { return this.clusters.join(req.student, req.params.id); }
+        catch (err) { throw academicError(err); }
+    }
 
     @Get('academic/attendance/datewise')
     @Header('Cache-Control', 'no-store')

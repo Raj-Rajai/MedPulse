@@ -13,6 +13,7 @@ import { useToast } from '../../hooks/useToasts';
 import { errMessage, readJson, sendJson, todayIso } from '../../lib/http';
 import { SUBJECTS } from '../academic';
 import type { AdminScheduleItem } from '../../types';
+import { AttendanceWaitingRoom } from './AttendanceWaitingRoom';
 
 const DEPTS: [string, string][] = [
     ['all', 'All Departments'],
@@ -243,29 +244,8 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
         showToast('Calendar event (.ics) downloaded!', 'success');
     };
 
-    const [requestingId, setRequestingId] = useState<number | null>(null);
-
-    const handleRequestAttendance = async (item: AdminScheduleItem) => {
-        if (!item.id) return;
-        setRequestingId(item.id);
-        try {
-            const res = await fetch(`/api/admin/academic/schedule/${item.id}/request-attendance`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || 'Failed to send attendance request');
-            showToast(data.message || 'Attendance request sent to all enrolled students!', 'success');
-            setItems((prev) =>
-                prev.map((it) => (it.id === item.id ? { ...it, attendance_requested: true, attendance_requested_at: new Date().toISOString() } : it))
-            );
-        } catch (err) {
-            console.error('Attendance request error:', err);
-            showToast(errMessage(err), 'error');
-        } finally {
-            setRequestingId(null);
-        }
-    };
+    const [attendanceLecture, setAttendanceLecture] = useState<AdminScheduleItem | null>(null);
+    const handleRequestAttendance = (item: AdminScheduleItem) => setAttendanceLecture(item);
 
     const d = items[selectedIdx] || null;
 
@@ -543,7 +523,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                         <button
                                             type="button"
                                             className="btn btn-primary btn-sm"
-                                            disabled={requestingId === d.id}
+
                                             onClick={() => handleRequestAttendance(d)}
                                             style={{
                                                 background: d.attendance_requested
@@ -559,13 +539,9 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                                 gap: '6px',
                                                 color: '#ffffff',
                                             }}
-                                            title="Send attendance notification & request to students"
+                                            title="Open the faculty attendance room"
                                         >
-                                            {requestingId === d.id
-                                                ? '⏳ Sending Request...'
-                                                : d.attendance_requested
-                                                ? '✅ Re-send Attendance Request'
-                                                : '📢 Send Attendance Request'}
+                                            {d.attendance_requested ? 'Open waiting room' : 'Take attendance'}
                                         </button>
                                     </div>
                                 </div>
@@ -647,11 +623,11 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                                     borderColor: item.attendance_requested ? '#059669' : '#4f46e5',
                                                     color: '#ffffff',
                                                 }}
-                                                disabled={requestingId === item.id}
+
                                                 onClick={() => handleRequestAttendance(item)}
-                                                title={item.attendance_requested ? 'Re-send Attendance Request' : 'Send Attendance Request'}
+                                                title="Open the faculty attendance room"
                                             >
-                                                {requestingId === item.id ? '⏳' : item.attendance_requested ? '✅' : '📢'}
+                                                {item.attendance_requested ? 'Waiting room' : 'Take attendance'}
                                             </button>
                                             <button
                                                 type="button"
@@ -893,6 +869,8 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                     </div>
                 </div>
             )}
+            {attendanceLecture && <AttendanceWaitingRoom key={attendanceLecture.id} lecture={attendanceLecture}
+                onClose={() => { setAttendanceLecture(null); loadSchedule(activePill); }} onChanged={() => loadSchedule(activePill)}/>}
         </section>
     );
 }

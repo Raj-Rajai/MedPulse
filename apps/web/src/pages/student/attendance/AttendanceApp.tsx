@@ -94,30 +94,7 @@ export function AttendanceApp() {
     };
 
     const openFillModal = () => {
-        if (dw && dw.data && dw.data.lectures && dw.data.lectures.length > 0) {
-            const notMarked = dw.data.lectures.find((l) => l.status === 'Not Marked') || dw.data.lectures[0];
-            setSelectedSession({
-                lecture_id: (notMarked as any).lecture_id,
-                lecture_no: notMarked.lecture_no,
-                subject_name: notMarked.subject_name,
-                subject_code: notMarked.subject_code,
-                date_iso: dateIso.current,
-                time_slot: notMarked.time,
-                faculty_name: notMarked.faculty_name,
-                room_no: notMarked.room_no,
-                attendance_status: notMarked.status,
-            });
-        } else {
-            setSelectedSession({
-                date_iso: dateIso.current,
-                subject_name: 'Scheduled Department Lecture',
-                lecture_no: 1,
-                time_slot: '09:00 - 10:00 AM',
-                venue: 'Lecture Theatre 1 (LT-1)',
-                faculty_name: 'Department Faculty',
-                attendance_requested: true,
-            });
-        }
+        setSelectedSession(null);
         setFillOpen(true);
     };
 
@@ -244,7 +221,7 @@ export function AttendanceApp() {
                                     alignItems: 'center',
                                     gap: '6px'
                                 }}
-                                title="Fill Attendance for scheduled lectures"
+                                title="View active attendance sessions"
                             >
                                 📝 Fill Attendance
                             </button>

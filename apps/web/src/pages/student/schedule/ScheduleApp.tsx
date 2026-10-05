@@ -12,6 +12,7 @@ import { TOAST_PLAIN, useToasts } from '../common/Toasts';
 import { errMsg } from '../common/utils';
 import { MedPulseAuth } from '../../../shared/session';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
+import { ActiveAttendanceBanner } from '../common/StudentAttendanceRoom';
 
 interface ScheduleItem {
     id?: number;
@@ -55,6 +56,7 @@ export function ScheduleApp() {
     const [selected, setSelected] = useState(0);
     const [detail, setDetail] = useState<ScheduleItem | null>(null);
     const [fillModalOpen, setFillModalOpen] = useState(false);
+    const [fillSession, setFillSession] = useState<FillableLecture | null>(null);
     const [emptyTopic, setEmptyTopic] = useState(false);
     const [total, setTotal] = useState<number | null>(null);
     const stripRef = useRef<HTMLDivElement>(null);
@@ -157,6 +159,7 @@ export function ScheduleApp() {
             <MobileNavToggle onToggle={scheduleSidebar.toggle} />
             {toasts}
             <main className="main-content">
+                <ActiveAttendanceBanner onOpen={() => { setFillSession(null); setFillModalOpen(true); }}/>
                 <div className="attendance-hero anim-fade-up">
                     <div className="hero-split-grid">
                         <div className="hero-left-col">
@@ -305,7 +308,7 @@ export function ScheduleApp() {
                                     type="button"
                                     className="btn btn-primary"
                                     disabled={!d}
-                                    onClick={() => setFillModalOpen(true)}
+                                    onClick={() => { setFillSession(d); setFillModalOpen(true); }}
                                     style={{
                                         background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
                                         border: 'none',
@@ -318,7 +321,7 @@ export function ScheduleApp() {
                                         fontSize: '0.9rem',
                                         borderRadius: '10px',
                                     }}
-                                    title="Fill Attendance for this scheduled lecture"
+                                    title="View this lecture?s attendance session"
                                 >
                                     📝 Fill Attendance
                                 </button>
@@ -329,7 +332,7 @@ export function ScheduleApp() {
             </main>
             <FillAttendanceModal
                 open={fillModalOpen}
-                session={d as FillableLecture | null}
+                session={fillSession}
                 onClose={() => setFillModalOpen(false)}
                 onSuccess={(msg) => {
                     showToast(msg, 'success');

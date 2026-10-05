@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { cleanList, Row } from '../../common/row';
 import { StatusError } from '../../common/http-error';
+import { AttendanceClusterService } from './attendance-cluster.service';
 
 /* ------------------------------------------------------------------ */
 /* Constants and pure helpers                                          */
@@ -175,7 +176,7 @@ const ROLL_ORDER = 'ORDER BY CAST(s.roll_number AS INTEGER), s.roll_number, s.id
 
 @Injectable()
 export class AcademicModel {
-    constructor(private readonly database: DatabaseService) {}
+    constructor(private readonly database: DatabaseService, private readonly clusters: AttendanceClusterService) {}
 
     private get db() {
         return this.database.db;
@@ -331,6 +332,7 @@ export class AcademicModel {
             const tally: Record<string, number> = { Present: 0, Absent: 0, Leave: 0, 'Field Duty': 0 };
             for (const e of entries) {
                 upsert.run(lecture.id, e.studentId, date, lectureNo, e.status, e.remarks, adminId);
+                this.clusters.recordManualChange(e.studentId, date, lectureNo, adminId, e.status);
                 tally[e.status]++;
             }
             this.removeEmptyLectures(collegeId, date, lectureNo);
@@ -351,6 +353,7 @@ export class AcademicModel {
             DELETE FROM academic_lectures
             WHERE college_id = ? AND lecture_date = ? AND lecture_no = ?
               AND NOT EXISTS (SELECT 1 FROM academic_attendance a WHERE a.lecture_id = academic_lectures.id)
+              AND NOT EXISTS (SELECT 1 FROM attendance_clusters c WHERE c.lecture_id = academic_lectures.id)
         `).run(collegeId, date, lectureNo);
     }
 
@@ -863,6 +866,10 @@ export class AcademicModel {
         const roomNo = text(body.room_no || body.venue || (sessionType === 'Practical' ? 'Pathology Practical Lab' : 'Lecture Theatre 1 (LT-1)'));
         const facultyName = text(body.faculty_name || 'Dr. Ramesh Mehta (Prof & HOD)');
 
+        const existing = this.db.prepare('SELECT id FROM academic_lectures WHERE college_id = ? AND lecture_date = ? AND lecture_no = ? AND subject_code = ?')
+            .get(collegeId, lectureDate, lectureNo, subjectCode);
+        if (existing) this.clusters.assertLectureEditable(existing.id);
+
         this.upsertSubject(collegeId, subjectCode, name, facultyName, roomNo);
 
         const res = this.db.prepare(`
@@ -890,6 +897,7 @@ export class AcademicModel {
         const id = Number(lectureId);
         const existing = this.db.prepare('SELECT id FROM academic_lectures WHERE id = ? AND college_id = ?').get(id, collegeId);
         if (!existing) throw new StatusError('Lecture session not found', 404);
+        this.clusters.assertLectureEditable(id);
 
         const lectureDate = text(body.lecture_date || body.date_iso);
         if (lectureDate && !isIsoDate(lectureDate)) throw new StatusError('Invalid lecture date', 400);
@@ -924,65 +932,17 @@ export class AcademicModel {
 
     deleteLecture(collegeId: number, lectureId: number | string): boolean {
         const id = Number(lectureId);
+        if (!this.db.prepare('SELECT id FROM academic_lectures WHERE id = ? AND college_id = ?').get(id, collegeId)) return false;
+        this.clusters.assertLectureEditable(id);
         const res = this.db.prepare('DELETE FROM academic_lectures WHERE id = ? AND college_id = ?').run(id, collegeId);
         return res.changes > 0;
     }
 
-    requestAttendance(collegeId: number, _adminId: number | null, lectureId: unknown): Row {
-        const id = Number(lectureId);
-        if (!Number.isFinite(id) || id <= 0) throw new StatusError('Invalid lecture session ID', 400);
-
-        const lecture = this.db.prepare('SELECT id, subject_name, lecture_date, time_slot FROM academic_lectures WHERE id = ? AND college_id = ?').get(id, collegeId) as Row | undefined;
-        if (!lecture) throw new StatusError('Lecture session not found', 404);
-
-        this.db.prepare(`
-            UPDATE academic_lectures
-            SET attendance_requested = 1, attendance_requested_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(id);
-
-        return {
-            success: true,
-            message: `Attendance request sent to students for ${lecture.subject_name} (${lecture.lecture_date}).`,
-            lecture_id: id,
-            attendance_requested: true,
-        };
+    requestAttendance(collegeId: number, adminId: number | null, lectureId: unknown, body: Record<string, unknown> = {}): Row {
+        return this.clusters.start(collegeId, adminId, lectureId, body);
     }
 
     fillAttendance(student: Row, body: Record<string, unknown>): Row {
-        const lectureId = Number(body.lecture_id);
-        let lecture: Row | undefined;
-        if (Number.isFinite(lectureId) && lectureId > 0) {
-            lecture = this.db.prepare('SELECT * FROM academic_lectures WHERE id = ?').get(lectureId) as Row | undefined;
-        } else {
-            const date = text(body.date || body.lecture_date);
-            const lectureNo = Number(body.lecture_no || 1);
-            if (isIsoDate(date)) {
-                lecture = this.db.prepare('SELECT * FROM academic_lectures WHERE college_id = ? AND lecture_date = ? AND lecture_no = ?').get(student.college_id || 1, date, lectureNo) as Row | undefined;
-            }
-        }
-
-        if (!lecture) throw new StatusError('Scheduled lecture session not found', 404);
-
-        const status = text(body.status) || 'Present';
-        if (!['Present', 'Absent', 'Leave', 'Field Duty'].includes(status)) {
-            throw new StatusError('Invalid attendance status', 400);
-        }
-        const remarks = text(body.remarks) || 'Self-marked by student via portal';
-
-        this.db.prepare(`
-            INSERT INTO academic_attendance (lecture_id, student_id, lecture_date, lecture_no, status, remarks)
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT (student_id, lecture_date, lecture_no) DO UPDATE SET
-                lecture_id = excluded.lecture_id, status = excluded.status, remarks = excluded.remarks,
-                updated_at = CURRENT_TIMESTAMP
-        `).run(lecture.id, student.id, lecture.lecture_date, lecture.lecture_no, status, remarks);
-
-        return {
-            success: true,
-            message: `Attendance marked as ${status} for ${lecture.subject_name}!`,
-            lecture_id: lecture.id,
-            status,
-        };
+        return this.clusters.fill(student, body);
     }
 }

@@ -4,6 +4,7 @@ import { AdminGuard } from '../../auth/guards';
 import { fail } from '../../common/http-error';
 import { AcademicModel } from './academic.model';
 import { academicError } from './academic.controller';
+import { AttendanceClusterService } from './attendance-cluster.service';
 
 /**
  * Admin attendance register and examination marksheets (/api/admin/academic/*), scoped to the
@@ -12,10 +13,40 @@ import { academicError } from './academic.controller';
 @Controller()
 @UseGuards(AdminGuard)
 export class AcademicAdminController {
-    constructor(private readonly academic: AcademicModel) {}
+    constructor(private readonly academic: AcademicModel, private readonly clusters: AttendanceClusterService) {}
+
+    @Get('admin/academic/attendance/clusters/:id')
+    @Header('Cache-Control', 'no-store')
+    inspectCluster(@Req() req: Request) {
+        try { return this.clusters.inspect(this.college(req), req.params.id); }
+        catch (err) { throw academicError(err); }
+    }
+
+    @Post('admin/academic/attendance/clusters/:id/end')
+    @HttpCode(200)
+    endCluster(@Req() req: Request) {
+        try { return this.clusters.end(this.college(req), req.params.id); }
+        catch (err) { throw academicError(err); }
+    }
+
+    @Post('admin/academic/attendance/clusters/:id/observations')
+    @HttpCode(200)
+    @Header('Cache-Control', 'no-store')
+    observeCluster(@Req() req: Request) {
+        try { return this.clusters.observe(this.college(req), req.adminId,
+            req.params.id, req.get('x-attendance-anchor-token') || '', req.body || {}); }
+        catch (err) { throw academicError(err); }
+    }
 
     private college(req: Request): number {
         return AcademicModel.collegeOfAdmin(req.admin);
+    }
+
+    @Get('admin/academic/schedule/:id/attendance-cluster')
+    @Header('Cache-Control', 'no-store')
+    lectureCluster(@Req() req: Request) {
+        try { return this.clusters.forLecture(this.college(req), req.params.id); }
+        catch (err) { throw academicError(err); }
     }
 
     @Get('admin/academic/meta')
@@ -152,9 +183,10 @@ export class AcademicAdminController {
 
     @Post('admin/academic/schedule/:id/request-attendance')
     @HttpCode(200)
+    @Header('Cache-Control', 'no-store')
     requestAttendance(@Req() req: Request) {
         try {
-            return this.academic.requestAttendance(this.college(req), req.adminId, req.params.id);
+            return this.academic.requestAttendance(this.college(req), req.adminId, req.params.id, req.body || {});
         } catch (err) {
             throw academicError(err);
         }

@@ -15,6 +15,7 @@ import { DatewiseTableBody, type DatewiseData } from '../common/Datewise';
 import { OverallAttendance, type SubjectWiseData } from './OverallAttendance';
 import { EditProfileModal, ChangePinModal, type ProfileForm } from './ProfileModals';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
+import { ActiveAttendanceBanner } from '../common/StudentAttendanceRoom';
 
 interface Student {
     name?: string;
@@ -32,7 +33,7 @@ interface ProfileData {
     student?: Student;
 }
 
-const TODAY = '2026-09-28';
+const TODAY = new Date().toLocaleDateString('en-CA');
 
 export function ProfileApp() {
     useStudentChrome(standardSidebar);
@@ -114,37 +115,8 @@ export function ProfileApp() {
     const s = profile?.student;
     const refCode = profile ? s?.referral_code || 'Pending' : null;
 
-    const openFillAttendance = (lec?: FillableLecture) => {
-        if (lec) {
-            setSelectedFillSession(lec);
-        } else if (dw && dw.lectures && dw.lectures.length > 0) {
-            const notMarked = dw.lectures.find((l) => l.status === 'Not Marked') || dw.lectures[0];
-            setSelectedFillSession({
-                lecture_id: (notMarked as any).lecture_id,
-                lecture_no: notMarked.lecture_no,
-                subject_name: notMarked.subject_name,
-                subject_code: notMarked.subject_code,
-                date_iso: dateIso,
-                time_slot: notMarked.time,
-                faculty_name: notMarked.faculty_name,
-                room_no: notMarked.room_no,
-                topic: (notMarked as any).topic,
-                attendance_requested: (notMarked as any).attendance_requested,
-                attendance_status: notMarked.status,
-            });
-        } else {
-            setSelectedFillSession({
-                date_iso: dateIso,
-                subject_name: 'Department of Pathology (PA-301)',
-                subject_code: 'PA-301',
-                lecture_no: 1,
-                time_slot: '09:00 - 10:00 AM',
-                venue: 'Lecture Theatre 1 (LT-1)',
-                faculty_name: 'Dr. Ramesh Mehta (Prof & HOD)',
-                topic: 'PA 12.1: Etiopathogenesis and laboratory diagnosis of Iron Deficiency Anaemia',
-                attendance_requested: true,
-            });
-        }
+    const openFillAttendance = (lecture?: FillableLecture) => {
+        setSelectedFillSession(lecture ?? null);
         setFillAttOpen(true);
     };
 
@@ -328,6 +300,7 @@ export function ProfileApp() {
             <MobileNavToggle onToggle={standardSidebar.toggle} />
             {toasts}
             <main className="main-content">
+                <ActiveAttendanceBanner onOpen={() => openFillAttendance()}/>
                 <div className="profile-hero anim-fade-up">
                     <div className="profile-hero-content">
                         <div className="profile-identity-group">
@@ -445,7 +418,7 @@ export function ProfileApp() {
                                                 alignItems: 'center',
                                                 gap: '6px',
                                             }}
-                                            title="Fill Attendance for Today's Scheduled Lectures"
+                                            title="View active attendance sessions"
                                         >
                                             📝 Fill Attendance
                                         </button>
