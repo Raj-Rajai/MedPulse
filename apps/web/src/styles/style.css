@@ -1739,9 +1739,9 @@ body.sidebar-collapsed .sidebar-login-link .login-label {
 .schedule-dept-pill,
 .summary-badge-group,
 .badge-status,
-[class*="-badge"],
-[class*="-pill"],
-[class*="-tag"] {
+[class*="-badge"]:not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]),
+[class*="-pill"]:not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]),
+[class*="-tag"]:not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]) {
   display: inline-flex;
   align-items: center;
   justify-content: center;

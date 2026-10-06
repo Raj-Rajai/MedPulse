@@ -336,18 +336,22 @@ export function ExamsApp() {
                                 <span className="tab-count-tag" id="tabCountUniv">{counts ? counts.University || 0 : 3}</span>
                             </button>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <button className="btn btn-primary btn-sm" onClick={() => window.print()} title="Print complete academic marksheet">🖨 Print Marksheet</button>
+                        <div className="toolbar-actions-right">
+                            <button className="btn btn-primary btn-sm btn-print-marksheet" onClick={() => window.print()} title="Print complete academic marksheet">
+                                <span className="print-btn-icon">🖨</span>
+                                <span className="print-btn-text-full">Print Marksheet</span>
+                                <span className="print-btn-text-short">Print</span>
+                            </button>
                         </div>
                     </div>
                     <div className="toolbar-bottom-row">
                         <div className="toolbar-filters-left">
                             <div className="search-input-pill">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="11" cy="11" r="8" />
                                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                                 </svg>
-                                <input type="text" id="examSearchInput" placeholder="Search by paper, subject or remarks..." value={search} onChange={(e) => { renderSeq.current++; setSearch(e.target.value); setPage(1); }} />
+                                <input type="text" id="examSearchInput" placeholder="Search paper, subject..." value={search} onChange={(e) => { renderSeq.current++; setSearch(e.target.value); setPage(1); }} />
                             </div>
                             <select className="subject-select-pill" id="subjectFilterSelect" value={subject} onChange={(e) => { renderSeq.current++; setSubject(e.target.value); setPage(1); }}>
                                 {subjectOptions.map(([v, label]) => (
@@ -357,7 +361,8 @@ export function ExamsApp() {
                         </div>
                         <div className="view-toggle-group">
                             <button className={view === 'table' ? 'view-toggle-btn active' : 'view-toggle-btn'} id="btnViewTable" onClick={() => setViewMode('table')}>
-                                <span>📊 Marksheet Table</span>
+                                <span className="view-toggle-full">📊 Marksheet Table</span>
+                                <span className="view-toggle-short">📊 Table</span>
                             </button>
                             <button className={view === 'cards' ? 'view-toggle-btn active' : 'view-toggle-btn'} id="btnViewCards" onClick={() => setViewMode('cards')}>
                                 <span>🗂 Cards</span>
