@@ -13,7 +13,7 @@ export interface CadetActions {
     remove: (c: Cadet) => void;
 }
 
-const filterSelectStyle: CSSProperties = { padding: '0.45rem 0.8rem', fontSize: '0.82rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: '#fff' };
+const filterSelectStyle: CSSProperties = { padding: '0.45rem 0.8rem', fontSize: '0.82rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: '#fff' };
 const center: CSSProperties = { textAlign: 'center' };
 
 function copyReferralCode(code: string, showToast: ShowToast) {
