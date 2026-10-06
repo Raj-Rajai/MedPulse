@@ -82,12 +82,9 @@ function compute(data: SubjectWiseData) {
     return { subjects, thTot, thAtt, prTot, prAtt, totSessions, attSessions, overallPct, thPct, prPct, nmcStatus };
 }
 
-function PartCell({ p, color }: { p?: Part; color: string }) {
+function PartCell({ p }: { p?: Part; color?: string }) {
     return p && (p.total || 0) > 0 ? (
-        <>
-            {`${p.attended} / ${p.total} `}
-            <span style={{ fontWeight: 750, color: p.met ? color : '#ef4444' }}>({p.percentage}%)</span>
-        </>
+        <span style={{ fontWeight: 700 }}>{`${p.attended} / ${p.total}`}</span>
     ) : (
         <span style={{ color: '#94a3b8' }}>—</span>
     );
@@ -157,8 +154,8 @@ export function OverallAttendance({ data }: { data: SubjectWiseData | 'loading' 
                             <tr>
                                 <th style={{ minWidth: '240px' }}>Subject Name</th>
                                 <th style={{ minWidth: '180px' }}>Faculty In-Charge</th>
-                                <th style={{ textAlign: 'center', width: '140px' }}>Theory (75% Min)</th>
-                                <th style={{ textAlign: 'center', width: '140px' }}>Practical (80% Min)</th>
+                                <th style={{ textAlign: 'center', width: '140px' }}>Theory</th>
+                                <th style={{ textAlign: 'center', width: '140px' }}>Practical</th>
                                 <th style={{ textAlign: 'center', width: '130px' }}>Total Attended</th>
                                 <th style={{ textAlign: 'center', width: '100px' }}>Overall %</th>
                                 <th style={{ textAlign: 'center', width: '120px' }}>NMC Status</th>
@@ -170,8 +167,8 @@ export function OverallAttendance({ data }: { data: SubjectWiseData | 'loading' 
                                 <tr>
                                     <td style={{ ...cell, color: '#1e1b4b', fontWeight: 800 }}>Total Aggregate Attendance</td>
                                     <td style={{ ...cell, color: '#64748b', fontSize: '0.78rem' }}>Current Year Subjects Combined</td>
-                                    <td style={{ ...cell, textAlign: 'center', color: '#0284c7', fontWeight: 800 }}>{v.thTot > 0 ? `${v.thAtt} / ${v.thTot} (${v.thPct}%)` : '—'}</td>
-                                    <td style={{ ...cell, textAlign: 'center', color: '#7c3aed', fontWeight: 800 }}>{v.prTot > 0 ? `${v.prAtt} / ${v.prTot} (${v.prPct}%)` : '—'}</td>
+                                    <td style={{ ...cell, textAlign: 'center', color: '#0284c7', fontWeight: 800 }}>{v.thTot > 0 ? `${v.thAtt} / ${v.thTot}` : '—'}</td>
+                                    <td style={{ ...cell, textAlign: 'center', color: '#7c3aed', fontWeight: 800 }}>{v.prTot > 0 ? `${v.prAtt} / ${v.prTot}` : '—'}</td>
                                     <td style={{ ...cell, textAlign: 'center', color: '#1e1b4b', fontWeight: 850 }}>{`${v.attSessions} / ${v.totSessions}`}</td>
                                     <td style={{ ...cell, textAlign: 'center', fontWeight: 900, color: v.overallPct >= 75 ? '#10b981' : '#ef4444', fontSize: '0.95rem' }}>{`${v.overallPct}%`}</td>
                                     <td style={{ ...cell, textAlign: 'center' }}>

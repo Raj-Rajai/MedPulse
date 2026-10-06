@@ -15,7 +15,6 @@ import { DatewiseTableBody, type DatewiseData } from '../common/Datewise';
 import { OverallAttendance, type SubjectWiseData } from './OverallAttendance';
 import { EditProfileModal, ChangePinModal, type ProfileForm } from './ProfileModals';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
-import { ActiveAttendanceBanner } from '../common/StudentAttendanceRoom';
 
 interface Student {
     name?: string;
@@ -300,7 +299,6 @@ export function ProfileApp() {
             <MobileNavToggle onToggle={standardSidebar.toggle} />
             {toasts}
             <main className="main-content">
-                <ActiveAttendanceBanner onOpen={() => openFillAttendance()}/>
                 <div className="profile-hero anim-fade-up">
                     <div className="profile-hero-content">
                         <div className="profile-identity-group">
