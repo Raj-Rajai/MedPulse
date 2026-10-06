@@ -205,7 +205,7 @@ export function CampaignsSection({ active, loadSignal, onOpenRoster }: { active:
     return (
         <div id="viewCampaigns" className={`admin-view-pane${active ? ' active' : ''}`}>
             {/* Top Grid: Campaign Creator & Live Decision Diamond Counter */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: 24, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: 24, marginBottom: 24 }} className="admin-grid-2col">
                 {/* Creator Card */}
                 <div className="card" style={{ borderTop: '4px solid #0284c7' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>

@@ -2,7 +2,8 @@
 
 /** The "data:text/csv" + encodeURI + temporary <a download> pattern. */
 export function downloadCsvDataUri(csv: string, filename: string): void {
-    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csv);
+    // encodeURIComponent, not encodeURI: a '#' in the data would otherwise cut the file short.
+    const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', filename);

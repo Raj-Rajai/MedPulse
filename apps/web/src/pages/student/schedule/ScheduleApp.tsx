@@ -39,7 +39,32 @@ interface ScheduleItem {
 
 type Strip = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'list'; items: ScheduleItem[] };
 
-const DEPTS: [string, string][] = [['all', 'All Departments'], ['Pathology', 'Department of Pathology'], ['Community Medicine', 'Community Medicine']];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const localIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const longDate = (d: Date) => `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+/** Department pills come from the sessions themselves (one per subject the student has lectures in). */
+function departmentsOf(items: ScheduleItem[]): string[] {
+    return [...new Set(items.map((i) => i.department || i.subject || '').filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+/** The session to open first: the next one from today onwards, else the most recent one. */
+function defaultIndex(items: ScheduleItem[]): number {
+    const today = localIso(new Date());
+    const next = items.findIndex((i) => (i.date_iso || '') >= today);
+    return next >= 0 ? next : items.length - 1;
+}
+
+/** "09:00-10:00" / "08:10 to 08:55" -> ['0900', '1000']; null when the slot has no clock times. */
+function slotTimes(slot: string | undefined): [string, string] | null {
+    const m = /(\d{1,2}):(\d{2})\s*(?:-|–|to)\s*(\d{1,2}):(\d{2})/i.exec(slot || '');
+    if (!m) return null;
+    return [m[1].padStart(2, '0') + m[2], m[3].padStart(2, '0') + m[4]];
+}
+
+/** RFC 5545 text escaping for .ics values. */
+const icsText = (v: string) => v.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 
 const isDoap = (item: ScheduleItem) => (item.teaching_type || '').toUpperCase().includes('DOAP');
 
@@ -53,6 +78,7 @@ export function ScheduleApp() {
     const [user] = useState(readAuthUser);
     const [activePill, setActivePill] = useState('all');
     const [strip, setStrip] = useState<Strip>({ kind: 'loading' });
+    const [allItems, setAllItems] = useState<ScheduleItem[]>([]);
     const [selected, setSelected] = useState(0);
     const [detail, setDetail] = useState<ScheduleItem | null>(null);
     const [fillModalOpen, setFillModalOpen] = useState(false);
@@ -76,23 +102,45 @@ export function ScheduleApp() {
         }
         // The original moved the "active" class before scrolling the card into view (the active card is larger).
         flushSync(() => setSelected(index));
-        document.getElementById(`cubicCard_${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        scrollCardIntoView(index);
         setDetail(list[index]);
         setEmptyTopic(false);
     };
 
+    /** Scrolls only the card strip (scrollIntoView would also scroll the page down to it). */
+    const scrollCardIntoView = (index: number, behavior: ScrollBehavior = 'smooth') => {
+        const stripEl = stripRef.current;
+        const card = document.getElementById(`cubicCard_${index}`);
+        if (!stripEl || !card) return;
+        const left = card.offsetLeft - stripEl.offsetLeft - (stripEl.clientWidth - card.offsetWidth) / 2;
+        stripEl.scrollTo({ left: Math.max(0, left), behavior });
+    };
+
+    const showItems = (items: ScheduleItem[]) => {
+        displayedRef.current = items;
+        flushSync(() => setStrip({ kind: 'list', items }));
+        if (items.length > 0) {
+            const idx = defaultIndex(items);
+            selectSchedule(idx, false);
+            scrollCardIntoView(idx, 'auto');
+        } else {
+            selectedRef.current = 0;
+            setSelected(0);
+            setDetail(null);
+            setEmptyTopic(true);
+        }
+    };
+
     const loadScheduleData = async (dept = 'all') => {
         try {
-            const query = dept !== 'all' ? `?department=${encodeURIComponent(dept)}` : '';
-            const res = await fetch(`/api/academic/schedule${query}`);
+            const res = await fetch('/api/academic/schedule');
+            if (res.status === 401 || res.status === 403) throw new Error('Please sign in as a student to view your schedule');
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
             const items: ScheduleItem[] = [...(data.schedules || [])];
-            displayedRef.current = items;
+            setAllItems(items);
             setTotal(items.length);
-            setStrip({ kind: 'list', items });
-            if (items.length > 0) selectSchedule(0, false);
-            else setEmptyTopic(true);
+            showItems(dept === 'all' ? items : items.filter((i) => (i.department || i.subject) === dept));
         } catch (err) {
             console.error('Failed to load academic schedule:', err);
             showToast('Error loading schedule: ' + errMsg(err), 'error');
@@ -101,16 +149,17 @@ export function ScheduleApp() {
     };
 
     useEffect(() => {
-        loadScheduleData('all');
+        loadScheduleData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Filtering is done on the loaded list, so switching pills is instant and can't race a slower request.
     const filterDepartment = (dept: string) => {
         setActivePill(dept);
-        selectedRef.current = 0;
-        setSelected(0);
-        loadScheduleData(dept);
+        if (strip.kind === 'error') return;
+        showItems(dept === 'all' ? allItems : allItems.filter((i) => (i.department || i.subject) === dept));
     };
+    const departments = departmentsOf(allItems);
 
 
     const downloadIcs = () => {
@@ -119,17 +168,20 @@ export function ScheduleApp() {
             showToast('Please select a lecture to download calendar invite.', 'error');
             return;
         }
-        const dateStr = (current.date_iso || '2026-10-02').replace(/-/g, '');
+        const dateStr = (current.date_iso || localIso(new Date())).replace(/-/g, '');
+        const [start, end] = slotTimes(current.time_slot || current.card_time) || ['0900', '1000'];
         const icsData = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
             'PRODID:-//SAL Education//MedPulse Academic Schedule//EN',
             'BEGIN:VEVENT',
-            `SUMMARY:${current.subject || 'Pathology'}: ${current.competency_no || ''} - ${current.teaching_type || 'Lecture'}`,
-            `DESCRIPTION:${current.topic || ''} \\nFaculty: ${current.faculty_name || ''}`,
-            `LOCATION:${current.venue || 'Lecture Theatre 1'}`,
-            `DTSTART:${dateStr}T090000`,
-            `DTEND:${dateStr}T100000`,
+            `UID:medpulse-lecture-${current.date_iso}-${start}-${(current.subject_code || current.subject || 'session').replace(/[^a-zA-Z0-9]/g, '')}@medpulse`,
+            `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}`,
+            `SUMMARY:${icsText(`${current.subject || 'Lecture'}${current.competency_no ? ` (${current.competency_no})` : ''} - ${current.teaching_type || 'Lecture'}`)}`,
+            `DESCRIPTION:${icsText(current.topic || '')}\\nFaculty: ${icsText(current.faculty_name || '')}`,
+            `LOCATION:${icsText(current.venue || 'Lecture Theatre 1')}`,
+            `DTSTART:${dateStr}T${start}00`,
+            `DTEND:${dateStr}T${end}00`,
             'STATUS:CONFIRMED',
             'END:VEVENT',
             'END:VCALENDAR',
@@ -137,14 +189,19 @@ export function ScheduleApp() {
         const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.setAttribute('download', `Lecture_${current.date_iso}_${(current.competency_no || 'Session').replace(/[^a-zA-Z0-9]/g, '_')}.ics`);
+        link.setAttribute('download', `Lecture_${current.date_iso}_${(current.competency_no || current.subject || 'Session').replace(/[^a-zA-Z0-9]/g, '_')}.ics`);
         document.body.appendChild(link);
         link.click();
         link.remove();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
         showToast('Calendar event (.ics) downloaded!', 'success');
     };
 
-    const scrollSchedule = (direction: number) => stripRef.current?.scrollBy({ left: direction * 320, behavior: 'smooth' });
+    const scrollSchedule = (direction: number) => {
+        const el = stripRef.current;
+        if (el) el.scrollBy({ left: direction * Math.max(160, el.clientWidth * 0.8), behavior: 'smooth' });
+    };
+    const today = new Date();
 
     const d = detail;
     const roll = user ? String(user.roll_number || '235') : null;
@@ -188,14 +245,14 @@ export function ScheduleApp() {
                         </div>
                         <div className="hero-gauge-box">
                             <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Today's Date</div>
-                            <div style={{ fontSize: '1.25rem', fontWeight: '850', color: '#ffffff' }} id="heroTodayDateLabel">02 October 2026</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: '850', color: '#ffffff' }} id="heroTodayDateLabel">{longDate(today)}</div>
                             <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }} id="heroTotalSessionsCount">{total === null ? 'Loading teaching schedule...' : `${total} Scheduled Teaching Sessions`}</div>
                         </div>
                     </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }} className="anim-fade-up">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }} className="schedule-filter-bar" id="deptFilterGroup">
-                        {DEPTS.map(([dept, label]) => (
+                        {[['all', 'All Departments'], ...departments.map((dep) => [dep, dep])].map(([dept, label]) => (
                             <button key={dept} type="button" className={`schedule-dept-pill${activePill === dept ? ' active' : ''}`} onClick={() => filterDepartment(dept)}>{label}</button>
                         ))}
                     </div>
@@ -208,11 +265,11 @@ export function ScheduleApp() {
                         ) : strip.kind === 'error' ? (
                             <div style={{ padding: '24px', color: '#ef4444' }}>Failed to load schedule. ({strip.message})</div>
                         ) : displayed.length === 0 ? (
-                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>No teaching sessions found for this department.</div>
+                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{activePill === 'all' ? 'No teaching sessions have been scheduled for you yet.' : 'No teaching sessions found for this department.'}</div>
                         ) : (
                             displayed.map((item, idx) => (
                                 <div
-                                    key={idx} className={`schedule-cubic-card${idx === selected ? ' active' : ''}`} id={`cubicCard_${idx}`}
+                                    key={idx} className={`schedule-cubic-card${idx === selected ? ' active' : ''}${(item.date_iso || '') === localIso(today) ? ' today' : ''}`} id={`cubicCard_${idx}`}
                                     onClick={() => selectSchedule(idx)} title={`Click to view details for ${item.card_day || ''}, ${item.card_date || ''}`}
                                 >
                                     <div className="cubic-date">{item.card_date || ''}</div>
@@ -231,7 +288,7 @@ export function ScheduleApp() {
                 </div>
                 <div className="schedule-detail-panel anim-fade-up" id="scheduleDetailPanel">
                     <div className="datewise-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0' }}>
-                        <h2 id="detailDeptTitle">{(d && d.department) || 'Department of Pathology'}</h2>
+                        <h2 id="detailDeptTitle">{d ? d.department || d.subject || 'Teaching Session' : 'Teaching Session'}</h2>
                         <button
                             type="button"
                             className="schedule-top-calendar-btn"
@@ -248,20 +305,20 @@ export function ScheduleApp() {
                                 📅{' '}
                                 <strong id="detailFullDate">{d ? `${d.card_day}, ${d.card_date} (${d.date_iso})` : '--'}</strong>
                             </span>
-                            <span style={{ color: '#cbd5e1' }}>|</span>
+                            <span className="schedule-detail-sep">|</span>
                             <span>
                                 ⏰{' '}
                                 <strong id="detailFullTime">{d ? d.card_time || d.time_slot || '' : '--'}</strong>
                             </span>
-                            <span style={{ color: '#cbd5e1' }}>|</span>
+                            <span className="schedule-detail-sep">|</span>
                             <span>
                                 📍{' '}
                                 <strong id="detailVenue">{d ? d.venue || 'Lecture Theatre 1 (LT-1)' : '--'}</strong>
                             </span>
-                            <span style={{ color: '#cbd5e1' }}>|</span>
+                            <span className="schedule-detail-sep">|</span>
                             <span>
                                 🏷️{' '}
-                                <strong id="detailSubjectTag">{d ? d.subject || 'Pathology' : '--'}</strong>
+                                <strong id="detailSubjectTag">{d ? d.subject || d.department || '--' : '--'}</strong>
                             </span>
                         </div>
                         <div className="schedule-topic-box">
@@ -270,9 +327,9 @@ export function ScheduleApp() {
                         </div>
                         <div className="schedule-meta-grid">
                             <div className="schedule-meta-card">
-                                <div className="schedule-meta-label">Competency No.</div>
-                                <div className="schedule-meta-val" id="detailCompetency" style={{ color: '#4f46e5', fontFamily: 'monospace', fontSize: '1.05rem' }}>{d ? d.competency_no || 'PA --' : '--'}</div>
-                                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>NMC CBME Syllabus Code</div>
+                                <div className="schedule-meta-label">{d && !d.competency_no && d.subject_code ? 'Subject Code' : 'Competency No.'}</div>
+                                <div className="schedule-meta-val" id="detailCompetency" style={{ color: '#4f46e5', fontFamily: 'monospace', fontSize: '1.05rem' }}>{d ? d.competency_no || d.subject_code || '--' : '--'}</div>
+                                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '4px' }}>{d && !d.competency_no && d.subject_code ? 'University Subject Code' : 'NMC CBME Syllabus Code'}</div>
                             </div>
                             <div className="schedule-meta-card">
                                 <div className="schedule-meta-label">Staff Member In-Charge</div>

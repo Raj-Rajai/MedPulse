@@ -1,0 +1,95 @@
+/*
+ * Student + admin portals: phone layout and small shared fixes.
+ * Loaded after style.css and the page's own CSS (see each *-styles.css bundle).
+ * The sidebar / mobile nav button are deliberately not touched.
+ */
+
+:root {
+  /* How much smaller the page content is drawn on phones (0.6 = "zoomed out by 40%"). */
+  --mobile-zoom: 0.6;
+}
+
+/* Small button size used across the portals (was referenced but never defined). */
+.btn.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm, 8px);
+}
+
+/* Grid children default to min-width:auto, so a wide table inside one pushed the whole page sideways. */
+.admin-grid-2col > * {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  /* Content is laid out as if the screen were wider, then drawn smaller, like a zoomed-out desktop page. */
+  .main-content > *:not(.modal-overlay):not(.toast-container),
+  body > .modal-overlay > .modal-content {
+    zoom: var(--mobile-zoom);
+  }
+
+  .main-content {
+    overflow-x: clip;
+  }
+
+  /* Modals: use the full phone width (the zoom already makes them compact). */
+  body > .modal-overlay {
+    padding: 12px !important;
+  }
+  body > .modal-overlay > .modal-content {
+    width: 100% !important;
+    max-height: calc(90vh / var(--mobile-zoom)) !important;
+  }
+
+  /* Wide tables scroll inside their card instead of stretching the page. */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* With the content zoomed out there is room for two summary tiles per row. */
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .burden-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/*
+ * Admin "Lecture Schedule & Session Configuration" form: 7 fields + a double-width topic field
+ * left a hole in the 4-column grid and pushed the topic onto its own row. Three columns fill evenly.
+ */
+.att-config-grid:not(.exam-config-grid) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1200px) {
+  .att-config-grid:not(.exam-config-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  /* Zoomed-out phones have room for two fields per row. */
+  .att-config-grid,
+  .att-config-grid.exam-config-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .att-config-item.col-span-2 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Modal forms: grid cells could not shrink below the inputs' natural width, so fields ran off the card. */
+.modal-content .form-grid > *,
+.modal-content .form-group {
+  min-width: 0;
+}
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
