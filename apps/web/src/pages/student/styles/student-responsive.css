@@ -307,26 +307,30 @@
     padding: 2px 6px !important;
   }
 
-  /* Profile action buttons: 2 columns, primary button spans full width */
+  /* Profile action buttons: 2 columns side by side */
   .profile-hero-actions {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 6px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
     margin-top: 10px !important;
     width: 100% !important;
+    max-width: 440px !important;
   }
 
   .profile-hero-actions .btn {
-    font-size: 0.74rem !important;
-    padding: 6px 8px !important;
-    min-height: 32px !important;
-    border-radius: 6px !important;
+    font-size: 0.78rem !important;
+    padding: 7px 10px !important;
+    min-height: 36px !important;
+    border-radius: 8px !important;
     justify-content: center !important;
     text-align: center !important;
+    grid-column: auto !important;
+    width: 100% !important;
+    white-space: nowrap !important;
   }
 
   .profile-hero-actions .btn:last-child {
-    grid-column: 1 / -1 !important;
+    grid-column: auto !important;
   }
 
   /* Attendance KPI strip: 2 columns, never 1 column */
