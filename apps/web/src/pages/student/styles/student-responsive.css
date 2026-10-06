@@ -930,19 +930,19 @@
 
   .schedule-cubic-card,
   .cubic-card {
-    min-width: 104px !important;
-    width: 104px !important;
-    height: 104px !important;
-    max-height: 104px !important;
-    padding: 8px 6px !important;
-    border-radius: 12px !important;
+    min-width: 114px !important;
+    width: 114px !important;
+    height: 112px !important;
+    max-height: 112px !important;
+    padding: 10px 6px !important;
+    border-radius: 14px !important;
   }
 
   .schedule-cubic-card .cubic-date,
   .cubic-card-date {
-    font-size: 1.05rem !important;
+    font-size: 1.08rem !important;
     line-height: 1.15 !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 3px !important;
   }
 
   .schedule-cubic-card .cubic-day,
@@ -1011,14 +1011,16 @@
   }
   .schedule-cubic-card,
   .cubic-card {
-    min-width: 96px !important;
-    width: 96px !important;
-    height: 98px !important;
-    max-height: 98px !important;
-    padding: 6px 4px !important;
+    min-width: 110px !important;
+    width: 110px !important;
+    height: 110px !important;
+    max-height: 110px !important;
+    padding: 8px 6px !important;
+    border-radius: 14px !important;
   }
   .schedule-cubic-card .cubic-date {
-    font-size: 0.98rem !important;
+    font-size: 1.05rem !important;
+    margin-bottom: 3px !important;
   }
 }
 

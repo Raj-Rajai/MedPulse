@@ -75,7 +75,6 @@ export function ScheduleApp() {
     const [allItems, setAllItems] = useState<ScheduleItem[]>([]);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [detail, setDetail] = useState<ScheduleItem | null>(null);
-    const [showPastSessions, setShowPastSessions] = useState(false);
     const [fillModalOpen, setFillModalOpen] = useState(false);
     const [fillSession, setFillSession] = useState<FillableLecture | null>(null);
     const [emptyTopic, setEmptyTopic] = useState(false);
@@ -208,9 +207,9 @@ export function ScheduleApp() {
     const today = new Date();
     const todayIsoStr = localIso(today);
 
-    // Split displayed into previous sessions (< today) and upcoming sessions (>= today)
-    const pastSessions = displayed.filter((i) => (i.date_iso || '') < todayIsoStr);
+    // Filter to sessions from today onwards (clean, no past session clutter)
     const upcomingSessions = displayed.filter((i) => (i.date_iso || '') >= todayIsoStr);
+    const sessionsToDisplay = upcomingSessions.length > 0 ? upcomingSessions : displayed;
 
     const d = detail;
     const roll = user ? String(user.roll_number || '235') : null;
@@ -277,90 +276,29 @@ export function ScheduleApp() {
                             <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{activePill === 'all' ? 'No teaching sessions have been scheduled for you yet.' : 'No teaching sessions found for this department.'}</div>
                         ) : (
                             <>
-                                {/* 1. Previous session button card (collapsed mode) */}
-                                {pastSessions.length > 0 && !showPastSessions && (
-                                    <div
-                                        className="schedule-cubic-card prev-session-card"
-                                        id="cubicCard_show_prev"
-                                        onClick={() => {
-                                            setShowPastSessions(true);
-                                            setTimeout(() => {
-                                                const el = stripRef.current;
-                                                if (el) el.scrollTo({ left: 0, behavior: 'smooth' });
-                                            }, 60);
-                                        }}
-                                        title={`Click to view ${pastSessions.length} previous session${pastSessions.length > 1 ? 's' : ''} (${pastSessions[pastSessions.length - 1].card_date || 'Past'})`}
-                                    >
-                                        <span className="prev-card-badge">⏮ PREV</span>
-                                        <div className="prev-card-icon">⏮</div>
-                                        <div className="prev-card-title">Previous Session{pastSessions.length > 1 ? 's' : ''}</div>
-                                        <div className="prev-card-day">{pastSessions[pastSessions.length - 1].card_date || 'Past'}</div>
-                                        <div className="prev-card-pill">Show Previous Session</div>
-                                    </div>
-                                )}
-
-                                {/* 2. Previous sessions cards (expanded mode) */}
-                                {pastSessions.length > 0 && showPastSessions && (
-                                    <>
-                                        <div
-                                            className="schedule-cubic-card prev-session-card expanded"
-                                            id="cubicCard_hide_prev"
-                                            onClick={() => setShowPastSessions(false)}
-                                            title="Click to collapse previous sessions"
-                                        >
-                                            <span className="prev-card-badge">⮌ HIDE</span>
-                                            <div className="prev-card-icon">✕</div>
-                                            <div className="prev-card-title">Hide Previous</div>
-                                            <div className="prev-card-day">{pastSessions.length} Sessions</div>
-                                            <div className="prev-card-pill">Collapse ⮌</div>
-                                        </div>
-                                        {pastSessions.map((item, pIdx) => {
-                                            const key = getItemKey(item);
-                                            const isSelected = selectedKey === key;
-                                            const domId = `cubicCard_past_${pIdx}`;
-                                            return (
-                                                <div
-                                                    key={`past_${pIdx}_${key}`}
-                                                    className={`schedule-cubic-card${isSelected ? ' active' : ''}`}
-                                                    id={domId}
-                                                    onClick={() => selectScheduleItem(item, domId)}
-                                                    title={`Click to view details for ${item.card_day || ''}, ${item.card_date || ''}`}
-                                                >
-                                                    <span className="cubic-page-badge">Past</span>
-                                                    <div className="cubic-date">{item.card_date || ''}</div>
-                                                    <div className="cubic-day">{item.card_day || ''}</div>
-                                                    <div className="cubic-time">{item.card_time || ''}</div>
-                                                    {item.attendance_requested && (
-                                                        <div style={{ fontSize: '0.66rem', color: '#b45309', fontWeight: '750', marginTop: '4px', background: 'rgba(254, 243, 199, 0.9)', borderRadius: '4px', padding: '1px 5px', textAlign: 'center' }}>
-                                                            📢 Att. Req
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </>
-                                )}
-
-                                {/* 3. Upcoming and Today sessions */}
-                                {upcomingSessions.map((item, uIdx) => {
+                                {sessionsToDisplay.map((item, idx) => {
                                     const key = getItemKey(item);
                                     const isSelected = selectedKey === key;
                                     const isToday = (item.date_iso || '') === todayIsoStr;
-                                    const domId = `cubicCard_up_${uIdx}`;
+                                    const domId = `cubicCard_${idx}`;
                                     return (
                                         <div
-                                            key={`up_${uIdx}_${key}`}
+                                            key={`${idx}_${key}`}
                                             className={`schedule-cubic-card${isSelected ? ' active' : ''}${isToday ? ' today' : ''}`}
                                             id={domId}
                                             onClick={() => selectScheduleItem(item, domId)}
                                             title={`Click to view details for ${item.card_day || ''}, ${item.card_date || ''}`}
                                         >
-                                            <span className="cubic-page-badge">{isToday ? 'TODAY' : `#${uIdx + 1}`}</span>
-                                            <div className="cubic-date">{item.card_date || ''}</div>
-                                            <div className="cubic-day">{item.card_day || ''}</div>
-                                            <div className="cubic-time">{item.card_time || ''}</div>
+                                            <div className="cubic-date">
+                                                <span>{item.card_date || ''}</span>
+                                                {isToday && <span className="today-pulse-dot" title="Today's Session">●</span>}
+                                            </div>
+                                            <div className="cubic-day">
+                                                {isToday ? `${item.card_day || 'TODAY'} • TODAY` : (item.card_day || '')}
+                                            </div>
+                                            <div className="cubic-time">{item.card_time || item.time_slot || ''}</div>
                                             {item.attendance_requested && (
-                                                <div style={{ fontSize: '0.66rem', color: '#b45309', fontWeight: '750', marginTop: '4px', background: 'rgba(254, 243, 199, 0.9)', borderRadius: '4px', padding: '1px 5px', textAlign: 'center' }}>
+                                                <div className="cubic-attendance-pill">
                                                     📢 Att. Req
                                                 </div>
                                             )}
@@ -405,12 +343,7 @@ export function ScheduleApp() {
                         </button>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#64748b', fontWeight: '650' }}>
-                        {pastSessions.length > 0 && (
-                            <span style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px' }}>
-                                {showPastSessions ? `Showing ${pastSessions.length} past session${pastSessions.length > 1 ? 's' : ''}` : `${pastSessions.length} past session${pastSessions.length > 1 ? 's' : ''} hidden`}
-                            </span>
-                        )}
-                        <span>{displayed.length} Total Sessions</span>
+                        <span>{sessionsToDisplay.length} Scheduled Sessions</span>
                     </div>
                 </div>
 
