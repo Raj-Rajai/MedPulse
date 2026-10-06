@@ -64,7 +64,8 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     const [items, setItems] = useState<AdminScheduleItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [selectedIdx, setSelectedIdx] = useState(0);
+    const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+    const [timelineFilter, setTimelineFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming');
 
     // Modal state for Add / Edit
     const [modalOpen, setModalOpen] = useState(false);
@@ -86,11 +87,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             const list: AdminScheduleItem[] = data.schedules || [];
             itemsRef.current = list;
             setItems(list);
-            if (list.length > 0) {
-                setSelectedIdx((prev) => (prev >= list.length ? 0 : prev));
-            } else {
-                setSelectedIdx(0);
-            }
+            setSelectedIdx((prev) => (prev !== null && prev < list.length ? prev : null));
         } catch (err) {
             console.error('Failed to load admin schedule:', err);
             setError(errMessage(err));
@@ -107,19 +104,34 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
 
     const filterDepartment = (dept: string) => {
         setActivePill(dept);
-        setSelectedIdx(0);
+        setSelectedIdx(null);
         loadSchedule(dept);
     };
 
     const selectSchedule = (index: number, scrollIntoView = true) => {
-        const list = items;
-        if (index < 0 || index >= list.length) return;
+        if (selectedIdx === index) {
+            setSelectedIdx(null);
+            return;
+        }
+        if (index < 0 || index >= items.length) return;
         if (!scrollIntoView) {
             setSelectedIdx(index);
             return;
         }
         flushSync(() => setSelectedIdx(index));
         document.getElementById(`adminCubicCard_${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    };
+
+    const scrollToToday = () => {
+        const stripEl = stripRef.current;
+        if (!stripEl) return;
+        const todayCard = stripEl.querySelector('.schedule-cubic-card.today') as HTMLElement | null;
+        if (todayCard) {
+            const left = todayCard.offsetLeft - stripEl.offsetLeft - (stripEl.clientWidth - todayCard.offsetWidth) / 2;
+            stripEl.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+        } else {
+            stripEl.scrollTo({ left: 0, behavior: 'smooth' });
+        }
     };
 
     const scrollSchedule = (direction: number) => {
@@ -247,7 +259,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     const [attendanceLecture, setAttendanceLecture] = useState<AdminScheduleItem | null>(null);
     const handleRequestAttendance = (item: AdminScheduleItem) => setAttendanceLecture(item);
 
-    const d = items[selectedIdx] || null;
+    const d = selectedIdx !== null ? (items[selectedIdx] || null) : null;
 
     return (
         <div id="viewSchedule" className={`admin-view-pane${active ? ' active' : ''}`}>
@@ -361,38 +373,204 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             {/* VIEW MODE 1: Horizontal Cubic Strip & Interactive Detail Panel */}
             {viewMode === 'strip' && (
                 <>
-                    <div className="schedule-scroll-wrapper anim-fade-up">
-                        <button type="button" className="schedule-scroll-nav-btn prev" onClick={() => scrollSchedule(-1)} title="Scroll left">◀</button>
-                        <div className="schedule-horizontal-strip" id="scheduleHorizontalStrip" ref={stripRef}>
-                            {loading ? (
-                                <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '0.88rem' }}>Loading academic schedule cards...</div>
-                            ) : items.length === 0 ? (
-                                <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                                    No teaching sessions found for this department. Click <strong>&quot;Schedule Teaching Session&quot;</strong> to create one.
-                                </div>
-                            ) : (
-                                items.map((item, idx) => (
-                                    <div
-                                        key={item.id || idx}
-                                        className={`schedule-cubic-card${idx === selectedIdx ? ' active' : ''}`}
-                                        id={`adminCubicCard_${idx}`}
-                                        onClick={() => selectSchedule(idx)}
-                                        title={`Click to view & edit details for ${item.card_day || ''}, ${item.card_date || ''}`}
-                                    >
-                                        <div className="cubic-date">{item.card_date || item.date_iso}</div>
-                                        <div className="cubic-day">{item.card_day || ''}</div>
-                                        <div className="cubic-time">{item.card_time || item.time_slot || ''}</div>
-                                        {item.attendance_requested && (
-                                            <div style={{ fontSize: '0.64rem', color: '#047857', fontWeight: '750', marginTop: '4px', background: '#d1fae5', borderRadius: '4px', padding: '1px 4px', textAlign: 'center' }}>
-                                                ✅ Att. Requested
+                    {(() => {
+                        const todayIsoStr = todayIso();
+                        const pastItems = items.filter((it) => (it.date_iso || '') < todayIsoStr);
+                        const upcomingItems = items.filter((it) => (it.date_iso || '') >= todayIsoStr);
+                        const displayedItems =
+                            timelineFilter === 'past'
+                                ? pastItems.slice().reverse()
+                                : timelineFilter === 'all'
+                                ? items
+                                : upcomingItems.length > 0
+                                ? upcomingItems
+                                : items;
+                        return (
+                            <>
+                                <div className="schedule-scroll-wrapper anim-fade-up">
+                                    <button type="button" className="schedule-scroll-nav-btn prev" onClick={() => scrollSchedule(-1)} title="Scroll left">◀</button>
+                                    <div className="schedule-horizontal-strip" id="scheduleHorizontalStrip" ref={stripRef}>
+                                        {loading ? (
+                                            <div style={{ padding: '24px', color: 'var(--text-muted)', fontSize: '0.88rem' }}>Loading academic schedule cards...</div>
+                                        ) : displayedItems.length === 0 ? (
+                                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                                No teaching sessions found for this department. Click <strong>&quot;Schedule Teaching Session&quot;</strong> to create one.
                                             </div>
+                                        ) : (
+                                            <>
+                                                {/* Action Toggle Card: Switch between Previous Sessions and Today & Upcoming */}
+                                                {timelineFilter === 'upcoming' && pastItems.length > 0 && (
+                                                    <div
+                                                        className="schedule-cubic-card prev-sessions-toggle-card"
+                                                        id="btnAdminShowPastSessionsCard"
+                                                        onClick={() => {
+                                                            setTimelineFilter('past');
+                                                            setSelectedIdx(null);
+                                                            setTimeout(() => stripRef.current?.scrollTo({ left: 0, behavior: 'smooth' }), 50);
+                                                        }}
+                                                        title={`Click to view ${pastItems.length} previous sessions (yesterday 05 Oct & earlier)`}
+                                                    >
+                                                        <div className="cubic-date">⏮</div>
+                                                        <div className="cubic-day">PREVIOUS</div>
+                                                        <div className="cubic-time">Sessions</div>
+                                                    </div>
+                                                )}
+                                                {timelineFilter === 'past' && (
+                                                    <div
+                                                        className="schedule-cubic-card return-today-toggle-card"
+                                                        id="btnAdminReturnTodayCard"
+                                                        onClick={() => {
+                                                            setTimelineFilter('upcoming');
+                                                            setSelectedIdx(null);
+                                                            setTimeout(scrollToToday, 50);
+                                                        }}
+                                                        title="Return to Today & Upcoming teaching sessions"
+                                                    >
+                                                        <div className="cubic-date">📅</div>
+                                                        <div className="cubic-day">TODAY</div>
+                                                        <div className="cubic-time">&amp; Upcoming ▶</div>
+                                                    </div>
+                                                )}
+                                                {displayedItems.map((item, idx) => {
+                                                    const isSelected = d !== null && d.id === item.id;
+                                                    const isToday = (item.date_iso || '') === todayIsoStr;
+                                                    const realIdx = items.indexOf(item);
+                                                    return (
+                                                        <div
+                                                            key={item.id || idx}
+                                                            className={`schedule-cubic-card${isSelected ? ' active' : ''}${isToday ? ' today' : ''}`}
+                                                            id={`adminCubicCard_${idx}`}
+                                                            onClick={() => selectSchedule(realIdx >= 0 ? realIdx : idx)}
+                                                            title={`Click to view & edit details for ${item.card_day || ''}, ${item.card_date || ''}`}
+                                                        >
+                                                            <div className="cubic-date">
+                                                                <span>{item.card_date || item.date_iso}</span>
+                                                                {isToday && <span className="today-pulse-dot" title="Today's Session">●</span>}
+                                                            </div>
+                                                            <div className="cubic-day">
+                                                                {isToday ? `${item.card_day || 'TODAY'} • TODAY` : (item.card_day || '')}
+                                                            </div>
+                                                            <div className="cubic-time">{item.card_time || item.time_slot || ''}</div>
+                                                            {item.attendance_requested && (
+                                                                <div className="cubic-attendance-pill">
+                                                                    ✅ Att. Req
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </>
                                         )}
                                     </div>
-                                ))
-                            )}
-                        </div>
-                        <button type="button" className="schedule-scroll-nav-btn next" onClick={() => scrollSchedule(1)} title="Scroll right">▶</button>
-                    </div>
+                                    <button type="button" className="schedule-scroll-nav-btn next" onClick={() => scrollSchedule(1)} title="Scroll right">▶</button>
+                                </div>
+
+                                {/* Pagination Controls Toolbar */}
+                                <div className="schedule-pagination-bar anim-fade-up">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                        {/* Timeline Switcher: Upcoming vs. Previous vs. All */}
+                                        <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', gap: '3px' }}>
+                                            <button
+                                                type="button"
+                                                className={`schedule-pagi-btn${timelineFilter === 'upcoming' ? ' active' : ''}`}
+                                                style={{
+                                                    background: timelineFilter === 'upcoming' ? '#ffffff' : 'transparent',
+                                                    color: timelineFilter === 'upcoming' ? '#4f46e5' : '#64748b',
+                                                    borderColor: timelineFilter === 'upcoming' ? '#cbd5e1' : 'transparent',
+                                                    boxShadow: timelineFilter === 'upcoming' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                                                    fontWeight: timelineFilter === 'upcoming' ? 750 : 600,
+                                                    padding: '5px 11px',
+                                                    fontSize: '0.76rem',
+                                                }}
+                                                onClick={() => {
+                                                    setTimelineFilter('upcoming');
+                                                    setSelectedIdx(null);
+                                                    setTimeout(scrollToToday, 50);
+                                                }}
+                                                title="View today and upcoming sessions"
+                                            >
+                                                📅 Today &amp; Upcoming ({upcomingItems.length})
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={`schedule-pagi-btn${timelineFilter === 'past' ? ' active' : ''}`}
+                                                style={{
+                                                    background: timelineFilter === 'past' ? '#ffffff' : 'transparent',
+                                                    color: timelineFilter === 'past' ? '#7e22ce' : '#64748b',
+                                                    borderColor: timelineFilter === 'past' ? '#cbd5e1' : 'transparent',
+                                                    boxShadow: timelineFilter === 'past' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                                                    fontWeight: timelineFilter === 'past' ? 750 : 600,
+                                                    padding: '5px 11px',
+                                                    fontSize: '0.76rem',
+                                                }}
+                                                onClick={() => {
+                                                    setTimelineFilter('past');
+                                                    setSelectedIdx(null);
+                                                    setTimeout(() => stripRef.current?.scrollTo({ left: 0, behavior: 'smooth' }), 50);
+                                                }}
+                                                title="View previous teaching sessions (05 Oct and earlier)"
+                                            >
+                                                ⏮ Previous Sessions ({pastItems.length})
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className={`schedule-pagi-btn${timelineFilter === 'all' ? ' active' : ''}`}
+                                                style={{
+                                                    background: timelineFilter === 'all' ? '#ffffff' : 'transparent',
+                                                    color: timelineFilter === 'all' ? '#0f172a' : '#64748b',
+                                                    borderColor: timelineFilter === 'all' ? '#cbd5e1' : 'transparent',
+                                                    boxShadow: timelineFilter === 'all' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                                                    fontWeight: timelineFilter === 'all' ? 750 : 600,
+                                                    padding: '5px 11px',
+                                                    fontSize: '0.76rem',
+                                                }}
+                                                onClick={() => {
+                                                    setTimelineFilter('all');
+                                                    setSelectedIdx(null);
+                                                    setTimeout(scrollToToday, 50);
+                                                }}
+                                                title="View all teaching sessions"
+                                            >
+                                                All ({items.length})
+                                            </button>
+                                        </div>
+
+                                        {/* Navigation Scroll Buttons */}
+                                        <button
+                                            type="button"
+                                            className="schedule-pagi-btn"
+                                            onClick={() => scrollSchedule(-1)}
+                                            title="Scroll cards left"
+                                        >
+                                            <span>◀</span>
+                                            <span>Previous Cards</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="schedule-pagi-btn"
+                                            onClick={() => scrollSchedule(1)}
+                                            title="Scroll cards right"
+                                        >
+                                            <span>Next Cards</span>
+                                            <span>▶</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="schedule-today-jump-btn"
+                                            onClick={scrollToToday}
+                                            title="Jump to Today's session card"
+                                        >
+                                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.3)' }} />
+                                            <span>Today</span>
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#64748b', fontWeight: '650' }}>
+                                        <span>{displayedItems.length} Scheduled Sessions</span>
+                                    </div>
+                                </div>
+                            </>
+                        );
+                    })()}
 
                     {/* Schedule Detail Panel with Editor Actions */}
                     {d ? (
@@ -431,6 +609,14 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                         title="Download .ics calendar event"
                                     >
                                         📅 .ics
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="schedule-top-close-btn"
+                                        onClick={() => setSelectedIdx(null)}
+                                        title="Close session details"
+                                    >
+                                        ✕ Close
                                     </button>
                                 </div>
                             </div>
@@ -548,8 +734,16 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                             </div>
                         </div>
                     ) : (
-                        <div className="card-box anim-fade-up" style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            No teaching session selected. Click <strong>&quot;Schedule Teaching Session&quot;</strong> to create a new session.
+                        <div className="schedule-detail-placeholder anim-fade-up">
+                            <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(79, 70, 229, 0.1)', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>
+                                📅
+                            </div>
+                            <div style={{ fontSize: '1.12rem', fontWeight: '800', color: '#1e293b' }}>
+                                Select a Teaching Session
+                            </div>
+                            <div style={{ fontSize: '0.86rem', color: '#64748b', maxWidth: '440px', lineHeight: '1.5' }}>
+                                Click on any date card above to view curriculum topic, competencies, faculty in-charge, and manage session attendance or settings.
+                            </div>
                         </div>
                     )}
                 </>

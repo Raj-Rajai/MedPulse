@@ -13,7 +13,7 @@
         });
       });
       const savedCollapsed = localStorage.getItem('medpulse_sidebar_collapsed');
-      if (savedCollapsed === '1') {
+      if (savedCollapsed === '1' && window.innerWidth > 860) {
         document.documentElement.classList.add('sidebar-collapsed');
       }
     })();

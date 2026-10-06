@@ -123,9 +123,42 @@ export function PatientApp() {
 
     /* ---------- sidebar ---------- */
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const handleScreenSize = () => {
+            if (window.innerWidth <= 860) {
+                document.documentElement.classList.remove('sidebar-collapsed');
+                document.body.classList.remove('sidebar-collapsed');
+            } else {
+                setSidebarOpen(false);
+                try {
+                    const c = localStorage.getItem('sidebar_collapsed');
+                    if (c === '1' || c === 'true') {
+                        document.documentElement.classList.add('sidebar-collapsed');
+                        document.body.classList.add('sidebar-collapsed');
+                    }
+                } catch { /* ignore */ }
+            }
+        };
+
+        handleScreenSize();
+        window.addEventListener('resize', handleScreenSize);
+        return () => window.removeEventListener('resize', handleScreenSize);
+    }, []);
+
+    useEffect(() => {
+        document.body.classList.toggle('sidebar-open', sidebarOpen);
+        document.body.classList.toggle('sidebar-mobile-open', sidebarOpen);
+        return () => {
+            document.body.classList.remove('sidebar-open');
+            document.body.classList.remove('sidebar-mobile-open');
+        };
+    }, [sidebarOpen]);
+
     const toggleSidebar = () => {
-        if (window.innerWidth <= 860) setSidebarOpen((o) => !o);
-        else {
+        if (window.innerWidth <= 860) {
+            setSidebarOpen((o) => !o);
+        } else {
             const c = document.documentElement.classList.toggle('sidebar-collapsed');
             document.body.classList.toggle('sidebar-collapsed', c);
             try { localStorage.setItem('sidebar_collapsed', c ? '1' : '0'); } catch { /* ignore */ }

@@ -347,9 +347,9 @@ export function ProfileApp() {
                                 </div>
                             </div>
                         </div>
-                        <div className="profile-hero-actions">
-                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>✏ Edit Profile</button>
-                            <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>🔒 Change PIN</button>
+                        <div className="profile-hero-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%', maxWidth: '440px' }}>
+                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650', width: '100%', justifyContent: 'center' }}>✏ Edit Profile</button>
+                            <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650', width: '100%', justifyContent: 'center' }}>🔒 Change PIN</button>
                         </div>
                     </div>
                 </div>
