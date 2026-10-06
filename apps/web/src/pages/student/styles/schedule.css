@@ -167,6 +167,67 @@
       text-align: center;
       white-space: nowrap;
     }
+
+    /* Action Toggle Cards: Previous Sessions & Return to Today */
+    .schedule-cubic-card.prev-sessions-toggle-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1.5px dashed #a5b4fc;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .schedule-cubic-card.prev-sessions-toggle-card:hover {
+      background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
+      border-color: #6366f1;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.16);
+      transform: translateY(-2px);
+    }
+    .schedule-cubic-card.prev-sessions-toggle-card .cubic-date {
+      color: #4f46e5;
+      font-size: 1.25rem;
+      font-weight: 800;
+      justify-content: center;
+    }
+    .schedule-cubic-card.prev-sessions-toggle-card .cubic-day {
+      color: #4338ca;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .schedule-cubic-card.prev-sessions-toggle-card .cubic-time {
+      background: rgba(99, 102, 241, 0.1);
+      color: #4338ca;
+      font-weight: 700;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .schedule-cubic-card.return-today-toggle-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+      border: 1.5px dashed #86efac;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .schedule-cubic-card.return-today-toggle-card:hover {
+      background: linear-gradient(180deg, #ffffff 0%, #dcfce7 100%);
+      border-color: #10b981;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.16);
+      transform: translateY(-2px);
+    }
+    .schedule-cubic-card.return-today-toggle-card .cubic-date {
+      color: #059669;
+      font-size: 1.25rem;
+      font-weight: 800;
+      justify-content: center;
+    }
+    .schedule-cubic-card.return-today-toggle-card .cubic-day {
+      color: #047857;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .schedule-cubic-card.return-today-toggle-card .cubic-time {
+      background: rgba(16, 185, 129, 0.1);
+      color: #047857;
+      font-weight: 700;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
     .schedule-detail-sep { color: #cbd5e1; }
     .schedule-detail-panel .datewise-top-bar h2 { margin: 0; }
     .schedule-detail-panel .datewise-top-bar { gap: 12px; flex-wrap: wrap; }

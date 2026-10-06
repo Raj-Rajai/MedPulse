@@ -75,6 +75,7 @@ export function ScheduleApp() {
     const [allItems, setAllItems] = useState<ScheduleItem[]>([]);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [detail, setDetail] = useState<ScheduleItem | null>(null);
+    const [timelineFilter, setTimelineFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming');
     const [fillModalOpen, setFillModalOpen] = useState(false);
     const [fillSession, setFillSession] = useState<FillableLecture | null>(null);
     const [emptyTopic, setEmptyTopic] = useState(false);
@@ -207,9 +208,18 @@ export function ScheduleApp() {
     const today = new Date();
     const todayIsoStr = localIso(today);
 
-    // Filter to sessions from today onwards (clean, no past session clutter)
+    // Split displayed into past (< today) and upcoming (>= today) sessions
+    const pastSessions = displayed.filter((i) => (i.date_iso || '') < todayIsoStr);
     const upcomingSessions = displayed.filter((i) => (i.date_iso || '') >= todayIsoStr);
-    const sessionsToDisplay = upcomingSessions.length > 0 ? upcomingSessions : displayed;
+
+    const sessionsToDisplay =
+        timelineFilter === 'past'
+            ? pastSessions.slice().reverse()
+            : timelineFilter === 'all'
+            ? displayed
+            : upcomingSessions.length > 0
+            ? upcomingSessions
+            : displayed;
 
     const d = detail;
     const roll = user ? String(user.roll_number || '235') : null;
@@ -276,6 +286,41 @@ export function ScheduleApp() {
                             <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{activePill === 'all' ? 'No teaching sessions have been scheduled for you yet.' : 'No teaching sessions found for this department.'}</div>
                         ) : (
                             <>
+                                {/* Action Toggle Card: Switch between Previous Sessions and Today & Upcoming */}
+                                {timelineFilter === 'upcoming' && pastSessions.length > 0 && (
+                                    <div
+                                        className="schedule-cubic-card prev-sessions-toggle-card"
+                                        id="btnStudentShowPastSessionsCard"
+                                        onClick={() => {
+                                            setTimelineFilter('past');
+                                            setSelectedKey(null);
+                                            setDetail(null);
+                                            setTimeout(() => stripRef.current?.scrollTo({ left: 0, behavior: 'smooth' }), 50);
+                                        }}
+                                        title={`Click to view ${pastSessions.length} previous teaching sessions (yesterday 05 Oct & earlier)`}
+                                    >
+                                        <div className="cubic-date">⏮</div>
+                                        <div className="cubic-day">PREVIOUS</div>
+                                        <div className="cubic-time">Sessions</div>
+                                    </div>
+                                )}
+                                {timelineFilter === 'past' && (
+                                    <div
+                                        className="schedule-cubic-card return-today-toggle-card"
+                                        id="btnStudentReturnTodayCard"
+                                        onClick={() => {
+                                            setTimelineFilter('upcoming');
+                                            setSelectedKey(null);
+                                            setDetail(null);
+                                            setTimeout(scrollToToday, 50);
+                                        }}
+                                        title="Return to Today & Upcoming teaching sessions"
+                                    >
+                                        <div className="cubic-date">📅</div>
+                                        <div className="cubic-day">TODAY</div>
+                                        <div className="cubic-time">&amp; Upcoming ▶</div>
+                                    </div>
+                                )}
                                 {sessionsToDisplay.map((item, idx) => {
                                     const key = getItemKey(item);
                                     const isSelected = selectedKey === key;
@@ -314,6 +359,77 @@ export function ScheduleApp() {
                 {/* Pagination Controls Toolbar */}
                 <div className="schedule-pagination-bar anim-fade-up">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        {/* Timeline Switcher: Upcoming vs. Previous vs. All */}
+                        <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', gap: '3px' }}>
+                            <button
+                                type="button"
+                                className={`schedule-pagi-btn${timelineFilter === 'upcoming' ? ' active' : ''}`}
+                                style={{
+                                    background: timelineFilter === 'upcoming' ? '#ffffff' : 'transparent',
+                                    color: timelineFilter === 'upcoming' ? '#4f46e5' : '#64748b',
+                                    borderColor: timelineFilter === 'upcoming' ? '#cbd5e1' : 'transparent',
+                                    boxShadow: timelineFilter === 'upcoming' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                                    fontWeight: timelineFilter === 'upcoming' ? 750 : 600,
+                                    padding: '5px 11px',
+                                    fontSize: '0.76rem',
+                                }}
+                                onClick={() => {
+                                    setTimelineFilter('upcoming');
+                                    setSelectedKey(null);
+                                    setDetail(null);
+                                    setTimeout(scrollToToday, 50);
+                                }}
+                                title="View today and upcoming sessions"
+                            >
+                                📅 Today &amp; Upcoming ({upcomingSessions.length})
+                            </button>
+                            <button
+                                type="button"
+                                className={`schedule-pagi-btn${timelineFilter === 'past' ? ' active' : ''}`}
+                                style={{
+                                    background: timelineFilter === 'past' ? '#ffffff' : 'transparent',
+                                    color: timelineFilter === 'past' ? '#7e22ce' : '#64748b',
+                                    borderColor: timelineFilter === 'past' ? '#cbd5e1' : 'transparent',
+                                    boxShadow: timelineFilter === 'past' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                                    fontWeight: timelineFilter === 'past' ? 750 : 600,
+                                    padding: '5px 11px',
+                                    fontSize: '0.76rem',
+                                }}
+                                onClick={() => {
+                                    setTimelineFilter('past');
+                                    setSelectedKey(null);
+                                    setDetail(null);
+                                    setTimeout(() => stripRef.current?.scrollTo({ left: 0, behavior: 'smooth' }), 50);
+                                }}
+                                title="View previous teaching sessions (05 Oct and earlier)"
+                            >
+                                ⏮ Previous Sessions ({pastSessions.length})
+                            </button>
+                            <button
+                                type="button"
+                                className={`schedule-pagi-btn${timelineFilter === 'all' ? ' active' : ''}`}
+                                style={{
+                                    background: timelineFilter === 'all' ? '#ffffff' : 'transparent',
+                                    color: timelineFilter === 'all' ? '#0f172a' : '#64748b',
+                                    borderColor: timelineFilter === 'all' ? '#cbd5e1' : 'transparent',
+                                    boxShadow: timelineFilter === 'all' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                                    fontWeight: timelineFilter === 'all' ? 750 : 600,
+                                    padding: '5px 11px',
+                                    fontSize: '0.76rem',
+                                }}
+                                onClick={() => {
+                                    setTimelineFilter('all');
+                                    setSelectedKey(null);
+                                    setDetail(null);
+                                    setTimeout(scrollToToday, 50);
+                                }}
+                                title="View all teaching sessions"
+                            >
+                                All ({displayed.length})
+                            </button>
+                        </div>
+
+                        {/* Navigation Scroll Buttons */}
                         <button
                             type="button"
                             className="schedule-pagi-btn"
@@ -332,18 +448,20 @@ export function ScheduleApp() {
                             <span>Next Cards</span>
                             <span>▶</span>
                         </button>
-                        <button
-                            type="button"
-                            className="schedule-today-jump-btn"
-                            onClick={scrollToToday}
-                            title="Jump to Today's session card"
-                        >
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.3)' }} />
-                            <span>Today ({today.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })})</span>
-                        </button>
+                        {timelineFilter !== 'past' && (
+                            <button
+                                type="button"
+                                className="schedule-today-jump-btn"
+                                onClick={scrollToToday}
+                                title="Jump to Today's session card"
+                            >
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.3)' }} />
+                                <span>Today ({today.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })})</span>
+                            </button>
+                        )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#64748b', fontWeight: '650' }}>
-                        <span>{sessionsToDisplay.length} Scheduled Sessions</span>
+                        <span>{sessionsToDisplay.length} Sessions ({timelineFilter === 'past' ? 'Previous' : timelineFilter === 'upcoming' ? 'Upcoming' : 'Total'})</span>
                     </div>
                 </div>
 
