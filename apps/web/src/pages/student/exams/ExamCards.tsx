@@ -127,8 +127,8 @@ export function ExamCards({ exams, info, typeFilter }: { exams: Exam[]; info: Pa
         return (
             <div className="exam-record-card" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--text-muted)' }}>
                 <div className="mp-empty-icon" style={{ marginBottom: '10px' }}>📭</div>
-                <strong>No examination records found matching selected filter.</strong>
-                <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>Try selecting another assessment type, clearing the search, or choosing another academic year.</div>
+                <strong>{typeFilter === 'all' ? 'No results yet' : 'No results for this filter'}</strong>
+                <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>{typeFilter === 'all' ? 'Marks appear here once your faculty enters them.' : 'Try another exam type, year or search.'}</div>
             </div>
         );
     }
