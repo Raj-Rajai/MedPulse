@@ -1711,17 +1711,42 @@ body.sidebar-collapsed .sidebar-login-link .login-label {
 }
 
 
-/* ── 10. Badges ──────────────────────────────────────────── */
+/* ── 10. Badges & Capsule Shapes ──────────────────────────── */
 .badge {
-  display: inline-flex; align-items: center;
-  padding: 4px 11px;
-  font-size: 0.72rem; font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  padding: 4px 12px;
+  font-size: 0.74rem;
+  font-weight: 650;
   border-radius: var(--radius-full);
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-  margin: 3px 4px;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  margin: 2px 4px;
   position: relative;
   overflow: visible !important;
+}
+
+/* Universal capsule/pill text centering and overflow prevention across all pages */
+.badge,
+.pill,
+.tag,
+.referral-pill,
+.profile-roll-tag,
+.cubic-attendance-pill,
+.schedule-dept-pill,
+.summary-badge-group,
+.badge-status,
+[class*="-badge"],
+[class*="-pill"],
+[class*="-tag"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .badge-info    { background: var(--accent-subtle); color: var(--accent); border: 1px solid rgba(109, 40, 217, 0.2); }

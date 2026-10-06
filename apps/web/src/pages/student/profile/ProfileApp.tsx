@@ -358,7 +358,7 @@ export function ProfileApp() {
                             <div>
                                 <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-primary)', margin: '0', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                                     <span>Attendance</span>
-                                    <span className="badge" style={{ background: 'rgba(109, 40, 217, 0.08)', color: '#6d28d9', border: '1px solid rgba(109, 40, 217, 0.2)', fontSize: '0.74rem', padding: '3px 9px', borderRadius: '6px' }}>3rd Year MBBS (2026)</span>
+                                    <span className="badge" style={{ background: 'rgba(109, 40, 217, 0.08)', color: '#6d28d9', border: '1px solid rgba(109, 40, 217, 0.2)', fontSize: '0.74rem', padding: '4px 12px', borderRadius: '999px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>3rd Year MBBS (2026)</span>
                                 </h2>
                             </div>
                         </div>

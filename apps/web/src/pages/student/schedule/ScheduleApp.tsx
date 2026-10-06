@@ -70,7 +70,7 @@ export function ScheduleApp() {
     useStudentChrome(scheduleSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PLAIN);
     const [user] = useState(readAuthUser);
-    const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
+    const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');
     const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -156,30 +156,36 @@ export function ScheduleApp() {
         return departments.filter((d) => d.toLowerCase().includes(q));
     }, [departments, filterSearch]);
 
-    const applyDepartmentFilter = (newSelected: string[], sourceItems = allItems) => {
+    const applyDepartmentFilter = (newSelected: string[] | null, sourceItems = allItems) => {
         setSelectedDepts(newSelected);
         if (strip.kind === 'error') return;
-        const filtered = newSelected.length === 0
+        const allDepts = departmentsOf(sourceItems);
+        const isAll = newSelected === null || newSelected.length === allDepts.length;
+        const filtered = isAll
             ? sourceItems
+            : newSelected.length === 0
+            ? []
             : sourceItems.filter((i) => newSelected.includes(i.department || i.subject || ''));
         showItems(filtered);
     };
 
     const toggleDept = (dept: string) => {
+        const currentList = selectedDepts === null ? [...departments] : [...selectedDepts];
         let updated: string[];
-        if (selectedDepts.includes(dept)) {
-            updated = selectedDepts.filter((d) => d !== dept);
+        if (currentList.includes(dept)) {
+            updated = currentList.filter((d) => d !== dept);
         } else {
-            updated = [...selectedDepts, dept];
+            updated = [...currentList, dept];
         }
         if (updated.length === departments.length) {
-            updated = [];
+            applyDepartmentFilter(null);
+        } else {
+            applyDepartmentFilter(updated);
         }
-        applyDepartmentFilter(updated);
     };
 
     const selectAllDepts = () => {
-        applyDepartmentFilter([]);
+        applyDepartmentFilter(null);
     };
 
     const clearDepts = () => {
@@ -195,8 +201,12 @@ export function ScheduleApp() {
             const items: ScheduleItem[] = [...(data.schedules || [])];
             setAllItems(items);
             setTotal(items.length);
-            const filtered = selectedDepts.length === 0
+            const allDepts = departmentsOf(items);
+            const isAll = selectedDepts === null || selectedDepts.length === allDepts.length;
+            const filtered = isAll
                 ? items
+                : selectedDepts.length === 0
+                ? []
                 : items.filter((i) => selectedDepts.includes(i.department || i.subject || ''));
             showItems(filtered);
         } catch (err) {
@@ -212,14 +222,20 @@ export function ScheduleApp() {
     }, []);
 
     useEffect(() => {
-        const handleOutsideClick = (e: MouseEvent) => {
+        const handleOutside = (e: MouseEvent | TouchEvent) => {
             if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+                const btn = document.getElementById('btnDeptFilterToggle');
+                if (btn && btn.contains(e.target as Node)) return;
                 setIsFilterOpen(false);
             }
         };
         if (isFilterOpen) {
-            document.addEventListener('mousedown', handleOutsideClick);
-            return () => document.removeEventListener('mousedown', handleOutsideClick);
+            document.addEventListener('mousedown', handleOutside);
+            document.addEventListener('touchstart', handleOutside, { passive: true });
+            return () => {
+                document.removeEventListener('mousedown', handleOutside);
+                document.removeEventListener('touchstart', handleOutside);
+            };
         }
     }, [isFilterOpen]);
 
@@ -328,125 +344,144 @@ export function ScheduleApp() {
                 <div className="schedule-filter-bar anim-fade-up" style={{ position: 'relative', zIndex: 40, marginBottom: '18px' }} ref={filterDropdownRef}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                         {/* Primary Multi-Select Dropdown Button */}
-                        <button
-                            type="button"
-                            id="btnDeptMultiFilter"
-                            className={`schedule-multiselect-btn${isFilterOpen ? ' open' : ''}${selectedDepts.length > 0 ? ' filtered' : ''}`}
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '7px 14px',
-                                background: selectedDepts.length > 0 ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : '#ffffff',
-                                color: selectedDepts.length > 0 ? '#ffffff' : '#334155',
-                                border: selectedDepts.length > 0 ? '1px solid #4f46e5' : '1px solid #cbd5e1',
-                                borderRadius: '20px',
-                                fontSize: '0.82rem',
-                                fontWeight: 650,
-                                cursor: 'pointer',
-                                boxShadow: selectedDepts.length > 0 ? '0 2px 8px rgba(99, 102, 241, 0.25)' : '0 1px 3px rgba(0,0,0,0.06)',
-                                transition: 'all 0.2s ease',
-                            }}
-                        >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                            </svg>
-                            <span>
-                                {selectedDepts.length === 0
-                                    ? 'Filter Departments'
-                                    : `${selectedDepts.length} Department${selectedDepts.length > 1 ? 's' : ''} Selected`}
-                            </span>
-                            <span
-                                style={{
-                                    background: selectedDepts.length > 0 ? 'rgba(255,255,255,0.25)' : '#f1f5f9',
-                                    color: selectedDepts.length > 0 ? '#ffffff' : '#64748b',
-                                    padding: '1px 6px',
-                                    borderRadius: '10px',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                }}
-                            >
-                                {selectedDepts.length === 0 ? departments.length : selectedDepts.length}
-                            </span>
-                            <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                style={{
-                                    transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                    transition: 'transform 0.2s ease',
-                                }}
-                            >
-                                <polyline points="6 9 12 15 18 9" />
-                            </svg>
-                        </button>
-
-                        {/* Quick "All" Button if filtered */}
-                        {selectedDepts.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={selectAllDepts}
-                                style={{
-                                    background: '#f1f5f9',
-                                    border: '1px solid #e2e8f0',
-                                    color: '#475569',
-                                    borderRadius: '16px',
-                                    padding: '6px 12px',
-                                    fontSize: '0.78rem',
-                                    fontWeight: 600,
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                }}
-                            >
-                                Reset to All
-                            </button>
-                        )}
-
-                        {/* Selected Chips */}
-                        {selectedDepts.length > 0 && selectedDepts.length <= 3 && (
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                {selectedDepts.map((d) => (
-                                    <span
-                                        key={d}
+                        {(() => {
+                            const isAll = selectedDepts === null || selectedDepts.length === departments.length;
+                            const hasActiveFilter = !isAll;
+                            return (
+                                <>
+                                    <button
+                                        type="button"
+                                        id="btnDeptFilterToggle"
+                                        className={`schedule-multiselect-btn${isFilterOpen ? ' open' : ''}${hasActiveFilter ? ' filtered' : ''}`}
+                                        onClick={() => setIsFilterOpen((prev) => !prev)}
                                         style={{
                                             display: 'inline-flex',
                                             alignItems: 'center',
-                                            gap: '6px',
-                                            background: '#eef2ff',
-                                            color: '#4f46e5',
-                                            border: '1px solid #c7d2fe',
-                                            borderRadius: '14px',
-                                            padding: '3px 9px',
-                                            fontSize: '0.75rem',
+                                            gap: '8px',
+                                            padding: '7px 14px',
+                                            background: hasActiveFilter ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : '#ffffff',
+                                            color: hasActiveFilter ? '#ffffff' : '#334155',
+                                            border: hasActiveFilter ? '1px solid #4f46e5' : '1px solid #cbd5e1',
+                                            borderRadius: '20px',
+                                            fontSize: '0.82rem',
                                             fontWeight: 650,
+                                            cursor: 'pointer',
+                                            boxShadow: hasActiveFilter ? '0 2px 8px rgba(99, 102, 241, 0.25)' : '0 1px 3px rgba(0,0,0,0.06)',
+                                            transition: 'all 0.2s ease',
                                         }}
                                     >
-                                        <span>{d}</span>
-                                        <span
-                                            onClick={(e) => { e.stopPropagation(); toggleDept(d); }}
-                                            style={{ cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1, opacity: 0.7 }}
-                                            title={`Remove ${d}`}
-                                        >
-                                            ✕
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                                        </svg>
+                                        <span>
+                                            {isAll
+                                                ? 'Filter Departments'
+                                                : selectedDepts.length === 0
+                                                ? '0 Departments Selected'
+                                                : `${selectedDepts.length} Department${selectedDepts.length > 1 ? 's' : ''} Selected`}
                                         </span>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                                        <span
+                                            style={{
+                                                background: hasActiveFilter ? 'rgba(255,255,255,0.25)' : '#f1f5f9',
+                                                color: hasActiveFilter ? '#ffffff' : '#64748b',
+                                                padding: '1px 6px',
+                                                borderRadius: '10px',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 700,
+                                            }}
+                                        >
+                                            {isAll ? departments.length : selectedDepts.length}
+                                        </span>
+                                        <svg
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            style={{
+                                                transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                transition: 'transform 0.2s ease',
+                                            }}
+                                        >
+                                            <polyline points="6 9 12 15 18 9" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Quick "Reset to All" Button if filtered */}
+                                    {hasActiveFilter && (
+                                        <button
+                                            type="button"
+                                            onClick={selectAllDepts}
+                                            style={{
+                                                background: '#f1f5f9',
+                                                border: '1px solid #e2e8f0',
+                                                color: '#475569',
+                                                borderRadius: '16px',
+                                                padding: '6px 12px',
+                                                fontSize: '0.78rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                            }}
+                                        >
+                                            Reset to All
+                                        </button>
+                                    )}
+
+                                    {/* Selected Chips */}
+                                    {hasActiveFilter && selectedDepts.length > 0 && selectedDepts.length <= 3 && (
+                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                            {selectedDepts.map((d) => (
+                                                <span
+                                                    key={d}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        background: '#eef2ff',
+                                                        color: '#4f46e5',
+                                                        border: '1px solid #c7d2fe',
+                                                        borderRadius: '14px',
+                                                        padding: '3px 9px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 650,
+                                                    }}
+                                                >
+                                                    <span>{d}</span>
+                                                    <span
+                                                        onClick={(e) => { e.stopPropagation(); toggleDept(d); }}
+                                                        style={{ cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1, opacity: 0.7 }}
+                                                        title={`Remove ${d}`}
+                                                    >
+                                                        ✕
+                                                    </span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
 
                         {/* Summary count */}
                         <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
                             {`Showing ${displayed.length} of ${allItems.length} sessions`}
                         </span>
                     </div>
+
+                    {/* Backdrop for click-outside on mobile / desktop */}
+                    {isFilterOpen && (
+                        <div
+                            className="dept-filter-backdrop"
+                            onClick={() => setIsFilterOpen(false)}
+                            onTouchStart={() => setIsFilterOpen(false)}
+                        />
+                    )}
 
                     {/* Floating Multi-Select Dropdown Popover */}
                     {isFilterOpen && (
@@ -528,7 +563,7 @@ export function ScheduleApp() {
                             {/* Scrollable Checkbox List */}
                             <div style={{ overflowY: 'auto', padding: '6px', maxHeight: '220px', flex: 1 }}>
                                 {filteredDeptList.map((dep) => {
-                                    const isChecked = selectedDepts.length === 0 || selectedDepts.includes(dep);
+                                    const isChecked = selectedDepts === null ? true : selectedDepts.includes(dep);
                                     const count = deptCounts[dep] || 0;
                                     return (
                                         <div
@@ -541,14 +576,16 @@ export function ScheduleApp() {
                                                 padding: '7px 10px',
                                                 borderRadius: '8px',
                                                 cursor: 'pointer',
-                                                background: selectedDepts.includes(dep) ? '#f5f3ff' : 'transparent',
+                                                background: isChecked ? '#f5f3ff' : 'transparent',
                                                 transition: 'background 0.15s ease',
+                                                WebkitTapHighlightColor: 'transparent',
+                                                touchAction: 'manipulation',
                                             }}
                                             onMouseEnter={(e) => {
-                                                if (!selectedDepts.includes(dep)) e.currentTarget.style.background = '#f8fafc';
+                                                if (!isChecked) e.currentTarget.style.background = '#f8fafc';
                                             }}
                                             onMouseLeave={(e) => {
-                                                if (!selectedDepts.includes(dep)) e.currentTarget.style.background = 'transparent';
+                                                if (!isChecked) e.currentTarget.style.background = 'transparent';
                                             }}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
@@ -592,7 +629,9 @@ export function ScheduleApp() {
                             {/* Popover Footer */}
                             <div style={{ padding: '8px 12px', borderTop: '1px solid #f1f5f9', background: '#faf5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.72rem', color: '#6b21a8', fontWeight: 650 }}>
-                                    {selectedDepts.length === 0 ? 'All departments active' : `${selectedDepts.length} selected`}
+                                    {selectedDepts === null || selectedDepts.length === departments.length
+                                        ? 'All departments active'
+                                        : `${selectedDepts.length} selected`}
                                 </span>
                                 <button
                                     type="button"
@@ -622,7 +661,22 @@ export function ScheduleApp() {
                         ) : strip.kind === 'error' ? (
                             <div style={{ padding: '24px', color: '#ef4444' }}>Failed to load schedule. ({strip.message})</div>
                         ) : displayed.length === 0 ? (
-                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{selectedDepts.length === 0 ? 'No teaching sessions have been scheduled for you yet.' : 'No teaching sessions found for selected departments.'}</div>
+                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                {selectedDepts !== null && selectedDepts.length === 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                        <span>No departments selected. Pick one or more departments from the filter above.</span>
+                                        <button
+                                            type="button"
+                                            onClick={selectAllDepts}
+                                            style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 14px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 650 }}
+                                        >
+                                            Show All Departments
+                                        </button>
+                                    </div>
+                                ) : (
+                                    'No teaching sessions found for selected departments.'
+                                )}
+                            </div>
                         ) : (
                             <>
                                 {/* Action Toggle Card: Switch between Previous Sessions and Today & Upcoming */}

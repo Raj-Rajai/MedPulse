@@ -261,10 +261,7 @@ export function ExamsApp() {
                         <button className={pill('3')} data-year="3" onClick={() => selectAcademicYear(3)}>
                             <span className="year-dot" />
                             <div className="year-text-group">
-                                <span className="year-title">
-                                    <span>3rd Year MBBS</span>
-                                    <span className="year-badge-current">Current Year</span>
-                                </span>
+                                <span className="year-title">3rd Year MBBS</span>
                                 <span className="year-meta">2026</span>
                             </div>
                         </button>
