@@ -5,8 +5,8 @@
  */
 
 :root {
-  /* How much smaller the page content is drawn on phones (0.6 = "zoomed out by 40%"). */
-  --mobile-zoom: 0.6;
+  /* How much smaller the page content is drawn on phones (0.66 = drawn at 66% size). */
+  --mobile-zoom: 0.66;
 }
 
 /* Small button size used across the portals (was referenced but never defined). */
