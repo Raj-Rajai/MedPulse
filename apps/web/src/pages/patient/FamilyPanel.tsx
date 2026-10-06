@@ -35,15 +35,15 @@ function MemberCard({ m, canEdit, a }: { m: FamilyMember; canEdit: boolean; a: P
                 {self ? <span className="pt-pill info">{t('You')}</span> : null}
                 {m.relation_to_hof === 'Head' && !self ? <span className="pt-pill ok">{t('👑 Head')}</span> : null}
                 {m.account_uid && !self ? <span className="pt-pill mute">{t('📱 Has own account')}</span> : null}
-                {m.surveyed ? <span className="pt-pill mute">{t('📝 From health survey')}</span> : <span className="pt-pill mute">{t('✍️ Added by family')}</span>}
+                {m.surveyed ? <span className="pt-pill mute">{t('📝 From health survey')}</span> : <span className="pt-pill mute">{t('✍ Added by family')}</span>}
                 {m.patient_updated_at && m.surveyed && !self ? <span className="pt-pill warn">{t('Updated by you')}</span> : null}
             </div>
             <div className="mem-health"><span className="lbl">{t('Health (read-only)')}</span><HealthPills m={m} /></div>
             <div className="mem-actions">
-                {self ? <button className="pt-btn sm" onClick={() => a.showTab('profile')}>{t('✏️ Edit my details')}</button> : null}
-                {m.can_edit ? <button className="pt-btn sm" onClick={() => a.editMember(m.id)}>{t('✏️ Edit')}</button> : null}
+                {self ? <button className="pt-btn sm" onClick={() => a.showTab('profile')}>{t('✏ Edit my details')}</button> : null}
+                {m.can_edit ? <button className="pt-btn sm" onClick={() => a.editMember(m.id)}>{t('✏ Edit')}</button> : null}
                 {canEdit || self ? <button className="pt-btn sm" onClick={() => a.requestFor(m.id)}>{t('📞 Call hospital')}</button> : null}
-                {m.can_delete ? <button className="pt-btn sm ghost-danger icon" onClick={() => a.removeMember(m.id)} aria-label={t(`Remove ${m.name}`)} title={t('Remove')}>🗑️</button> : null}
+                {m.can_delete ? <button className="pt-btn sm ghost-danger icon" onClick={() => a.removeMember(m.id)} aria-label={t(`Remove ${m.name}`)} title={t('Remove')}>🗑</button> : null}
             </div>
         </article>
     );
@@ -65,7 +65,7 @@ export function FamilyPanel({ s, a, active }: { s: PortalState; a: PortalActions
                             <div className="fam-meta">{t(`${f.family_code || ''}${addr ? ` · 📍 ${addr}` : ''}`)}</div>
                             <div className="fam-stats">
                                 <span className="pt-pill info">{t(`${F.members.length} member${F.members.length === 1 ? '' : 's'}`)}</span>
-                                <span className={`pt-pill ${canEdit ? 'ok' : 'mute'}`}>{t(canEdit ? '👑 You are head of family' : '👁️ View only')}</span>
+                                <span className={`pt-pill ${canEdit ? 'ok' : 'mute'}`}>{t(canEdit ? '👑 You are head of family' : '👁 View only')}</span>
                                 {f.student_name ? <span className="pt-pill mute">{t(`📝 Health survey: ${f.student_name}`)}</span> : null}
                             </div>
                         </div>
@@ -75,8 +75,8 @@ export function FamilyPanel({ s, a, active }: { s: PortalState; a: PortalActions
             </div>
             <div id="famNotice">
                 {F && f ? (canEdit
-                    ? <div className="pt-note"><span>ℹ️</span><div>{t("You can add family members and update their basic details. Health readings and diagnoses come from the hospital and health survey team, so they can't be edited here.")}</div></div>
-                    : <div className="pt-note"><span>👁️</span><div>{t('Only ')}<strong>{t(f.head_of_family)}</strong>{t(' (head of family) can make changes. You can view your family here.')}</div></div>) : null}
+                    ? <div className="pt-note"><span>ℹ</span><div>{t("You can add family members and update their basic details. Health readings and diagnoses come from the hospital and health survey team, so they can't be edited here.")}</div></div>
+                    : <div className="pt-note"><span>👁</span><div>{t('Only ')}<strong>{t(f.head_of_family)}</strong>{t(' (head of family) can make changes. You can view your family here.')}</div></div>) : null}
             </div>
             <div className="fam-grid" id="famGrid">
                 {F && f ? <>

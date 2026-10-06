@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import { isDistinctionOf, termBadgeClassOf, type Exam, type Score } from './types';
 
 const MILESTONES: Record<string, [string, string, string]> = {
-    University: ['🏛️', 'University Professional Examination', 'Assessment Milestone 4 of 4 • Paper 1 (100) + Paper 2 (100) + Practical (100) = 300 Marks'],
+    University: ['🏛', 'University Professional Examination', 'Assessment Milestone 4 of 4 • Paper 1 (100) + Paper 2 (100) + Practical (100) = 300 Marks'],
     Preliminary: ['📋', 'Preliminary Examination (Pre-lims)', 'Assessment Milestone 3 of 4 • Paper 1 (100) + Paper 2 (100) + Practical (100) = 300 Marks'],
     'IA-2': ['📝', 'Internal Assessment - 2', 'Assessment Milestone 2 of 4 • Theory (100) + Practical (100) = 200 Marks'],
     'IA-1': ['📝', 'Internal Assessment - 1', 'Assessment Milestone 1 of 4 • Theory (100) + Practical (100) = 200 Marks'],
@@ -46,7 +46,7 @@ function ExamCard({ ex }: { ex: Exam }) {
     const formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const isDistinction = isDistinctionOf(ex);
     const statusBadgeClass = isDistinction ? 'badge-success' : ex.status === 'Pass' ? 'badge-info' : 'badge-danger';
-    const statusText = isDistinction ? '🌟 Distinction' : ex.status === 'Pass' ? '✅ Passed' : '⚠️ Remedial';
+    const statusText = isDistinction ? '🌟 Distinction' : ex.status === 'Pass' ? '✅ Passed' : '⚠ Remedial';
     const termBadgeClass = termBadgeClassOf(ex.exam_type);
     return (
         <div className="exam-record-card">
@@ -126,7 +126,7 @@ export function ExamCards({ exams, info, typeFilter }: { exams: Exam[]; info: Pa
     if (exams.length === 0) {
         return (
             <div className="exam-record-card" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: '2.2rem', marginBottom: '8px' }}>📭</div>
+                <div className="mp-empty-icon" style={{ marginBottom: '10px' }}>📭</div>
                 <strong>No examination records found matching selected filter.</strong>
                 <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>Try selecting another assessment type, clearing the search, or choosing another academic year.</div>
             </div>

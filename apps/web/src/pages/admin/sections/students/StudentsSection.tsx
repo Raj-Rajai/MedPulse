@@ -55,10 +55,10 @@ function CadetRow({ s, actions, showToast }: { s: Cadet; actions: CadetActions; 
                 <div className="table-actions-cell">
                     <button className="table-act-btn" onClick={() => actions.openAttendance(s.id)} title="Mark / View Attendance">📅</button>
                     <button className="table-act-btn" onClick={() => actions.openExams(s.id)} title="Input / View Exam Marks">📋</button>
-                    <button className="table-act-btn" onClick={() => actions.edit(s.id)} title="Edit Cadet">✏️</button>
+                    <button className="table-act-btn" onClick={() => actions.edit(s.id)} title="Edit Cadet">✏</button>
                     <button className="table-act-btn" onClick={() => actions.resetPin(s)} title="Reset PIN">🔒</button>
-                    <button className="table-act-btn" onClick={() => actions.inspect(s.id)} title="View Households">👁️</button>
-                    <button className="table-act-btn act-delete" onClick={() => actions.remove(s)} title="Delete Cadet">🗑️</button>
+                    <button className="table-act-btn" onClick={() => actions.inspect(s.id)} title="View Households">👁</button>
+                    <button className="table-act-btn act-delete" onClick={() => actions.remove(s)} title="Delete Cadet">🗑</button>
                 </div>
             </td>
         </tr>
@@ -104,7 +104,7 @@ export function StudentsSection({ active, all, rows, setRows, collegeOptions, ac
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
                     <div>
                         <h2 className="card-title" style={{ marginBottom: 4, fontSize: '1.25rem' }}>
-                            👨‍⚕️ Medical Student Cadre Roster (<span id="cadetTotalCount">{all ? all.length : 0}</span> Cadets)
+                            👨‍⚕ Medical Student Cadre Roster (<span id="cadetTotalCount">{all ? all.length : 0}</span> Cadets)
                         </h2>
                         <p className="card-desc" style={{ margin: 0 }}>
                             Manage student field survey assignments, credentials, security PINs, and submission progress.

@@ -220,7 +220,7 @@ export function StudentRegisterForm({
                     />
                 </div>
             </div>
-            <div id="pinMismatchMsg" className="pin-feedback-hint" style={{ display: mismatchShown ? 'block' : 'none', color: '#ef4444', marginBottom: '0.85rem' }}>⚠️ PINs do not match</div>
+            <div id="pinMismatchMsg" className="pin-feedback-hint" style={{ display: mismatchShown ? 'block' : 'none', color: '#ef4444', marginBottom: '0.85rem' }}>⚠ PINs do not match</div>
 
             <div className="reg-grid-2" style={{ marginBottom: '0.85rem' }}>
                 <div className="form-group">

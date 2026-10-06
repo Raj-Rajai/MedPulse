@@ -92,7 +92,7 @@ function AdminConsole() {
         const v = uni.view;
         if (!v) return;
         setQuotaNote({
-            text: v.full ? `⚠️ Quota Full: ${v.curA}/${v.maxQ} seats used` : `Seats: ${v.curA}/${v.maxQ} used (${v.rem} available)`,
+            text: v.full ? `⚠ Quota Full: ${v.curA}/${v.maxQ} seats used` : `Seats: ${v.curA}/${v.maxQ} used (${v.rem} available)`,
             color: v.full ? '#dc2626' : '#d97706',
         });
     }, [uni.view]);

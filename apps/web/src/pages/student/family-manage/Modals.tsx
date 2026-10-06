@@ -34,7 +34,7 @@ export function EditFamilyModal({ open, form, set, onClose, onSubmit, saving, ph
     return (
         <div id="editFamilyModal" className="modal-overlay" style={display(open)}>
             <div className="modal-content">
-                <Header title="✏️ Edit Household Details" style={h2} onClose={onClose} />
+                <Header title="✏ Edit Household Details" style={h2} onClose={onClose} />
                 <form id="editFamilyForm" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
                     <div className="form-grid">
                         {k.inp('efHof', 'Head of Family (HOF) Name *', { required: true })}
@@ -79,7 +79,7 @@ export function AddMemberModal(p: AddMemberProps) {
                 <Header title={<>➕ Add Member to Family #<span id="modalFamilyNo">{p.familyNo}</span></>} style={h2} mb="0.5rem" onClose={p.onClose} />
 
                 <div id="memberDraftAlert" className="draft-alert" style={{ display: p.draftAlert ? 'flex' : 'none' }}>
-                    <span>⚠️ Unsaved member draft found from previous session.</span>
+                    <span>⚠ Unsaved member draft found from previous session.</span>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <button type="button" onClick={p.onRestore}>Restore Draft</button>
                         <button type="button" onClick={p.onDiscard} style={{ background: '#e2e8f0', color: '#475569' }}>Discard</button>
@@ -104,7 +104,7 @@ export function AddMemberModal(p: AddMemberProps) {
                     </div>
 
                     <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', fontSize: '0.825rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span>ℹ️</span>
+                        <span>ℹ</span>
                         <span>Member registered with basic demographics. Full clinical survey (vitals, screening, pediatric &amp; maternal records) is recorded on the <strong>Data Entry</strong> page.</span>
                     </div>
 
@@ -124,7 +124,7 @@ export function EditMemberModal({ open, form, set, onClose, onSubmit, saving, ph
     return (
         <div id="editMemberModal" className="modal-overlay" style={display(open)}>
             <div className="modal-content">
-                <Header title="✏️ Edit Member Personal Info" style={h2} onClose={onClose} />
+                <Header title="✏ Edit Member Personal Info" style={h2} onClose={onClose} />
                 <form id="editMemberForm" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
                     <div className="form-grid">
                         {k.inp('emName', 'Full Name *', { required: true })}

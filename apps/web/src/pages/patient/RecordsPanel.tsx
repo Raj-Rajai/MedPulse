@@ -45,7 +45,7 @@ export function RecordsPanel({ s, a, loaded, active }: { s: PortalState; a: Port
                         </div>
                     </div>
                     <div className="pt-card">
-                        <div className="pt-card-h"><h2>{t('⚠️ Allergies')}</h2><span className="pt-pill bad" id="allergyCount">{t(alls.length)}</span></div>
+                        <div className="pt-card-h"><h2>{t('⚠ Allergies')}</h2><span className="pt-pill bad" id="allergyCount">{t(alls.length)}</span></div>
                         <div id="allergiesList">
                             {!loaded ? null : alls.length ? alls.map((x, i) => (
                                 <div className="pt-rec" key={i}><div><div className="t" style={{ color: '#b91c1c' }}>{t(x.allergen)}</div><div className="d">{t(`${x.reaction || 'Reaction'}${x.allergy_type ? ` · ${x.allergy_type}` : ''}`)}</div></div><span className="pt-pill bad">{t(x.severity || 'Moderate')}</span></div>

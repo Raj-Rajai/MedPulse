@@ -306,7 +306,7 @@ export function ProfileApp() {
                         <div className="profile-identity-group">
                             <img src="/images/sal-logo.png" alt="SAL Logo" className="header-brand-logo" style={{ height: '64px', width: '64px', borderRadius: '12px', background: '#ffffff', padding: '4px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }} />
                             <div className="profile-avatar-wrapper">
-                                <div className="profile-avatar-inner" id="heroAvatarIcon">👨‍⚕️</div>
+                                <div className="profile-avatar-inner" id="heroAvatarIcon">👨‍⚕</div>
                                 <div className="profile-badge-online" title="Active Field Posting" />
                             </div>
                             <div className="profile-details-area">
@@ -336,7 +336,7 @@ export function ProfileApp() {
                                     </span>
                                     <span>•</span>
                                     <a id="heroEmailLink" href={s && s.email ? `mailto:${s.email}` : 'mailto:dhruv.patel@medpulse.edu'} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#bae6fd', textDecoration: 'none' }} title="Institutional Email">
-                                        <span>✉️</span>
+                                        <span>✉</span>
                                         <span id="heroEmail">{(s && s.email) || 'dhruv.patel@medpulse.edu'}</span>
                                     </a>
                                     <span>•</span>
@@ -348,7 +348,7 @@ export function ProfileApp() {
                             </div>
                         </div>
                         <div className="profile-hero-actions">
-                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>✏️ Edit Profile</button>
+                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>✏ Edit Profile</button>
                             <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650' }}>🔒 Change PIN</button>
                         </div>
                     </div>
@@ -487,7 +487,7 @@ export function ProfileApp() {
                         <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                 <h2 style={{ fontSize: '1.15rem', fontWeight: '750', margin: '0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span>🏷️ Patient Adoption Referral Code</span>
+                                    <span>🏷 Patient Adoption Referral Code</span>
                                 </h2>
                                 <span className="badge badge-info" style={{ fontSize: '0.72rem', letterSpacing: '0.03em' }}>Cadet Key</span>
                             </div>
@@ -543,7 +543,7 @@ export function ProfileApp() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
                             <button className="btn btn-secondary" id="cardExportCsvBtn" disabled={csvBusy} onClick={exportProformaCsv} style={{ width: '100%', justifyContent: 'center', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{csvBusy ? '⏳ Generating CSV...' : '📥 Download Survey CSV (43 Cols)'}</button>
                             <button className="btn btn-primary" id="cardExportPdfBtn" disabled={pdfBusy} onClick={exportProformaPdf} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', boxShadow: '0 4px 12px rgba(2,132,199,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{pdfBusy ? '⏳ Generating PDF...' : '📄 Download Polished PDF Report'}</button>
-                            <button className="btn btn-primary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 12px rgba(244,63,94,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨️ Export Logbook</button>
+                            <button className="btn btn-primary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 12px rgba(244,63,94,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨 Export Logbook</button>
                         </div>
                     </div>
                 </div>

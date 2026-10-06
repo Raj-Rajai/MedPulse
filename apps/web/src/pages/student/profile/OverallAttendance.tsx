@@ -125,7 +125,7 @@ export function OverallAttendance({ data }: { data: SubjectWiseData | 'loading' 
                         {s.nmc_status === 'Eligible' ? (
                             <span className="badge badge-success" style={{ fontSize: '0.72rem', padding: '3px 8px' }}>✅ Eligible</span>
                         ) : s.nmc_status === 'Warning' ? (
-                            <span className="badge badge-warning" style={{ fontSize: '0.72rem', padding: '3px 8px' }}>⚠️ Warning</span>
+                            <span className="badge badge-warning" style={{ fontSize: '0.72rem', padding: '3px 8px' }}>⚠ Warning</span>
                         ) : (
                             <span className="badge badge-danger" style={{ fontSize: '0.72rem', padding: '3px 8px' }}>❌ Shortage</span>
                         )}
@@ -171,7 +171,7 @@ export function OverallAttendance({ data }: { data: SubjectWiseData | 'loading' 
                                     <td style={{ ...cell, textAlign: 'center', fontWeight: 900, color: v.overallPct >= 75 ? '#10b981' : '#ef4444', fontSize: '0.95rem' }}>{`${v.overallPct}%`}</td>
                                     <td style={{ ...cell, textAlign: 'center' }}>
                                         <span className={`badge ${v.nmcStatus === 'Eligible' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.74rem', padding: '4px 10px' }}>
-                                            {v.nmcStatus === 'Eligible' ? '✅ ' + v.nmcStatus : '⚠️ ' + v.nmcStatus}
+                                            {v.nmcStatus === 'Eligible' ? '✅ ' + v.nmcStatus : '⚠ ' + v.nmcStatus}
                                         </span>
                                     </td>
                                 </tr>

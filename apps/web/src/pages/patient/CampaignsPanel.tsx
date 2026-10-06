@@ -49,7 +49,7 @@ function CampaignCard({ n, a }: { n: CampNotification; a: PortalActions }) {
                 ) : null}
                 {n.patient_contact_confirmation === 'Confirmed' ? <div className="pt-rsvp-note" style={{ color: '#065f46' }}>{t('✔ You confirmed the camp team called you.')}</div> : null}
                 <div className="pt-foot-links">
-                    {n.event_date ? <button className="pt-btn sm" onClick={() => a.downloadIcs(id)}>{t('🗓️ Add to calendar')}</button> : null}
+                    {n.event_date ? <button className="pt-btn sm" onClick={() => a.downloadIcs(id)}>{t('🗓 Add to calendar')}</button> : null}
                 </div>
             </div>
         </article>
@@ -62,14 +62,14 @@ export function CampaignsPanel({ s, a, loaded, active }: { s: PortalState; a: Po
     return (
         <section className={`pt-panel${active ? ' active' : ''}`} id="panel-campaigns" role="tabpanel" aria-labelledby="tab-campaigns" tabIndex={0}>
             <div className="pt-why" style={{ marginBottom: 16 }}>
-                <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+                <span style={{ fontSize: '1.2rem' }}>🛡</span>
                 <div><strong>{t("Only what's relevant to you.")}</strong>{t(' You get a camp alert only when it matches a condition or reading in your health record.')}</div>
             </div>
             <div className="pt-section-title">{t('Upcoming')}</div>
             <div id="upcomingCamps">
                 {!loaded ? <div className="pt-skel" style={{ height: 180 }} /> : up.length
                     ? up.map((n) => <CampaignCard key={n.notification_id} n={n} a={a} />)
-                    : <div className="pt-empty"><span className="big">🛡️</span><strong>{t('No camps for you right now.')}</strong><br />{t("We'll let you know when a camp matches your health record.")}</div>}
+                    : <div className="pt-empty"><span className="big">🛡</span><strong>{t('No camps for you right now.')}</strong><br />{t("We'll let you know when a camp matches your health record.")}</div>}
             </div>
             <div className="pt-section-title" style={{ marginTop: 22 }}>{t('Past camps')}</div>
             <div id="pastCamps">

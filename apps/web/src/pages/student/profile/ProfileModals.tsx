@@ -29,7 +29,7 @@ export function EditProfileModal({ open, form, setForm, saving, emailField, phon
         <div id="editProfileModal" className="modal-overlay" style={{ display: open ? 'flex' : 'none' }}>
             <div className="modal-content" style={{ maxWidth: '520px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <h2 style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>✏️ Edit Student Profile</h2>
+                    <h2 style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>✏ Edit Student Profile</h2>
                     <button className="btn btn-secondary" onClick={onClose} style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>✕</button>
                 </div>
                 <form id="editProfileForm" onSubmit={(event) => { event.preventDefault(); onSubmit(); }}>

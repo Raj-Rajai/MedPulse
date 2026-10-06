@@ -221,7 +221,7 @@ export function ExamsApp() {
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px", flexWrap: "wrap" }}>
                                 <span className="badge badge-success" id="examStandingBadge" style={{ fontSize: "0.8rem", padding: "5px 12px", background: "rgba(16, 185, 129, 0.25)", color: "#6ee7b7", border: "1px solid rgba(16, 185, 129, 0.5)" }}>{summary ? '🌟 ' + (summary.data.standing || 'Pass') : '🌟 First Class with Distinction'}</span>
-                                <span className={elig === null ? 'badge' : elig ? 'badge badge-success' : 'badge badge-warning'} id="heroUnivEligibilityBadge" style={{ background: "rgba(59, 130, 246, 0.25)", color: "#93c5fd", border: "1px solid rgba(59, 130, 246, 0.5)", fontSize: "0.8rem", padding: "5px 12px" }}>{elig === null ? '✅ University Exam Eligibility: CLEARED (IA ≥ 50%)' : elig ? '✅ University Exam Eligibility: CLEARED (IA Combined ' + uElig.ia_combined_pct + '%)' : '⚠️ Remedial IA Required for University Eligibility'}</span>
+                                <span className={elig === null ? 'badge' : elig ? 'badge badge-success' : 'badge badge-warning'} id="heroUnivEligibilityBadge" style={{ background: "rgba(59, 130, 246, 0.25)", color: "#93c5fd", border: "1px solid rgba(59, 130, 246, 0.5)", fontSize: "0.8rem", padding: "5px 12px" }}>{elig === null ? '✅ University Exam Eligibility: CLEARED (IA ≥ 50%)' : elig ? '✅ University Exam Eligibility: CLEARED (IA Combined ' + uElig.ia_combined_pct + '%)' : '⚠ Remedial IA Required for University Eligibility'}</span>
                             </div>
                         </div>
                         <div className="hero-standing-card">
@@ -298,7 +298,7 @@ export function ExamsApp() {
                         </div>
                     </div>
                     <div className="profile-kpi-card">
-                        <div className="profile-kpi-icon" style={{ background: "rgba(16, 185, 129, 0.1)", color: "var(--green)", fontSize: "1.4rem" }}>🎖️</div>
+                        <div className="profile-kpi-icon" style={{ background: "rgba(16, 185, 129, 0.1)", color: "var(--green)", fontSize: "1.4rem" }}>🎖</div>
                         <div className="profile-kpi-info">
                             <div className="kpi-num" id="kpiDistinctionsCount">{summary ? `${sd.distinctions || 0} Assessments` : '0'}</div>
                             <div className="kpi-label">Distinctions Achieved</div>
@@ -337,7 +337,7 @@ export function ExamsApp() {
                             </button>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <button className="btn btn-primary btn-sm" onClick={() => window.print()} title="Print complete academic marksheet">🖨️ Print Marksheet</button>
+                            <button className="btn btn-primary btn-sm" onClick={() => window.print()} title="Print complete academic marksheet">🖨 Print Marksheet</button>
                         </div>
                     </div>
                     <div className="toolbar-bottom-row">
@@ -360,7 +360,7 @@ export function ExamsApp() {
                                 <span>📊 Marksheet Table</span>
                             </button>
                             <button className={view === 'cards' ? 'view-toggle-btn active' : 'view-toggle-btn'} id="btnViewCards" onClick={() => setViewMode('cards')}>
-                                <span>🗂️ Cards</span>
+                                <span>🗂 Cards</span>
                             </button>
                         </div>
                     </div>

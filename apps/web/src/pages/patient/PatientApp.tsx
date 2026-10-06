@@ -314,7 +314,7 @@ export function PatientApp() {
         editMember(id) {
             const m = stRef.current.family?.members.find((x) => x.id === id); if (!m) return;
             editingMemberId.current = id;
-            setMemberTitle(`✏️ Edit ${m.name}`);
+            setMemberTitle(`✏ Edit ${m.name}`);
             setMemberForm({
                 name: m.name || '', dob: m.date_of_birth || '', dobMax: todayIso(), age: m.date_of_birth ? '' : String(m.age_years || ''),
                 phone: m.contact_number || '', occ: m.occupation || '', edu: m.education || '', gender: m.gender || '',

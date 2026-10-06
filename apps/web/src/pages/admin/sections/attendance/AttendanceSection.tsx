@@ -308,7 +308,7 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
                         </div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                             <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.35)', padding: '5px 12px', fontWeight: 700 }}>
-                                🏛️ NMC Minimum: 75% Theory • 80% Practical
+                                🏛 NMC Minimum: 75% Theory • 80% Practical
                             </span>
                         </div>
                     </div>
@@ -507,7 +507,7 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
                                             <td style={{ textAlign: 'center' }}><HistoryStatusBadge status={r.status} /></td>
                                             <td><span style={{ fontSize: '0.78rem' }}>{r.faculty_name || ''}</span></td>
                                             <td style={{ textAlign: 'right' }}>
-                                                <button type="button" className="table-act-btn act-delete" onClick={() => deleteRecord(r.id)} title="Delete record">🗑️</button>
+                                                <button type="button" className="table-act-btn act-delete" onClick={() => deleteRecord(r.id)} title="Delete record">🗑</button>
                                             </td>
                                         </tr>
                                     ))

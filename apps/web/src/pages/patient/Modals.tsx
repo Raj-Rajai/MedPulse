@@ -84,7 +84,7 @@ export function MemberModal({ open, title, form, setForm, relations, error, busy
                         <label className="l" htmlFor="mfEdu">{t('Education')}</label>
                         <input id="mfEdu" className="pt-input" maxLength={60} placeholder={t('e.g. Class 10, Graduate')} value={form.edu} onChange={(e) => setForm({ edu: e.target.value })} />
                     </div>
-                    <div className="pt-note" style={{ marginBottom: 0 }}><span>ℹ️</span><div>{t('Health readings (BP, sugar, weight) are added by the hospital or health survey team, not here.')}</div></div>
+                    <div className="pt-note" style={{ marginBottom: 0 }}><span>ℹ</span><div>{t('Health readings (BP, sugar, weight) are added by the hospital or health survey team, not here.')}</div></div>
                     <div className="pt-err" id="mfErr" style={{ marginTop: 8, display: error === null ? 'none' : 'block' }}>{t(error ?? '')}</div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 14 }}>

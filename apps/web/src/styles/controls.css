@@ -1,0 +1,338 @@
+/*
+ * MedPulse premium controls & icons (shared by every portal, imported last).
+ *
+ * 1. "MedPulse Icons": a tiny line-icon font (Lucide shapes, ISC licence) mapped onto the emoji
+ *    code points the pages already use (📅 → calendar, 💾 → save, ...). Every portal font stack
+ *    starts with it, so emoji in labels, buttons, toasts and dropdown options render as crisp
+ *    monochrome line icons in the text colour. Source + mapping: tools/icon-font/.
+ * 2. Dropdowns: Chrome/Edge 135+ draw the open list with our styling (appearance: base-select).
+ *    Other browsers keep the existing closed-select styling and their native list.
+ * 3. Date fields: the native calendar popup is replaced by shared/ui/date-picker.ts (.mp-dp).
+ * 4. .modal-box / .form-control dialogs (schedule session popup) get a real panel.
+ */
+@font-face {
+  font-family: 'MedPulse Icons';
+  src: url('./fonts/medpulse-icons.woff2') format('woff2');
+  font-display: block;
+  unicode-range: U+200D, U+2139, U+21BA, U+23F0, U+23F3, U+25A3, U+25B6, U+25BE, U+25C0, U+25CB, U+2695-2696,
+    U+26A0-26A1, U+26D4, U+2705, U+2709, U+270D, U+270F, U+2713-2715, U+2717, U+2728, U+274C, U+2795, U+FE0F,
+    U+1F310, U+1F31F, U+1F338, U+1F33F, U+1F389, U+1F393, U+1F396, U+1F3AF, U+1F3C3, U+1F3C6, U+1F3DB,
+    U+1F3E0-1F3E1, U+1F3E5, U+1F3E8, U+1F3F7, U+1F441, U+1F44D, U+1F451, U+1F454, U+1F464-1F46A, U+1F475-1F476,
+    U+1F48A, U+1F4A1, U+1F4AC, U+1F4BE, U+1F4C2, U+1F4C4-1F4C5, U+1F4C8, U+1F4CA-1F4CB, U+1F4CD, U+1F4D6, U+1F4DA,
+    U+1F4DC-1F4DE, U+1F4E2-1F4E3, U+1F4E5, U+1F4E8, U+1F4ED, U+1F4F1, U+1F504, U+1F50D-1F50E, U+1F510-1F512,
+    U+1F517, U+1F52C, U+1F5A8, U+1F5C2, U+1F5D1, U+1F5D3, U+1F64B, U+1F680, U+1F6A8, U+1F6AA, U+1F6CF, U+1F6E1,
+    U+1F7E1, U+1F957, U+1F967, U+1F9EA, U+1FA78, U+1FA7A;
+}
+
+/* Navigation keeps its original look: no icon font inside the patient tab bar. */
+.pt-tabs {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+input, select, textarea, button, option, optgroup { font-family: inherit; }
+
+/* ── Dropdowns ─────────────────────────────────────────────────────────── */
+@supports (appearance: base-select) {
+  select:not([multiple]):not([size]),
+  select:not([multiple]):not([size])::picker(select) {
+    appearance: base-select !important;
+    -webkit-appearance: base-select !important;
+  }
+
+  /* Closed state keeps the page's own chevron (background-image); the built-in arrow is hidden. */
+  select:not([multiple]):not([size]) {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  select:not([multiple]):not([size])::picker-icon { display: none; }
+  select:not([multiple]):not([size]):open {
+    border-color: var(--accent, var(--teal, #6d28d9)) !important;
+    box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--accent, var(--teal, #6d28d9)) 16%, transparent) !important;
+  }
+
+  select:not([multiple]):not([size])::picker(select) {
+    min-width: anchor-size(width);
+    max-height: min(340px, 55vh);
+    margin-block: 6px;
+    padding: 6px;
+    border: 1px solid var(--border, #e8e5f3);
+    border-radius: 14px;
+    background: var(--bg-card, #fff);
+    color: var(--text-primary, #1e1b4b);
+    box-shadow: 0 26px 54px -18px rgba(46, 16, 101, 0.35), 0 10px 22px -12px rgba(15, 23, 42, 0.16);
+    scrollbar-width: thin;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), overlay 0.16s allow-discrete, display 0.16s allow-discrete;
+  }
+  @starting-style {
+    select:not([multiple]):not([size])::picker(select):popover-open { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  }
+
+  select:not([multiple]):not([size]) option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 8px 12px !important;
+    border-radius: 9px;
+    background: transparent !important;
+    color: inherit !important;
+    font-size: 0.88rem !important;
+    font-weight: 550 !important;
+    line-height: 1.35 !important;
+    white-space: normal;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+  select:not([multiple]):not([size]) option:hover,
+  select:not([multiple]):not([size]) option:focus-visible {
+    background: color-mix(in srgb, var(--accent, var(--teal, #6d28d9)) 8%, transparent) !important;
+    outline: none;
+  }
+  select:not([multiple]):not([size]) option:checked {
+    background: color-mix(in srgb, var(--accent, var(--teal, #6d28d9)) 12%, transparent) !important;
+    color: var(--accent, var(--teal, #6d28d9)) !important;
+    font-weight: 700 !important;
+  }
+  select:not([multiple]):not([size]) option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+    content: '';
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  select:not([multiple]):not([size]) option:disabled {
+    opacity: 0.45;
+    background: transparent !important;
+    font-style: normal;
+    cursor: not-allowed;
+  }
+  select:not([multiple]):not([size]) optgroup {
+    padding: 4px 0 !important;
+    background: transparent !important;
+  }
+  select:not([multiple]):not([size]) optgroup legend {
+    padding: 8px 12px 4px;
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted, #8b83b0);
+  }
+}
+
+/* ── Date fields (popup lives in shared/ui/date-picker.ts) ───────────── */
+input[type='date'] { cursor: pointer; }
+input[type='date']::-webkit-calendar-picker-indicator { display: none; }
+input[type='date']:where(:not(.date-input-pill input, .date-step-control input, .mp-date-plain)) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='3'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 17px 17px;
+  padding-right: 38px;
+}
+.patient-portal input[type='date']:not(.mp-date-plain) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230f766e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='3'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01'/%3E%3C/svg%3E");
+}
+input[type='date']::-webkit-datetime-edit-day-field:focus,
+input[type='date']::-webkit-datetime-edit-month-field:focus,
+input[type='date']::-webkit-datetime-edit-year-field:focus {
+  background: color-mix(in srgb, var(--accent, var(--teal, #6d28d9)) 14%, transparent);
+  color: inherit;
+  border-radius: 4px;
+}
+
+.mp-dp {
+  --mp-dp-accent: #6d28d9;
+  --mp-dp-soft: color-mix(in srgb, var(--mp-dp-accent) 10%, transparent);
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 2147483000;
+  width: 304px;
+  max-width: calc(100vw - 16px);
+  padding: 14px;
+  border: 1px solid #ebe8f6;
+  border-radius: 18px;
+  background: #fff;
+  color: #1e1b4b;
+  box-shadow: 0 30px 60px -20px rgba(46, 16, 101, 0.38), 0 12px 24px -14px rgba(15, 23, 42, 0.2);
+  font: 500 14px/1.2 'MedPulse Icons', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  animation: mpDpIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.mp-dp::backdrop { background: transparent; }
+@keyframes mpDpIn { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes mpDpSheet { from { transform: translateY(100%); } to { transform: none; } }
+.mp-dp button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mp-dp button:focus-visible { outline: 2px solid var(--mp-dp-accent); outline-offset: 1px; }
+.mp-dp-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 10px; }
+.mp-dp-title {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border: 0; border-radius: 10px; background: transparent;
+  font-size: 15px; font-weight: 750; letter-spacing: -0.01em;
+}
+.mp-dp-title:hover { background: var(--mp-dp-soft); color: var(--mp-dp-accent); }
+.mp-dp-title svg { width: 15px; height: 15px; color: var(--mp-dp-accent); }
+.mp-dp-nav {
+  display: grid; place-items: center; width: 34px; height: 34px;
+  border: 1px solid #ece9f7; border-radius: 10px; background: #fff; color: var(--mp-dp-accent);
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.mp-dp-nav:hover { background: var(--mp-dp-soft); border-color: transparent; }
+.mp-dp-nav svg { width: 17px; height: 17px; }
+.mp-dp-week {
+  display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-align: center; text-transform: uppercase; color: #8b83b0;
+}
+.mp-dp-week span { padding: 6px 0; }
+.mp-dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.mp-dp-grid.cells { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px 0; }
+.mp-dp-day, .mp-dp-cell {
+  position: relative; border: 0; border-radius: 11px; background: transparent;
+  font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums;
+  transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+.mp-dp-day { aspect-ratio: 1; }
+.mp-dp-cell { height: 46px; }
+.mp-dp-day.out { color: #c4bfe0; }
+.mp-dp-day:hover:not(:disabled), .mp-dp-cell:hover:not(:disabled) { background: var(--mp-dp-soft); color: var(--mp-dp-accent); }
+.mp-dp-day.today, .mp-dp-cell.today { color: var(--mp-dp-accent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--mp-dp-accent) 45%, transparent); }
+.mp-dp-day.sel, .mp-dp-cell.sel, .mp-dp-day.sel:hover, .mp-dp-cell.sel:hover {
+  background: linear-gradient(135deg, var(--mp-dp-accent), color-mix(in srgb, var(--mp-dp-accent) 72%, #312e81));
+  color: #fff; box-shadow: 0 8px 18px -8px var(--mp-dp-accent);
+}
+.mp-dp-day:disabled, .mp-dp-cell:disabled { opacity: 0.3; cursor: not-allowed; }
+.mp-dp-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0eef8; }
+.mp-dp-foot button { padding: 8px 14px; border: 0; border-radius: 10px; background: transparent; font-size: 13px; font-weight: 700; color: #8b83b0; }
+.mp-dp-foot button:hover { background: #f5f3ff; color: #4c4578; }
+.mp-dp-foot button.primary { background: var(--mp-dp-soft); color: var(--mp-dp-accent); }
+.mp-dp-foot button.primary:hover { background: color-mix(in srgb, var(--mp-dp-accent) 16%, transparent); }
+.mp-dp-foot button:disabled { opacity: 0.4; cursor: not-allowed; }
+.mp-dp-grabber { display: none; }
+
+/* Phones: calendar becomes a bottom sheet with large touch targets. */
+.mp-dp.mp-dp-sheet {
+  left: 0 !important; right: 0; top: auto !important; bottom: 0;
+  width: 100%; max-width: none;
+  padding: 10px 18px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0; border-bottom: 0;
+  animation: mpDpSheet 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mp-dp.mp-dp-sheet::backdrop { background: rgba(30, 27, 75, 0.38); backdrop-filter: blur(2px); }
+.mp-dp-sheet .mp-dp-grabber { display: block; width: 42px; height: 5px; margin: 0 auto 12px; border-radius: 99px; background: #e4e0f3; }
+.mp-dp-sheet .mp-dp-grid { gap: 5px; }
+.mp-dp-sheet .mp-dp-day { font-size: 15.5px; border-radius: 14px; }
+.mp-dp-sheet .mp-dp-cell { height: 54px; font-size: 15px; }
+.mp-dp-sheet .mp-dp-title { font-size: 17px; }
+.mp-dp-sheet .mp-dp-nav { width: 42px; height: 42px; border-radius: 12px; }
+.mp-dp-sheet .mp-dp-foot button { padding: 12px 18px; font-size: 15px; }
+
+/* ── Generic dialog panel (.modal-box) & form fields used by the schedule popup ── */
+.modal-overlay > .modal-box {
+  display: flex;
+  flex-direction: column;
+  max-height: min(92vh, 860px);
+  overflow: hidden;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e8e5f3);
+  border-radius: 18px !important;
+  box-shadow: var(--shadow-modal, 0 30px 80px -20px rgba(30, 27, 75, 0.45));
+  color: var(--text-primary, #1e1b4b);
+  animation: modalSlide 0.2s var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.modal-box > .modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border, #e8e5f3);
+  background: linear-gradient(180deg, var(--bg-subtle, #f8f7ff), var(--bg-card, #fff));
+}
+.modal-box > .modal-header h3 { display: flex; align-items: center; gap: 8px; color: var(--text-primary, #1e1b4b); letter-spacing: -0.01em; }
+.modal-box > .modal-header .modal-close {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 10px !important;
+  line-height: 1; transition: background-color 0.15s ease, color 0.15s ease;
+}
+.modal-box > .modal-header .modal-close:hover:not(:disabled) { background: var(--bg-hover, #f0eeff) !important; color: var(--accent, #6d28d9) !important; }
+.modal-box > form { display: flex; flex-direction: column; min-height: 0; }
+.modal-box .modal-body { padding: 18px 22px 20px; }
+.modal-box .modal-footer { background: var(--bg-subtle, #f8f7ff); border-top-color: var(--border, #e8e5f3) !important; }
+.modal-box .form-group { gap: 6px; }
+
+:where(.form-label) { font-size: 0.8rem; font-weight: 650; color: var(--text-secondary, #4c4578); }
+:where(.form-control) {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+:where(textarea.form-control) { min-height: 88px; resize: vertical; font-weight: 500; line-height: 1.5; }
+:where(.form-control):hover { border-color: #94a3b8; }
+:where(.form-control):focus {
+  border-color: var(--accent, #6d28d9);
+  box-shadow: 0 0 0 3.5px var(--accent-ring, rgba(109, 40, 217, 0.15));
+}
+:where(.form-control)::placeholder { color: var(--text-light, #c4bfe0); font-weight: 500; }
+
+@media (max-width: 640px) {
+  .modal-overlay > .modal-box { width: 100% !important; max-height: calc(100dvh - 24px); border-radius: 16px !important; }
+  .modal-box > .modal-header { padding: 16px 16px 12px; }
+  .modal-box .modal-body { padding: 14px 16px 16px; }
+  .modal-box .modal-footer { padding: 12px 16px !important; }
+  .modal-box .modal-footer .btn { flex: 1; justify-content: center; }
+}
+
+/* ── Icon tiles: emoji slots now hold line icons, so give them colour and a soft tile ── */
+:where(.kpi-card) .kpi-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--accent, #6d28d9);
+  background: var(--accent-subtle, #f5f3ff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #6d28d9) 14%, transparent);
+}
+.feature-card .feature-icon { line-height: 1; }
+.features-grid .feature-card:nth-child(1) .feature-icon { color: #6d28d9; }
+.features-grid .feature-card:nth-child(2) .feature-icon { color: #2563eb; }
+.features-grid .feature-card:nth-child(3) .feature-icon { color: #059669; }
+.features-grid .feature-card:nth-child(4) .feature-icon { color: #d97706; }
+.empty-state-icon,
+.mp-empty-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-inline: auto;
+  border-radius: 22px;
+  font-size: 2rem !important;
+  line-height: 1;
+  color: var(--accent, #6d28d9);
+  background: linear-gradient(145deg, var(--accent-subtle, #f5f3ff), color-mix(in srgb, var(--accent, #6d28d9) 14%, #fff));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #6d28d9) 16%, transparent);
+}
+.profile-avatar-inner, .profile-kpi-icon { line-height: 1; }
+.patient-portal .pt-empty .big,
+.patient-portal .pt-reminder .ic,
+.patient-portal .pt-action .ic,
+.patient-portal .hosp-card .ic { color: var(--accent, #0f766e); line-height: 1; }

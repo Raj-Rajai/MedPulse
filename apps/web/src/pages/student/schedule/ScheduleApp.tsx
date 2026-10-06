@@ -222,7 +222,7 @@ export function ScheduleApp() {
                         <div className="hero-left-col">
                             <div className="profile-identity-group" style={{ marginBottom: '8px' }}>
                                 <div className="profile-avatar-wrapper" style={{ width: '60px', height: '60px', borderRadius: '17px' }}>
-                                    <div className="profile-avatar-inner" style={{ fontSize: '1.6rem', borderRadius: '14px' }}>🗓️</div>
+                                    <div className="profile-avatar-inner" style={{ fontSize: '1.6rem', borderRadius: '14px' }}>🗓</div>
                                     <div className="profile-badge-online" title="Active Semester" />
                                 </div>
                                 <div>
@@ -317,7 +317,7 @@ export function ScheduleApp() {
                             </span>
                             <span className="schedule-detail-sep">|</span>
                             <span>
-                                🏷️{' '}
+                                🏷{' '}
                                 <strong id="detailSubjectTag">{d ? d.subject || d.department || '--' : '--'}</strong>
                             </span>
                         </div>

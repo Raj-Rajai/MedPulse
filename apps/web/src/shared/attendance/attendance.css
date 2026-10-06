@@ -1,6 +1,6 @@
 .mp-attendance { --att-ink:#182d3a; --att-muted:#647887; --att-line:#e2e9ed; --att-teal:#087f79; --att-pale:#eaf6f3; color:var(--att-ink); background:#f9fbfc; border:1px solid #dce5eb; border-radius:22px; padding:0; width:min(600px,calc(100vw - 32px)); max-width:none; max-height:calc(100dvh - 40px); margin:auto; box-shadow:0 28px 100px #0b253d40; font-family:inherit; text-align:left; }
 .mp-attendance::backdrop { background:#0c203c99; backdrop-filter:blur(5px); }
-.mp-attendance { font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif; }
+.mp-attendance { font-family:'MedPulse Icons',Inter,system-ui,-apple-system,'Segoe UI',sans-serif; }
 .mp-attendance--wide { width:min(1040px,calc(100vw - 40px)); }
 .mp-attendance *, .mp-att-launcher * { box-sizing:border-box; }
 .mp-attendance button,.mp-attendance input,.mp-attendance select { font:inherit; }

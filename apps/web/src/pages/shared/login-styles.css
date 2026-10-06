@@ -1,3 +1,4 @@
 /* One stylesheet in the original <link> order (style.css, then login.css), so Vite can't reorder them via a shared chunk. */
 @import '../../styles/style.css';
 @import './login.css';
+@import '../../styles/controls.css';

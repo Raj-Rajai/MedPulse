@@ -35,9 +35,9 @@ function AdminRow({ a, idx, onEdit, onResetPin, onDelete }: { a: UniAdmin; idx: 
             </td>
             <td style={{ textAlign: 'right' }}>
                 <div className="table-actions-cell">
-                    <button className="table-act-btn" onClick={() => onEdit(a.id)} title="Edit Admin">✏️</button>
+                    <button className="table-act-btn" onClick={() => onEdit(a.id)} title="Edit Admin">✏</button>
                     <button className="table-act-btn" onClick={() => onResetPin(a)} title="Reset Passcode">🔒</button>
-                    {!isSuper && <button className="table-act-btn act-delete" onClick={() => onDelete(a)} title="Remove Admin">🗑️</button>}
+                    {!isSuper && <button className="table-act-btn act-delete" onClick={() => onDelete(a)} title="Remove Admin">🗑</button>}
                 </div>
             </td>
         </tr>
@@ -73,7 +73,7 @@ export function UniAdminsSection({ active, admins, view, collegeOptions, selecte
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                             <h2 style={{ fontSize: '1.25rem', fontWeight: 750, color: 'var(--text-primary)', margin: 0 }}>
-                                🏛️ University Admins &amp; Faculty Oversight
+                                🏛 University Admins &amp; Faculty Oversight
                             </h2>
                             <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.35)', fontSize: '0.72rem', fontWeight: 750 }}>
                                 Strict Quota Engine

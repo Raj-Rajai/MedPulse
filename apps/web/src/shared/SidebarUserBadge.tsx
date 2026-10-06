@@ -88,7 +88,7 @@ export function SidebarUserBadge() {
                 tooltip={name} title={`${name} (${role} - ${h})`}
                 onClick={() => (isCollapsed() ? logoutHospitalAdmin() : (window.location.href = '/hospital.html'))}
                 boxStyle={{ borderColor: 'rgba(13, 148, 136, 0.35)', background: 'rgba(13, 148, 136, 0.08)' }}
-                avatarStyle={{ background: 'linear-gradient(135deg, #0d9488, #0f766e)', color: '#fff' }} avatar="🏥"
+                avatarStyle={{ background: 'linear-gradient(135deg, #0d9488, #0f766e)', color: '#fff' }} avatar="🏥️"
                 dotStyle={{ background: '#2dd4bf', boxShadow: '0 0 8px #2dd4bf' }} dotTitle="Active Hospital Session"
                 roleLabel={role} roleStyle={{ fontSize: '0.72rem', color: '#5eead4', fontWeight: 700, display: 'block', ...ellipsis }}
                 name={name} nameTitle={name} nameStyle={{ fontWeight: 750, color: '#fff', ...ellipsis }}
@@ -106,7 +106,7 @@ export function SidebarUserBadge() {
                 tooltip={name} title={`${name} (${model})`}
                 onClick={() => (isCollapsed() ? logoutPatient() : (window.location.href = '/patient.html'))}
                 boxStyle={{ borderColor: 'rgba(14, 165, 233, 0.35)', background: 'rgba(14, 165, 233, 0.08)' }}
-                avatarStyle={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff' }} avatar="🏥"
+                avatarStyle={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#fff' }} avatar="🏥️"
                 dotStyle={{ background: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} dotTitle="Active Patient Session"
                 roleLabel={model} roleStyle={{ fontSize: '0.72rem', color: '#7dd3fc', fontWeight: 700, display: 'block', ...ellipsis }}
                 name={name} nameTitle={name} nameStyle={{ fontWeight: 750, color: '#fff', ...ellipsis }}
@@ -124,7 +124,7 @@ export function SidebarUserBadge() {
                 tooltip={`Admin (${name})`} title={`${name} (${role})`}
                 onClick={() => (isCollapsed() ? logoutAdmin() : (window.location.href = '/admin.html'))}
                 boxStyle={{ borderColor: 'rgba(234, 179, 8, 0.35)', background: 'rgba(234, 179, 8, 0.08)' }}
-                avatarStyle={{ background: 'linear-gradient(135deg, #eab308, #ca8a04)', color: '#000' }} avatar="👑"
+                avatarStyle={{ background: 'linear-gradient(135deg, #eab308, #ca8a04)', color: '#000' }} avatar="👑️"
                 dotStyle={{ background: '#eab308', boxShadow: '0 0 8px #eab308' }} dotTitle="Active Faculty Session"
                 roleLabel={role} roleStyle={{ fontSize: '0.72rem', color: '#fde047', fontWeight: 700, display: 'block', ...ellipsis }}
                 name={name} nameTitle={name} nameStyle={{ fontWeight: 750, color: '#fff', ...ellipsis }}
