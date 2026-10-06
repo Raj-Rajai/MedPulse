@@ -331,10 +331,11 @@ export function EntryApp() {
 
                 <div className="page-header anim-fade-up">
                     <div>
-                        <h1 className="page-title">Data entry</h1>
+                        <h1 className="page-title page-title-animated">Clinical Field Survey Data Entry</h1>
+                        <p className="page-subtitle">Standardized clinical digitization for registered households &amp; individuals (Roll 235 PSM Survey)</p>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <a href="/family-manage.html" className="btn btn-secondary">👥 Families</a>
+                        <a href="/family-manage.html" className="btn btn-secondary">👥 Manage Families</a>
                     </div>
                 </div>
 
@@ -343,7 +344,7 @@ export function EntryApp() {
                         <div className="custom-select-container" ref={containerRef}>
                             <label className="family-selector-label">
                                 <span>🏠</span>
-                                <span>Household</span>
+                                <span>Select Household Unit *</span>
                             </label>
 
                             <button type="button" id="customSelectTrigger" className={`custom-select-trigger${menuOpen ? ' open' : ''}`} onClick={toggleMenu}>
@@ -357,7 +358,7 @@ export function EntryApp() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <span className="trigger-placeholder">{loadState === 'loading' ? 'Loading households…' : loadState === 'empty' ? 'No households yet' : 'Choose a household'}</span>
+                                        <span className="trigger-placeholder">Loading surveyed families...</span>
                                     )}
                                 </div>
                                 <span className="custom-trigger-arrow" id="customTriggerArrow">▾</span>
@@ -416,20 +417,21 @@ export function EntryApp() {
                             </div>
                         </div>
 
-                        {familyData && <div id="householdSummaryQuick" className="household-summary-quick" style={{ display: 'flex' }}>
+                        <div id="householdSummaryQuick" className="household-summary-quick" style={{ display: familyData ? 'flex' : 'none' }}>
                             <div className="household-summary-info">
-                                <span className="badge badge-info" id="quickFamilyCode">{familyData.family_code || `FAM-${familyData.family_no}`}</span>
-                                <span className="household-summary-item">HOF: <strong id="quickHofName">{familyData.head_of_family}</strong></span>
-                                <span className="household-summary-item">Location: <strong id="quickVillage">{familyData.village_ward || '-'}</strong></span>
+                                <span className="badge badge-info" id="quickFamilyCode">{familyData ? familyData.family_code || `FAM-${familyData.family_no}` : 'FAM-0001'}</span>
+                                <span className="household-summary-item">HOF: <strong id="quickHofName">{familyData ? familyData.head_of_family : '-'}</strong></span>
+                                <span className="household-summary-item">Location: <strong id="quickVillage">{familyData ? familyData.village_ward || '-' : '-'}</strong></span>
                             </div>
                             <button type="button" className="btn btn-secondary" style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem', whiteSpace: 'nowrap' }} onClick={toggleDiet}>🥗 Household Diet</button>
-                        </div>}
+                        </div>
                     </div>
 
-                    <div className="selector-board-strip-wrap" style={loadState === 'empty' ? { display: 'none' } : undefined}>
+                    <div className="selector-board-strip-wrap">
                         <div className="strip-label-row">
-                            <span className="strip-label">Recent households</span>
-                                                    </div>
+                            <span className="strip-label">Quick Switch Household:</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Click any household below to select</span>
+                        </div>
                         <div id="quickFamilyStrip" className="family-horizontal-strip">
                             {listRendered && (shown.length === 0 ? (
                                 <div style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)', fontSize: '0.825rem' }}>
@@ -485,11 +487,11 @@ export function EntryApp() {
 
                 <div id="emptyWorkspacePrompt" className="card anim-fade-up anim-delay-2" style={{ padding: '4rem 2rem', textAlign: 'center', display: familyData ? 'none' : undefined }}>
                     <div className="mp-empty-icon" style={{ marginBottom: '1rem' }}>📋</div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{loadState === 'empty' ? 'Add a household first' : 'Choose a household'}</h2>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Select a Household to Begin Clinical Entry</h2>
                     <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto 1.5rem' }}>
-                        {loadState === 'empty' ? 'Survey entries belong to a household. Add one in Families, then come back here.' : 'Pick a household above to see its members and record screening data.'}
+                        Choose any surveyed family from the dropdown above to load its members and record structured screening data.
                     </p>
-                    {loadState === 'empty' && <a href="/family-manage.html" className="btn btn-primary">➕ Add household</a>}
+                    <a href="/family-manage.html" className="btn btn-primary">➕ Register New Families &amp; Members</a>
                 </div>
 
                 <div id="surveyWorkspace" style={{ display: familyData ? 'block' : 'none' }}>

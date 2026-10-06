@@ -394,7 +394,8 @@ export function AnalyticsApp() {
         <main className="main-content">
             <div className="page-header anim-fade-up" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
                 <div>
-                    <h1 className="page-title">Analytics</h1>
+                    <h1 className="page-title page-title-animated">{"Epidemiological Intelligence & Analytics"}</h1>
+                    <p className="page-subtitle">Interactive population health dashboards, NCD screening metrics, nutrition indicators, and longitudinal tracking</p>
                 </div>
                 <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
                     <button className="btn btn-secondary" onClick={resetFilters} title="Reset all interactive filters">↺ Reset Filters</button>

@@ -34,15 +34,15 @@ export function RegisterApp() {
                 <div className="login-wrapper mode-register" id="loginWrapper">
 
                     {/* MedPulse Brand Header */}
-                    <a href="/" className="login-brand-header" title="SAL Education by MedPulse">
+                    <a href="/" className="login-brand-header" title="MedPulse Health Portal">
                         <div className="login-brand-icon">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                             </svg>
                         </div>
                         <div className="login-brand-text">
-                            <span className="brand-title">SAL Education</span>
-                            <span className="brand-subtitle">by MedPulse</span>
+                            <span className="brand-title">MedPulse</span>
+                            <span className="brand-subtitle">Health Portal</span>
                         </div>
                     </a>
 

@@ -245,7 +245,7 @@ export function ScheduleApp() {
                                 </div>
                                 <div>
                                     <h1 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#ffffff', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span>Schedule</span>
+                                        <span>Academic &amp; Teaching Schedule</span>
                                         <span className="profile-roll-tag" id="heroRollBadge">{`Roll ${roll || '235'}`}</span>
                                     </h1>
                                     <div className="profile-sub-pills">
@@ -258,13 +258,13 @@ export function ScheduleApp() {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
-                                <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem', padding: '4px 12px' }}>📚 NMC CBME curriculum</span>
+                                <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem', padding: '4px 12px' }}>📚 National Medical Commission (NMC) Competency-Based Medical Education (CBME)</span>
                             </div>
                         </div>
                         <div className="hero-gauge-box">
-                            <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Today</div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Today's Date</div>
                             <div style={{ fontSize: '1.25rem', fontWeight: '850', color: '#ffffff' }} id="heroTodayDateLabel">{longDate(today)}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }} id="heroTotalSessionsCount">{total === null ? 'Loading teaching schedule...' : `${total} sessions scheduled`}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }} id="heroTotalSessionsCount">{total === null ? 'Loading teaching schedule...' : `${total} Scheduled Teaching Sessions`}</div>
                         </div>
                     </div>
                 </div>
@@ -300,7 +300,7 @@ export function ScheduleApp() {
                                         title={`Click to view ${pastSessions.length} previous teaching sessions (yesterday 05 Oct & earlier)`}
                                     >
                                         <div className="cubic-date">⏮</div>
-                                        <div className="cubic-day">Earlier</div>
+                                        <div className="cubic-day">PREVIOUS</div>
                                         <div className="cubic-time">Sessions</div>
                                     </div>
                                 )}
@@ -317,7 +317,7 @@ export function ScheduleApp() {
                                         title="Return to Today & Upcoming teaching sessions"
                                     >
                                         <div className="cubic-date">📅</div>
-                                        <div className="cubic-day">Today</div>
+                                        <div className="cubic-day">TODAY</div>
                                         <div className="cubic-time">&amp; Upcoming ▶</div>
                                     </div>
                                 )}
@@ -339,7 +339,7 @@ export function ScheduleApp() {
                                                 {isToday && <span className="today-pulse-dot" title="Today's Session">●</span>}
                                             </div>
                                             <div className="cubic-day">
-                                                {isToday ? `${item.card_day || 'Today'} • Today` : (item.card_day || '')}
+                                                {isToday ? `${item.card_day || 'TODAY'} • TODAY` : (item.card_day || '')}
                                             </div>
                                             <div className="cubic-time">{item.card_time || item.time_slot || ''}</div>
                                             {item.attendance_requested && (
@@ -437,7 +437,7 @@ export function ScheduleApp() {
                             title="Scroll cards left"
                         >
                             <span>◀</span>
-                            <span>Earlier</span>
+                            <span>Previous Cards</span>
                         </button>
                         <button
                             type="button"
@@ -445,7 +445,7 @@ export function ScheduleApp() {
                             onClick={() => scrollSchedule(1)}
                             title="Scroll cards right"
                         >
-                            <span>Later</span>
+                            <span>Next Cards</span>
                             <span>▶</span>
                         </button>
                         {timelineFilter !== 'past' && (

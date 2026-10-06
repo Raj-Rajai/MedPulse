@@ -6,9 +6,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import { BodyPortal, removePreloadTransitions, runWhenActive } from './page-utils';
 import { StudentRegisterForm, type AuthAlerts } from './StudentRegisterForm';
 
-/** Demo sign-in buttons only appear in `npm run dev`, never on the deployed site. */
-const SHOW_DEMO = import.meta.env.DEV;
-
 type AuthMode = 'login' | 'admin' | 'patient' | 'hospital';
 type PatientSubMode = 'login' | 'register';
 
@@ -144,20 +141,20 @@ export function LoginApp() {
 
     // Student
     const [roll, setRoll] = useState('');
-    const [pin, setPin] = useState('');
+    const [pin, setPin] = useState('1234');
     const [loginBusy, setLoginBusy] = useState(false);
     // Admin
     const [adminUser, setAdminUser] = useState('');
-    const [adminPin, setAdminPin] = useState('');
+    const [adminPin, setAdminPin] = useState('9999');
     const [adminBusy, setAdminBusy] = useState(false);
     // Patient sign-in
     const [patientId, setPatientId] = useState('');
-    const [patientPin, setPatientPin] = useState('');
+    const [patientPin, setPatientPin] = useState('1234');
     const [patientBusy, setPatientBusy] = useState(false);
     // Patient registration
     const [pName, setPName] = useState('');
     const [pPhone, setPPhone] = useState('');
-    const [pPin, setPPin] = useState('');
+    const [pPin, setPPin] = useState('1234');
     const [pAge, setPAge] = useState('');
     const [pGender, setPGender] = useState('M');
     const [pAdopted, setPAdopted] = useState(false);
@@ -167,8 +164,8 @@ export function LoginApp() {
     const [refFeedback, setRefFeedback] = useState<FeedbackState>({ shown: false, ok: null });
     const referralTimer = useRef<number | undefined>(undefined);
     // Hospital
-    const [hospUser, setHospUser] = useState('');
-    const [hospPin, setHospPin] = useState('');
+    const [hospUser, setHospUser] = useState('hosp_superadmin');
+    const [hospPin, setHospPin] = useState('8888');
     const [hospBusy, setHospBusy] = useState(false);
 
     const hideAlerts = useCallback(() => {
@@ -622,15 +619,15 @@ export function LoginApp() {
                 <div className={wrapperRegister ? 'login-wrapper mode-register' : 'login-wrapper'} id="loginWrapper">
 
                     {/* MedPulse Brand Header */}
-                    <a href="/" className="login-brand-header" title="SAL Education by MedPulse">
+                    <a href="/" className="login-brand-header" title="MedPulse Health Portal">
                         <div className="login-brand-icon">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                             </svg>
                         </div>
                         <div className="login-brand-text">
-                            <span className="brand-title">SAL Education</span>
-                            <span className="brand-subtitle">by MedPulse</span>
+                            <span className="brand-title">MedPulse</span>
+                            <span className="brand-subtitle">Health Portal</span>
                         </div>
                     </a>
 
@@ -698,7 +695,7 @@ export function LoginApp() {
 
                                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                                     <label htmlFor="pinInput">PIN / Passcode</label>
-                                    <input type="password" id="pinInput" placeholder="PIN" required value={pin} onChange={(e) => setPin(e.target.value)} />
+                                    <input type="password" id="pinInput" placeholder="Default: 1234" required value={pin} onChange={(e) => setPin(e.target.value)} />
                                 </div>
 
                                 <button type="submit" id="loginSubmitBtn" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem' }} disabled={loginBusy}>
@@ -709,14 +706,12 @@ export function LoginApp() {
                             <div className="section-divider" />
 
                             <div style={{ textAlign: 'center' }}>
-                                {SHOW_DEMO && (<>
-<p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
                                     Field Testing or Faculty Review?
                                 </p>
                                 <button type="button" className="btn btn-secondary" style={{ width: '100%', marginBottom: 16 }} onClick={quickDemoLogin}>
                                     ⚡ Quick Demo Sign-In (Roll 235 - Dhruv Patel)
                                 </button>
-</>)}
 
                                 <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                                     New medical cadet? Ask your faculty administrator to register you from the Admin console.
@@ -747,7 +742,7 @@ export function LoginApp() {
 
                                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                                     <label htmlFor="adminPinInput">Security PIN / Passcode <Req /></label>
-                                    <input type="password" id="adminPinInput" placeholder="PIN" required value={adminPin} onChange={(e) => setAdminPin(e.target.value)} />
+                                    <input type="password" id="adminPinInput" placeholder="Default: 9999" required value={adminPin} onChange={(e) => setAdminPin(e.target.value)} />
                                 </div>
 
                                 <button
@@ -761,8 +756,7 @@ export function LoginApp() {
                             <div className="section-divider" />
 
                             <div style={{ textAlign: 'center' }}>
-                                {SHOW_DEMO && (<>
-<p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
                                     Immediate Faculty Testing Access
                                 </p>
                                 <button
@@ -771,7 +765,6 @@ export function LoginApp() {
                                 >
                                     ⚡ Quick Demo Admin Sign-In (admin / 9999)
                                 </button>
-</>)}
 
                                 <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                                     Medical trainee? <a href="javascript:void(0)" onClick={backToStudent} style={linkStyle}>Return to Student Portal {ARROW}</a>
@@ -809,7 +802,7 @@ export function LoginApp() {
 
                                 <div className="form-group" style={{ marginBottom: '1.35rem' }}>
                                     <label htmlFor="patientLoginPin">Access PIN (4 Digits) <Req /></label>
-                                    <input type="password" id="patientLoginPin" placeholder="PIN" required value={patientPin} onChange={(e) => setPatientPin(e.target.value)} />
+                                    <input type="password" id="patientLoginPin" placeholder="Default: 1234" required value={patientPin} onChange={(e) => setPatientPin(e.target.value)} />
                                 </div>
 
                                 <button
@@ -820,8 +813,7 @@ export function LoginApp() {
                                 </button>
 
                                 <div style={{ textAlign: 'center', marginTop: 14 }}>
-                                    {SHOW_DEMO && (<>
-<p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.55rem' }}>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.55rem' }}>
                                         Need immediate patient testing access?
                                     </p>
                                     <button
@@ -830,7 +822,6 @@ export function LoginApp() {
                                     >
                                         ⚡ Quick Demo Patient Sign-In (9876543210 / 1234)
                                     </button>
-</>)}
                                 </div>
                             </form>
 
@@ -930,7 +921,7 @@ export function LoginApp() {
 
                                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                                     <label htmlFor="hospPinInput">Staff Security PIN</label>
-                                    <input type="password" id="hospPinInput" placeholder="PIN" required value={hospPin} onChange={(e) => setHospPin(e.target.value)} />
+                                    <input type="password" id="hospPinInput" placeholder="Default: 8888" required value={hospPin} onChange={(e) => setHospPin(e.target.value)} />
                                 </div>
 
                                 <button
@@ -944,8 +935,7 @@ export function LoginApp() {
                             <div className="section-divider" />
 
                             <div style={{ textAlign: 'center' }}>
-                                {SHOW_DEMO && (<>
-<p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
                                     Need immediate surveillance testing access?
                                 </p>
                                 <button
@@ -954,7 +944,6 @@ export function LoginApp() {
                                 >
                                     ⚡ Quick Demo Hospital Sign-In (hosp_superadmin / 8888)
                                 </button>
-</>)}
 
                                 <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                                     Medical Trainee or Patient? <a href="javascript:void(0)" onClick={backToStudent} style={linkStyle}>Return to Student Portal {ARROW}</a>
@@ -984,7 +973,7 @@ export function LoginApp() {
                     </div>
 
                     <div className="login-footer">
-                        SAL Education by MedPulse &copy; 2026
+                        SAL Hospital &bull; Community Health Portal &copy; 2026
                     </div>
                 </div>
             </main>

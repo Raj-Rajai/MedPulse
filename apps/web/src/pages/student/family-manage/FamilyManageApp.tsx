@@ -928,7 +928,9 @@ export function FamilyManageApp() {
 
                 <div className="page-header anim-fade-up">
                     <div>
+                        <span className="families-eyebrow">Student workspace</span>
                         <h1 className="page-title">Families</h1>
+                        <p className="page-subtitle">Add a family or choose a household to view its details.</p>
                     </div>
                 </div>
 

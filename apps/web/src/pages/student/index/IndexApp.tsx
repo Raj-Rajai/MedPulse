@@ -151,15 +151,17 @@ export function IndexApp() {
                 <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                     <img src="/images/sal-logo.png" alt="SAL Logo" className="header-brand-logo" />
                     <div>
-                        <h1 className="page-title">Community Medicine</h1>
+                        <span className="families-eyebrow">SAL Institute of Medical Sciences • Field Surveillance</span>
+                        <h1 className="page-title">Community Medicine Dashboard</h1>
+                        <p className="page-subtitle">Field household surveillance portfolio, enrolled families, and clinical activity overview.</p>
                     </div>
                 </div>
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                    <a href="/entry.html" className="btn btn-primary" style={{ fontWeight: "650", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                        <span>➕ New survey entry</span>
-                    </a>
                     <a href="/family-manage.html" className="btn btn-secondary" style={{ fontWeight: "650", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                        <span>👥 Families</span>
+                        <span>👥 Manage Families</span>
+                    </a>
+                    <a href="/entry.html" className="btn btn-primary" style={{ fontWeight: "650", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        <span>➕ New Survey Entry</span>
                     </a>
                     <a href="/analytics.html" className="btn btn-secondary" style={{ fontWeight: "650", display: "inline-flex", alignItems: "center", gap: "6px" }}>
                         <span>📊 Analytics</span>
@@ -171,56 +173,60 @@ export function IndexApp() {
                     <div className="profile-kpi-icon kpi-icon-families">🏡</div>
                     <div className="profile-kpi-info">
                         <div className="kpi-num" id="kpiFamilies">{data ? st.total_families || 0 : 0}</div>
-                        <div className="kpi-label">Households</div>
+                        <div className="kpi-label">Assigned Households</div>
                     </div>
                 </div>
                 <div className="profile-kpi-card">
                     <div className="profile-kpi-icon kpi-icon-patients">👥</div>
                     <div className="profile-kpi-info">
                         <div className="kpi-num" id="kpiMembers">{data ? st.total_members || 0 : 0}</div>
-                        <div className="kpi-label">Family members</div>
+                        <div className="kpi-label">Enrolled Family Members</div>
                     </div>
                 </div>
                 <div className="profile-kpi-card">
                     <div className="profile-kpi-icon kpi-icon-followups">🩺</div>
                     <div className="profile-kpi-info">
                         <div className="kpi-num" id="kpiFollowups">{data ? st.total_followups || 0 : 0}</div>
-                        <div className="kpi-label">Follow-up visits</div>
+                        <div className="kpi-label">Follow-Up Visits Logged</div>
                     </div>
                 </div>
                 <div className="profile-kpi-card">
                     <div className="profile-kpi-icon kpi-icon-conditions">💊</div>
                     <div className="profile-kpi-info">
                         <div className="kpi-num" id="kpiConditions">{data ? (st.total_conditions || 0) + (st.total_medications || 0) : 0}</div>
-                        <div className="kpi-label">Diagnoses and prescriptions</div>
+                        <div className="kpi-label">{"Diagnoses & Prescriptions"}</div>
                     </div>
                 </div>
             </div>
             <div className="card anim-fade-up" style={{ marginBottom: "24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
                     <div>
-                        <h2 style={{ fontSize: "1.25rem", fontWeight: "750", color: "var(--text-primary)", marginBottom: "4px" }}>Households</h2>
+                        <h2 style={{ fontSize: "1.25rem", fontWeight: "750", color: "var(--text-primary)", marginBottom: "4px" }}>🏡 Assigned Field Households</h2>
+                        <p className="card-desc" style={{ margin: "0" }}>All households registered under your roll number with surveillance completion status.</p>
                     </div>
+                    <a href="/family-manage.html" className="btn btn-secondary" style={{ fontSize: "0.82rem", padding: "6px 14px", fontWeight: "650" }}>Manage Families →</a>
                 </div>
                 <div className="profile-households-grid" id="profileFamiliesGrid">
                     {!data ? (
                         <div style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)", gridColumn: "1 / -1" }}>Loading assigned households...</div>
                     ) : families.length === 0 ? (
-                        <div style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)", gridColumn: "1 / -1" }}>No households yet. Add one from Families.</div>
+                        <div style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)", gridColumn: "1 / -1" }}>No households assigned to this student roll yet.</div>
                     ) : families.map((f, i) => <FamilyCard key={i} f={f} />)}
                 </div>
             </div>
             <div className="card anim-fade-up" style={{ marginBottom: "24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
                     <div>
-                        <h2 style={{ fontSize: "1.25rem", fontWeight: "750", color: "var(--text-primary)", marginBottom: "4px" }}>Recent activity</h2>
+                        <h2 style={{ fontSize: "1.25rem", fontWeight: "750", color: "var(--text-primary)", marginBottom: "4px" }}>🩺 Recent Clinical Surveillance Activity</h2>
+                        <p className="card-desc" style={{ margin: "0" }}>Log of recent follow-up visits, vitals checks, and clinical interventions performed in the field.</p>
                     </div>
+                    <a href="/entry.html" className="btn btn-secondary" style={{ fontSize: "0.82rem", padding: "6px 14px", fontWeight: "650" }}>New Survey Entry →</a>
                 </div>
                 <div className="activity-timeline" id="profileActivityTimeline">
                     {!data ? (
                         <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>Loading recent field visits...</div>
                     ) : activities.length === 0 ? (
-                        <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No visits logged yet.</div>
+                        <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No recent follow-up activity logged yet.</div>
                     ) : activities.map((a, i) => <ActivityItem key={i} a={a} />)}
                 </div>
             </div>
