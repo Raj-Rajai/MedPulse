@@ -239,4 +239,61 @@
     justify-content: center;
     width: 100%;
   }
+
+  /* ---------- Stat tiles with a word as the value (exams "1 Assessments") ---------- */
+  .profile-kpi-info {
+    min-width: 0;
+  }
+  .profile-kpi-card .kpi-num {
+    line-height: 1.15;
+  }
+  #kpiDistinctionsCount {
+    font-size: 0.95rem !important;
+  }
+
+  /* ---------- Exams year switcher: arrows stay put, the year pills swipe ---------- */
+  .year-pagination-bar {
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    align-items: center;
+    gap: 6px !important;
+    padding: 6px !important;
+  }
+  .year-nav-arrow-btn {
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    justify-content: center;
+  }
+  .year-nav-arrow-btn span {
+    display: none;
+  }
+  .year-pills-container {
+    min-width: 0;
+    flex-wrap: nowrap !important;
+    flex: 1 1 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .year-pills-container::-webkit-scrollbar {
+    display: none;
+  }
+  .year-pill-btn {
+    flex-shrink: 0;
+  }
+  .year-badge-current {
+    display: none !important;
+  }
+
+  /* ---------- Survey entry: section labels stack above their hint text ---------- */
+  .strip-label-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 2px !important;
+  }
+  #surveyWorkspace > div:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 4px;
+  }
 }

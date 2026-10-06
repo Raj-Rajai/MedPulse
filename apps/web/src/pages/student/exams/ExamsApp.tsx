@@ -65,7 +65,8 @@ export function ExamsApp() {
     subjectRef.current = subject;
     const [typeFilter, setTypeFilter] = useState('all');
     const [search, setSearch] = useState('');
-    const [view, setView] = useState<'table' | 'cards'>('table');
+    // Phones start on the cards view; the wide marksheet table needs a desktop-width screen.
+    const [view, setView] = useState<'table' | 'cards'>(() => (window.matchMedia('(max-width: 768px)').matches ? 'cards' : 'table'));
     const [page, setPage] = useState(1);
     const [pageSize, setPageSizeState] = useState<number | 'all'>(3);
 
