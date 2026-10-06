@@ -65,7 +65,8 @@ export function ExamsApp() {
     subjectRef.current = subject;
     const [typeFilter, setTypeFilter] = useState('all');
     const [search, setSearch] = useState('');
-    const [view, setView] = useState<'table' | 'cards'>('table');
+    // Phones start on the cards view; the wide marksheet table needs a desktop-width screen.
+    const [view, setView] = useState<'table' | 'cards'>(() => (window.matchMedia('(max-width: 768px)').matches ? 'cards' : 'table'));
     const [page, setPage] = useState(1);
     const [pageSize, setPageSizeState] = useState<number | 'all'>(3);
 
@@ -178,6 +179,8 @@ export function ExamsApp() {
     const sd = summary ? summary.data : ({} as Summary);
     const uElig = sd.university_eligibility || {};
     const elig = summary ? !!uElig.eligible : null;
+    // Standing, eligibility and the overall score only mean something once results exist.
+    const hasResults = !!summary && (sd.total_exams || 0) > 0;
     const pill = (y: string) => (year === y ? 'year-pill-btn active' : 'year-pill-btn');
     const tab = (t: string) => (typeFilter === t ? 'tab-pill-btn active' : 'tab-pill-btn');
     const info = filtered && filtered.length > 0 ? paginate(filtered.length, pageSize, page) : null;
@@ -207,7 +210,7 @@ export function ExamsApp() {
                                 </div>
                                 <div>
                                     <h1 style={{ fontSize: "1.45rem", fontWeight: "800", color: "#ffffff", marginBottom: "3px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                                        <span>{"Academic Examination & Evaluation Portal"}</span>
+                                        <span>Exams</span>
                                         <span className="profile-roll-tag" id="heroRollBadge">{st ? 'Roll ' + (st.roll_number || '235') : 'Roll 235'}</span>
                                     </h1>
                                     <div className="profile-sub-pills">
@@ -220,15 +223,15 @@ export function ExamsApp() {
                                 </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px", flexWrap: "wrap" }}>
-                                <span className="badge badge-success" id="examStandingBadge" style={{ fontSize: "0.8rem", padding: "5px 12px", background: "rgba(16, 185, 129, 0.25)", color: "#6ee7b7", border: "1px solid rgba(16, 185, 129, 0.5)" }}>{summary ? '🌟 ' + (summary.data.standing || 'Pass') : '🌟 First Class with Distinction'}</span>
-                                <span className={elig === null ? 'badge' : elig ? 'badge badge-success' : 'badge badge-warning'} id="heroUnivEligibilityBadge" style={{ background: "rgba(59, 130, 246, 0.25)", color: "#93c5fd", border: "1px solid rgba(59, 130, 246, 0.5)", fontSize: "0.8rem", padding: "5px 12px" }}>{elig === null ? '✅ University Exam Eligibility: CLEARED (IA ≥ 50%)' : elig ? '✅ University Exam Eligibility: CLEARED (IA Combined ' + uElig.ia_combined_pct + '%)' : '⚠ Remedial IA Required for University Eligibility'}</span>
+                                {hasResults && <span className="badge badge-success" id="examStandingBadge" style={{ fontSize: "0.8rem", padding: "5px 12px", background: "rgba(16, 185, 129, 0.25)", color: "#6ee7b7", border: "1px solid rgba(16, 185, 129, 0.5)" }}>{'🌟 ' + (sd.standing || 'Pass')}</span>}
+                                {hasResults && <span className={elig === null ? 'badge' : elig ? 'badge badge-success' : 'badge badge-warning'} id="heroUnivEligibilityBadge" style={{ background: "rgba(59, 130, 246, 0.25)", color: "#93c5fd", border: "1px solid rgba(59, 130, 246, 0.5)", fontSize: "0.8rem", padding: "5px 12px" }}>{elig === null ? '✅ University Exam Eligibility: CLEARED (IA ≥ 50%)' : elig ? '✅ University Exam Eligibility: CLEARED (IA Combined ' + uElig.ia_combined_pct + '%)' : '⚠ Remedial IA Required for University Eligibility'}</span>}
                             </div>
                         </div>
-                        <div className="hero-standing-card">
-                            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", letterSpacing: "0.05em", marginBottom: "4px" }}>Cumulative Aggregate</div>
+                        {hasResults && <div className="hero-standing-card">
+                            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", letterSpacing: "0.05em", marginBottom: "4px" }}>Overall</div>
                             <div className="hero-standing-score" id="heroCumulativePct">{summary ? (sd.cumulative_overall?.percentage || 0) + '%' : '--%'}</div>
-                            <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.85)", marginTop: "4px" }} id="heroTotalMarksFraction">{summary ? `${sd.cumulative_overall?.obtained || 0} / ${sd.cumulative_overall?.max || 0} Marks` : '-- / -- Marks'}</div>
-                        </div>
+                            <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.85)", marginTop: "4px" }} id="heroTotalMarksFraction">{`${sd.cumulative_overall?.obtained || 0} / ${sd.cumulative_overall?.max || 0} marks`}</div>
+                        </div>}
                     </div>
                 </div>
                 <div className="year-pagination-bar anim-fade-up" id="yearPaginationBar">
@@ -258,10 +261,7 @@ export function ExamsApp() {
                         <button className={pill('3')} data-year="3" onClick={() => selectAcademicYear(3)}>
                             <span className="year-dot" />
                             <div className="year-text-group">
-                                <span className="year-title">
-                                    <span>3rd Year MBBS</span>
-                                    <span className="year-badge-current">Current Year</span>
-                                </span>
+                                <span className="year-title">3rd Year MBBS</span>
                                 <span className="year-meta">2026</span>
                             </div>
                         </button>
@@ -287,28 +287,28 @@ export function ExamsApp() {
                         <div className="profile-kpi-icon" style={{ background: "rgba(2, 132, 199, 0.1)", color: "#0284c7", fontSize: "1.4rem" }}>📝</div>
                         <div className="profile-kpi-info">
                             <div className="kpi-num" id="kpiTheoryAvg">{summary ? (sd.cumulative_theory?.percentage || 0) + '%' : '--%'}</div>
-                            <div className="kpi-label">Theory Average Score</div>
+                            <div className="kpi-label">Theory average</div>
                         </div>
                     </div>
                     <div className="profile-kpi-card">
                         <div className="profile-kpi-icon" style={{ background: "rgba(124, 58, 237, 0.1)", color: "var(--accent)", fontSize: "1.4rem" }}>🩺</div>
                         <div className="profile-kpi-info">
                             <div className="kpi-num" id="kpiPracticalAvg">{summary ? (sd.cumulative_practical?.percentage || 0) + '%' : '--%'}</div>
-                            <div className="kpi-label">{"Practical & Clinical Average"}</div>
+                            <div className="kpi-label">Practical average</div>
                         </div>
                     </div>
                     <div className="profile-kpi-card">
                         <div className="profile-kpi-icon" style={{ background: "rgba(16, 185, 129, 0.1)", color: "var(--green)", fontSize: "1.4rem" }}>🎖</div>
                         <div className="profile-kpi-info">
-                            <div className="kpi-num" id="kpiDistinctionsCount">{summary ? `${sd.distinctions || 0} Assessments` : '0'}</div>
-                            <div className="kpi-label">Distinctions Achieved</div>
+                            <div className="kpi-num" id="kpiDistinctionsCount">{summary ? String(sd.distinctions || 0) : '0'}</div>
+                            <div className="kpi-label">Distinctions</div>
                         </div>
                     </div>
                     <div className="profile-kpi-card">
                         <div className="profile-kpi-icon" style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b", fontSize: "1.4rem" }}>📜</div>
                         <div className="profile-kpi-info">
                             <div className="kpi-num" id="kpiExamsCleared">{summary ? `${sd.passed_exams || 0} / ${sd.total_exams || 0}` : '0 / 0'}</div>
-                            <div className="kpi-label">Examinations Cleared (100%)</div>
+                            <div className="kpi-label">Exams passed</div>
                         </div>
                     </div>
                 </div>

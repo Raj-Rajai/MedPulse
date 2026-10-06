@@ -108,7 +108,10 @@
       background: #f8fafc;
       border: 1.5px solid #e2e8f0;
       border-radius: var(--radius-lg);
-      padding: 7px 14px;
+      padding: 7px 16px;
+      min-height: 48px;
+      min-width: 140px;
+      box-sizing: border-box;
       cursor: pointer;
       display: inline-flex;
       align-items: center;

@@ -125,16 +125,25 @@
   }
 
   .table-wrapper table,
-  .table-responsive table {
-    min-width: 540px !important;
+  .table-responsive table,
+  .profile-att-table,
+  .datewise-table {
+    min-width: 500px !important;
+    font-size: 0.72rem !important;
+    zoom: 0.84 !important;
   }
 
   .table-wrapper th,
   .table-wrapper td,
   .table-responsive th,
-  .table-responsive td {
-    padding: 7px 10px !important;
-    font-size: 0.76rem !important;
+  .table-responsive td,
+  .profile-att-table th,
+  .profile-att-table td,
+  .datewise-table th,
+  .datewise-table td {
+    padding: 6px 8px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
   }
 }
 
@@ -360,14 +369,12 @@
     margin-top: 2px !important;
   }
 
-  /* Subject-wise & Day-wise attendance tables */
+  /* Subject-wise & Day-wise attendance tables: single scrollbar on wrapper only */
   .profile-att-table {
     font-size: 0.74rem !important;
-    display: block !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+    display: table !important;
+    overflow: visible !important;
     width: 100% !important;
-    scrollbar-width: thin !important;
   }
 
   .profile-att-table th,
@@ -880,19 +887,13 @@
     box-sizing: border-box !important;
   }
 
-  /* Department filter pills: touch scroll */
+  /* Department filter bar: allow popovers to open cleanly without clipping */
   .schedule-filter-bar {
     display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    gap: 6px !important;
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+    gap: 8px !important;
     padding: 4px 0 10px !important;
-    scrollbar-width: none !important;
-  }
-
-  .schedule-filter-bar::-webkit-scrollbar {
-    display: none !important;
   }
 
   .schedule-dept-pill {

@@ -71,8 +71,8 @@ function IndexUserBadge() {
                 <span className="role-dot" />
             </div>
             <div className="user-info-text">
-                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', display: 'block' }}>Student</span>
-                <span style={{ fontWeight: 700, color: '#fff' }}>Roll {roll}</span>
+                <span style={{ fontSize: '0.74rem', color: 'rgba(255, 255, 255, 0.65)', fontWeight: 600, display: 'block', lineHeight: 1.25 }}>Student</span>
+                <span style={{ fontSize: '0.74rem', color: 'rgba(255, 255, 255, 0.65)', fontWeight: 600, display: 'block', lineHeight: 1.25 }}>Roll {roll}</span>
             </div>
             <button className="logout-btn" onClick={(e) => { e.stopPropagation(); logoutUser(); }} title="Logout">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

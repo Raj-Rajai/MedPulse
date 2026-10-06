@@ -148,8 +148,8 @@ export function SidebarUserBadge() {
                 </svg>
             }
             dotTitle="Active Cadet Session"
-            roleLabel={displayRole} roleStyle={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', display: 'block', ...ellipsis }}
-            name={`Roll ${rollNum}`} nameTitle={displayName} nameStyle={{ fontWeight: 700, color: '#fff', ...ellipsis }}
+            roleLabel={displayRole} roleStyle={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.65)', fontWeight: 600, display: 'block', ...ellipsis }}
+            name={`Roll ${rollNum}`} nameTitle={displayName} nameStyle={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.65)', fontWeight: 600, ...ellipsis }}
             onLogout={logout} logoutTitle="Sign Out"
         />
     );

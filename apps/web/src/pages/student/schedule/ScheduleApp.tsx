@@ -2,7 +2,7 @@
  * student/schedule.html: academic teaching schedule (department pills, horizontal strip of
  * cubic date cards, detail panel, CSV / .ics export).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { BodyPortal, useStudentChrome } from '../common/Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
@@ -70,7 +70,10 @@ export function ScheduleApp() {
     useStudentChrome(scheduleSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PLAIN);
     const [user] = useState(readAuthUser);
-    const [activePill, setActivePill] = useState('all');
+    const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [filterSearch, setFilterSearch] = useState('');
+    const filterDropdownRef = useRef<HTMLDivElement>(null);
     const [strip, setStrip] = useState<Strip>({ kind: 'loading' });
     const [allItems, setAllItems] = useState<ScheduleItem[]>([]);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -136,7 +139,60 @@ export function ScheduleApp() {
         }
     };
 
-    const loadScheduleData = async (dept = 'all') => {
+    const departments = useMemo(() => departmentsOf(allItems), [allItems]);
+
+    const deptCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        for (const item of allItems) {
+            const d = item.department || item.subject || 'Other';
+            counts[d] = (counts[d] || 0) + 1;
+        }
+        return counts;
+    }, [allItems]);
+
+    const filteredDeptList = useMemo(() => {
+        if (!filterSearch.trim()) return departments;
+        const q = filterSearch.toLowerCase();
+        return departments.filter((d) => d.toLowerCase().includes(q));
+    }, [departments, filterSearch]);
+
+    const applyDepartmentFilter = (newSelected: string[] | null, sourceItems = allItems) => {
+        setSelectedDepts(newSelected);
+        if (strip.kind === 'error') return;
+        const allDepts = departmentsOf(sourceItems);
+        const isAll = newSelected === null || newSelected.length === allDepts.length;
+        const filtered = isAll
+            ? sourceItems
+            : newSelected.length === 0
+            ? []
+            : sourceItems.filter((i) => newSelected.includes(i.department || i.subject || ''));
+        showItems(filtered);
+    };
+
+    const toggleDept = (dept: string) => {
+        const currentList = selectedDepts === null ? [...departments] : [...selectedDepts];
+        let updated: string[];
+        if (currentList.includes(dept)) {
+            updated = currentList.filter((d) => d !== dept);
+        } else {
+            updated = [...currentList, dept];
+        }
+        if (updated.length === departments.length) {
+            applyDepartmentFilter(null);
+        } else {
+            applyDepartmentFilter(updated);
+        }
+    };
+
+    const selectAllDepts = () => {
+        applyDepartmentFilter(null);
+    };
+
+    const clearDepts = () => {
+        applyDepartmentFilter([]);
+    };
+
+    const loadScheduleData = async () => {
         try {
             const res = await fetch('/api/academic/schedule');
             if (res.status === 401 || res.status === 403) throw new Error('Please sign in as a student to view your schedule');
@@ -145,7 +201,14 @@ export function ScheduleApp() {
             const items: ScheduleItem[] = [...(data.schedules || [])];
             setAllItems(items);
             setTotal(items.length);
-            showItems(dept === 'all' ? items : items.filter((i) => (i.department || i.subject) === dept));
+            const allDepts = departmentsOf(items);
+            const isAll = selectedDepts === null || selectedDepts.length === allDepts.length;
+            const filtered = isAll
+                ? items
+                : selectedDepts.length === 0
+                ? []
+                : items.filter((i) => selectedDepts.includes(i.department || i.subject || ''));
+            showItems(filtered);
         } catch (err) {
             console.error('Failed to load academic schedule:', err);
             showToast('Error loading schedule: ' + errMsg(err), 'error');
@@ -158,13 +221,23 @@ export function ScheduleApp() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Filtering is done on the loaded list, so switching pills is instant and can't race a slower request.
-    const filterDepartment = (dept: string) => {
-        setActivePill(dept);
-        if (strip.kind === 'error') return;
-        showItems(dept === 'all' ? allItems : allItems.filter((i) => (i.department || i.subject) === dept));
-    };
-    const departments = departmentsOf(allItems);
+    useEffect(() => {
+        const handleOutside = (e: MouseEvent | TouchEvent) => {
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+                const btn = document.getElementById('btnDeptFilterToggle');
+                if (btn && btn.contains(e.target as Node)) return;
+                setIsFilterOpen(false);
+            }
+        };
+        if (isFilterOpen) {
+            document.addEventListener('mousedown', handleOutside);
+            document.addEventListener('touchstart', handleOutside, { passive: true });
+            return () => {
+                document.removeEventListener('mousedown', handleOutside);
+                document.removeEventListener('touchstart', handleOutside);
+            };
+        }
+    }, [isFilterOpen]);
 
     const downloadIcs = () => {
         const current = detail;
@@ -245,7 +318,7 @@ export function ScheduleApp() {
                                 </div>
                                 <div>
                                     <h1 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#ffffff', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span>Academic &amp; Teaching Schedule</span>
+                                        <span>Schedule</span>
                                         <span className="profile-roll-tag" id="heroRollBadge">{`Roll ${roll || '235'}`}</span>
                                     </h1>
                                     <div className="profile-sub-pills">
@@ -258,22 +331,327 @@ export function ScheduleApp() {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
-                                <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem', padding: '4px 12px' }}>📚 National Medical Commission (NMC) Competency-Based Medical Education (CBME)</span>
+                                <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem', padding: '4px 12px' }}>📚 NMC CBME curriculum</span>
                             </div>
                         </div>
                         <div className="hero-gauge-box">
-                            <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Today's Date</div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Today</div>
                             <div style={{ fontSize: '1.25rem', fontWeight: '850', color: '#ffffff' }} id="heroTodayDateLabel">{longDate(today)}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }} id="heroTotalSessionsCount">{total === null ? 'Loading teaching schedule...' : `${total} Scheduled Teaching Sessions`}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }} id="heroTotalSessionsCount">{total === null ? 'Loading teaching schedule...' : `${total} sessions scheduled`}</div>
                         </div>
                     </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }} className="anim-fade-up">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }} className="schedule-filter-bar" id="deptFilterGroup">
-                        {[['all', 'All Departments'], ...departments.map((dep) => [dep, dep])].map(([dept, label]) => (
-                            <button key={dept} type="button" className={`schedule-dept-pill${activePill === dept ? ' active' : ''}`} onClick={() => filterDepartment(dept)}>{label}</button>
-                        ))}
+                <div className="schedule-filter-bar anim-fade-up" style={{ position: 'relative', zIndex: 40, marginBottom: '18px' }} ref={filterDropdownRef}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        {/* Primary Multi-Select Dropdown Button */}
+                        {(() => {
+                            const isAll = selectedDepts === null || selectedDepts.length === departments.length;
+                            const hasActiveFilter = !isAll;
+                            return (
+                                <>
+                                    <button
+                                        type="button"
+                                        id="btnDeptFilterToggle"
+                                        className={`schedule-multiselect-btn${isFilterOpen ? ' open' : ''}${hasActiveFilter ? ' filtered' : ''}`}
+                                        onClick={() => setIsFilterOpen((prev) => !prev)}
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: '7px 14px',
+                                            background: hasActiveFilter ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : '#ffffff',
+                                            color: hasActiveFilter ? '#ffffff' : '#334155',
+                                            border: hasActiveFilter ? '1px solid #4f46e5' : '1px solid #cbd5e1',
+                                            borderRadius: '20px',
+                                            fontSize: '0.82rem',
+                                            fontWeight: 650,
+                                            cursor: 'pointer',
+                                            boxShadow: hasActiveFilter ? '0 2px 8px rgba(99, 102, 241, 0.25)' : '0 1px 3px rgba(0,0,0,0.06)',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                                        </svg>
+                                        <span>
+                                            {isAll
+                                                ? 'Filter Departments'
+                                                : selectedDepts.length === 0
+                                                ? '0 Departments Selected'
+                                                : `${selectedDepts.length} Department${selectedDepts.length > 1 ? 's' : ''} Selected`}
+                                        </span>
+                                        <span
+                                            style={{
+                                                background: hasActiveFilter ? 'rgba(255,255,255,0.25)' : '#f1f5f9',
+                                                color: hasActiveFilter ? '#ffffff' : '#64748b',
+                                                padding: '1px 6px',
+                                                borderRadius: '10px',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 700,
+                                            }}
+                                        >
+                                            {isAll ? departments.length : selectedDepts.length}
+                                        </span>
+                                        <svg
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            style={{
+                                                transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                transition: 'transform 0.2s ease',
+                                            }}
+                                        >
+                                            <polyline points="6 9 12 15 18 9" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Quick "Reset to All" Button if filtered */}
+                                    {hasActiveFilter && (
+                                        <button
+                                            type="button"
+                                            onClick={selectAllDepts}
+                                            style={{
+                                                background: '#f1f5f9',
+                                                border: '1px solid #e2e8f0',
+                                                color: '#475569',
+                                                borderRadius: '16px',
+                                                padding: '6px 12px',
+                                                fontSize: '0.78rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                            }}
+                                        >
+                                            Reset to All
+                                        </button>
+                                    )}
+
+                                    {/* Selected Chips */}
+                                    {hasActiveFilter && selectedDepts.length > 0 && selectedDepts.length <= 3 && (
+                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                            {selectedDepts.map((d) => (
+                                                <span
+                                                    key={d}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        background: '#eef2ff',
+                                                        color: '#4f46e5',
+                                                        border: '1px solid #c7d2fe',
+                                                        borderRadius: '14px',
+                                                        padding: '3px 9px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 650,
+                                                    }}
+                                                >
+                                                    <span>{d}</span>
+                                                    <span
+                                                        onClick={(e) => { e.stopPropagation(); toggleDept(d); }}
+                                                        style={{ cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1, opacity: 0.7 }}
+                                                        title={`Remove ${d}`}
+                                                    >
+                                                        ✕
+                                                    </span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
+
+                        {/* Summary count */}
+                        <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                            {`Showing ${displayed.length} of ${allItems.length} sessions`}
+                        </span>
                     </div>
+
+                    {/* Backdrop for click-outside on mobile / desktop */}
+                    {isFilterOpen && (
+                        <div
+                            className="dept-filter-backdrop"
+                            onClick={() => setIsFilterOpen(false)}
+                            onTouchStart={() => setIsFilterOpen(false)}
+                        />
+                    )}
+
+                    {/* Floating Multi-Select Dropdown Popover */}
+                    {isFilterOpen && (
+                        <div
+                            id="deptMultiSelectDropdown"
+                            style={{
+                                position: 'absolute',
+                                top: 'calc(100% + 8px)',
+                                left: 0,
+                                zIndex: 100,
+                                background: '#ffffff',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '14px',
+                                boxShadow: '0 14px 38px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(0, 0, 0, 0.05)',
+                                width: 'min(360px, 94vw)',
+                                maxHeight: '380px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            {/* Popover Header */}
+                            <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <strong style={{ fontSize: '0.85rem', color: '#0f172a' }}>Filter Departments</strong>
+                                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Multi-select departments to view</div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={selectAllDepts}
+                                        style={{ background: 'transparent', border: 'none', color: '#4f46e5', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer', padding: '2px 4px' }}
+                                    >
+                                        Select All
+                                    </button>
+                                    <span style={{ color: '#cbd5e1' }}>•</span>
+                                    <button
+                                        type="button"
+                                        onClick={clearDepts}
+                                        style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: '2px 4px' }}
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Popover Search Bar */}
+                            <div style={{ padding: '8px 12px', borderBottom: '1px solid #f8fafc', background: '#f8fafc' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Search department..."
+                                        value={filterSearch}
+                                        onChange={(e) => setFilterSearch(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '6px 10px 6px 28px',
+                                            fontSize: '0.78rem',
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: '8px',
+                                            outline: 'none',
+                                            background: '#ffffff',
+                                            color: '#1e293b',
+                                            boxSizing: 'border-box',
+                                        }}
+                                    />
+                                    <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', opacity: 0.6 }}>🔍</span>
+                                    {filterSearch && (
+                                        <span
+                                            onClick={() => setFilterSearch('')}
+                                            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '0.75rem', color: '#94a3b8' }}
+                                        >
+                                            ✕
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Scrollable Checkbox List */}
+                            <div style={{ overflowY: 'auto', padding: '6px', maxHeight: '220px', flex: 1 }}>
+                                {filteredDeptList.map((dep) => {
+                                    const isChecked = selectedDepts === null ? true : selectedDepts.includes(dep);
+                                    const count = deptCounts[dep] || 0;
+                                    return (
+                                        <div
+                                            key={dep}
+                                            onClick={() => toggleDept(dep)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '7px 10px',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                background: isChecked ? '#f5f3ff' : 'transparent',
+                                                transition: 'background 0.15s ease',
+                                                WebkitTapHighlightColor: 'transparent',
+                                                touchAction: 'manipulation',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (!isChecked) e.currentTarget.style.background = '#f8fafc';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!isChecked) e.currentTarget.style.background = 'transparent';
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
+                                                <div
+                                                    style={{
+                                                        width: '16px',
+                                                        height: '16px',
+                                                        borderRadius: '4px',
+                                                        border: isChecked
+                                                            ? '1.5px solid #6366f1'
+                                                            : '1.5px solid #cbd5e1',
+                                                        background: isChecked ? '#6366f1' : '#ffffff',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: '#ffffff',
+                                                        fontSize: '11px',
+                                                        fontWeight: 800,
+                                                        flexShrink: 0,
+                                                    }}
+                                                >
+                                                    {isChecked && '✓'}
+                                                </div>
+                                                <span style={{ fontSize: '0.8rem', color: '#1e293b', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {dep}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '0.68rem', color: '#64748b', background: '#f1f5f9', padding: '2px 6px', borderRadius: '6px', fontWeight: 650, flexShrink: 0 }}>
+                                                {count}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                                {filteredDeptList.length === 0 && (
+                                    <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '0.78rem' }}>
+                                        No departments matching "{filterSearch}"
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Popover Footer */}
+                            <div style={{ padding: '8px 12px', borderTop: '1px solid #f1f5f9', background: '#faf5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.72rem', color: '#6b21a8', fontWeight: 650 }}>
+                                    {selectedDepts === null || selectedDepts.length === departments.length
+                                        ? 'All departments active'
+                                        : `${selectedDepts.length} selected`}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsFilterOpen(false)}
+                                    style={{
+                                        background: '#7c3aed',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '5px 12px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="schedule-scroll-wrapper anim-fade-up">
                     <button type="button" className="schedule-scroll-nav-btn prev" onClick={() => scrollSchedule(-1)} title="Scroll left">◀</button>
@@ -283,7 +661,22 @@ export function ScheduleApp() {
                         ) : strip.kind === 'error' ? (
                             <div style={{ padding: '24px', color: '#ef4444' }}>Failed to load schedule. ({strip.message})</div>
                         ) : displayed.length === 0 ? (
-                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{activePill === 'all' ? 'No teaching sessions have been scheduled for you yet.' : 'No teaching sessions found for this department.'}</div>
+                            <div style={{ padding: '24px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                {selectedDepts !== null && selectedDepts.length === 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                        <span>No departments selected. Pick one or more departments from the filter above.</span>
+                                        <button
+                                            type="button"
+                                            onClick={selectAllDepts}
+                                            style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 14px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 650 }}
+                                        >
+                                            Show All Departments
+                                        </button>
+                                    </div>
+                                ) : (
+                                    'No teaching sessions found for selected departments.'
+                                )}
+                            </div>
                         ) : (
                             <>
                                 {/* Action Toggle Card: Switch between Previous Sessions and Today & Upcoming */}
@@ -300,7 +693,7 @@ export function ScheduleApp() {
                                         title={`Click to view ${pastSessions.length} previous teaching sessions (yesterday 05 Oct & earlier)`}
                                     >
                                         <div className="cubic-date">⏮</div>
-                                        <div className="cubic-day">PREVIOUS</div>
+                                        <div className="cubic-day">Earlier</div>
                                         <div className="cubic-time">Sessions</div>
                                     </div>
                                 )}
@@ -317,7 +710,7 @@ export function ScheduleApp() {
                                         title="Return to Today & Upcoming teaching sessions"
                                     >
                                         <div className="cubic-date">📅</div>
-                                        <div className="cubic-day">TODAY</div>
+                                        <div className="cubic-day">Today</div>
                                         <div className="cubic-time">&amp; Upcoming ▶</div>
                                     </div>
                                 )}
@@ -336,10 +729,9 @@ export function ScheduleApp() {
                                         >
                                             <div className="cubic-date">
                                                 <span>{item.card_date || ''}</span>
-                                                {isToday && <span className="today-pulse-dot" title="Today's Session">●</span>}
                                             </div>
                                             <div className="cubic-day">
-                                                {isToday ? `${item.card_day || 'TODAY'} • TODAY` : (item.card_day || '')}
+                                                {isToday ? `${item.card_day || 'Today'} • Today` : (item.card_day || '')}
                                             </div>
                                             <div className="cubic-time">{item.card_time || item.time_slot || ''}</div>
                                             {item.attendance_requested && (
@@ -437,7 +829,7 @@ export function ScheduleApp() {
                             title="Scroll cards left"
                         >
                             <span>◀</span>
-                            <span>Previous Cards</span>
+                            <span>Earlier</span>
                         </button>
                         <button
                             type="button"
@@ -445,7 +837,7 @@ export function ScheduleApp() {
                             onClick={() => scrollSchedule(1)}
                             title="Scroll cards right"
                         >
-                            <span>Next Cards</span>
+                            <span>Later</span>
                             <span>▶</span>
                         </button>
                         {timelineFilter !== 'past' && (
@@ -597,7 +989,7 @@ export function ScheduleApp() {
                 onClose={() => setFillModalOpen(false)}
                 onSuccess={(msg) => {
                     showToast(msg, 'success');
-                    loadScheduleData(activePill);
+                    loadScheduleData();
                 }}
             />
         </BodyPortal>

@@ -1,0 +1,119 @@
+/* ============================================================
+   Calm layer (Apple HIG audit, 2026-10-06)
+   Loaded last on the student pages. Everything is scoped to
+   .main-content so the sidebar and nav bar stay exactly as they are.
+   This layer changes layout and type only; every colour, gradient and
+   background stays as defined in style.css and the page stylesheets.
+   - Flat sections: no drop shadows except on things that float
+   - Six text sizes: 28 / 20 / 17 / 15 / 13 / 12, weights 400 / 600 / 700, sentence case
+   - Every control at least 44px tall
+   ============================================================ */
+
+.main-content {
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-card: none;
+  font-size: 15px;
+}
+
+/* ── Sentence case, normal tracking ─────────────────────── */
+.main-content *:not(svg):not(svg *) {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* ── Type scale ─────────────────────────────────────────── */
+.main-content h1,
+.main-content .page-title,
+.main-content .page-title-animated {
+  font-size: 28px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  animation: none !important;
+}
+.main-content h2 { font-size: 20px !important; font-weight: 700 !important; line-height: 1.3 !important; }
+.main-content h3 { font-size: 17px !important; font-weight: 600 !important; line-height: 1.35 !important; }
+.main-content h4,
+.main-content h5 { font-size: 15px !important; font-weight: 600 !important; }
+.main-content .page-subtitle,
+.main-content .page-header p,
+.main-content .card-subtitle,
+.main-content .section-subtitle { font-size: 15px !important; font-weight: 400 !important; }
+
+/* Nothing heavier than bold */
+.main-content [style*="font-weight: 800"],
+.main-content [style*="font-weight: 850"],
+.main-content [style*="font-weight: 900"] { font-weight: 700 !important; }
+.main-content :is([style*="font-size: 0.6"], [style*="font-size: 0.70"], [style*="font-size: 0.71"],
+  [style*="font-size: 0.72"], [style*="font-size: 0.73"], [style*="font-size: 0.74"],
+  [style*="font-size: 10px"], [style*="font-size: 11px"], [style*="font-size: 9px"]) { font-size: 12px !important; }
+
+/* Small print: never below 12px */
+.main-content :is(small, .kpi-label, .stat-label, .badge, .profile-roll-tag, .year-meta, .text-xs, th, label, .form-label, .meta, .hint, .help-text) {
+  font-size: max(12px, 0.8125rem) !important;
+}
+.main-content :is(.kpi-label, .stat-label, .prof-att-kpi-label, .form-label, label, th) { font-weight: 600 !important; }
+.main-content :is(.kpi-num, .stat-value, .kpi-value, .hero-standing-score) {
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Surfaces: flat sections, one corner radius ────────── */
+.main-content :is(.card, .profile-kpi-card, .kpi-card, .chart-card, .stat-card,
+  .exam-record-card, .exams-toolbar, .year-pagination-bar, .analytics-filter-bar,
+  .datewise-container-card, .profile-info-card, .family-selector-board,
+  .schedule-detail-placeholder, .family-card, .family-add-section, .att-subject-card,
+  .schedule-cubic-card, .mp-empty, .empty-state) {
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+.main-content :is(.card, .kpi-card, .profile-kpi-card, .chart-card):hover { transform: none !important; }
+
+/* No drop shadows inside the page, except on things that float */
+.main-content *:not(.mp-dp):not(.mp-dp *):not(.modal-box):not(.modal-box *):not(.modal-content):not(.toast):not(.toast *) {
+  box-shadow: none !important;
+}
+
+/* ── Page header banners: same colours, tighter layout ─── */
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) {
+  border-radius: 12px !important;
+  padding: 20px !important;
+}
+/* Decorative icon tiles with status dots */
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) .profile-avatar-wrapper { display: none !important; }
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) :is(.badge, .profile-roll-tag, .verified-badge, .ref-code-tag) { font-weight: 600 !important; }
+.main-content :is(.hero-gauge-box, .hero-standing-card) { border-radius: 10px !important; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.main-content .btn { font-weight: 600 !important; border-radius: 10px !important; transform: none !important; }
+
+/* ── Tap targets: 44px minimum ──────────────────────────── */
+.main-content :is(.btn, button, select, a.btn, [role="button"], [role="tab"],
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"])) {
+  min-height: 44px !important;
+}
+.main-content :is(button, [role="button"]):not(.btn) { min-width: 44px; }
+.main-content a[href^="mailto:"],
+.main-content a[href^="tel:"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* ── Tables scroll inside their own box instead of clipping ── */
+.main-content :is(.table-container, .table-wrapper, .table-responsive, .datewise-table-wrap) { overflow-x: auto !important; }
+
+/* ── Phone: hide the closed drawer's shadow (it showed as a grey band on the left) ── */
+@media (max-width: 860px) {
+  body:not(.sidebar-mobile-open) .sidebar:not(.open) { box-shadow: none !important; }
+}
+
+/* Privacy pop-ups: drop the row of badge pills above the title */
+.privacy-badge-row { display: none !important; }
+
+/* Schedule: on phones the date cards are swiped, so the scroll buttons are just clutter */
+@media (max-width: 860px) {
+  .main-content .schedule-pagi-btn[title^="Scroll cards"] { display: none !important; }
+}

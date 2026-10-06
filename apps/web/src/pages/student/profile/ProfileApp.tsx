@@ -15,7 +15,6 @@ import { DatewiseTableBody, type DatewiseData } from '../common/Datewise';
 import { OverallAttendance, type SubjectWiseData } from './OverallAttendance';
 import { EditProfileModal, ChangePinModal, type ProfileForm } from './ProfileModals';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
-import { ActiveAttendanceBanner } from '../common/StudentAttendanceRoom';
 
 interface Student {
     name?: string;
@@ -300,7 +299,6 @@ export function ProfileApp() {
             <MobileNavToggle onToggle={standardSidebar.toggle} />
             {toasts}
             <main className="main-content">
-                <ActiveAttendanceBanner onOpen={() => openFillAttendance()}/>
                 <div className="profile-hero anim-fade-up">
                     <div className="profile-hero-content">
                         <div className="profile-identity-group">
@@ -360,16 +358,16 @@ export function ProfileApp() {
                             <div>
                                 <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-primary)', margin: '0', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                                     <span>Attendance</span>
-                                    <span className="badge" style={{ background: 'rgba(109, 40, 217, 0.08)', color: '#6d28d9', border: '1px solid rgba(109, 40, 217, 0.2)', fontSize: '0.74rem', padding: '3px 9px', borderRadius: '6px' }}>3rd Year MBBS (2026)</span>
+                                    <span className="badge" style={{ background: 'rgba(109, 40, 217, 0.08)', color: '#6d28d9', border: '1px solid rgba(109, 40, 217, 0.2)', fontSize: '0.74rem', padding: '4px 12px', borderRadius: '999px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>3rd Year MBBS (2026)</span>
                                 </h2>
                             </div>
                         </div>
                         <div className="att-view-toggle-pill" id="profAttToggleGroup">
                             <button type="button" className={`btn-toggle-att${tab === 'overall' ? ' active' : ''}`} id="btnToggleOverall" onClick={() => setProfileAttendanceTab('overall')}>
-                                <span>📊 Overall Summary</span>
+                                <span>📊 Summary</span>
                             </button>
                             <button type="button" className={`btn-toggle-att${tab === 'daywise' ? ' active' : ''}`} id="btnToggleDaywise" onClick={() => setProfileAttendanceTab('daywise')}>
-                                <span>📅 Day-Wise Attendance</span>
+                                <span>📅 By day</span>
                             </button>
                         </div>
                     </div>

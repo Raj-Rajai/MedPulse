@@ -549,6 +549,9 @@
   body.sidebar-collapsed .sidebar-user .user-info-text,
   .sidebar-user .user-info-text {
     display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 2px !important;
     max-width: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -563,7 +566,9 @@
   body.sidebar-collapsed .sidebar-toggle-btn .icon-collapse,
   .sidebar-toggle-btn .icon-collapse {
     opacity: 1 !important;
-    transform: none !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     pointer-events: auto !important;
     display: block !important;
   }

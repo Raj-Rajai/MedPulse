@@ -445,7 +445,6 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                                         >
                                                             <div className="cubic-date">
                                                                 <span>{item.card_date || item.date_iso}</span>
-                                                                {isToday && <span className="today-pulse-dot" title="Today's Session">●</span>}
                                                             </div>
                                                             <div className="cubic-day">
                                                                 {isToday ? `${item.card_day || 'TODAY'} • TODAY` : (item.card_day || '')}
