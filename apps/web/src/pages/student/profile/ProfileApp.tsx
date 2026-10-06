@@ -366,10 +366,10 @@ export function ProfileApp() {
                         </div>
                         <div className="att-view-toggle-pill" id="profAttToggleGroup">
                             <button type="button" className={`btn-toggle-att${tab === 'overall' ? ' active' : ''}`} id="btnToggleOverall" onClick={() => setProfileAttendanceTab('overall')}>
-                                <span>📊 Overall Summary</span>
+                                <span>📊 Summary</span>
                             </button>
                             <button type="button" className={`btn-toggle-att${tab === 'daywise' ? ' active' : ''}`} id="btnToggleDaywise" onClick={() => setProfileAttendanceTab('daywise')}>
-                                <span>📅 Day-Wise Attendance</span>
+                                <span>📅 By day</span>
                             </button>
                         </div>
                     </div>
@@ -543,7 +543,7 @@ export function ProfileApp() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
                             <button className="btn btn-secondary" id="cardExportCsvBtn" disabled={csvBusy} onClick={exportProformaCsv} style={{ width: '100%', justifyContent: 'center', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{csvBusy ? '⏳ Generating CSV...' : '📥 Download Survey CSV (43 Cols)'}</button>
                             <button className="btn btn-primary" id="cardExportPdfBtn" disabled={pdfBusy} onClick={exportProformaPdf} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', boxShadow: '0 4px 12px rgba(2,132,199,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{pdfBusy ? '⏳ Generating PDF...' : '📄 Download Polished PDF Report'}</button>
-                            <button className="btn btn-primary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 12px rgba(244,63,94,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨 Export Logbook</button>
+                            <button className="btn btn-secondary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ width: '100%', justifyContent: 'center', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨 Export Logbook</button>
                         </div>
                     </div>
                 </div>

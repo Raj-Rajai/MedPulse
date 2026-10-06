@@ -163,7 +163,7 @@ export function LocationVerificationCard({ buttonLabel = '📍 Enable location /
                 <div style={{ flex: '1', minWidth: '240px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
                         <span style={{ fontSize: '1.15rem' }}>📍</span>
-                        <strong style={{ fontSize: '0.98rem', color: 'var(--text-primary)', fontWeight: 700 }}>Village Location Verification</strong>
+                        <strong style={{ fontSize: '0.98rem', color: 'var(--text-primary)', fontWeight: 700 }}>Location check</strong>
                     </div>
                     <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '6px', lineHeight: '1.45' }}>
                         Allow location access to enter field records. Your current location is checked when you save; it is not continuously tracked or stored.
