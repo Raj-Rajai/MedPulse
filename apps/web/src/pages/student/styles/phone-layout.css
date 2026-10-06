@@ -296,4 +296,57 @@
     align-items: flex-start !important;
     gap: 4px;
   }
+
+  /* ---------- Tables on phone: zoomed out / compact styling ---------- */
+  .table-wrapper,
+  .datewise-table-wrapper,
+  .table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    border-radius: var(--radius-sm, 8px) !important;
+  }
+
+  .table-wrapper table,
+  .datewise-table-wrapper table,
+  .profile-att-table,
+  .datewise-table {
+    font-size: 0.7rem !important;
+    zoom: 0.76 !important; /* sleek zoomed out compact scale for mobile */
+    letter-spacing: -0.01em;
+  }
+
+  .table-wrapper th,
+  .table-wrapper td,
+  .datewise-table-wrapper th,
+  .datewise-table-wrapper td,
+  .profile-att-table th,
+  .profile-att-table td,
+  .datewise-table th,
+  .datewise-table td {
+    padding: 5px 6px !important;
+    font-size: 0.7rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .profile-att-table th,
+  .datewise-table th {
+    font-size: 0.68rem !important;
+    padding: 6px 6px !important;
+    font-weight: 750 !important;
+  }
+
+  .profile-att-table .att-col-subject {
+    min-width: 105px !important;
+  }
+  .profile-att-table .att-col-faculty {
+    min-width: 90px !important;
+  }
+
+  .profile-att-table .badge,
+  .datewise-table .badge {
+    font-size: 0.65rem !important;
+    padding: 2px 6px !important;
+  }
 }
+

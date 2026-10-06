@@ -152,13 +152,13 @@ export function OverallAttendance({ data }: { data: SubjectWiseData | 'loading' 
                     <table className="profile-att-table" id="profileAttendanceTable">
                         <thead>
                             <tr>
-                                <th style={{ minWidth: '240px' }}>Subject Name</th>
-                                <th style={{ minWidth: '180px' }}>Faculty In-Charge</th>
-                                <th style={{ textAlign: 'center', width: '140px' }}>Theory</th>
-                                <th style={{ textAlign: 'center', width: '140px' }}>Practical</th>
-                                <th style={{ textAlign: 'center', width: '130px' }}>Total Attended</th>
-                                <th style={{ textAlign: 'center', width: '100px' }}>Overall %</th>
-                                <th style={{ textAlign: 'center', width: '120px' }}>NMC Status</th>
+                                <th className="att-col-subject">Subject Name</th>
+                                <th className="att-col-faculty">Faculty In-Charge</th>
+                                <th style={{ textAlign: 'center' }}>Theory</th>
+                                <th style={{ textAlign: 'center' }}>Practical</th>
+                                <th style={{ textAlign: 'center' }}>Total Attended</th>
+                                <th style={{ textAlign: 'center' }}>Overall %</th>
+                                <th style={{ textAlign: 'center' }}>NMC Status</th>
                             </tr>
                         </thead>
                         <tbody id="profileAttendanceTableBody">{body}</tbody>

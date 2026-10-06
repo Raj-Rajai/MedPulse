@@ -400,3 +400,31 @@
       }
     }
 
+    @media (max-width: 640px) {
+      .table-responsive,
+      .table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+      }
+      .table-responsive table,
+      .table-wrapper table,
+      table.table,
+      table#cadetsTable,
+      table#householdsTable,
+      table#adminExamsTable,
+      table#campaignsTable,
+      table#adminAttendanceTable {
+        zoom: 0.78 !important;
+        font-size: 0.75rem !important;
+      }
+      .table-responsive th,
+      .table-responsive td,
+      .table-wrapper th,
+      .table-wrapper td,
+      table.table th,
+      table.table td {
+        padding: 5px 7px !important;
+        font-size: 0.75rem !important;
+      }
+    }
