@@ -1,0 +1,242 @@
+/*
+ * Real phone layout (no zoom) for the pages that import this file.
+ * Loaded after portal-mobile.css; turns its zoom off and lays the page out in one column at full size.
+ * The sidebar / mobile nav button are deliberately not touched.
+ */
+@media (max-width: 768px) {
+  :root {
+    --mobile-zoom: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  /* ---------- Dashboard header ---------- */
+  .page-header > div:first-child {
+    align-items: flex-start !important;
+  }
+  .page-header .page-title {
+    font-size: 1.35rem !important;
+    line-height: 1.25;
+  }
+  .page-header .page-subtitle {
+    font-size: 0.86rem;
+  }
+  /* Quick actions: the main action full width, the two secondary ones side by side. */
+  .main-content > .page-header > div:last-child:not(:first-child) {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .main-content > .page-header > div:last-child:not(:first-child) > .btn {
+    font-size: 0.85rem !important;
+    border-radius: 10px !important;
+    justify-content: center;
+    min-height: 44px !important;
+    margin: 0 !important;
+    width: 100%;
+  }
+  .main-content > .page-header > div:last-child:not(:first-child) > .btn-primary {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  /* ---------- Dashboard stat tiles ---------- */
+  .profile-kpis-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .profile-kpi-card {
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+  .profile-kpi-card .profile-kpi-icon {
+    width: 36px !important;
+    height: 36px !important;
+    flex-shrink: 0;
+  }
+  .profile-kpi-card .kpi-num {
+    font-size: 1.6rem;
+  }
+  .profile-kpi-card .kpi-label {
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  /* ---------- Cards: header button sits under the title, full width ---------- */
+  .main-content > .card {
+    padding: 16px !important;
+    border-radius: 16px;
+  }
+  .main-content > .card > div:first-child {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .main-content > .card > div:first-child > .btn {
+    justify-content: center;
+    min-height: 44px;
+  }
+  .main-content > .card .card-title,
+  .main-content > .card h2,
+  .main-content > .card h3 {
+    font-size: 1.15rem !important;
+  }
+  .profile-households-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .profile-household-card .btn {
+    min-height: 42px;
+    font-size: 0.85rem !important;
+  }
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 2px;
+  }
+
+  /* ---------- Schedule hero ---------- */
+  .attendance-hero {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+  .attendance-hero .profile-identity-group {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .attendance-hero .profile-avatar-wrapper {
+    width: 48px !important;
+    height: 48px !important;
+    flex-shrink: 0;
+  }
+  .attendance-hero h1,
+  .attendance-hero h2,
+  .attendance-hero .profile-name {
+    font-size: 1.3rem !important;
+    line-height: 1.25 !important;
+  }
+  .attendance-hero .profile-roll-tag {
+    white-space: nowrap;
+  }
+  .attendance-hero .hero-gauge-box {
+    padding: 14px 16px !important;
+  }
+
+  /* ---------- Schedule department pills: one swipeable row ---------- */
+  #deptFilterGroup {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -14px !important;
+    padding: 2px 14px 6px !important;
+    width: calc(100% + 28px) !important;
+    max-width: none !important;
+    scroll-padding: 0 14px;
+    scroll-snap-type: x proximity;
+  }
+  #deptFilterGroup::-webkit-scrollbar {
+    display: none;
+  }
+  .schedule-dept-pill {
+    flex-shrink: 0;
+    min-height: 40px;
+    scroll-snap-align: start;
+  }
+
+  /* ---------- Schedule date strip: swipe instead of arrow buttons ---------- */
+  .schedule-scroll-wrapper {
+    padding: 0 !important;
+    margin-left: -14px !important;
+    margin-right: -14px !important;
+    margin-bottom: 12px !important;
+  }
+  .schedule-scroll-nav-btn {
+    display: none !important;
+  }
+  .schedule-horizontal-strip {
+    padding: 6px 14px 14px !important;
+    gap: 10px !important;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 14px;
+    scrollbar-width: none;
+  }
+  .schedule-horizontal-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .schedule-cubic-card {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+    min-width: 132px !important;
+    width: 132px !important;
+  }
+
+  /* ---------- Schedule timeline switcher: equal segments ---------- */
+  .schedule-pagination-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .schedule-pagination-bar > * {
+    width: 100%;
+    max-width: 100%;
+  }
+  .schedule-pagination-bar > div:first-child {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+  }
+  .schedule-pagination-bar > div:first-child > div:first-child {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .schedule-pagination-bar > div:first-child > .schedule-today-jump-btn {
+    grid-column: 1 / -1;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .schedule-pagi-btn {
+    justify-content: center;
+    text-align: center;
+    min-height: 44px;
+    font-size: 0.8rem !important;
+    padding: 6px 8px !important;
+    margin: 0 !important;
+  }
+
+  /* ---------- Schedule session detail ---------- */
+  .schedule-detail-panel,
+  .schedule-detail-placeholder {
+    border-radius: 16px !important;
+  }
+  .schedule-detail-placeholder {
+    padding: 28px 18px !important;
+  }
+  .datewise-top-bar {
+    padding: 12px 14px !important;
+  }
+  .datewise-body-content {
+    padding: 16px !important;
+  }
+  .schedule-detail-header-strip {
+    flex-wrap: wrap;
+    gap: 6px 10px !important;
+  }
+  .schedule-detail-sep {
+    display: none;
+  }
+  .schedule-meta-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .schedule-detail-panel .btn {
+    min-height: 44px;
+    justify-content: center;
+    width: 100%;
+  }
+}
