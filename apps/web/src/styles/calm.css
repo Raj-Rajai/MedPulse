@@ -2,54 +2,21 @@
    Calm layer (Apple HIG audit, 2026-10-06)
    Loaded last on the student pages. Everything is scoped to
    .main-content so the sidebar and nav bar stay exactly as they are.
-   - One accent colour (violet) for things you can tap; greys for the rest
-   - Flat white grouped sections on a light grey page; shadows only on things that float
+   This layer changes layout and type only; every colour, gradient and
+   background stays as defined in style.css and the page stylesheets.
+   - Flat sections: no drop shadows except on things that float
    - Six text sizes: 28 / 20 / 17 / 15 / 13 / 12, weights 400 / 600 / 700, sentence case
    - Every control at least 44px tall
    ============================================================ */
 
-body {
-  --calm-bg: #f2f2f7;
-  background: var(--calm-bg) !important;
-}
-/* Coloured glow blobs behind the page */
-body::before,
-body::after { display: none !important; }
-
 .main-content {
-  --calm-surface: #ffffff;
-  --calm-fill: #f2f2f7;
-  --calm-line: #e5e5ea;
-  --calm-label: #1c1c1e;
-  --calm-label-2: #3a3a3c;
-  --calm-label-3: #6e6e73;
-  --calm-accent: #6d28d9;
-  --calm-accent-fill: #f1ebfc;
-
-  /* Re-point the shared tokens for everything inside the page body */
-  --bg-body: var(--calm-bg);
-  --bg-card: var(--calm-surface);
-  --bg-subtle: var(--calm-fill);
-  --text-primary: var(--calm-label);
-  --text-secondary: var(--calm-label-2);
-  --text-muted: var(--calm-label-3);
-  --border: var(--calm-line);
-  --accent-gradient: var(--calm-accent);
-  --primary-gradient: var(--calm-accent);
   --shadow-xs: none;
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: none;
   --shadow-card: none;
-
-  background: var(--calm-bg) !important;
-  color: var(--calm-label);
   font-size: 15px;
 }
-
-/* Page background decorations (radial glows) */
-.main-content::before,
-.main-content::after { display: none !important; }
 
 /* ── Sentence case, normal tracking ─────────────────────── */
 .main-content *:not(svg):not(svg *) {
@@ -64,19 +31,16 @@ body::after { display: none !important; }
   font-size: 28px !important;
   line-height: 1.2 !important;
   font-weight: 700 !important;
-  color: var(--calm-label) !important;
-  background: none !important;
-  -webkit-text-fill-color: currentColor !important;
   animation: none !important;
 }
-.main-content h2 { font-size: 20px !important; font-weight: 700 !important; line-height: 1.3 !important; color: var(--calm-label) !important; }
-.main-content h3 { font-size: 17px !important; font-weight: 600 !important; line-height: 1.35 !important; color: var(--calm-label) !important; }
+.main-content h2 { font-size: 20px !important; font-weight: 700 !important; line-height: 1.3 !important; }
+.main-content h3 { font-size: 17px !important; font-weight: 600 !important; line-height: 1.35 !important; }
 .main-content h4,
-.main-content h5 { font-size: 15px !important; font-weight: 600 !important; color: var(--calm-label) !important; }
+.main-content h5 { font-size: 15px !important; font-weight: 600 !important; }
 .main-content .page-subtitle,
 .main-content .page-header p,
 .main-content .card-subtitle,
-.main-content .section-subtitle { font-size: 15px !important; color: var(--calm-label-3) !important; font-weight: 400 !important; }
+.main-content .section-subtitle { font-size: 15px !important; font-weight: 400 !important; }
 
 /* Nothing heavier than bold */
 .main-content [style*="font-weight: 800"],
@@ -90,112 +54,40 @@ body::after { display: none !important; }
 .main-content :is(small, .kpi-label, .stat-label, .badge, .profile-roll-tag, .year-meta, .text-xs, th, label, .form-label, .meta, .hint, .help-text) {
   font-size: max(12px, 0.8125rem) !important;
 }
-
-/* Labels under numbers: grey, sentence case */
-.main-content :is(.kpi-label, .stat-label, .prof-att-kpi-label, .form-label, label, th) {
-  font-weight: 600 !important;
-  color: var(--calm-label-3) !important;
-}
+.main-content :is(.kpi-label, .stat-label, .prof-att-kpi-label, .form-label, label, th) { font-weight: 600 !important; }
 .main-content :is(.kpi-num, .stat-value, .kpi-value, .hero-standing-score) {
   font-weight: 700 !important;
-  color: var(--calm-label) !important;
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Surfaces: flat grouped sections ───────────────────── */
+/* ── Surfaces: flat sections, one corner radius ────────── */
 .main-content :is(.card, .profile-kpi-card, .kpi-card, .chart-card, .stat-card,
   .exam-record-card, .exams-toolbar, .year-pagination-bar, .analytics-filter-bar,
   .datewise-container-card, .profile-info-card, .family-selector-board,
   .schedule-detail-placeholder, .family-card, .family-add-section, .att-subject-card,
   .schedule-cubic-card, .mp-empty, .empty-state) {
-  background: var(--calm-surface) !important;
-  background-image: none !important;
   box-shadow: none !important;
-  border: 1px solid var(--calm-line) !important;
   border-radius: 12px !important;
 }
-.main-content :is(.card, .chart-card, .kpi-card, .profile-kpi-card)::before,
-.main-content :is(.card, .chart-card, .kpi-card, .profile-kpi-card)::after { display: none !important; }
 .main-content :is(.card, .kpi-card, .profile-kpi-card, .chart-card):hover { transform: none !important; }
 
-/* Dashed "empty" boxes become plain */
-.main-content :is(.schedule-detail-placeholder, .prev-sessions-toggle-card) { border-style: solid !important; }
-
-/* Everything else inside the page: no shadows, no gradient fills */
+/* No drop shadows inside the page, except on things that float */
 .main-content *:not(.mp-dp):not(.mp-dp *):not(.modal-box):not(.modal-box *):not(.modal-content):not(.toast):not(.toast *) {
   box-shadow: none !important;
 }
-.main-content :is(div, section, span, button, a, header):not(.mp-dp *):not([class*="progress"]):not([class*="bar-fill"]):not([class*="fill"]):not([class*="chart"] *) {
-  background-image: none !important;
-}
 
-/* Icon tiles next to numbers: one quiet tint instead of four colours */
-.main-content :is(.profile-kpi-icon, .kpi-icon, .stat-icon, .card-icon, .mp-empty-icon) {
-  background: var(--calm-accent-fill) !important;
-  color: var(--calm-accent) !important;
-  border: 0 !important;
-}
-.main-content .kpi-card { border-top: 1px solid var(--calm-line) !important; border-left: 1px solid var(--calm-line) !important; }
-
-/* ── Page headers that used to be dark gradient banners ── */
+/* ── Page header banners: same colours, tighter layout ─── */
 .main-content :is(.profile-hero, .exams-hero, .attendance-hero) {
-  background: var(--calm-surface) !important;
-  color: var(--calm-label) !important;
-  border: 1px solid var(--calm-line) !important;
   border-radius: 12px !important;
-  box-shadow: none !important;
   padding: 20px !important;
-}
-.main-content :is(.profile-hero, .exams-hero, .attendance-hero)::before,
-.main-content :is(.profile-hero, .exams-hero, .attendance-hero)::after { display: none !important; }
-.main-content :is(.profile-hero, .exams-hero, .attendance-hero) *:not(.btn):not(.btn *):not(svg):not(svg *):not(h1):not(h1 *):not(h2):not(h2 *):not(.hero-standing-score):not(.profile-name) {
-  color: var(--calm-label-3) !important;
-  border-color: var(--calm-line) !important;
-}
-.main-content :is(.profile-hero, .exams-hero, .attendance-hero) :is(h1, h2, h1 *, h2 *, .profile-name, .hero-standing-score, .hero-gauge-box > :nth-child(2)) {
-  color: var(--calm-label) !important;
 }
 /* Decorative icon tiles with status dots */
 .main-content :is(.profile-hero, .exams-hero, .attendance-hero) .profile-avatar-wrapper { display: none !important; }
-/* Chips inside headers: neutral */
-.main-content :is(.profile-hero, .exams-hero, .attendance-hero) :is(.badge, .profile-roll-tag, .verified-badge, .ref-code-tag) {
-  background: var(--calm-fill) !important;
-  border: 0 !important;
-  color: var(--calm-label-2) !important;
-  font-weight: 600 !important;
-}
-/* Side boxes inside headers (today's date, aggregate) */
-.main-content :is(.hero-gauge-box, .hero-standing-card) {
-  background: var(--calm-fill) !important;
-  border: 0 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-radius: 10px !important;
-}
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) :is(.badge, .profile-roll-tag, .verified-badge, .ref-code-tag) { font-weight: 600 !important; }
+.main-content :is(.hero-gauge-box, .hero-standing-card) { border-radius: 10px !important; }
 
 /* ── Buttons ─────────────────────────────────────────────── */
-.main-content .btn-primary,
-.main-content .btn.btn-primary {
-  background: var(--calm-accent) !important;
-  border: 1px solid var(--calm-accent) !important;
-  color: #fff !important;
-}
-.main-content .btn-primary:hover { background: #5b21b6 !important; }
-.main-content .btn-secondary,
-.main-content .btn-outline {
-  background: var(--calm-surface) !important;
-  border: 1px solid var(--calm-line) !important;
-  color: var(--calm-accent) !important;
-}
 .main-content .btn { font-weight: 600 !important; border-radius: 10px !important; transform: none !important; }
-
-/* Selected pills / tabs: tinted, not filled dark */
-.main-content :is(.year-pill-btn, .tab-pill-btn, .schedule-dept-pill, .schedule-pagi-btn, .btn-toggle-att, .filter-pill).active {
-  background: var(--calm-accent-fill) !important;
-  color: var(--calm-accent) !important;
-  border-color: transparent !important;
-}
-.main-content :is(.year-pill-btn, .tab-pill-btn, .schedule-dept-pill, .schedule-pagi-btn, .btn-toggle-att, .filter-pill).active * { color: var(--calm-accent) !important; }
 
 /* ── Tap targets: 44px minimum ──────────────────────────── */
 .main-content :is(.btn, button, select, a.btn, [role="button"], [role="tab"],
@@ -218,30 +110,10 @@ body::after { display: none !important; }
   body:not(.sidebar-mobile-open) .sidebar:not(.open) { box-shadow: none !important; }
 }
 
-/* Card title bars that used to be dark slate */
-.main-content .datewise-top-bar {
-  background: var(--calm-surface) !important;
-  border-bottom: 1px solid var(--calm-line) !important;
-}
-.main-content .datewise-top-bar :is(h2, h3) { color: var(--calm-label) !important; }
-
-/* Privacy pop-ups: drop the four coloured badge pills above the title */
+/* Privacy pop-ups: drop the row of badge pills above the title */
 .privacy-badge-row { display: none !important; }
-
-/* Attendance tiles: the status tile is not highlighted by default */
-.main-content .prof-att-kpi-box,
-.main-content .prof-att-kpi-box.highlight {
-  background: var(--calm-fill) !important;
-  border: 0 !important;
-  border-radius: 10px !important;
-}
 
 /* Schedule: on phones the date cards are swiped, so the scroll buttons are just clutter */
 @media (max-width: 860px) {
   .main-content .schedule-pagi-btn[title^="Scroll cards"] { display: none !important; }
-}
-.main-content .schedule-today-jump-btn {
-  background: var(--calm-surface) !important;
-  border: 1px solid var(--calm-line) !important;
-  color: var(--calm-accent) !important;
 }
