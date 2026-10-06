@@ -33,22 +33,19 @@ import { ConfidentialityNoticeModal } from '../../shared/privacy/Confidentiality
 const SHOW_GEOFENCE_PANEL = false;
 
 const TAB_HEADERS: Record<AdminTab, Heading> = {
-    overview: { title: 'Executive Surveillance Overview', sub: 'Departmental Community Medicine (PSM) oversight, multi-cadet rosters, and population health surveillance' },
-    students: { title: 'Student Cadre Roster & Assignments', sub: 'Manage medical trainees, track survey submission completion, and adjust institutional credentials' },
-    attendance: { title: 'Student Attendance Register & Timetable', sub: 'Mark daily lecture attendance, track clinical session presence, and maintain NMC compliance' },
-    schedule: { title: 'Academic & Teaching Schedule Editor', sub: 'NMC CBME curriculum schedule management, lecture session planning, and teaching timetable administration' },
-    exams: { title: 'Examination Results & Marksheet Management', sub: 'Input and publish Internal Assessment (IA-1, IA-2), Preliminary, and University examination marks' },
-    households: { title: 'Global Household Surveillance Registry', sub: 'Comprehensive roster of all families surveyed across all student cohorts' },
-    campaigns: { title: 'Targeted Health Campaign Command Center', sub: 'Broadcast disease-specific health drives, monitor automated patient matching, and coordinate cadet follow-ups' },
-    uniAdmins: { title: 'University Admins & Faculty Oversight', sub: 'Manage Super Admin and up to 10 departmental faculty administrators per university institution' },
-    exports: { title: 'Master Data & Administrative Exports', sub: 'Download complete 43-column master survey proforma CSVs and polished faculty clinical audit reports' },
+    overview: { title: 'Overview', sub: '' },
+    students: { title: 'Students', sub: '' },
+    attendance: { title: 'Attendance', sub: '' },
+    schedule: { title: 'Schedule', sub: '' },
+    exams: { title: 'Exams', sub: '' },
+    households: { title: 'Households', sub: '' },
+    campaigns: { title: 'Campaigns', sub: '' },
+    uniAdmins: { title: 'University admins', sub: '' },
+    exports: { title: 'Exports', sub: '' },
 };
 
-/** The heading the page shows before any tab switch (differs from TAB_HEADERS.overview.sub). */
-const INITIAL_HEADING: Heading = {
-    title: 'Executive Surveillance Overview',
-    sub: 'SAL Institute of Medical Sciences & Hospital • Departmental Community Medicine (PSM) oversight',
-};
+/** The heading the page shows before any tab switch. */
+const INITIAL_HEADING: Heading = TAB_HEADERS.overview;
 
 /** Tabs whose section loads its own data when the tab is opened. */
 type SignalTab = 'attendance' | 'schedule' | 'exams' | 'households' | 'campaigns';

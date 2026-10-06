@@ -15,7 +15,7 @@ export function AdminHeader({ heading }: {
                 <img src="/images/sal-logo.png" alt="SAL Logo" className="header-brand-logo" />
                 <div className="page-header-text">
                     <h1 className="page-title page-title-animated" id="adminPageHeading">{heading.title}</h1>
-                    <p className="page-subtitle" id="adminPageSubheading">{heading.sub}</p>
+                    {heading.sub && <p className="page-subtitle" id="adminPageSubheading">{heading.sub}</p>}
                 </div>
             </div>
         </div>
