@@ -89,7 +89,7 @@ export function SurveyFormView(p: SurveyFormProps) {
                                 <>
                                     WHR: <strong>{p.whr.whr}</strong>{' '}
                                     {p.whr.high
-                                        ? <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠️ Central Obesity</span>
+                                        ? <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠ Central Obesity</span>
                                         : <span style={{ color: 'var(--green)', fontWeight: 700 }}>✓ Low Risk</span>}
                                 </>
                             ) : 'Enter Waist & Hip'}
@@ -114,7 +114,7 @@ export function SurveyFormView(p: SurveyFormProps) {
                         <label>Female WHR Threshold Alert</label>
                         <div id="femaleWhrAlert" className="calc-preview" style={{ background: '#fdf2f8', color: '#9d174d' }}>
                             {p.femaleAlert
-                                ? p.femaleAlert.high ? `⚠️ WHR ${p.femaleAlert.whr} > 0.85 (Central Obesity Risk)` : `✓ WHR ${p.femaleAlert.whr} ≤ 0.85 (Normal Female Ratio)`
+                                ? p.femaleAlert.high ? `⚠ WHR ${p.femaleAlert.whr} > 0.85 (Central Obesity Risk)` : `✓ WHR ${p.femaleAlert.whr} ≤ 0.85 (Normal Female Ratio)`
                                 : 'WHR Standard: ≤ 0.85'}
                         </div>
                     </div>
@@ -133,7 +133,7 @@ export function SurveyFormView(p: SurveyFormProps) {
                         <label>Male Central Obesity Risk (WHR)</label>
                         <div id="maleWhrAlert" className="calc-preview" style={{ background: '#eff6ff', color: '#1e40af' }}>
                             {p.maleAlert
-                                ? p.maleAlert.high ? `⚠️ WHR ${p.maleAlert.whr} > 0.90 (Central Obesity Risk)` : `✓ WHR ${p.maleAlert.whr} ≤ 0.90 (Normal Male Ratio)`
+                                ? p.maleAlert.high ? `⚠ WHR ${p.maleAlert.whr} > 0.90 (Central Obesity Risk)` : `✓ WHR ${p.maleAlert.whr} ≤ 0.90 (Normal Male Ratio)`
                                 : 'WHR Standard: ≤ 0.90'}
                         </div>
                     </div>
@@ -161,8 +161,8 @@ export function SurveyFormView(p: SurveyFormProps) {
                         <label>MUAC Malnutrition Status</label>
                         <div id="muacStatusDisplay" className="calc-preview">
                             {p.muac === 'initial' && 'Normal (> 12.5 cm)'}
-                            {p.muac === 'sam' && <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠️ SAM (&lt; 11.5 cm)</span>}
-                            {p.muac === 'mam' && <span style={{ color: 'var(--amber)', fontWeight: 700 }}>⚠️ MAM (11.5 - 12.5 cm)</span>}
+                            {p.muac === 'sam' && <span style={{ color: 'var(--red)', fontWeight: 700 }}>⚠ SAM (&lt; 11.5 cm)</span>}
+                            {p.muac === 'mam' && <span style={{ color: 'var(--amber)', fontWeight: 700 }}>⚠ MAM (11.5 - 12.5 cm)</span>}
                             {p.muac === 'normal' && <span style={{ color: 'var(--green)', fontWeight: 700 }}>✓ Normal (&gt; 12.5 cm)</span>}
                         </div>
                     </div>

@@ -486,7 +486,7 @@ export function EntryApp() {
                 </div>
 
                 <div id="emptyWorkspacePrompt" className="card anim-fade-up anim-delay-2" style={{ padding: '4rem 2rem', textAlign: 'center', display: familyData ? 'none' : undefined }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
+                    <div className="mp-empty-icon" style={{ marginBottom: '1rem' }}>📋</div>
                     <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Select a Household to Begin Clinical Entry</h2>
                     <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto 1.5rem' }}>
                         Choose any surveyed family from the dropdown above to load its members and record structured screening data.

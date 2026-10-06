@@ -15,7 +15,7 @@ export function MemberCards({ members, selectedId, onSelect }: { members: Roster
     if (!members || members.length === 0) {
         return (
             <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👤</div>
+                <div className="mp-empty-icon" style={{ marginBottom: '0.6rem' }}>👤</div>
                 <strong>No members found</strong>
                 <p style={{ fontSize: '0.825rem', marginTop: '0.35rem' }}>Click <strong>"➕ Add Member"</strong> above to register household members.</p>
             </div>
@@ -48,9 +48,9 @@ export function MemberCards({ members, selectedId, onSelect }: { members: Roster
                                     <div className="member-name">{m.name}</div>
                                     <div className="member-relation">{`${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}`}</div>
                                     {m.added_by_patient_id
-                                        ? <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '0.68rem', marginTop: '4px' }} title="Added by the family from the patient portal">✍️ Added by family</span>
+                                        ? <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '0.68rem', marginTop: '4px' }} title="Added by the family from the patient portal">✍ Added by family</span>
                                         : m.patient_updated_at
-                                            ? <span className="badge" style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.68rem', marginTop: '4px' }} title="Basic details were updated by the family from the patient portal">✍️ Updated by family</span>
+                                            ? <span className="badge" style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.68rem', marginTop: '4px' }} title="Basic details were updated by the family from the patient portal">✍ Updated by family</span>
                                             : null}
                                 </div>
                                 <span className="badge badge-info">#{String(m.member_order)}</span>
@@ -75,8 +75,8 @@ export function MemberCards({ members, selectedId, onSelect }: { members: Roster
 function Actions({ kind, id, onEdit, onDelete }: { kind: string; id: number; onEdit: (id: number) => void; onDelete: (id: number) => void }) {
     return (
         <div className="sub-item-actions">
-            <button className="btn-icon" onClick={() => onEdit(id)} title={`Edit ${kind}`}>✏️</button>
-            <button className="btn-icon danger" onClick={() => onDelete(id)} title={`Delete ${kind}`}>🗑️</button>
+            <button className="btn-icon" onClick={() => onEdit(id)} title={`Edit ${kind}`}>✏</button>
+            <button className="btn-icon danger" onClick={() => onDelete(id)} title={`Delete ${kind}`}>🗑</button>
         </div>
     );
 }
@@ -142,7 +142,7 @@ export function AllergiesList({ items, onEdit, onDelete }: { items: Allergy[] } 
                 <div className="sub-item-row" key={a.id}>
                     <div className="sub-item-content">
                         <div className="sub-item-main">
-                            <span>⚠️ {str(a.allergen)}</span>
+                            <span>⚠ {str(a.allergen)}</span>
                             <span className="badge badge-info">{str(a.allergy_type)}</span>
                             <span className={`badge ${a.severity === 'Severe' || a.severity === 'Life-threatening' ? 'badge-danger' : 'badge-warning'}`}>{str(a.severity)}</span>
                         </div>
@@ -182,7 +182,7 @@ export function HistoryList({ items, onEdit, onDelete }: { items: HistoryItem[] 
 }
 
 export function LifestyleView({ lifestyle }: { lifestyle: Lifestyle | null | undefined }) {
-    if (!lifestyle) return <div style={{ color: 'var(--text-muted)' }}>No lifestyle information recorded yet. Click "✏️ Edit Lifestyle" to record smoking, alcohol, exercise, and diet.</div>;
+    if (!lifestyle) return <div style={{ color: 'var(--text-muted)' }}>No lifestyle information recorded yet. Click "✏ Edit Lifestyle" to record smoking, alcohol, exercise, and diet.</div>;
     const l = lifestyle;
     return (
         <>

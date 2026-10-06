@@ -167,7 +167,7 @@ export function EditUniAdminModal({ modal, onSaved }: { modal: ModalState<UniAdm
     return (
         <ModalOverlay id="editUniAdminModal" open={modal.open} onClose={modal.hide} contentStyle={{ maxWidth: 500 }}>
             <div style={modalHeadStyle}>
-                <h2 style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>✏️ Edit Administrator Details</h2>
+                <h2 style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>✏ Edit Administrator Details</h2>
                 <button className="btn btn-secondary" onClick={modal.hide} style={closeBtnStyle}>✕</button>
             </div>
             <form id="editUniAdminForm" onSubmit={submit}>

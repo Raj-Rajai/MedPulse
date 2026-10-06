@@ -79,6 +79,18 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                     </div>
                     <span className="link-label">Schedule</span>
                 </a>
+                <a href="/attendance.html" className={cls(active === 'attendance')} data-route="attendance" data-title="Attendance">
+                    <div className="nav-icon-box">
+                        <svg {...icon}>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                            <path d="m9 16 2 2 4-4" />
+                        </svg>
+                    </div>
+                    <span className="link-label">Attendance</span>
+                </a>
                 <a href="/exams.html" className={cls(active === 'exams')} data-route="exams" data-title="Exams">
                     <div className="nav-icon-box">
                         <svg {...icon}>

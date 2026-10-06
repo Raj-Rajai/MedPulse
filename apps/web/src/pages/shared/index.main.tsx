@@ -1,4 +1,4 @@
-import '../../styles/style.css';
+import './index-styles.css';
 import { mountPage } from '../../shared/mount';
 import { IndexApp } from './IndexApp';
 

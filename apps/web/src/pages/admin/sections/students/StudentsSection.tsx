@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { MessageRow } from '../../components/ModalOverlay';
+import type { ExportButtons } from '../../hooks/useExports';
 import type { ShowToast } from '../../hooks/useToasts';
 import type { Cadet, CollegeStat } from '../../types';
 
@@ -54,10 +55,10 @@ function CadetRow({ s, actions, showToast }: { s: Cadet; actions: CadetActions; 
                 <div className="table-actions-cell">
                     <button className="table-act-btn" onClick={() => actions.openAttendance(s.id)} title="Mark / View Attendance">📅</button>
                     <button className="table-act-btn" onClick={() => actions.openExams(s.id)} title="Input / View Exam Marks">📋</button>
-                    <button className="table-act-btn" onClick={() => actions.edit(s.id)} title="Edit Cadet">✏️</button>
+                    <button className="table-act-btn" onClick={() => actions.edit(s.id)} title="Edit Cadet">✏</button>
                     <button className="table-act-btn" onClick={() => actions.resetPin(s)} title="Reset PIN">🔒</button>
-                    <button className="table-act-btn" onClick={() => actions.inspect(s.id)} title="View Households">👁️</button>
-                    <button className="table-act-btn act-delete" onClick={() => actions.remove(s)} title="Delete Cadet">🗑️</button>
+                    <button className="table-act-btn" onClick={() => actions.inspect(s.id)} title="View Households">👁</button>
+                    <button className="table-act-btn act-delete" onClick={() => actions.remove(s)} title="Delete Cadet">🗑</button>
                 </div>
             </td>
         </tr>
@@ -65,7 +66,7 @@ function CadetRow({ s, actions, showToast }: { s: Cadet; actions: CadetActions; 
 }
 
 /** VIEW 2: Student cadre roster with search / institution / status filters. */
-export function StudentsSection({ active, all, rows, setRows, collegeOptions, actions, onAdd, showToast }: {
+export function StudentsSection({ active, all, rows, setRows, collegeOptions, actions, onAdd, exports, onRefresh, showToast }: {
     active: boolean;
     all: Cadet[] | null;
     rows: Cadet[] | null;
@@ -73,6 +74,8 @@ export function StudentsSection({ active, all, rows, setRows, collegeOptions, ac
     collegeOptions: CollegeStat[] | null;
     actions: CadetActions;
     onAdd: () => void;
+    exports?: ExportButtons;
+    onRefresh?: () => void;
     showToast: ShowToast;
 }) {
     const [q, setQ] = useState('');
@@ -101,7 +104,7 @@ export function StudentsSection({ active, all, rows, setRows, collegeOptions, ac
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
                     <div>
                         <h2 className="card-title" style={{ marginBottom: 4, fontSize: '1.25rem' }}>
-                            👨‍⚕️ Medical Student Cadre Roster (<span id="cadetTotalCount">{all ? all.length : 0}</span> Cadets)
+                            👨‍⚕ Medical Student Cadre Roster (<span id="cadetTotalCount">{all ? all.length : 0}</span> Cadets)
                         </h2>
                         <p className="card-desc" style={{ margin: 0 }}>
                             Manage student field survey assignments, credentials, security PINs, and submission progress.
@@ -124,9 +127,24 @@ export function StudentsSection({ active, all, rows, setRows, collegeOptions, ac
                             <option value="Inactive">Inactive</option>
                         </select>
 
-                        <button className="btn btn-primary" onClick={onAdd} style={{ fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}>
-                            ➕ Add Cadet
+                        <button className="btn btn-secondary" onClick={onAdd} style={{ fontSize: '0.82rem', padding: '0.45rem 0.9rem', fontWeight: 650 }}>
+                            ➕ Register Cadet
                         </button>
+                        {exports && (
+                            <>
+                                <button className="btn btn-secondary" onClick={exports.exportMasterCsv} style={{ fontSize: '0.82rem', padding: '0.45rem 0.9rem', fontWeight: 650 }} id="topMasterCsvBtn" title="Download master 43-column CSV of all surveyed families" disabled={exports.csvBusy}>
+                                    {exports.csvBusy ? '⏳ Exporting...' : '📥 Master CSV'}
+                                </button>
+                                <button className="btn btn-primary" onClick={exports.exportFacultyPdf} style={{ background: 'linear-gradient(135deg, #d97706, #b45309)', border: 'none', boxShadow: '0 4px 14px rgba(217,119,6,0.4)', fontSize: '0.82rem', padding: '0.45rem 0.9rem', fontWeight: 650 }} id="topFacultyPdfBtn" title="Download Faculty Audit PDF Report" disabled={exports.pdfBusy}>
+                                    {exports.pdfBusy ? '⏳ Generating...' : '📄 Faculty Audit PDF'}
+                                </button>
+                            </>
+                        )}
+                        {onRefresh && (
+                            <button className="btn btn-secondary" onClick={onRefresh} style={{ fontSize: '0.82rem', padding: '0.45rem 0.9rem', fontWeight: 650 }} title="Refresh live statistics">
+                                ↺ Refresh
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -163,7 +163,7 @@ export function EditStudentModal({ modal, collegeOptions, onSaved }: { modal: Mo
     return (
         <ModalOverlay id="editStudentModal" open={modal.open} onClose={modal.hide} contentStyle={{ maxWidth: 520 }}>
             <div style={modalHeadStyle}>
-                <h2 style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>✏️ Edit Medical Cadet</h2>
+                <h2 style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>✏ Edit Medical Cadet</h2>
                 <button className="btn btn-secondary" onClick={modal.hide} style={closeBtnStyle}>✕</button>
             </div>
             <form id="editStudentForm" onSubmit={submit}>

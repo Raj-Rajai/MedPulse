@@ -92,7 +92,7 @@ function AdminConsole() {
         const v = uni.view;
         if (!v) return;
         setQuotaNote({
-            text: v.full ? `⚠️ Quota Full: ${v.curA}/${v.maxQ} seats used` : `Seats: ${v.curA}/${v.maxQ} used (${v.rem} available)`,
+            text: v.full ? `⚠ Quota Full: ${v.curA}/${v.maxQ} seats used` : `Seats: ${v.curA}/${v.maxQ} used (${v.rem} available)`,
             color: v.full ? '#dc2626' : '#d97706',
         });
     }, [uni.view]);
@@ -188,12 +188,13 @@ function AdminConsole() {
 
             {/* Main Content */}
             <main className="main-content">
-                <AdminHeader heading={heading} exports={exports} onRegisterCadet={() => addStudent.show(true)} onRefresh={() => switchTab(activeTab)} />
+                <AdminHeader heading={heading} />
 
                 <OverviewSection active={activeTab === 'overview'} stats={overview.stats} />
                 <StudentsSection
                     active={activeTab === 'students'} all={cadets.all} rows={cadets.rows} setRows={cadets.setRows}
-                    collegeOptions={colleges.options} actions={cadetActions} onAdd={() => addStudent.show(true)} showToast={showToast}
+                    collegeOptions={colleges.options} actions={cadetActions} onAdd={() => addStudent.show(true)}
+                    exports={exports} onRefresh={() => switchTab('students')} showToast={showToast}
                 />
                 <AttendanceSection active={activeTab === 'attendance'} loadSignal={signals.attendance} />
                 <ScheduleSection active={activeTab === 'schedule'} loadSignal={signals.schedule} />

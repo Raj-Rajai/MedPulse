@@ -6,3 +6,5 @@
 @import '../../styles/style.css';
 @import './admin.css';
 @import '../student/styles/schedule.css';
+@import '../../styles/portal-mobile.css';
+@import '../../styles/controls.css';

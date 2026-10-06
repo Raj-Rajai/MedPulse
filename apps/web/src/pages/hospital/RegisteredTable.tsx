@@ -72,7 +72,7 @@ function VisitRow({ v, onSlip }: { v: Visit; onSlip: (id: number) => void }) {
             </td>
             <td>
                 <span className={`reg-badge-disposition ${dispositionClass(v.disposition)}`}>{shown(v.disposition)}</span>
-                {v.ward_bed_no ? <div style={{ fontSize: '10px', fontWeight: 600, color: '#854d0e', marginTop: '3px' }}>{`🛏️ ${shown(v.ward_bed_no)}`}</div> : null}
+                {v.ward_bed_no ? <div style={{ fontSize: '10px', fontWeight: 600, color: '#854d0e', marginTop: '3px' }}>{`🛏 ${shown(v.ward_bed_no)}`}</div> : null}
             </td>
             <td>
                 <button type="button" className="button action-open-btn" data-view-slip={v.id} aria-label={`View visit slip for ${v.patient_name}`} onClick={() => onSlip(v.id)}>

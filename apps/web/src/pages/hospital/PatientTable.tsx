@@ -69,7 +69,7 @@ function PatientRow({ p, onOpen, onRegister }: { p: FapPatient } & Omit<Props, '
             </td>
             <td>
                 <div className="student-cell">
-                    <div className="student-name">{`👨‍⚕️ ${shown(p.student_name)}`}</div>
+                    <div className="student-name">{`👨‍⚕ ${shown(p.student_name)}`}</div>
                     <div className="student-sub">
                         <span className="roll-badge">{`Roll ${shown(p.student_roll)}`}</span>
                         <span className="college-abbr" title={String(p.university_name || '')}>{shown(p.university_name)}</span>

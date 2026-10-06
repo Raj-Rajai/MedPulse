@@ -1,0 +1,30 @@
+{
+  "comment": "Emoji code point (hex) -> Lucide icon name (https://lucide.dev/icons). Edit, then rebuild (see README.md).",
+  "map": {
+    "2139": "info", "21BA": "rotate-ccw", "23F0": "alarm-clock", "23F3": "hourglass", "25A3": "id-card",
+    "25B6": "chevron-right", "25BE": "chevron-down", "25C0": "chevron-left", "25CB": "circle-dashed",
+    "2695": "heart-pulse", "2696": "scale", "26A0": "triangle-alert", "26A1": "zap", "26D4": "ban",
+    "2705": "circle-check", "2709": "mail", "270D": "pen-line", "270F": "pencil", "2713": "check", "2714": "check",
+    "2715": "x", "2717": "x", "2728": "sparkles", "274C": "circle-x", "2795": "plus",
+    "1F310": "globe", "1F31F": "star", "1F338": "flower-2", "1F33F": "leaf", "1F389": "party-popper",
+    "1F393": "graduation-cap", "1F396": "medal", "1F3AF": "target", "1F3C3": "activity", "1F3C6": "trophy",
+    "1F3DB": "landmark", "1F3E0": "house", "1F3E1": "house", "1F3E5": "hospital", "1F3E8": "building-2",
+    "1F3F7": "tag", "1F441": "eye", "1F44D": "thumbs-up", "1F451": "crown", "1F454": "briefcase",
+    "1F464": "user", "1F465": "users", "1F466": "user", "1F467": "user", "1F468": "user", "1F469": "user",
+    "1F46A": "users-round", "1F475": "user-round", "1F476": "baby", "1F48A": "pill", "1F4A1": "lightbulb",
+    "1F4AC": "message-circle", "1F4BE": "save", "1F4C2": "folder-open", "1F4C4": "file-text", "1F4C5": "calendar",
+    "1F4C8": "trending-up", "1F4CA": "chart-column", "1F4CB": "clipboard-list", "1F4CD": "map-pin",
+    "1F4D6": "book-open", "1F4DA": "library", "1F4DC": "scroll-text", "1F4DD": "notebook-pen", "1F4DE": "phone",
+    "1F4E2": "megaphone", "1F4E3": "megaphone", "1F4E5": "download", "1F4E8": "mail", "1F4ED": "inbox",
+    "1F4F1": "smartphone", "1F504": "refresh-cw", "1F50D": "search", "1F50E": "search", "1F510": "lock-keyhole",
+    "1F511": "key-round", "1F512": "lock", "1F517": "link", "1F52C": "microscope", "1F5A8": "printer",
+    "1F5C2": "folder-open", "1F5D1": "trash-2", "1F5D3": "calendar-days", "1F64B": "hand", "1F680": "rocket",
+    "1F6A8": "siren", "1F6AA": "log-out", "1F6CF": "bed-double", "1F6E1": "shield-check", "1F7E1": "circle-dot",
+    "1F957": "salad", "1F967": "chart-pie", "1F9EA": "flask-conical", "1FA78": "droplet", "1FA7A": "stethoscope"
+  },
+  "ligatures": [
+    [[128104, 8205, 9877, 65039], "briefcase-medical"],
+    [[128104, 8205, 9877], "briefcase-medical"],
+    [[128104, 8205, 128105, 8205, 128103, 8205, 128102], "users-round"]
+  ]
+}

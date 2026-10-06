@@ -13,7 +13,8 @@ import { MedPulseAuth } from '../../../shared/session';
 import { SubjectRows, type AttSubject } from './SubjectRows';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
 
-const TODAY = '2026-09-28';
+/** Today's date (local time) as YYYY-MM-DD; the "Today" button and first load use it. */
+const TODAY = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
 
 interface SubjectWise {
     student?: { roll_number?: string; name?: string; batch_year?: string };
@@ -232,7 +233,7 @@ export function AttendanceApp() {
                         <span className="strip-divider">|</span>
                         <span>
                             Date :{' '}
-                            <span id="datewiseFormattedLabel">{dw ? dw.data.date_formatted || dw.iso : '28/09/2026'}</span>
+                            <span id="datewiseFormattedLabel">{dw ? dw.data.date_formatted || dw.iso : TODAY.split('-').reverse().join('/')}</span>
                         </span>
                         <span className="strip-divider">|</span>
                         <div className="summary-badge-group">

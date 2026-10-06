@@ -17,7 +17,7 @@ export function HospitalButtons({ s, a, compact }: { s: PortalState; a: PortalAc
                 : <button className="pt-btn" disabled>{t('📞 No phone')}</button>}
             {isMobile(phone)
                 ? <a className="pt-btn wa" href={waLink(phone, `Hello, I am ${c ? c.name : ''} (${c ? c.patient_uid : ''}).`)} target="_blank" rel="noopener">{t('💬 WhatsApp')}</a>
-                : <button className="pt-btn primary" onClick={a.focusRequestMessage}>{t('✉️ Request call')}</button>}
+                : <button className="pt-btn primary" onClick={a.focusRequestMessage}>{t('✉ Request call')}</button>}
         </div>
     );
 }
@@ -169,7 +169,7 @@ export function HospitalPanel({ s, a, loaded, active, form, setForm, refs, busy,
                         </div>
                     </div>
                     <div className="pt-card">
-                        <div className="pt-card-h"><h2>{t('🗂️ Your requests')}</h2><span className="pt-pill mute" id="reqCountPill">{t(`${openN} open`)}</span></div>
+                        <div className="pt-card-h"><h2>{t('🗂 Your requests')}</h2><span className="pt-pill mute" id="reqCountPill">{t(`${openN} open`)}</span></div>
                         <div id="requestList">
                             {!loaded ? <div className="pt-skel" /> : reqs.length
                                 ? reqs.map((r) => <RequestItem key={r.id} r={r} s={s} a={a} />)

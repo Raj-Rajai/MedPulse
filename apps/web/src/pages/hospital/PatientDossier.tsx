@@ -92,13 +92,13 @@ export function PatientDossier({ d, onRegister }: { d: FapDossier; onRegister: (
 
             <SurveySection title="📊 Baseline measurements" v={v} keys={[['Systolic BP (mmHg)', 'sbp'], ['Diastolic BP (mmHg)', 'dbp'], ['Random blood sugar (mg/dL)', 'rbs'], ['Haemoglobin (g/dL)', 'hb'], ['Height (m)', 'height_m'], ['Weight (kg)', 'weight_kg'], ['BMI', 'bmi'], ['Waist / hip ratio', 'whr']]} />
 
-            <ListSection title="🏷️ Recorded conditions" records={d.conditions} fields={[['Condition', 'condition_name'], ['Status', 'status'], ['Notes', 'notes']]} />
+            <ListSection title="🏷 Recorded conditions" records={d.conditions} fields={[['Condition', 'condition_name'], ['Status', 'status'], ['Notes', 'notes']]} />
 
             <ListSection title="📅 Follow-up visits" records={d.follow_ups} fields={[['Visit date', 'visit_date'], ['Student', 'student_name'], ['Student roll', 'student_roll'], ['Systolic BP (mmHg)', 'sbp'], ['Diastolic BP (mmHg)', 'dbp'], ['RBS (mg/dL)', 'rbs'], ['Haemoglobin (g/dL)', 'hb'], ['Weight (kg)', 'weight_kg'], ['Progress', 'health_progress'], ['Treatment compliance', 'treatment_compliance'], ['Clinical notes', 'clinical_notes'], ['Next visit', 'next_visit_date']]} />
 
             <ListSection title="💊 Medications" records={d.medications} fields={[['Medicine', 'name'], ['Dosage', 'dosage'], ['Frequency', 'frequency'], ['Currently taking', 'currently_taking'], ['Reason', 'reason']]} />
 
-            <ListSection title="⚠️ Allergies" records={d.allergies} fields={[['Allergen', 'allergen'], ['Reaction', 'reaction'], ['Severity', 'severity']]} />
+            <ListSection title="⚠ Allergies" records={d.allergies} fields={[['Allergen', 'allergen'], ['Reaction', 'reaction'], ['Severity', 'severity']]} />
 
             <ListSection title="📜 Medical history" records={d.history} fields={[['Category', 'category'], ['Description', 'description'], ['Year', 'year'], ['Notes', 'notes']]} />
 

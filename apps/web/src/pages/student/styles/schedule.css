@@ -125,3 +125,44 @@
       .schedule-detail-panel { box-shadow: none !important; border: 1px solid #000000 !important; }
     }
   
+    /* ── Schedule page additions ─────────────────────────────── */
+    /* Room for the round ◀ ▶ buttons so they never sit on top of the first / last card. */
+    .schedule-scroll-wrapper { padding: 0 26px; }
+    .schedule-scroll-nav-btn.prev { left: -4px; }
+    .schedule-scroll-nav-btn.next { right: -4px; }
+    .schedule-horizontal-strip { scroll-behavior: auto; scroll-padding: 0 12px; }
+    .schedule-cubic-card.today:not(.active) { border-color: #a5b4fc; }
+    .schedule-cubic-card.today .cubic-day::after {
+      content: " • Today";
+      color: #10b981;
+    }
+    .schedule-detail-sep { color: #cbd5e1; }
+    .schedule-detail-panel .datewise-top-bar h2 { margin: 0; }
+    .schedule-detail-panel .datewise-top-bar { gap: 12px; flex-wrap: wrap; }
+    .schedule-actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .schedule-actions-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    @media (max-width: 640px) {
+      .schedule-scroll-wrapper { padding: 0 18px !important; }
+      .schedule-scroll-nav-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.72rem !important;
+      }
+      .schedule-scroll-nav-btn.prev { left: -4px !important; }
+      .schedule-scroll-nav-btn.next { right: -4px !important; }
+      .schedule-detail-header-strip { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .schedule-detail-sep { display: none; }
+      .schedule-actions-bar > div, .schedule-actions-group { width: 100%; }
+      .schedule-actions-bar .btn { flex: 1 1 auto; }
+      .schedule-actions-bar > div:last-child .btn { width: 100%; }
+    }
+

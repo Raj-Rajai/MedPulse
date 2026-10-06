@@ -2,4 +2,5 @@
 @import '../../../styles/style.css';
 @import './entry.css';
 @import './student-responsive.css';
-
+@import '../../../styles/portal-mobile.css';
+@import '../../../styles/controls.css';

@@ -113,7 +113,7 @@ export function ConfidentialityNoticeModal({
                     <div className="privacy-modal-body">
                         <div className="privacy-alert-box danger">
                             <div className="privacy-alert-title">
-                                <span>⚠️ You're entering a confidential workspace</span>
+                                <span>⚠ You're entering a confidential workspace</span>
                             </div>
                             <p style={{ margin: '4px 0 0', fontSize: '0.88rem' }}>
                                 Community Medicine work involves real people's personal, family, and health-related information. Every piece of information here must be treated with professional care, respect, and strict confidentiality.
@@ -161,7 +161,7 @@ export function ConfidentialityNoticeModal({
                     </div>
                     <div className="privacy-modal-footer">
                         <div className="privacy-footer-note">
-                            🛡️ Privacy first • Purpose first • Minimum necessary data
+                            🛡 Privacy first • Purpose first • Minimum necessary data
                         </div>
                         <div className="privacy-btn-group">
                             <button
@@ -343,7 +343,7 @@ export function ConfidentialityNoticeModal({
                     <div className="privacy-modal-body">
                         <div className="privacy-alert-box danger">
                             <div className="privacy-alert-title">
-                                <span>⚠️ This is a confidential family workspace</span>
+                                <span>⚠ This is a confidential family workspace</span>
                             </div>
                             <p style={{ margin: '4px 0 0', fontSize: '0.88rem' }}>
                                 The records you are about to inspect contain personal, household, and clinical information belonging to real people. Access must be conducted with professional discretion and respect.
@@ -367,7 +367,7 @@ export function ConfidentialityNoticeModal({
                         ) : (
                             /* Admin / Global Household Specific Copy */
                             <div>
-                                <div className="privacy-section-heading">🏛️ For MedPulse Administrative Personnel</div>
+                                <div className="privacy-section-heading">🏛 For MedPulse Administrative Personnel</div>
                                 <p>
                                     You are entering the platform-level Global Household Registry. Administrative privileges carry strict legal and institutional accountability:
                                 </p>
@@ -380,7 +380,7 @@ export function ConfidentialityNoticeModal({
                             </div>
                         )}
 
-                        <div className="privacy-section-heading">🛡️ Confidential means confidential</div>
+                        <div className="privacy-section-heading">🛡 Confidential means confidential</div>
                         <ul className="privacy-rule-list">
                             <li>Do not photograph, screenshot, or distribute sensitive screens.</li>
                             <li>Do not share session credentials or bypass workstation screen locks.</li>

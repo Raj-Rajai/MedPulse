@@ -92,7 +92,7 @@ export function OverviewSection({ active, stats }: { active: boolean; stats: Adm
         <div id="viewOverview" className={`admin-view-pane${active ? ' active' : ''}`}>
             {/* 4 Top Executive KPI Cards */}
             <div className="kpi-grid anim-fade-up anim-delay-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', marginBottom: 24 }}>
-                <KpiCard cls="kpi-gold" title="Medical Cadets" icon="👨‍⚕️" id="kpiTotalStudents" value={o ? o.total_students : '-'}>
+                <KpiCard cls="kpi-gold" title="Medical Cadets" icon="👨‍⚕" id="kpiTotalStudents" value={o ? o.total_students : '-'}>
                     <span id="kpiActiveStudentsPill" className="badge badge-success" style={{ fontSize: '0.72rem' }}>{o ? o.active_students : 0} Active</span>
                     <span style={{ marginLeft: 4 }}>Registered</span>
                 </KpiCard>

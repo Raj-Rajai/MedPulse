@@ -205,7 +205,7 @@ export function CampaignsSection({ active, loadSignal, onOpenRoster }: { active:
     return (
         <div id="viewCampaigns" className={`admin-view-pane${active ? ' active' : ''}`}>
             {/* Top Grid: Campaign Creator & Live Decision Diamond Counter */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: 24, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: 24, marginBottom: 24 }} className="admin-grid-2col">
                 {/* Creator Card */}
                 <div className="card" style={{ borderTop: '4px solid #0284c7' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -230,7 +230,7 @@ export function CampaignsSection({ active, loadSignal, onOpenRoster }: { active:
                                     <option value="HTN">🩺 HTN - Hypertension &amp; BP &ge;140/90</option>
                                     <option value="DM">🩸 DM - Diabetes &amp; RBS &ge;200</option>
                                     <option value="ANAEMIA">🔬 ANAEMIA - Low Hb &lt;11 g/dL</option>
-                                    <option value="UNDERWEIGHT">⚖️ UNDERWEIGHT - Child Malnutrition / Low BMI</option>
+                                    <option value="UNDERWEIGHT">⚖ UNDERWEIGHT - Child Malnutrition / Low BMI</option>
                                     <option value="ELDERLY">👵 ELDERLY - Geriatric Cohort (Age 60+)</option>
                                     <option value="CUSTOM">🔍 Custom Condition Keyword...</option>
                                 </select>

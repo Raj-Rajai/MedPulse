@@ -1,4 +1,5 @@
 /* student/index.html only linked style.css. */
 @import '../../../styles/style.css';
 @import './student-responsive.css';
-
+@import '../../../styles/portal-mobile.css';
+@import '../../../styles/controls.css';

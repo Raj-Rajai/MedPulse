@@ -254,7 +254,7 @@ export function FamilyManageApp() {
     }, []);
 
     /* ---- Confirm dialog (showConfirm) ---- */
-    const [confirmState, setConfirmState] = useState<ConfirmState>({ open: false, title: '⚠️ Confirm Action', message: 'Are you sure you want to proceed?', okText: 'Confirm', danger: true });
+    const [confirmState, setConfirmState] = useState<ConfirmState>({ open: false, title: '⚠ Confirm Action', message: 'Are you sure you want to proceed?', okText: 'Confirm', danger: true });
     const confirmResolve = useRef<((ok: boolean) => void) | null>(null);
     const showConfirm = (title: string, message: string, okText = 'Confirm', danger = true) =>
         new Promise<boolean>((resolve) => {
@@ -475,25 +475,25 @@ export function FamilyManageApp() {
         const c = memberDataRef.current?.conditions?.find((x) => x.id === id);
         if (!c) return;
         cond.setValues({ condEditId: String(c.id), condName: inputValue(c.condition_name), condCategory: c.category || 'Other', condStatus: c.status || 'Active', condSeverity: c.severity || 'Moderate', condDate: c.diagnosis_date || '', condNotes: c.notes || '' });
-        setCondModal({ open: true, title: '✏️ Edit Medical Condition' });
+        setCondModal({ open: true, title: '✏ Edit Medical Condition' });
     };
     const openEditMedication = (id: number) => {
         const m = memberDataRef.current?.medications?.find((x) => x.id === id);
         if (!m) return;
         med.setValues({ medEditId: String(m.id), medName: inputValue(m.medication_name), medDosage: m.dosage || '', medFrequency: m.frequency || 'OD (Once daily)', medRoute: m.route || 'Oral', medPrescribedFor: m.prescribed_for || '', medStartDate: m.start_date || '', medAdherence: m.adherence_status || 'Good' });
-        setMedModal({ open: true, title: '✏️ Edit Medication' });
+        setMedModal({ open: true, title: '✏ Edit Medication' });
     };
     const openEditAllergy = (id: number) => {
         const a = memberDataRef.current?.allergies?.find((x) => x.id === id);
         if (!a) return;
         alg.setValues({ algEditId: String(a.id), algAllergen: inputValue(a.allergen), algType: a.allergy_type || 'Drug', algSeverity: a.severity || 'Moderate', algReaction: a.reaction_description || '' });
-        setAlgModal({ open: true, title: '✏️ Edit Allergy' });
+        setAlgModal({ open: true, title: '✏ Edit Allergy' });
     };
     const openEditHistory = (id: number) => {
         const h = memberDataRef.current?.history?.find((x) => x.id === id);
         if (!h) return;
         hist.setValues({ histEditId: String(h.id), histType: h.event_type || 'Surgery', histDesc: inputValue(h.description), histDate: h.event_date || '', histFacility: h.facility_name || '', histNotes: h.outcome_notes || '' });
-        setHistModal({ open: true, title: '✏️ Edit Medical / Surgical History' });
+        setHistModal({ open: true, title: '✏ Edit Medical / Surgical History' });
     };
 
     const submitCondition = () => {
@@ -1005,9 +1005,9 @@ export function FamilyManageApp() {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <button className="btn btn-secondary" onClick={openEditFamilyModal} title="Edit household identification and address" style={{ fontSize: '0.8rem', padding: '0.4rem 0.7rem' }}>✏️ Edit Household</button>
+                                        <button className="btn btn-secondary" onClick={openEditFamilyModal} title="Edit household identification and address" style={{ fontSize: '0.8rem', padding: '0.4rem 0.7rem' }}>✏ Edit Household</button>
                                         <button className="btn btn-primary" onClick={openAddMemberModal} style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem' }}>➕ Add Member</button>
-                                        <button className="btn btn-danger" onClick={confirmDeleteFamily} title="Delete this family and all its members" style={{ padding: '0.4rem 0.65rem', fontSize: '0.8rem' }}>🗑️ Delete</button>
+                                        <button className="btn btn-danger" onClick={confirmDeleteFamily} title="Delete this family and all its members" style={{ padding: '0.4rem 0.65rem', fontSize: '0.8rem' }}>🗑 Delete</button>
                                     </div>
                                 </div>
 
@@ -1067,17 +1067,17 @@ export function FamilyManageApp() {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <button className="btn btn-secondary" onClick={openEditMemberModal} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✏️ Edit Info</button>
+                                        <button className="btn btn-secondary" onClick={openEditMemberModal} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✏ Edit Info</button>
                                         <button className="btn btn-primary" onClick={openProvisionModalForCurrentMember} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem', background: 'linear-gradient(135deg, #0d9488, #2563eb)', border: 'none', color: 'white' }} title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
-                                        <button className="btn btn-danger" onClick={confirmDeleteMember} title="Delete this member record" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>🗑️ Delete</button>
+                                        <button className="btn btn-danger" onClick={confirmDeleteMember} title="Delete this member record" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>🗑 Delete</button>
                                         <button className="btn btn-secondary" onClick={closeMemberDetail} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✕ Close</button>
                                     </div>
                                 </div>
 
                                 <div className="summary-chips-row">
-                                    {chip('chipConditions', '🏷️ Conditions', m?.conditions?.length || 0)}
+                                    {chip('chipConditions', '🏷 Conditions', m?.conditions?.length || 0)}
                                     {chip('chipMedications', '💊 Medications', m?.medications?.length || 0)}
-                                    {chip('chipAllergies', '⚠️ Allergies', m?.allergies?.length || 0)}
+                                    {chip('chipAllergies', '⚠ Allergies', m?.allergies?.length || 0)}
                                     {chip('chipHistory', '📜 History', m?.history?.length || 0)}
                                     {chip('chipFollowUps', '🩺 Visits', m?.follow_ups?.length || 0)}
                                 </div>
@@ -1132,7 +1132,7 @@ export function FamilyManageApp() {
 
                                     <div className="sub-entity-card">
                                         <div className="sub-entity-header">
-                                            <span className="sub-entity-title">⚠️ Allergies &amp; Adverse Drug Reactions</span>
+                                            <span className="sub-entity-title">⚠ Allergies &amp; Adverse Drug Reactions</span>
                                             <button className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }} onClick={() => openAdd(alg, setAlgModal, '+ Add Allergy', 'algAllergen')}>+ Add Allergy</button>
                                         </div>
                                         <div id="allergiesListContainer" className="sub-entity-list">
@@ -1157,7 +1157,7 @@ export function FamilyManageApp() {
                                     <div className="sub-entity-card">
                                         <div className="sub-entity-header">
                                             <span className="sub-entity-title">🏃 Lifestyle, Habits &amp; Risk Factors</span>
-                                            <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }} onClick={openEditLifestyleModal}>✏️ Edit Lifestyle</button>
+                                            <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }} onClick={openEditLifestyleModal}>✏ Edit Lifestyle</button>
                                         </div>
                                         <div id="lifestyleContent" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.6rem', fontSize: '0.825rem' }}>
                                             {m ? <LifestyleView lifestyle={m.lifestyle} /> : <div style={{ color: 'var(--text-muted)' }}>No lifestyle information recorded yet.</div>}

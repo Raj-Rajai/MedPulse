@@ -42,7 +42,7 @@ export function SubjectRows({ subjects }: { subjects: AttSubject[] }) {
                 let statusBadgeText = '✅ Eligible';
                 if (s.nmc_status === 'Warning') {
                     statusBadgeClass = 'badge-warning';
-                    statusBadgeText = '⚠️ Warning';
+                    statusBadgeText = '⚠ Warning';
                 } else if (s.nmc_status === 'Shortage') {
                     statusBadgeClass = 'badge-danger';
                     statusBadgeText = '🚨 Shortage';

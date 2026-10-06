@@ -250,14 +250,14 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     const d = items[selectedIdx] || null;
 
     return (
-        <section className={`tab-section${active ? ' active' : ''}`} id="sec-schedule">
+        <div id="viewSchedule" className={`admin-view-pane${active ? ' active' : ''}`}>
             {/* Academic Schedule Hero Banner with intact styling */}
             <div className="attendance-hero anim-fade-up">
                 <div className="hero-split-grid">
                     <div className="hero-left-col">
                         <div className="profile-identity-group" style={{ marginBottom: '8px' }}>
                             <div className="profile-avatar-wrapper" style={{ width: '60px', height: '60px', borderRadius: '17px' }}>
-                                <div className="profile-avatar-inner" style={{ fontSize: '1.6rem', borderRadius: '14px' }}>🗓️</div>
+                                <div className="profile-avatar-inner" style={{ fontSize: '1.6rem', borderRadius: '14px' }}>🗓</div>
                                 <div className="profile-badge-online" title="Editor Active" />
                             </div>
                             <div>
@@ -320,7 +320,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                             }}
                             onClick={() => setViewMode('strip')}
                         >
-                            🗓️ Cubic Strip
+                            🗓 Cubic Strip
                         </button>
                         <button
                             type="button"
@@ -412,7 +412,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                         title="Edit this teaching session"
                                         style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.4)' }}
                                     >
-                                        ✏️ Edit Session
+                                        ✏ Edit Session
                                     </button>
                                     <button
                                         type="button"
@@ -421,7 +421,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                         title="Delete this session"
                                         style={{ background: 'rgba(239, 68, 68, 0.4)', border: '1px solid rgba(239, 68, 68, 0.6)' }}
                                     >
-                                        🗑️ Delete
+                                        🗑 Delete
                                     </button>
                                     <button
                                         type="button"
@@ -452,7 +452,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                     </span>
                                     <span style={{ color: '#cbd5e1' }}>|</span>
                                     <span>
-                                        🏷️{' '}
+                                        🏷{' '}
                                         <strong id="detailSubjectTag">{d.subject || d.department || 'Pathology'}</strong>
                                     </span>
                                     {d.attendance_count !== undefined && d.attendance_count > 0 && (
@@ -508,7 +508,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                             onClick={() => handleOpenEdit(d)}
                                             title="Edit this teaching session"
                                         >
-                                            ✏️ Edit This Session
+                                            ✏ Edit This Session
                                         </button>
                                         <button
                                             type="button"
@@ -516,7 +516,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                             onClick={() => handleDeleteSession(d)}
                                             title="Delete this teaching session"
                                         >
-                                            🗑️ Delete Session
+                                            🗑 Delete Session
                                         </button>
                                     </div>
                                     <div>
@@ -636,7 +636,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                                 onClick={() => handleOpenEdit(item)}
                                                 title="Edit Session"
                                             >
-                                                ✏️
+                                                ✏
                                             </button>
                                             <button
                                                 type="button"
@@ -645,7 +645,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                                                 onClick={() => handleDeleteSession(item)}
                                                 title="Delete Session"
                                             >
-                                                🗑️
+                                                🗑
                                             </button>
                                             <button
                                                 type="button"
@@ -672,7 +672,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                         <div className="modal-header">
                             <div>
                                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>
-                                    {editingItem ? '✏️ Edit Teaching Session' : '➕ Schedule New Teaching Session'}
+                                    {editingItem ? '✏ Edit Teaching Session' : '➕ Schedule New Teaching Session'}
                                 </h3>
                                 <p style={{ margin: '3px 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                                     NMC Competency-Based Medical Education (CBME) curriculum timetable
@@ -871,6 +871,6 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             )}
             {attendanceLecture && <AttendanceWaitingRoom key={attendanceLecture.id} lecture={attendanceLecture}
                 onClose={() => { setAttendanceLecture(null); loadSchedule(activePill); }} onChanged={() => loadSchedule(activePill)}/>}
-        </section>
+        </div>
     );
 }

@@ -130,7 +130,7 @@ export function ProfilePanel({ s, a, active }: { s: PortalState; a: PortalAction
                         {c ? <HealthCard c={c} /> : <div className="pt-skel" style={{ height: 220, opacity: 0.3 }} />}
                     </div>
                     <div className="hc-actions">
-                        <button className="pt-btn" onClick={a.printCard}>{t('🖨️ Print card')}</button>
+                        <button className="pt-btn" onClick={a.printCard}>{t('🖨 Print card')}</button>
                         <button className="pt-btn" onClick={a.copyUid}>{t('📋 Copy patient ID')}</button>
                     </div>
                     <div id="completeness">
@@ -144,7 +144,7 @@ export function ProfilePanel({ s, a, active }: { s: PortalState; a: PortalAction
                 <div className="pt-card">
                     <div className="pt-card-h">
                         <div>
-                            <h2>{t('✏️ Your details')}</h2>
+                            <h2>{t('✏ Your details')}</h2>
                             <p className="pt-sub">{t("These appear on your card. Your phone number is your login, so it can't be changed here.")}</p>
                         </div>
                     </div>

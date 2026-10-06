@@ -55,7 +55,7 @@ function modeFromUrl(): AuthMode {
 
 const MODE_VIEW: Record<AuthMode, { icon: string; background: string; boxShadow: string; title: string; subtitle: string; focus: string }> = {
     login: {
-        icon: '👨‍⚕️',
+        icon: '👨‍⚕',
         background: 'linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5)',
         boxShadow: '0 8px 24px rgba(109, 40, 217, 0.4)',
         title: 'Student Portal Sign In',
@@ -496,7 +496,7 @@ export function LoginApp() {
                 setRefFeedback({ shown: true, ok: false, error: data.error || 'Invalid cadet referral code. Please verify with your medical student.' });
             }
         } catch {
-            setRefIcon({ shown: true, text: '⚠️' });
+            setRefIcon({ shown: true, text: '⚠' });
         }
     };
 
@@ -1012,7 +1012,7 @@ const OTP_THEMES: Record<AuthMode, {
     borderColor: string;
 }> = {
     login: {
-        icon: '👨‍⚕️',
+        icon: '👨‍⚕',
         title: 'Student Portal',
         gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9, #4f46e5)',
         gradientBg: 'rgba(124, 58, 237, 0.07)',
@@ -1236,7 +1236,7 @@ function OtpVerificationPane({ pending, digits, busy, resendTimer, inputRefs, al
                 fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.5,
                 display: 'flex', alignItems: 'flex-start', gap: 8,
             }}>
-                <span style={{ fontSize: '1rem', flexShrink: 0 }}>ℹ️</span>
+                <span style={{ fontSize: '1rem', flexShrink: 0 }}>ℹ</span>
                 <span>
                     <strong>OTP Provider Not Configured.</strong> When an SMS/email OTP provider is integrated,
                     verification will be mandatory. For now, you may proceed without OTP using the button above.
