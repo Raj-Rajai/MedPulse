@@ -62,10 +62,12 @@
     }
 
     /* Views & Tab Transition Physics */
-    .admin-view-pane {
+    .admin-view-pane,
+    .tab-section:not(.active) {
       display: none;
     }
-    .admin-view-pane.active {
+    .admin-view-pane.active,
+    .tab-section.active {
       display: block;
       animation: fadeInUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -344,3 +346,57 @@
         grid-template-columns: 1fr !important;
       }
     }
+
+    /* Admin Header Brand & Responsive Layout */
+    .admin-page-header {
+      margin-bottom: 24px;
+    }
+    .page-header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .page-header-text {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    @media (max-width: 640px) {
+      .admin-page-header {
+        margin-bottom: 18px !important;
+        gap: 10px !important;
+      }
+      .page-header-brand {
+        gap: 12px !important;
+        align-items: center !important;
+      }
+      .page-header-brand .header-brand-logo {
+        width: 42px !important;
+        height: 42px !important;
+        flex-shrink: 0 !important;
+      }
+      #adminPageHeading {
+        font-size: 1.25rem !important;
+        line-height: 1.25 !important;
+        word-break: break-word !important;
+      }
+      #adminPageSubheading {
+        font-size: 0.78rem !important;
+        line-height: 1.35 !important;
+        margin-top: 3px !important;
+      }
+    }
+    @media (max-width: 420px) {
+      #adminPageHeading {
+        font-size: 1.15rem !important;
+      }
+      #adminPageSubheading {
+        font-size: 0.74rem !important;
+      }
+      .page-header-brand .header-brand-logo {
+        width: 36px !important;
+        height: 36px !important;
+      }
+    }
+

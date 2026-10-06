@@ -44,14 +44,23 @@ export const standardSidebar: SidebarControls = {
 export const scheduleSidebar: SidebarControls = {
     toggle() {
         if (window.innerWidth <= MOBILE_MAX) {
-            const open = document.body.classList.toggle('sidebar-mobile-open');
-            ov()?.classList.toggle('active', open);
+            const isOpen = sb()?.classList.toggle('open');
+            document.body.classList.toggle('sidebar-mobile-open', !!isOpen);
+            ov()?.classList.toggle('active', !!isOpen);
         } else collapseToggle();
         window.dispatchEvent(new Event('resize'));
     },
     close() {
-        document.body.classList.remove('sidebar-mobile-open');
-        ov()?.classList.remove('active');
+        if (window.innerWidth <= MOBILE_MAX) {
+            sb()?.classList.remove('open');
+            document.body.classList.remove('sidebar-mobile-open');
+            ov()?.classList.remove('active');
+        } else {
+            document.documentElement.classList.add('sidebar-collapsed');
+            document.body.classList.add('sidebar-collapsed');
+            localStorage.setItem('sidebar_collapsed', '1');
+        }
+        window.dispatchEvent(new Event('resize'));
     },
 };
 

@@ -71,14 +71,16 @@
   }
 
   /* Compact action button clusters */
-  .page-header > div:last-child {
+  .page-header > div:last-child:not(:first-child),
+  .page-header > .header-actions {
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 6px !important;
     width: 100% !important;
   }
 
-  .page-header > div:last-child .btn {
+  .page-header > div:last-child:not(:first-child) .btn,
+  .page-header > .header-actions .btn {
     flex: 1 1 auto !important;
     font-size: 0.76rem !important;
     padding: 6px 10px !important;
@@ -898,21 +900,56 @@
 
   /* Cubic date cards strip */
   .schedule-scroll-wrapper {
-    padding: 8px 0 12px !important;
+    position: relative !important;
+    padding: 6px 20px 10px !important;
   }
 
+  .schedule-scroll-nav-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.72rem !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .schedule-scroll-nav-btn.prev {
+    left: -2px !important;
+  }
+
+  .schedule-scroll-nav-btn.next {
+    right: -2px !important;
+  }
+
+  .schedule-horizontal-strip {
+    gap: 8px !important;
+    padding: 6px 2px 10px 2px !important;
+  }
+
+  .schedule-cubic-card,
   .cubic-card {
-    min-width: 72px !important;
+    min-width: 104px !important;
+    width: 104px !important;
+    height: 104px !important;
+    max-height: 104px !important;
     padding: 8px 6px !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
   }
 
-  .cubic-card-day {
-    font-size: 0.65rem !important;
-  }
-
+  .schedule-cubic-card .cubic-date,
   .cubic-card-date {
-    font-size: 1.1rem !important;
+    font-size: 1.05rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 2px !important;
+  }
+
+  .schedule-cubic-card .cubic-day,
+  .cubic-card-day {
+    font-size: 0.68rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  .schedule-cubic-card .cubic-time {
+    font-size: 0.65rem !important;
+    padding: 2px 6px !important;
   }
 
   .cubic-card-badge {
@@ -923,7 +960,22 @@
   /* Detail panel */
   .schedule-detail-panel {
     padding: 12px 14px !important;
-    border-radius: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .datewise-top-bar {
+    padding: 12px 12px !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .datewise-top-bar h2 {
+    font-size: 1.05rem !important;
+  }
+
+  .schedule-top-calendar-btn {
+    font-size: 0.75rem !important;
+    padding: 5px 10px !important;
   }
 
   .schedule-detail-header h3 {
@@ -933,6 +985,36 @@
   .schedule-detail-meta {
     font-size: 0.74rem !important;
     gap: 6px !important;
+  }
+
+  .schedule-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .schedule-meta-card {
+    padding: 10px 12px !important;
+  }
+
+  .schedule-meta-val {
+    font-size: 0.84rem !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .schedule-meta-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .schedule-cubic-card,
+  .cubic-card {
+    min-width: 96px !important;
+    width: 96px !important;
+    height: 98px !important;
+    max-height: 98px !important;
+    padding: 6px 4px !important;
+  }
+  .schedule-cubic-card .cubic-date {
+    font-size: 0.98rem !important;
   }
 }
 

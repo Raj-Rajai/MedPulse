@@ -151,9 +151,18 @@
     }
     .schedule-actions-group { display: flex; gap: 8px; flex-wrap: wrap; }
     @media (max-width: 640px) {
+      .schedule-scroll-wrapper { padding: 0 18px !important; }
+      .schedule-scroll-nav-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.72rem !important;
+      }
+      .schedule-scroll-nav-btn.prev { left: -4px !important; }
+      .schedule-scroll-nav-btn.next { right: -4px !important; }
       .schedule-detail-header-strip { flex-direction: column; align-items: flex-start; gap: 6px; }
       .schedule-detail-sep { display: none; }
       .schedule-actions-bar > div, .schedule-actions-group { width: 100%; }
       .schedule-actions-bar .btn { flex: 1 1 auto; }
       .schedule-actions-bar > div:last-child .btn { width: 100%; }
     }
+

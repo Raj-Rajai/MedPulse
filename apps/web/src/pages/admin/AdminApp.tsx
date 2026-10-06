@@ -188,12 +188,13 @@ function AdminConsole() {
 
             {/* Main Content */}
             <main className="main-content">
-                <AdminHeader heading={heading} exports={exports} onRegisterCadet={() => addStudent.show(true)} onRefresh={() => switchTab(activeTab)} />
+                <AdminHeader heading={heading} />
 
                 <OverviewSection active={activeTab === 'overview'} stats={overview.stats} />
                 <StudentsSection
                     active={activeTab === 'students'} all={cadets.all} rows={cadets.rows} setRows={cadets.setRows}
-                    collegeOptions={colleges.options} actions={cadetActions} onAdd={() => addStudent.show(true)} showToast={showToast}
+                    collegeOptions={colleges.options} actions={cadetActions} onAdd={() => addStudent.show(true)}
+                    exports={exports} onRefresh={() => switchTab('students')} showToast={showToast}
                 />
                 <AttendanceSection active={activeTab === 'attendance'} loadSignal={signals.attendance} />
                 <ScheduleSection active={activeTab === 'schedule'} loadSignal={signals.schedule} />

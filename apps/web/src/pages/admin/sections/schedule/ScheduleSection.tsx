@@ -250,7 +250,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     const d = items[selectedIdx] || null;
 
     return (
-        <section className={`tab-section${active ? ' active' : ''}`} id="sec-schedule">
+        <div id="viewSchedule" className={`admin-view-pane${active ? ' active' : ''}`}>
             {/* Academic Schedule Hero Banner with intact styling */}
             <div className="attendance-hero anim-fade-up">
                 <div className="hero-split-grid">
@@ -871,6 +871,6 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             )}
             {attendanceLecture && <AttendanceWaitingRoom key={attendanceLecture.id} lecture={attendanceLecture}
                 onClose={() => { setAttendanceLecture(null); loadSchedule(activePill); }} onChanged={() => loadSchedule(activePill)}/>}
-        </section>
+        </div>
     );
 }
