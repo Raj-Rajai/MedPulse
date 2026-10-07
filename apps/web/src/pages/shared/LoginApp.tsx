@@ -143,16 +143,16 @@ export function LoginApp() {
     const otpTimerRef = useRef<number | undefined>(undefined);
 
     // Student
-    const [roll, setRoll] = useState('');
-    const [pin, setPin] = useState('');
+    const [roll, setRoll] = useState('235');
+    const [pin, setPin] = useState('1234');
     const [loginBusy, setLoginBusy] = useState(false);
     // Admin
-    const [adminUser, setAdminUser] = useState('');
-    const [adminPin, setAdminPin] = useState('');
+    const [adminUser, setAdminUser] = useState('admin');
+    const [adminPin, setAdminPin] = useState('9999');
     const [adminBusy, setAdminBusy] = useState(false);
     // Patient sign-in
-    const [patientId, setPatientId] = useState('');
-    const [patientPin, setPatientPin] = useState('');
+    const [patientId, setPatientId] = useState('9876543210');
+    const [patientPin, setPatientPin] = useState('1234');
     const [patientBusy, setPatientBusy] = useState(false);
     // Patient registration
     const [pName, setPName] = useState('');
@@ -167,8 +167,8 @@ export function LoginApp() {
     const [refFeedback, setRefFeedback] = useState<FeedbackState>({ shown: false, ok: null });
     const referralTimer = useRef<number | undefined>(undefined);
     // Hospital
-    const [hospUser, setHospUser] = useState('');
-    const [hospPin, setHospPin] = useState('');
+    const [hospUser, setHospUser] = useState('hosp_superadmin');
+    const [hospPin, setHospPin] = useState('8888');
     const [hospBusy, setHospBusy] = useState(false);
 
     const hideAlerts = useCallback(() => {

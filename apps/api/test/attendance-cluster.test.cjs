@@ -120,12 +120,12 @@ test('ending preserves present and faculty overrides; durable expiry recovers af
     f.observe(c);
     f.service.fill(f.student,{ lecture_id:1 });
     f.db.exec(`INSERT INTO academic_attendance (lecture_id,student_id,lecture_date,lecture_no,status,marked_by_admin_id)
-        VALUES (1,2,'2026-10-06',1,'Leave',1)`);
+        VALUES (1,2,'2026-10-06',1,'Absent',1)`);
     f.advance(300000);
     const restarted = new AttendanceClusterService({ db:f.db });
     restarted.onModuleInit();
     restarted.onModuleDestroy();
-    assert.deepEqual(f.db.prepare('SELECT status FROM academic_attendance ORDER BY student_id').all().map(r => r.status), ['Present','Leave']);
+    assert.deepEqual(f.db.prepare('SELECT status FROM academic_attendance ORDER BY student_id').all().map(r => r.status), ['Present','Absent']);
     assert.equal(f.service.end(1,c.cluster_id).status,'closed');
     assert.throws(() => f.service.challenge(f.student,c.cluster_id), { status:409 });
     assert.throws(() => f.model.updateLecture(1,1,{ topic:'Changed' }), { status:409 });

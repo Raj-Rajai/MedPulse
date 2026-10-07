@@ -13,24 +13,19 @@ export interface Lecture {
 export interface DatewiseData {
     semester?: string;
     date_formatted?: string;
-    summary?: { total?: number; present?: number; field_duty?: number; absent?: number; leave?: number };
+    summary?: { total?: number; present?: number; absent?: number; not_marked?: number };
     lectures?: Lecture[];
 }
 
 function StatusCell({ status }: { status?: string }) {
-    if (status === 'Not Marked') {
-        return (
-            <div className="status-cell-wrapper">
-                <span className="status-icon-notmarked" />
-                <span className="status-text-notmarked">Not Marked</span>
-            </div>
-        );
-    }
     if (status === 'Present') return <span className="status-pill-present">✅ Present</span>;
-    if (status === 'Field Duty') return <span className="status-pill-fieldduty">🏡 Field Duty</span>;
     if (status === 'Absent') return <span className="status-pill-absent">❌ Absent</span>;
-    if (status === 'Leave') return <span className="status-pill-leave">🟡 Leave</span>;
-    return null;
+    return (
+        <div className="status-cell-wrapper">
+            <span className="status-icon-notmarked" />
+            <span className="status-text-notmarked">Not Marked</span>
+        </div>
+    );
 }
 
 /** `variant` picks the empty-state styling: profile.html and attendance.html differed slightly. */

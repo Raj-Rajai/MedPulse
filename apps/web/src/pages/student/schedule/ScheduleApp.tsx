@@ -932,16 +932,26 @@ export function ScheduleApp() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                                {d?.attendance_status && d.attendance_status !== 'Not Marked' ? (
+                                {d?.attendance_status === 'Present' ? (
                                     <span style={{ fontSize: '0.82rem', fontWeight: '700', padding: '6px 12px', borderRadius: '20px', background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                                         <span>Status:</span>
-                                        <span>{d.attendance_status === 'Present' ? '✅ Present' : d.attendance_status === 'Field Duty' ? '🏡 Field Duty' : d.attendance_status === 'Leave' ? '🟡 Leave' : d.attendance_status}</span>
+                                        <span>✅ Present</span>
+                                    </span>
+                                ) : d?.attendance_status === 'Absent' ? (
+                                    <span style={{ fontSize: '0.82rem', fontWeight: '700', padding: '6px 12px', borderRadius: '20px', background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        <span>Status:</span>
+                                        <span>❌ Absent</span>
                                     </span>
                                 ) : d?.attendance_requested ? (
                                     <span style={{ fontSize: '0.82rem', fontWeight: '700', padding: '6px 12px', borderRadius: '20px', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                                         <span>📢 Attendance Requested by Faculty</span>
                                     </span>
-                                ) : null}
+                                ) : (
+                                    <span style={{ fontSize: '0.82rem', fontWeight: '600', padding: '6px 12px', borderRadius: '20px', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        <span>Status:</span>
+                                        <span>⚪ Not Marked</span>
+                                    </span>
+                                )}
                             </div>
                             <div>
                                 <button
