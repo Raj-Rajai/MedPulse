@@ -256,7 +256,8 @@ export function LoginApp() {
         hideAlerts();
         setOtpDigits(['', '', '', '', '', '']);
         setOtpPending(pending);
-        setTimeout(() => otpInputRefs.current[0]?.focus(), 150);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => otpInputRefs.current[0]?.focus({ preventScroll: true }), 150);
     };
 
     /** Complete login: store session data and redirect */
@@ -312,18 +313,43 @@ export function LoginApp() {
 
     /** OTP digit input handlers */
     const handleOtpDigitChange = (index: number, value: string) => {
-        if (!/^\d*$/.test(value)) return;
+        const digitsOnly = value.replace(/\D/g, '');
+        if (!digitsOnly) {
+            const next = [...otpDigits];
+            next[index] = '';
+            setOtpDigits(next);
+            return;
+        }
+        // If mobile SMS autofill or paste entered multiple digits
+        if (digitsOnly.length > 1) {
+            const next = [...otpDigits];
+            for (let i = 0; i < 6; i++) {
+                if (index + i < 6 && i < digitsOnly.length) {
+                    next[index + i] = digitsOnly[i];
+                }
+            }
+            setOtpDigits(next);
+            const nextFocus = Math.min(index + digitsOnly.length, 5);
+            otpInputRefs.current[nextFocus]?.focus({ preventScroll: true });
+            return;
+        }
+        // Single digit entered
         const next = [...otpDigits];
-        next[index] = value.slice(-1);
+        next[index] = digitsOnly;
         setOtpDigits(next);
-        if (value && index < 5) {
-            otpInputRefs.current[index + 1]?.focus();
+        if (index < 5) {
+            otpInputRefs.current[index + 1]?.focus({ preventScroll: true });
         }
     };
 
     const handleOtpKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-            otpInputRefs.current[index - 1]?.focus();
+        if (e.key === 'Backspace') {
+            if (!otpDigits[index] && index > 0) {
+                const next = [...otpDigits];
+                next[index - 1] = '';
+                setOtpDigits(next);
+                otpInputRefs.current[index - 1]?.focus({ preventScroll: true });
+            }
         }
         if (e.key === 'Enter' && otpDigits.join('').length === 6) {
             handleVerifyOtp();
@@ -338,7 +364,7 @@ export function LoginApp() {
         for (let i = 0; i < 6; i++) next[i] = pasted[i] || '';
         setOtpDigits(next);
         const focusIdx = Math.min(pasted.length, 5);
-        otpInputRefs.current[focusIdx]?.focus();
+        otpInputRefs.current[focusIdx]?.focus({ preventScroll: true });
     };
 
     /* ---- Student ---- */
@@ -635,8 +661,27 @@ export function LoginApp() {
                     </a>
 
                     <div className="login-card">
-                        {/* Auth Mode Switcher */}
-                        <div className={`auth-mode-nav four-items state-${mode}`} id="authModeNav">
+                        {otpPending ? (
+                            <OtpVerificationPane
+                                pending={otpPending}
+                                digits={otpDigits}
+                                busy={otpBusy}
+                                resendTimer={otpResendTimer}
+                                inputRefs={otpInputRefs}
+                                alert={alert}
+                                success={success}
+                                onDigitChange={handleOtpDigitChange}
+                                onKeyDown={handleOtpKeyDown}
+                                onPaste={handleOtpPaste}
+                                onVerify={handleVerifyOtp}
+                                onSkip={handleSkipOtp}
+                                onResend={handleResendOtp}
+                                onBack={handleOtpBack}
+                            />
+                        ) : (
+                            <>
+                                {/* Auth Mode Switcher */}
+                                <div className={`auth-mode-nav four-items state-${mode}`} id="authModeNav">
                             <div className="auth-mode-glider" id="authModeGlider" style={{ opacity: 1 }} />
                             <button type="button" className={mode === 'login' ? 'auth-mode-btn active' : 'auth-mode-btn'} id="tabSignIn" onClick={() => setAuthMode('login')}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -962,24 +1007,7 @@ export function LoginApp() {
                             </div>
                         </div>
 
-                        {/* OTP Verification Overlay */}
-                        {otpPending && (
-                            <OtpVerificationPane
-                                pending={otpPending}
-                                digits={otpDigits}
-                                busy={otpBusy}
-                                resendTimer={otpResendTimer}
-                                inputRefs={otpInputRefs}
-                                alert={alert}
-                                success={success}
-                                onDigitChange={handleOtpDigitChange}
-                                onKeyDown={handleOtpKeyDown}
-                                onPaste={handleOtpPaste}
-                                onVerify={handleVerifyOtp}
-                                onSkip={handleSkipOtp}
-                                onResend={handleResendOtp}
-                                onBack={handleOtpBack}
-                            />
+                            </>
                         )}
                     </div>
 
@@ -1086,23 +1114,21 @@ function OtpVerificationPane({ pending, digits, busy, resendTimer, inputRefs, al
     const theme = OTP_THEMES[pending.role];
     const otpFilled = digits.join('').length === 6;
 
-    const overlayStyle: CSSProperties = {
-        position: 'absolute',
-        inset: 0,
-        background: '#ffffff',
-        borderRadius: 'var(--radius-xl)',
-        padding: '32px 26px',
-        zIndex: 50,
+    const paneStyle: CSSProperties = {
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        animation: 'otp-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+        animation: 'otp-slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+        boxSizing: 'border-box',
     };
 
     const digitBoxStyle = (filled: boolean): CSSProperties => ({
-        width: 48,
-        height: 56,
+        flex: '1 1 0',
+        maxWidth: 48,
+        minWidth: 32,
+        height: 'clamp(46px, 12vw, 56px)',
         textAlign: 'center',
-        fontSize: '1.5rem',
+        fontSize: 'clamp(1.2rem, 4.2vw, 1.5rem)',
         fontWeight: 800,
         fontFamily: 'monospace',
         border: `2px solid ${filled ? theme.accentColor : 'var(--border)'}`,
@@ -1112,66 +1138,73 @@ function OtpVerificationPane({ pending, digits, busy, resendTimer, inputRefs, al
         color: 'var(--text-primary)',
         transition: 'border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
         caretColor: theme.accentColor,
+        padding: 0,
+        boxSizing: 'border-box',
     });
 
     return (
-        <div style={overlayStyle} id="otpPane">
-            {/* Back button */}
-            <button
-                type="button" onClick={onBack}
-                style={{
-                    position: 'absolute', top: 16, left: 16,
-                    background: 'transparent', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 650,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    padding: '4px 8px', borderRadius: 'var(--radius-sm)',
-                    transition: 'background 0.15s ease, color 0.15s ease',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-            >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
-                </svg>
-                Back
-            </button>
+        <div style={paneStyle} id="otpPane">
+            {/* Top Bar with Back Button and Role Badge */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <button
+                    type="button" onClick={onBack}
+                    style={{
+                        background: 'transparent', border: 'none', cursor: 'pointer',
+                        color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 650,
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '6px 10px', borderRadius: 'var(--radius-sm)',
+                        transition: 'background 0.15s ease, color 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <span style={{ fontSize: '0.74rem', color: theme.accentColor, fontWeight: 700, background: theme.accentBg, padding: '3px 10px', borderRadius: '12px' }}>
+                    {theme.title}
+                </span>
+            </div>
 
             {/* Header */}
-            <div style={{ textAlign: 'center', marginTop: 12, marginBottom: 20 }}>
+            <div style={{ textAlign: 'center', marginBottom: 18 }}>
                 <div
                     style={{
-                        width: 54, height: 54, margin: '0 auto 12px', background: theme.gradient, color: '#fff',
+                        width: 48, height: 48, margin: '0 auto 10px', background: theme.gradient, color: '#fff',
                         borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.75rem', boxShadow: `0 8px 24px ${theme.shadowColor}`,
+                        fontSize: '1.5rem', boxShadow: `0 8px 24px ${theme.shadowColor}`,
                     }}
                 >
                     🔐
                 </div>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 4, color: 'var(--text-primary)' }}>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: 4, color: 'var(--text-primary)' }}>
                     OTP Verification
                 </h2>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.45 }}>
                     A 6-digit verification code has been sent to your registered contact.
                     <br />
                     <span style={{ fontWeight: 650, color: theme.accentColor }}>
                         {theme.icon} {pending.displayName}
                     </span>
-                    <span style={{ color: 'var(--text-muted)' }}> • {theme.title}</span>
                 </p>
             </div>
 
             {/* Alerts */}
-            <div id="otpAlert" style={{ display: alert.shown ? 'block' : 'none' }} className="alert alert-error">{alert.text}</div>
-            <div id="otpSuccess" style={{ display: success.shown ? 'block' : 'none' }} className="alert alert-success">{success.text}</div>
+            <div id="otpAlert" style={{ display: alert.shown ? 'block' : 'none', marginBottom: 12 }} className="alert alert-error">{alert.text}</div>
+            <div id="otpSuccess" style={{ display: success.shown ? 'block' : 'none', marginBottom: 12 }} className="alert alert-success">{success.text}</div>
 
             {/* OTP Input Boxes */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(6px, 1.8vw, 10px)', marginBottom: 8, width: '100%', maxWidth: 360, margin: '0 auto 8px' }}>
                 {digits.map((d, i) => (
                     <input
                         key={i}
                         ref={(el) => { inputRefs.current[i] = el; }}
                         type="text"
                         inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete={i === 0 ? 'one-time-code' : 'off'}
                         maxLength={1}
                         value={d}
                         onChange={(e) => onDigitChange(i, e.target.value)}
@@ -1187,7 +1220,7 @@ function OtpVerificationPane({ pending, digits, busy, resendTimer, inputRefs, al
             </div>
 
             {/* Resend Timer */}
-            <div style={{ textAlign: 'center', marginBottom: 20, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 18, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 {resendTimer > 0 ? (
                     <span>Resend code in <strong style={{ color: theme.accentColor }}>{resendTimer}s</strong></span>
                 ) : (
@@ -1216,7 +1249,7 @@ function OtpVerificationPane({ pending, digits, busy, resendTimer, inputRefs, al
                     color: otpFilled ? '#fff' : 'var(--text-muted)',
                     cursor: otpFilled && !busy ? 'pointer' : 'not-allowed',
                     opacity: busy ? 0.7 : 1,
-                    marginBottom: 12,
+                    marginBottom: 10,
                 }}
             >
                 {busy ? '⏳ Verifying...' : `🔐 Verify OTP & Continue →`}
@@ -1240,14 +1273,14 @@ function OtpVerificationPane({ pending, digits, busy, resendTimer, inputRefs, al
 
             {/* Info notice */}
             <div style={{
-                marginTop: 18, padding: '10px 14px',
+                marginTop: 14, padding: '10px 12px',
                 background: theme.gradientBg,
                 border: `1px solid ${theme.borderColor}22`,
                 borderRadius: 'var(--radius-md)',
-                fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.5,
+                fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.45,
                 display: 'flex', alignItems: 'flex-start', gap: 8,
             }}>
-                <span style={{ fontSize: '1rem', flexShrink: 0 }}>ℹ</span>
+                <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>ℹ</span>
                 <span>
                     <strong>OTP Provider Not Configured.</strong> When an SMS/email OTP provider is integrated,
                     verification will be mandatory. For now, you may proceed without OTP using the button above.
