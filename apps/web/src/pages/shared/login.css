@@ -72,12 +72,13 @@
     }
     @media (max-width: 640px) {
       .login-page-container {
-        padding: 24px 12px;
+        padding: 16px 12px 32px;
         align-items: flex-start;
+        -webkit-overflow-scrolling: touch;
       }
       .login-brand-header {
-        margin-bottom: 18px;
-        margin-top: 8px;
+        margin-bottom: 14px;
+        margin-top: 4px;
       }
     }
 

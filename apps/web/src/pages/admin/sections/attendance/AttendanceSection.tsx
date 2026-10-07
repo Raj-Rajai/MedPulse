@@ -9,7 +9,7 @@ import { useToast } from '../../hooks/useToasts';
 import { errMessage, readJson, sendJson, todayIso } from '../../lib/http';
 import { Options, SUBJECTS, labelOf, type Option } from '../academic';
 
-type Status = 'Present' | 'Absent' | 'Leave' | 'Field Duty' | 'Not Marked';
+type Status = 'Present' | 'Absent' | 'Not Marked';
 
 interface SheetStudent {
     student_id: number;
@@ -70,17 +70,14 @@ const INITIAL: Config = {
 
 type Body<T> = { kind: 'initial' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'data'; rows: T };
 
-const STATUS_BUTTONS: { status: Status; cls: string; title: string; label: string }[] = [
+const STATUS_BUTTONS: { status: 'Present' | 'Absent'; cls: string; title: string; label: string }[] = [
     { status: 'Present', cls: 'btn-p', title: 'Mark Present', label: '✓ Present' },
     { status: 'Absent', cls: 'btn-a', title: 'Mark Absent', label: '✗ Absent' },
-    { status: 'Leave', cls: 'btn-l', title: 'Mark On Leave', label: '⏳ Leave' },
-    { status: 'Field Duty', cls: 'btn-fd', title: 'Mark Field Survey Duty', label: '🏥 Field Duty' },
 ];
 
 function HistoryStatusBadge({ status }: { status: string }) {
     if (status === 'Absent') return <span className="badge badge-danger">Absent</span>;
-    if (status === 'Leave') return <span className="badge badge-warning">Leave</span>;
-    if (status === 'Field Duty') return <span className="badge" style={{ background: 'rgba(124, 58, 237, 0.12)', color: '#7c3aed', border: '1px solid rgba(124,58,237,0.3)' }}>Field Duty</span>;
+    if (status === 'Not Marked') return <span className="badge" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1' }}>Not Marked</span>;
     return <span className="badge badge-success">Present</span>;
 }
 
@@ -236,7 +233,7 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
             topic: c.topic.trim(),
             attendance: students.map((s) => ({
                 student_id: s.student_id,
-                status: s.status === 'Not Marked' ? 'Present' : s.status,
+                status: s.status === 'Present' ? 'Present' : 'Absent',
                 remarks: (s.remarks || '').trim(),
             })),
         };
@@ -254,15 +251,14 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
     };
 
     // Summary counters only change once a sheet has loaded.
-    const [counts, setCounts] = useState({ total: 0, present: 0, absent: 0, leave: 0, fieldDuty: 0 });
+    const [counts, setCounts] = useState({ total: 0, present: 0, absent: 0, notMarked: 0 });
     useEffect(() => {
         if (sheet.kind !== 'data') return;
-        const c = { total: sheet.rows.length, present: 0, absent: 0, leave: 0, fieldDuty: 0 };
+        const c = { total: sheet.rows.length, present: 0, absent: 0, notMarked: 0 };
         for (const s of sheet.rows) {
             if (s.status === 'Present') c.present++;
             else if (s.status === 'Absent') c.absent++;
-            else if (s.status === 'Leave') c.leave++;
-            else if (s.status === 'Field Duty') c.fieldDuty++;
+            else c.notMarked++;
         }
         setCounts(c);
     }, [sheet]);
@@ -360,8 +356,7 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
                         <span className="att-count-pill total">Total Cadets: <strong id="attCountTotal">{counts.total}</strong></span>
                         <span className="att-count-pill present">✓ Present: <strong id="attCountPresent">{counts.present}</strong></span>
                         <span className="att-count-pill absent">✗ Absent: <strong id="attCountAbsent">{counts.absent}</strong></span>
-                        <span className="att-count-pill leave">⏳ Leave: <strong id="attCountLeave">{counts.leave}</strong></span>
-                        <span className="att-count-pill field-duty">🏥 Field Duty: <strong id="attCountFieldDuty">{counts.fieldDuty}</strong></span>
+                        <span className="att-count-pill not-marked" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1' }}>⚪ Not Marked: <strong id="attCountNotMarked">{counts.notMarked}</strong></span>
                     </div>
 
                     {/* Bulk Quick Toggles */}
@@ -381,7 +376,7 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
                                     <th style={{ width: 80, textAlign: 'center' }}>Roll</th>
                                     <th>Cadet Name</th>
                                     <th>Batch / Institution</th>
-                                    <th style={{ textAlign: 'center', width: 310 }}>Attendance Status</th>
+                                    <th style={{ textAlign: 'center', width: 220 }}>Attendance Status</th>
                                     <th>Remarks / Official Notes</th>
                                 </tr>
                             </thead>
@@ -461,8 +456,6 @@ export function AttendanceSection({ active, loadSignal }: { active: boolean; loa
                                 <option value="all">All Statuses</option>
                                 <option value="Present">Present</option>
                                 <option value="Absent">Absent</option>
-                                <option value="Leave">Leave</option>
-                                <option value="Field Duty">Field Duty</option>
                             </select>
                             <input type="text" id="attHistSearchInput" placeholder="🔍 Search cadet, topic, faculty..." value={hist.search} onChange={(e) => updateHist({ search: e.target.value })} style={{ ...histControl, maxWidth: 220, padding: '0 12px' }} />
                             <button className="btn btn-secondary" onClick={loadHistory} style={{ height: 38, fontSize: '0.82rem', padding: '0 14px', borderRadius: 8, fontWeight: 700 }}>

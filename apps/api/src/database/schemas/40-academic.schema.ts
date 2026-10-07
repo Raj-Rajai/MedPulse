@@ -49,7 +49,7 @@ export const academicSchema: SchemaModule = {
                 student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
                 lecture_date TEXT NOT NULL,
                 lecture_no INTEGER NOT NULL,
-                status TEXT NOT NULL CHECK (status IN ('Present', 'Absent', 'Leave', 'Field Duty')),
+                status TEXT NOT NULL CHECK (status IN ('Present', 'Absent')),
                 remarks TEXT,
                 marked_by_admin_id INTEGER REFERENCES admins(id) ON DELETE SET NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

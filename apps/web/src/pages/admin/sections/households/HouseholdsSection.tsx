@@ -64,7 +64,7 @@ export function HouseholdsSection({ active, loadSignal }: { active: boolean; loa
                             onChange={(e) => { setQ(e.target.value); applyFilter(e.target.value, surveyor); }}
                             style={{ maxWidth: 250, fontSize: '0.82rem', padding: '0.45rem 0.8rem' }} />
 
-                        <select id="householdCadetFilter" value={surveyor} onChange={(e) => { setSurveyor(e.target.value); applyFilter(q, e.target.value); }} style={{ padding: '0.45rem 0.8rem', fontSize: '0.82rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: '#fff', maxWidth: 200 }}>
+                        <select id="householdCadetFilter" value={surveyor} onChange={(e) => { setSurveyor(e.target.value); applyFilter(q, e.target.value); }} style={{ padding: '0.45rem 0.8rem', fontSize: '0.82rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: '#fff', maxWidth: 200 }}>
                             <option value="">All Surveyors (Cadets)</option>
                         </select>
                     </div>

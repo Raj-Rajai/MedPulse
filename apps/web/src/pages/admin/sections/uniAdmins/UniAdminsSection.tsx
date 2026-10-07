@@ -87,7 +87,7 @@ export function UniAdminsSection({ active, admins, view, collegeOptions, selecte
                     {/* University Selector */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <label style={{ fontSize: '0.8rem', fontWeight: 650, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Institution:</label>
-                        <select id="uniAdminCollegeSelect" value={selectedUni} onChange={(e) => onSelectUni(e.target.value)} style={{ padding: '0.45rem 0.85rem', fontSize: '0.84rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: '#fff', minWidth: 220, fontWeight: 600 }}>
+                        <select id="uniAdminCollegeSelect" value={selectedUni} onChange={(e) => onSelectUni(e.target.value)} style={{ padding: '0.45rem 0.85rem', fontSize: '0.84rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: '#fff', minWidth: 220, fontWeight: 600 }}>
                             {collegeOptions
                                 ? collegeOptions.map((c) => <option key={c.id} value={c.id}>{c.name || ''}</option>)
                                 : <option value="1">SAL Hospital</option>}

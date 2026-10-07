@@ -104,14 +104,13 @@ export function AttendanceApp() {
             showToast('No subject data to export.', 'error');
             return;
         }
-        const headers = ['Subject', 'Faculty In-Charge', 'Total Classes', 'Attended', 'Absent', 'Leave', 'Theory %', 'Practical %', 'Overall %', 'NMC Status'];
+        const headers = ['Subject', 'Faculty In-Charge', 'Total Classes', 'Attended', 'Absent', 'Theory %', 'Practical %', 'Overall %', 'NMC Status'];
         const rows = subjects.map((s) => [
             `"${s.subject}"`,
             `"${s.faculty_name || ''}"`,
             `"${s.total}"`,
             `"${s.attended}"`,
             `"${s.absent}"`,
-            `"${s.leave}"`,
             `"${s.theory.percentage}%"`,
             `"${s.practical.percentage}%"`,
             `"${s.overall_percentage}%"`,
@@ -242,15 +241,15 @@ export function AttendanceApp() {
                         </div>
                         <div className="summary-badge-group">
                             <span>Present :</span>
-                            <span className="summary-badge-val present" id="badgePresentCount">{dw ? (sm.present || 0) + (sm.field_duty || 0) : 0}</span>
+                            <span className="summary-badge-val present" id="badgePresentCount">{dw ? sm.present || 0 : 0}</span>
                         </div>
                         <div className="summary-badge-group">
                             <span>Absent :</span>
                             <span className="summary-badge-val absent" id="badgeAbsentCount">{dw ? sm.absent || 0 : 0}</span>
                         </div>
                         <div className="summary-badge-group">
-                            <span>Leave :</span>
-                            <span className="summary-badge-val leave" id="badgeLeaveCount">{dw ? sm.leave || 0 : 0}</span>
+                            <span>Not Marked :</span>
+                            <span className="summary-badge-val not-marked" id="badgeNotMarkedCount" style={{ color: '#64748b' }}>{dw ? sm.not_marked || 0 : 0}</span>
                         </div>
                     </div>
                     <div className="datewise-table-wrapper">
@@ -297,7 +296,7 @@ export function AttendanceApp() {
                                 <th style={{ minWidth: "220px" }}>{"Subject & Faculty In-Charge"}</th>
                                 <th style={{ textAlign: "center", width: "80px" }}>Total</th>
                                 <th style={{ textAlign: "center", width: "90px" }}>Attended</th>
-                                <th style={{ textAlign: "center", width: "100px" }}>Absent / Leave</th>
+                                <th style={{ textAlign: "center", width: "100px" }}>Absent</th>
                                 <th style={{ minWidth: "140px" }}>Theory Lectures</th>
                                 <th style={{ minWidth: "140px" }}>Practical / Ward</th>
                                 <th style={{ textAlign: "center", width: "100px" }}>Overall %</th>

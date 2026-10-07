@@ -7,7 +7,7 @@
  * - Remove scheduled sessions with confirmation
  * - Generate .ics calendar invites and printable lecture plans
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useToast } from '../../hooks/useToasts';
 import { errMessage, readJson, sendJson, todayIso } from '../../lib/http';
@@ -15,11 +15,10 @@ import { SUBJECTS } from '../academic';
 import type { AdminScheduleItem } from '../../types';
 import { AttendanceWaitingRoom } from './AttendanceWaitingRoom';
 
-const DEPTS: [string, string][] = [
-    ['all', 'All Departments'],
-    ['Department of Pathology', 'Department of Pathology'],
-    ['Community Medicine', 'Community Medicine'],
-];
+/** Department names extracted from the session records. */
+function departmentsOf(items: AdminScheduleItem[]): string[] {
+    return [...new Set(items.map((i) => i.department || i.subject_name || i.subject || '').filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
 
 const SLOTS = [
     { no: 1, slot: '09:00 - 10:00 AM', label: 'Slot 1 (09:00 - 10:00 AM)' },
@@ -59,9 +58,12 @@ const isDoap = (item: AdminScheduleItem) => (item.teaching_type || '').toUpperCa
 
 export function ScheduleSection({ active, loadSignal }: { active: boolean; loadSignal: number }) {
     const showToast = useToast();
-    const [activePill, setActivePill] = useState('all');
+    const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [filterSearch, setFilterSearch] = useState('');
+    const filterDropdownRef = useRef<HTMLDivElement>(null);
     const [viewMode, setViewMode] = useState<'strip' | 'table'>('strip');
-    const [items, setItems] = useState<AdminScheduleItem[]>([]);
+    const [allItems, setAllItems] = useState<AdminScheduleItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -76,17 +78,75 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     const stripRef = useRef<HTMLDivElement>(null);
     const itemsRef = useRef<AdminScheduleItem[]>([]);
 
-    const loadSchedule = async (dept = activePill) => {
+    const departments = useMemo(() => {
+        const list = departmentsOf(allItems);
+        if (list.length === 0) {
+            return ['Community Medicine', 'Department of Pathology'];
+        }
+        return list;
+    }, [allItems]);
+
+    const deptCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        for (const item of allItems) {
+            const d = item.department || item.subject_name || item.subject || 'Other';
+            counts[d] = (counts[d] || 0) + 1;
+        }
+        return counts;
+    }, [allItems]);
+
+    const filteredDeptList = useMemo(() => {
+        if (!filterSearch.trim()) return departments;
+        const q = filterSearch.toLowerCase();
+        return departments.filter((d) => d.toLowerCase().includes(q));
+    }, [departments, filterSearch]);
+
+    const items = useMemo(() => {
+        const isAll = selectedDepts === null || selectedDepts.length === departments.length;
+        if (isAll) return allItems;
+        if (selectedDepts.length === 0) return [];
+        return allItems.filter((i) => {
+            const dep = i.department || i.subject_name || i.subject || '';
+            return selectedDepts.includes(dep);
+        });
+    }, [allItems, selectedDepts, departments]);
+
+    const toggleDept = (dept: string) => {
+        setSelectedIdx(null);
+        const currentList = selectedDepts === null ? [...departments] : [...selectedDepts];
+        let updated: string[];
+        if (currentList.includes(dept)) {
+            updated = currentList.filter((d) => d !== dept);
+        } else {
+            updated = [...currentList, dept];
+        }
+        if (updated.length === departments.length) {
+            setSelectedDepts(null);
+        } else {
+            setSelectedDepts(updated);
+        }
+    };
+
+    const selectAllDepts = () => {
+        setSelectedIdx(null);
+        setSelectedDepts(null);
+    };
+
+    const clearDepts = () => {
+        setSelectedIdx(null);
+        setSelectedDepts([]);
+    };
+
+    const loadSchedule = async () => {
         setLoading(true);
         setError(null);
         try {
-            const query = dept !== 'all' ? `?department=${encodeURIComponent(dept)}` : '';
-            const res = await fetch(`/api/admin/academic/schedule${query}`);
+            const res = await fetch('/api/admin/academic/schedule');
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
             const list: AdminScheduleItem[] = data.schedules || [];
             itemsRef.current = list;
-            setItems(list);
+            setAllItems(list);
             setSelectedIdx((prev) => (prev !== null && prev < list.length ? prev : null));
         } catch (err) {
             console.error('Failed to load admin schedule:', err);
@@ -98,15 +158,27 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     };
 
     useEffect(() => {
-        if (active) loadSchedule(activePill);
+        if (active) loadSchedule();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [active, loadSignal]);
 
-    const filterDepartment = (dept: string) => {
-        setActivePill(dept);
-        setSelectedIdx(null);
-        loadSchedule(dept);
-    };
+    useEffect(() => {
+        const handleOutside = (e: MouseEvent | TouchEvent) => {
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+                const btn = document.getElementById('btnDeptFilterToggle');
+                if (btn && btn.contains(e.target as Node)) return;
+                setIsFilterOpen(false);
+            }
+        };
+        if (isFilterOpen) {
+            document.addEventListener('mousedown', handleOutside);
+            document.addEventListener('touchstart', handleOutside, { passive: true });
+            return () => {
+                document.removeEventListener('mousedown', handleOutside);
+                document.removeEventListener('touchstart', handleOutside);
+            };
+        }
+    }, [isFilterOpen]);
 
     const selectSchedule = (index: number, scrollIntoView = true) => {
         if (selectedIdx === index) {
@@ -141,11 +213,12 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     // Open Add Modal
     const handleOpenAdd = () => {
         setEditingItem(null);
+        const defaultDept = selectedDepts && selectedDepts.length === 1 ? selectedDepts[0] : (departments[0] || 'Department of Pathology');
         setForm({
             ...DEFAULT_FORM,
             date_iso: todayIso(),
-            subject_name: activePill !== 'all' ? activePill : 'Department of Pathology',
-            subject_code: activePill.includes('Community') ? '2010043342' : 'PA-301',
+            subject_name: defaultDept,
+            subject_code: defaultDept.includes('Community') ? '2010043342' : 'PA-301',
         });
         setModalOpen(true);
     };
@@ -204,7 +277,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             }
 
             setModalOpen(false);
-            loadSchedule(activePill);
+            loadSchedule();
         } catch (err) {
             showToast(errMessage(err), 'error');
         } finally {
@@ -222,7 +295,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to delete session');
             showToast(data.message || 'Teaching session removed', 'success');
-            loadSchedule(activePill);
+            loadSchedule();
         } catch (err) {
             showToast(errMessage(err), 'error');
         }
@@ -296,71 +369,364 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                         <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Schedule Register</div>
                         <div style={{ fontSize: '1.25rem', fontWeight: '850', color: '#ffffff' }}>{todayIso()}</div>
                         <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }}>
-                            {loading ? 'Refreshing timetable...' : `${items.length} Scheduled Teaching Sessions`}
+                            {loading
+                                ? 'Refreshing timetable...'
+                                : selectedDepts !== null && selectedDepts.length !== departments.length
+                                ? `${items.length} of ${allItems.length} Scheduled Teaching Sessions`
+                                : `${allItems.length} Scheduled Teaching Sessions`}
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Department Filter Bar & Editor Action Toolbar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }} className="anim-fade-up">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }} className="schedule-filter-bar" id="deptFilterGroup">
-                    {DEPTS.map(([dept, label]) => (
-                        <button
-                            key={dept}
-                            type="button"
-                            className={`schedule-dept-pill${activePill === dept ? ' active' : ''}`}
-                            onClick={() => filterDepartment(dept)}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
+            <div
+                className="schedule-filter-bar anim-fade-up"
+                style={{ position: 'relative', zIndex: 40, marginBottom: '18px' }}
+                ref={filterDropdownRef}
+            >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        {/* Primary Multi-Select Dropdown Button */}
+                        {(() => {
+                            const isAll = selectedDepts === null || selectedDepts.length === departments.length;
+                            const hasActiveFilter = !isAll;
+                            return (
+                                <>
+                                    <button
+                                        type="button"
+                                        id="btnDeptFilterToggle"
+                                        className={`schedule-multiselect-btn${isFilterOpen ? ' open' : ''}${hasActiveFilter ? ' filtered' : ''}`}
+                                        onClick={() => setIsFilterOpen((prev) => !prev)}
+                                    >
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                                        </svg>
+                                        <span>
+                                            {isAll
+                                                ? 'Filter Departments'
+                                                : selectedDepts.length === 0
+                                                ? '0 Departments Selected'
+                                                : `${selectedDepts.length} Department${selectedDepts.length > 1 ? 's' : ''} Selected`}
+                                        </span>
+                                        <span
+                                            style={{
+                                                background: hasActiveFilter ? 'rgba(255,255,255,0.25)' : '#f1f5f9',
+                                                color: hasActiveFilter ? '#ffffff' : '#64748b',
+                                                padding: '1px 6px',
+                                                borderRadius: '10px',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 700,
+                                            }}
+                                        >
+                                            {isAll ? departments.length : selectedDepts.length}
+                                        </span>
+                                        <svg
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            style={{
+                                                transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                transition: 'transform 0.2s ease',
+                                            }}
+                                        >
+                                            <polyline points="6 9 12 15 18 9" />
+                                        </svg>
+                                    </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {/* View Switcher: Strip vs Table */}
-                    <div className="btn-group" style={{ display: 'inline-flex', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                        <button
-                            type="button"
-                            className="btn btn-sm"
-                            style={{
-                                background: viewMode === 'strip' ? '#ffffff' : 'transparent',
-                                color: viewMode === 'strip' ? '#1e293b' : '#64748b',
-                                boxShadow: viewMode === 'strip' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                fontWeight: 700,
-                                border: 'none',
-                            }}
-                            onClick={() => setViewMode('strip')}
-                        >
-                            🗓 Cubic Strip
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm"
-                            style={{
-                                background: viewMode === 'table' ? '#ffffff' : 'transparent',
-                                color: viewMode === 'table' ? '#1e293b' : '#64748b',
-                                boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                fontWeight: 700,
-                                border: 'none',
-                            }}
-                            onClick={() => setViewMode('table')}
-                        >
-                            📋 Table List
-                        </button>
+                                    {/* Quick "Reset to All" Button if filtered */}
+                                    {hasActiveFilter && (
+                                        <button
+                                            type="button"
+                                            onClick={selectAllDepts}
+                                            style={{
+                                                background: '#f1f5f9',
+                                                border: '1px solid #e2e8f0',
+                                                color: '#475569',
+                                                borderRadius: '16px',
+                                                padding: '6px 12px',
+                                                fontSize: '0.78rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                            }}
+                                        >
+                                            Reset to All
+                                        </button>
+                                    )}
+
+                                    {/* Selected Chips */}
+                                    {hasActiveFilter && selectedDepts.length > 0 && selectedDepts.length <= 3 && (
+                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                            {selectedDepts.map((d) => (
+                                                <span
+                                                    key={d}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        background: '#eef2ff',
+                                                        color: '#4f46e5',
+                                                        border: '1px solid #c7d2fe',
+                                                        borderRadius: '14px',
+                                                        padding: '3px 9px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 650,
+                                                    }}
+                                                >
+                                                    <span>{d}</span>
+                                                    <span
+                                                        onClick={(e) => { e.stopPropagation(); toggleDept(d); }}
+                                                        style={{ cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1, opacity: 0.7 }}
+                                                        title={`Remove ${d}`}
+                                                    >
+                                                        ✕
+                                                    </span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
+
+                        {/* Summary count */}
+                        <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                            {`Showing ${items.length} of ${allItems.length} sessions`}
+                        </span>
                     </div>
 
-                    {/* Schedule New Session Button */}
-                    <button
-                        type="button"
-                        className="btn btn-primary btn-sm"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
-                        onClick={handleOpenAdd}
-                        title="Add a new lecture or practical session to the schedule"
-                    >
-                        <span>➕ Schedule Teaching Session</span>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        {/* View Switcher: Strip vs Table */}
+                        <div className="btn-group" style={{ display: 'inline-flex', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <button
+                                type="button"
+                                className="btn btn-sm"
+                                style={{
+                                    background: viewMode === 'strip' ? '#ffffff' : 'transparent',
+                                    color: viewMode === 'strip' ? '#1e293b' : '#64748b',
+                                    boxShadow: viewMode === 'strip' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                    fontWeight: 700,
+                                    border: 'none',
+                                }}
+                                onClick={() => setViewMode('strip')}
+                            >
+                                🗓 Cubic Strip
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-sm"
+                                style={{
+                                    background: viewMode === 'table' ? '#ffffff' : 'transparent',
+                                    color: viewMode === 'table' ? '#1e293b' : '#64748b',
+                                    boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                    fontWeight: 700,
+                                    border: 'none',
+                                }}
+                                onClick={() => setViewMode('table')}
+                            >
+                                📋 Table List
+                            </button>
+                        </div>
+
+                        {/* Schedule New Session Button */}
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
+                            onClick={handleOpenAdd}
+                            title="Add a new lecture or practical session to the schedule"
+                        >
+                            <span>➕ Schedule Teaching Session</span>
+                        </button>
+                    </div>
                 </div>
+
+                {/* Backdrop for click-outside on mobile / desktop */}
+                {isFilterOpen && (
+                    <div
+                        className="dept-filter-backdrop"
+                        onClick={() => setIsFilterOpen(false)}
+                        onTouchStart={() => setIsFilterOpen(false)}
+                    />
+                )}
+
+                {/* Floating Multi-Select Dropdown Popover */}
+                {isFilterOpen && (
+                    <div
+                        id="deptMultiSelectDropdown"
+                        style={{
+                            position: 'absolute',
+                            top: 'calc(100% + 8px)',
+                            left: 0,
+                            zIndex: 100,
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '14px',
+                            boxShadow: '0 14px 38px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(0, 0, 0, 0.05)',
+                            width: 'min(360px, 94vw)',
+                            maxHeight: '380px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {/* Popover Header */}
+                        <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <strong style={{ fontSize: '0.85rem', color: '#0f172a' }}>Filter Departments</strong>
+                                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Multi-select departments to view</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    type="button"
+                                    onClick={selectAllDepts}
+                                    style={{ background: 'transparent', border: 'none', color: '#4f46e5', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer', padding: '2px 4px' }}
+                                >
+                                    Select All
+                                </button>
+                                <span style={{ color: '#cbd5e1' }}>•</span>
+                                <button
+                                    type="button"
+                                    onClick={clearDepts}
+                                    style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', padding: '2px 4px' }}
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Popover Search Bar */}
+                        <div style={{ padding: '8px 12px', borderBottom: '1px solid #f8fafc', background: '#f8fafc' }}>
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Search department..."
+                                    value={filterSearch}
+                                    onChange={(e) => setFilterSearch(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '6px 10px 6px 28px',
+                                        fontSize: '0.78rem',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: '8px',
+                                        outline: 'none',
+                                        background: '#ffffff',
+                                        color: '#1e293b',
+                                        boxSizing: 'border-box',
+                                    }}
+                                />
+                                <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', opacity: 0.6 }}>🔍</span>
+                                {filterSearch && (
+                                    <span
+                                        onClick={() => setFilterSearch('')}
+                                        style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '0.75rem', color: '#94a3b8' }}
+                                    >
+                                        ✕
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Scrollable Checkbox List */}
+                        <div style={{ overflowY: 'auto', padding: '6px', maxHeight: '220px', flex: 1 }}>
+                            {filteredDeptList.map((dep) => {
+                                const isChecked = selectedDepts === null ? true : selectedDepts.includes(dep);
+                                const count = deptCounts[dep] || 0;
+                                return (
+                                    <div
+                                        key={dep}
+                                        onClick={() => toggleDept(dep)}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            padding: '7px 10px',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            background: isChecked ? '#f5f3ff' : 'transparent',
+                                            transition: 'background 0.15s ease',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            touchAction: 'manipulation',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!isChecked) e.currentTarget.style.background = '#f8fafc';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isChecked) e.currentTarget.style.background = 'transparent';
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0 }}>
+                                            <div
+                                                style={{
+                                                    width: '16px',
+                                                    height: '16px',
+                                                    borderRadius: '4px',
+                                                    border: isChecked
+                                                        ? '1.5px solid #6366f1'
+                                                        : '1.5px solid #cbd5e1',
+                                                    background: isChecked ? '#6366f1' : '#ffffff',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#ffffff',
+                                                    fontSize: '11px',
+                                                    fontWeight: 800,
+                                                    flexShrink: 0,
+                                                }}
+                                            >
+                                                {isChecked && '✓'}
+                                            </div>
+                                            <span style={{ fontSize: '0.8rem', color: '#1e293b', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {dep}
+                                            </span>
+                                        </div>
+                                        <span style={{ fontSize: '0.68rem', color: '#64748b', background: '#f1f5f9', padding: '2px 6px', borderRadius: '6px', fontWeight: 650, flexShrink: 0 }}>
+                                            {count}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                            {filteredDeptList.length === 0 && (
+                                <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '0.78rem' }}>
+                                    No departments matching &quot;{filterSearch}&quot;
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Popover Footer */}
+                        <div style={{ padding: '8px 12px', borderTop: '1px solid #f1f5f9', background: '#faf5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.72rem', color: '#6b21a8', fontWeight: 650 }}>
+                                {selectedDepts === null || selectedDepts.length === departments.length
+                                    ? 'All departments active'
+                                    : `${selectedDepts.length} selected`}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setIsFilterOpen(false)}
+                                style={{
+                                    background: '#7c3aed',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '5px 12px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Error banner if loading failed */}
@@ -1063,7 +1429,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                 </div>
             )}
             {attendanceLecture && <AttendanceWaitingRoom key={attendanceLecture.id} lecture={attendanceLecture}
-                onClose={() => { setAttendanceLecture(null); loadSchedule(activePill); }} onChanged={() => loadSchedule(activePill)}/>}
+                onClose={() => { setAttendanceLecture(null); loadSchedule(); }} onChanged={() => loadSchedule()}/>}
         </div>
     );
 }

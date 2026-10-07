@@ -21,23 +21,27 @@ Existing application guards accept student/admin identifiers without cryptograph
 All paths start with `/api`. Existing student/admin guards apply.
 
 1. Faculty: `POST /admin/academic/schedule/:lectureId/request-attendance` with JSON:
+
    ```json
    {"student_ids":[1,2,3],"radius_m":1,"duration_seconds":300,"tx_power_at_1m":-59,"path_loss_exponent":2}
    ```
+
    `student_ids` is required: an explicit class/batch roster, all in the faculty's college. Optional fields use the defaults above. Returns `cluster_id`, `anchor_token`, `started_at`, `ends_at`, `radius_m`, `lecture_id`. Times are Unix milliseconds. The token is never returned by status/list APIs. Sessions cannot be reopened or rescheduled; duplicate starts return 409. Overlapping rosters in the same date/lecture slot are rejected.
 2. Student: `GET /academic/attendance/clusters` lists eligible active sessions.
    `GET /academic/attendance/clusters/:id` returns only that student's room state, including `joined_at`, `verified_until`, `attendance_status`, closure state and `server_now` for clock alignment. `POST /academic/attendance/clusters/:id/join` records joining idempotently. Joining never verifies proximity or marks attendance.
 3. Student: `POST /academic/attendance/clusters/:id/challenge` returns `student_id`, a random `challenge` and `expires_at`. Transfer these to the faculty phone over BLE. Challenges last at most 30 seconds. A new challenge revokes the previous verification.
 4. Faculty anchor collects 5–50 RSSI readings over at least 1 second, then posts `POST /admin/academic/attendance/clusters/:id/observations`, authenticated as the session creator, with `x-attendance-anchor-token` and JSON:
+
    ```json
    {"student_id":1,"challenge":"challenge-from-step-3","samples":[{"rssi":-55,"observed_at":1800000000100},{"rssi":-56,"observed_at":1800000000400},{"rssi":-56,"observed_at":1800000000700},{"rssi":-55,"observed_at":1800000001000},{"rssi":-57,"observed_at":1800000001300}]}
    ```
+
    Example timestamps must be replaced with current readings. Samples must be after challenge issuance, strictly increasing, no more than 10 seconds old and not in the server's future (synchronize client clock). Returns `allowed`, estimated `distance_m`, `radius_m`, and `verified_until`. Valid submissions consume the challenge even if outside the radius. Retry through a fresh challenge.
-5. Student: `POST /academic/attendance/fill` with `{"cluster_id":"..."}` or `{"lecture_id":1}` records Present only after a successful, fresh observation. Verification expires 10 seconds after the last sample or at session end, whichever occurs first. Requests with raw proximity claims cannot bypass this step. The legacy date/slot-only self-marking path is removed. Students cannot select Leave, Field Duty or Absent.
+5. Student: `POST /academic/attendance/fill` with `{"cluster_id":"..."}` or `{"lecture_id":1}` records Present only after a successful, fresh observation. Verification expires 10 seconds after the last sample or at session end, whichever occurs first. Requests with raw proximity claims cannot bypass this step. The legacy date/slot-only self-marking path is removed. Students cannot select Absent.
 6. Faculty: `GET /admin/academic/attendance/clusters/:id` returns roster, current attendance, counts and audit events. `POST /admin/academic/attendance/clusters/:id/end` closes early.
    `GET /admin/academic/schedule/:lectureId/attendance-cluster` returns `{cluster: null}` before creation or the existing room for reopening, including closed sessions. Roster entries include student names and roll numbers, while student APIs never expose the class roster or anchor secret.
 
-At the deadline all submissions are rejected. A 1-second worker finalizes unaccepted roster members as Absent; startup and cluster requests also finalize overdue sessions. Database writes are transactional and restart-safe. If the service is down, expiry is finalized on restart. Existing register entries (including faculty Leave/Field Duty corrections) take precedence and are not overwritten. Non-roster students are untouched. Being verified alone is insufficient: the student must submit attendance before verification/session expiry. One successful check-in is sufficient; continuous presence is not tracked.
+At the deadline all submissions are rejected. A 1-second worker finalizes unaccepted roster members as Absent; startup and cluster requests also finalize overdue sessions. Database writes are transactional and restart-safe. If the service is down, expiry is finalized on restart. Existing register entries (including faculty corrections) take precedence and are not overwritten. Non-roster students are untouched. Being verified alone is insufficient: the student must submit attendance before verification/session expiry. One successful check-in is sufficient; continuous presence is not tracked.
 
 Faculty can correct attendance through the existing register API. Cluster audit events record starts, observations, accepted check-ins, closure and register overrides. Do not delete or reschedule cluster lectures; create a new scheduled slot if needed. Raw RSSI samples and Bluetooth hardware identifiers are not persisted. Configure institutional retention before deployment; this change does not add automatic audit deletion.
 

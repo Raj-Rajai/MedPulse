@@ -21,7 +21,7 @@ export const DEFAULT_SUBJECTS: { code: string; name: string; default_faculty: st
     { code: '2010043380', name: 'Paediatrics', default_faculty: null, default_room: null },
 ];
 
-export const ATTENDANCE_STATUSES = ['Present', 'Absent', 'Leave', 'Field Duty'] as const;
+export const ATTENDANCE_STATUSES = ['Present', 'Absent'] as const;
 export const EXAM_TYPES = ['IA-1', 'IA-2', 'Preliminary', 'University'] as const;
 const EXAM_TYPE_ORDER: Record<string, number> = { University: 1, Preliminary: 2, 'IA-2': 3, 'IA-1': 4 };
 const TERM_LABEL: Record<string, string> = { 'IA-1': 'IA-1', 'IA-2': 'IA-2', Preliminary: 'Pre-lims', University: 'University' };
@@ -176,7 +176,7 @@ const ROLL_ORDER = 'ORDER BY CAST(s.roll_number AS INTEGER), s.roll_number, s.id
 
 @Injectable()
 export class AcademicModel {
-    constructor(private readonly database: DatabaseService, private readonly clusters: AttendanceClusterService) {}
+    constructor(private readonly database: DatabaseService, private readonly clusters: AttendanceClusterService) { }
 
     private get db() {
         return this.database.db;
@@ -329,11 +329,11 @@ export class AcademicModel {
                     lecture_id = excluded.lecture_id, status = excluded.status, remarks = excluded.remarks,
                     marked_by_admin_id = excluded.marked_by_admin_id, updated_at = CURRENT_TIMESTAMP
             `);
-            const tally: Record<string, number> = { Present: 0, Absent: 0, Leave: 0, 'Field Duty': 0 };
+            const tally: Record<string, number> = { Present: 0, Absent: 0 };
             for (const e of entries) {
                 upsert.run(lecture.id, e.studentId, date, lectureNo, e.status, e.remarks, adminId);
                 this.clusters.recordManualChange(e.studentId, date, lectureNo, adminId, e.status);
-                tally[e.status]++;
+                tally[e.status] = (tally[e.status] || 0) + 1;
             }
             this.removeEmptyLectures(collegeId, date, lectureNo);
 
@@ -342,7 +342,7 @@ export class AcademicModel {
                 message: `Attendance saved for ${entries.length} student${entries.length === 1 ? '' : 's'} (Lecture ${lectureNo}, ${date}).`,
                 lecture_id: lecture.id,
                 saved: entries.length,
-                summary: { present: tally.Present, absent: tally.Absent, leave: tally.Leave, field_duty: tally['Field Duty'] },
+                summary: { present: tally.Present || 0, absent: tally.Absent || 0 },
             };
         });
     }
@@ -550,12 +550,10 @@ export class AcademicModel {
             WHERE l.college_id = ? AND l.lecture_date = ?
             ORDER BY l.lecture_no
         `).all(student.id, collegeId, date));
-        const summary = { total: lectures.length, present: 0, absent: 0, leave: 0, field_duty: 0, not_marked: 0 };
+        const summary = { total: lectures.length, present: 0, absent: 0, not_marked: 0 };
         for (const l of lectures) {
             if (l.status === 'Present') summary.present++;
             else if (l.status === 'Absent') summary.absent++;
-            else if (l.status === 'Leave') summary.leave++;
-            else if (l.status === 'Field Duty') summary.field_duty++;
             else summary.not_marked++;
         }
         const [y, m, d] = date.split('-');
@@ -579,27 +577,28 @@ export class AcademicModel {
         `).all(student.id);
 
         interface Part { total: number; attended: number }
-        interface Acc { subject: string; subject_code: string; faculty_name: string | null; total: number; attended: number; absent: number; leave: number; field_duty: number; theory: Part; practical: Part }
+        interface Acc { subject: string; subject_code: string; faculty_name: string | null; total: number; attended: number; absent: number; theory: Part; practical: Part }
         const bySubject = new Map<string, Acc>();
         for (const r of rows) {
             let s = bySubject.get(r.subject_code);
             if (!s) {
-                s = { subject: r.subject_name, subject_code: r.subject_code, faculty_name: null, total: 0, attended: 0, absent: 0, leave: 0, field_duty: 0, theory: { total: 0, attended: 0 }, practical: { total: 0, attended: 0 } };
+                s = { subject: r.subject_name, subject_code: r.subject_code, faculty_name: null, total: 0, attended: 0, absent: 0, theory: { total: 0, attended: 0 }, practical: { total: 0, attended: 0 } };
                 bySubject.set(r.subject_code, s);
             }
             s.subject = r.subject_name; // latest name wins (rows are in date order)
             if (r.faculty_name) s.faculty_name = r.faculty_name;
-            const attended = r.status === 'Present' || r.status === 'Field Duty';
-            const part = r.session_type === 'Practical' ? s.practical : s.theory;
-            s.total++;
-            part.total++;
-            if (attended) {
-                s.attended++;
-                part.attended++;
+            if (r.status === 'Present' || r.status === 'Absent') {
+                const attended = r.status === 'Present';
+                const part = r.session_type === 'Practical' ? s.practical : s.theory;
+                s.total++;
+                part.total++;
+                if (attended) {
+                    s.attended++;
+                    part.attended++;
+                } else {
+                    s.absent++;
+                }
             }
-            if (r.status === 'Absent') s.absent++;
-            if (r.status === 'Leave') s.leave++;
-            if (r.status === 'Field Duty') s.field_duty++;
         }
 
         const partOut = (p: Part, min: number) => {
@@ -792,7 +791,7 @@ export class AcademicModel {
                 semester: semesterOf(student.batch_year),
                 attendance_requested: r.attendance_requested === 1 || r.attendance_requested === '1' || r.attendance_requested === true,
                 attendance_requested_at: r.attendance_requested_at || null,
-                attendance_status: r.status,
+                attendance_status: r.status || 'Not Marked',
             };
         });
         return { schedules, total: schedules.length };

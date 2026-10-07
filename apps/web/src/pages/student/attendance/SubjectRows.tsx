@@ -6,7 +6,6 @@ export interface AttSubject {
     total?: number;
     attended?: number;
     absent: number;
-    leave: number;
     overall_percentage: number;
     nmc_status?: string;
     theory: { percentage: number; attended?: number; total?: number };
@@ -62,12 +61,6 @@ export function SubjectRows({ subjects }: { subjects: AttSubject[] }) {
                         <td style={{ textAlign: 'center', fontWeight: 700, color: '#047857' }}>{String(s.attended)}</td>
                         <td style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                             {s.absent > 0 ? <span style={{ color: '#b91c1c', fontWeight: 700 }}>{`${s.absent} Abs`}</span> : '0 Abs'}
-                            {s.leave > 0 ? (
-                                <>
-                                    {' • '}
-                                    <span style={{ color: '#b45309', fontWeight: 700 }}>{`${s.leave} Leave`}</span>
-                                </>
-                            ) : null}
                         </td>
                         <Prog p={s.theory} min={75} />
                         <Prog p={s.practical} min={80} />

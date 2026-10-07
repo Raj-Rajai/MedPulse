@@ -20,7 +20,7 @@ export function ExportsSection({ active, exports, collegeOptions }: { active: bo
                     </p>
                     <div style={{ marginBottom: 16 }}>
                         <label style={{ fontSize: '0.8rem', fontWeight: 650, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>Filter by Medical College (Optional):</label>
-                        <select id="exportCsvCollegeSelect" value={exports.csvCollegeId} onChange={(e) => exports.setCsvCollegeId(e.target.value)} style={{ width: '100%', padding: '8px 12px', fontSize: '0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: '#fff' }}>
+                        <select id="exportCsvCollegeSelect" value={exports.csvCollegeId} onChange={(e) => exports.setCsvCollegeId(e.target.value)} style={{ width: '100%', padding: '8px 12px', fontSize: '0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: '#fff' }}>
                             <option value="">All Medical Colleges Combined</option>
                             {(collegeOptions || []).map((c) => <option key={c.id} value={c.id}>{c.name || ''}</option>)}
                         </select>

@@ -5,7 +5,7 @@ import { errMessage, readJson, sendJson } from '../../lib/http';
 import type { Campaign, CampaignMatch, CampaignPreview } from '../../types';
 
 const labelStyle: CSSProperties = { fontWeight: 650, fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 4, display: 'block' };
-const fieldStyle = (padding: string, fontSize = '0.88rem'): CSSProperties => ({ width: '100%', padding, fontSize, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' });
+const fieldStyle = (padding: string, fontSize = '0.88rem'): CSSProperties => ({ width: '100%', padding, fontSize, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' });
 const thStyle: CSSProperties = { padding: '10px 14px', fontSize: '0.78rem', textTransform: 'uppercase' };
 const tdTop: CSSProperties = { padding: '12px 14px', verticalAlign: 'top' };
 
@@ -56,7 +56,7 @@ function CampaignRow({ c, onRoster }: { c: Campaign; onRoster: (c: Campaign) => 
     const ack = stats.acknowledged || 0;
     const contacted = stats.cadet_contacted || 0;
     return (
-        <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <tr style={{ borderBottom: '1px solid var(--border)' }}>
             <td style={tdTop}>
                 <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>#{c.id}</div>
                 <span className="badge" style={{ background: kwColor(c.keyword), color: '#fff', fontWeight: 700, fontSize: '0.72rem' }}>{c.keyword || ''}</span>
@@ -272,7 +272,7 @@ export function CampaignsSection({ active, loadSignal, onOpenRoster }: { active:
                             <textarea id="campDesc" rows={3} required placeholder="Describe clinical advisory, fasting instructions, medication review notes, and what medical cadets will facilitate..." value={f.desc} onChange={set('desc')} style={{ ...fieldStyle('9px 12px', '0.85rem'), resize: 'vertical' }}></textarea>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 16 }}>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span>🔒</span> Zero HMS conflict: Only dispatches to matched patients &amp; cadets
                             </div>
@@ -345,7 +345,7 @@ export function CampaignsSection({ active, loadSignal, onOpenRoster }: { active:
                 <div style={{ overflowX: 'auto' }}>
                     <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }} id="campaignsTable">
                         <thead>
-                            <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
+                            <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
                                 <th style={thStyle}>ID &amp; Keyword</th>
                                 <th style={thStyle}>Campaign Details</th>
                                 <th style={thStyle}>Drive Date &amp; Venue</th>

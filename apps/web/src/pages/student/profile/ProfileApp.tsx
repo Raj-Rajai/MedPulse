@@ -436,15 +436,15 @@ export function ProfileApp() {
                                     </div>
                                     <div className="summary-badge-group">
                                         <span>Present :</span>
-                                        <span className="summary-badge-val present" id="profBadgePresentCount">{dw ? (sm.present || 0) + (sm.field_duty || 0) : 0}</span>
+                                        <span className="summary-badge-val present" id="profBadgePresentCount">{dw ? sm.present || 0 : 0}</span>
                                     </div>
                                     <div className="summary-badge-group">
                                         <span>Absent :</span>
                                         <span className="summary-badge-val absent" id="profBadgeAbsentCount">{dw ? sm.absent || 0 : 0}</span>
                                     </div>
                                     <div className="summary-badge-group">
-                                        <span>Leave :</span>
-                                        <span className="summary-badge-val leave" id="profBadgeLeaveCount">{dw ? sm.leave || 0 : 0}</span>
+                                        <span>Not Marked :</span>
+                                        <span className="summary-badge-val not-marked" id="profBadgeNotMarkedCount" style={{ color: '#64748b' }}>{dw ? sm.not_marked || 0 : 0}</span>
                                     </div>
                                 </div>
                                 <div className="datewise-table-wrapper">
