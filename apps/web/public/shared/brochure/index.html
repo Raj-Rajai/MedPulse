@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedPulseOS | Family Adoption Programme</title>
+<meta name="description" content="MedPulseOS: a digital platform for the Family Adoption Programme (FAP) in medical colleges.">
+<meta name="theme-color" content="#073f38">
+<style>
+  @font-face { font-family: "Selawik"; src: url("fonts/selawik-regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Selawik"; src: url("fonts/selawik-bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+  :root {
+    --green: #073f38;   /* headings, dark panels */
+    --ink: #173e40;     /* body text */
+    --muted: #526c69;   /* subtitles, footer */
+    --gold: #bd8a3b;
+    --sage: #eef2e7;
+    --cream: #fcfaf4;
+    --line: #e5decd;
+    --s: 1;             /* page scale, set by script to fit the screen */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    background: #e7e9e3;
+    font-family: "Segoe UI", "Selawik", "Noto Sans", Arial, sans-serif;
+    color: var(--ink);
+    padding: 24px 0;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* One A4 page = 595.28 x 841.89 units, the exact PDF coordinate space. */
+  .sheet { width: calc(595.28px * var(--s)); height: calc(841.89px * var(--s)); margin: 0 auto 24px; overflow: hidden; }
+  .page {
+    position: relative; width: 595.28px; height: 841.89px; overflow: hidden;
+    background: #fff; box-shadow: 0 2px 14px rgba(7, 63, 56, .12);
+    transform: scale(var(--s)); transform-origin: 0 0;
+  }
+  .page > * { position: absolute; }
+
+  .t { white-space: nowrap; }
+  .b { font-weight: 700; }
+  .g { color: var(--green); }
+  .w { color: #fff; }
+  .gold { color: var(--gold); }
+  .m { color: var(--muted); }
+  .c { text-align: center; }
+
+  .box { border: .6px solid var(--line); }
+  .cream { background: var(--cream); }
+  .sage { background: var(--sage); }
+  .dark { background: var(--green); }
+
+  .icon { border-radius: 50%; background: var(--sage); }
+  .icon svg { display: block; width: 100%; height: 100%; }
+
+  ul.list { list-style: none; }
+  ul.list li { position: relative; white-space: nowrap; }
+  ul.list li::before {
+    content: ""; position: absolute; left: -12.6px; top: var(--dt, 4px); width: 3px; height: 3px; border-radius: 50%; background: var(--gold);
+  }
+
+  .cta {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gold); color: #fff; border-radius: 12px;
+    font-size: 9px; font-weight: 700; letter-spacing: .1px; cursor: pointer;
+    transition: filter .15s ease, transform .15s ease;
+  }
+  .cta:hover { filter: brightness(1.06); }
+  .cta:active { transform: scale(.97); }
+  .cta:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .sheet { margin: 0; page-break-after: always; }
+    .page { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Icons redrawn from the brochure's vector shapes; each viewBox is the icon's circle. -->
+    <symbol id="i-people" viewBox="0 0 28 28" fill="#073f38">
+      <circle cx="14" cy="9.33" r="2.65"/><rect x="10.58" y="13.22" width="6.9" height="5.5" rx="1.6"/>
+      <circle cx="7.77" cy="11.67" r="1.95"/><rect x="5.05" y="15.52" width="5.5" height="5.5" rx="1.6"/>
+      <circle cx="20.24" cy="11.67" r="1.95"/><rect x="17.48" y="15.52" width="5.5" height="5.5" rx="1.6"/>
+    </symbol>
+    <symbol id="i-pulse" viewBox="0 0 28 28">
+      <polyline points="6.2,14.8 10.1,14.8 12.4,8.5 15.6,20.2 18.7,12.4 22.6,12.4" fill="none" stroke="#073f38" stroke-width="1.33"/>
+    </symbol>
+    <symbol id="i-bars" viewBox="0 0 28 28" fill="#073f38" stroke="#073f38" stroke-width="1.09">
+      <rect x="6.2" y="16.3" width="3.1" height="6.2"/><rect x="11.6" y="11.6" width="3.1" height="10.9"/><rect x="17.1" y="6.2" width="3.1" height="16.4"/>
+    </symbol>
+    <symbol id="i-doc" viewBox="0 0 30.6 30.6" fill="none" stroke="#073f38">
+      <rect x="8.5" y="5.9" width="12.7" height="18.7" stroke-width="1.19"/>
+      <path d="M11.9 11h5.9M11.9 15.2h5.9M11.9 19.5h5.9" stroke-width=".85"/>
+    </symbol>
+    <symbol id="i-hospital" viewBox="0 0 30.6 30.6">
+      <g fill="#073f38" stroke="#073f38" stroke-width="1.19"><rect x="6" y="12.7" width="18.7" height="11.9"/><rect x="10.2" y="5.9" width="10.2" height="18.7"/></g>
+      <path d="M11.1 13.5h8.5M15.3 9.3v8.5" stroke="#eef2e7" stroke-width="2.38"/>
+    </symbol>
+    <symbol id="i-doctor" viewBox="0 0 23.4 23.4">
+      <circle cx="11.7" cy="7.2" r="2.6" fill="#073f38"/>
+      <rect x="5.9" y="11.7" width="11.7" height="7.1" fill="#073f38" stroke="#073f38" stroke-width=".91"/>
+      <path d="M11.7 11.7v5.2" stroke="#eef2e7" stroke-width=".78"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 23.4 23.4">
+      <rect x="7.8" y="4.6" width="7.8" height="7.8" rx="3.9" fill="none" stroke="#073f38" stroke-width="1.3"/>
+      <rect x="5.9" y="9.8" width="11.7" height="9.1" fill="#073f38" stroke="#073f38" stroke-width=".91"/>
+      <circle cx="11.7" cy="13.7" r="1.3" fill="#edead9"/>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 25.2 25.2" fill="none" stroke="#073f38" stroke-width="1.12">
+      <circle cx="12.6" cy="12.6" r="7.7"/><circle cx="12.6" cy="12.6" r="4.9"/><circle cx="12.6" cy="12.6" r="1.4"/>
+      <path d="M12.6 12.6L19.6 5.6M16.2 5.6h3.4v3.4" stroke-width="1.4"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 38 8.6" fill="none" stroke="#bd8a3b" stroke-width=".7">
+      <path d="M0 4.3h38M34 .3l4 4-4 4"/>
+    </symbol>
+    <!-- Page decorations, in page coordinates. -->
+    <symbol id="deco" viewBox="0 0 595.28 841.89">
+      <path d="M334.59 .46C440.46 6.45 472.43 64.38 594.55 67.38V.46Z" fill="#bd8a3b"/>
+      <path d="M374.54 .46C473.43 20.43 507.38 53.39 594.55 49.4V.46Z" fill="#073f38"/>
+      <path d="M420.5 .43C492.4 43.4 546.4 21.4 594.6 32.4" fill="none" stroke="#e8c888" stroke-width=".7"/>
+      <path d="M0 809.36C85.89 826.34 129.84 835.33 254.69 841.32H0Z" fill="#bd8a3b"/>
+      <path d="M0 818.35C77.91 833.33 133.84 837.33 187.77 841.32H0Z" fill="#073f38"/>
+      <path d="M439.74 841.32C533.63 832.34 570.58 823.34 594.55 809.36V841.32Z" fill="#073f38"/>
+      <path d="M35 790.5H559.4" stroke="#e5decd" stroke-width=".7"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ PAGE 1 ============ -->
+<div class="sheet"><section class="page" aria-label="Page 1">
+  <svg style="left:0;top:0;width:595.28px;height:841.89px" aria-hidden="true"><use href="#deco"/></svg>
+  <img src="assets/vibisha-logo.png" alt="Vibisha MedEdu &amp; Healthcare Pvt. Ltd." style="left:35.18px;top:22.43px;width:90.45px;height:68.92px">
+  <div class="t m" style="right:35.5px;top:76px;font-size:9px;line-height:12px;font-style:italic">Better Learning | Healthier Lives</div>
+
+  <img src="assets/medpulseos-logo.png" alt="MedPulseOS: Bridging Communities. Empowering Health." style="left:84.9px;top:117.31px;width:424.48px;height:114.4px">
+
+  <div class="sage" style="left:34.96px;top:245.16px;width:524.36px;height:41.95px;border-radius:21px"></div>
+  <h1 class="t b g c" style="left:34.96px;top:250px;width:524.36px;font-size:13px;line-height:17.3px">A Digital Platform for the<br>Family Adoption Programme (FAP)</h1>
+  <p class="t c" style="left:34.96px;top:302px;width:524.36px;font-size:12px;line-height:15.95px">MedPulseOS is a comprehensive digital platform designed to streamline and<br>strengthen the Family Adoption Programme in medical colleges.</p>
+
+  <div class="box cream" style="left:35px;top:362px;width:166.8px;height:184.8px;border-radius:21.7px"></div>
+  <div class="icon" style="left:49.9px;top:373.96px;width:28.05px;height:28.05px"><svg><use href="#i-people"/></svg></div>
+  <h2 class="t b g" style="left:49px;top:415px;font-size:11px;line-height:14.65px">FOR STUDENTS</h2>
+  <p class="t" style="left:49px;top:454px;font-size:11.5px;line-height:15.3px">Organise assigned families,<br>complete field visits<br>digitally, record structured<br>health data and track<br>follow-ups.</p>
+
+  <div class="box cream" style="left:213.7px;top:362px;width:166.8px;height:184.8px;border-radius:21.7px"></div>
+  <div class="icon" style="left:228.68px;top:373.96px;width:28.05px;height:28.05px"><svg><use href="#i-pulse"/></svg></div>
+  <h2 class="t b g" style="left:228px;top:415px;font-size:11px;line-height:14.65px">FOR PATIENTS<br>&amp; FAMILIES</h2>
+  <p class="t" style="left:228px;top:454px;font-size:11.5px;line-height:15.3px">Support continuity of care,<br>referrals, health awareness<br>and easier access to<br>appropriate healthcare<br>services.</p>
+
+  <div class="box cream" style="left:392.5px;top:362px;width:166.8px;height:184.8px;border-radius:21.7px"></div>
+  <div class="icon" style="left:407.46px;top:373.96px;width:28.05px;height:28.05px"><svg><use href="#i-bars"/></svg></div>
+  <h2 class="t b g" style="left:407px;top:415px;font-size:11px;line-height:14.65px">FOR COLLEGES</h2>
+  <p class="t" style="left:407px;top:454px;font-size:11.5px;line-height:15.3px">Monitor academic activity,<br>FAP progress, field<br>performance and<br>programme outcomes<br>through dashboards.</p>
+
+  <div class="dark" style="left:34.96px;top:567.75px;width:524.36px;height:135.85px;border-radius:17.66px"></div>
+  <h2 class="t b w" style="left:52px;top:582px;font-size:19px;line-height:25.3px">Why MedPulseOS?</h2>
+  <p class="t w" style="left:52px;top:613px;font-size:11px;line-height:14.6px">One connected workflow from student assignment to family follow-up.</p>
+  <ul class="list w" style="--dt:3.7px;left:67px;top:638px;font-size:10.5px;line-height:13.97px">
+    <li>Digital family records and structured field-visit data</li>
+    <li>Smart FAP management with role-based access</li>
+    <li>Academic monitoring and actionable programme analytics</li>
+    <li>Streamlined hospital referrals and follow-up tracking</li>
+  </ul>
+
+  <div class="box sage" style="left:35px;top:712.6px;width:524.4px;height:61.9px;border-radius:8px"></div>
+  <h2 class="t b g" style="left:50px;top:720px;font-size:15px;line-height:19.9px">Ready to modernise your FAP?</h2>
+  <p class="t" style="left:50px;top:742px;font-size:10.5px;line-height:13.97px">Bring students, faculty, families and healthcare<br>services into one secure workflow.</p>
+  <a class="cta" id="connect" href="#" role="button" style="left:427.48px;top:732.57px;width:117.86px;height:23.97px">LET’S CONNECT</a>
+
+  <div class="t m" style="left:35px;top:799px;font-size:8px;line-height:10.6px">MedPulseOS • Family Adoption Programme (FAP)</div>
+  <div class="t b g" style="right:35.28px;top:799px;font-size:8px;line-height:10.6px">01</div>
+</section></div>
+
+<!-- ============ PAGE 2 ============ -->
+<div class="sheet"><section class="page" aria-label="Page 2">
+  <svg style="left:0;top:0;width:595.28px;height:841.89px" aria-hidden="true"><use href="#deco"/></svg>
+  <img src="assets/vibisha-logo.png" alt="Vibisha MedEdu &amp; Healthcare Pvt. Ltd." style="left:35.18px;top:22.43px;width:90.45px;height:68.92px">
+  <div class="t m" style="right:35.5px;top:76px;font-size:9px;line-height:12px;font-style:italic">Better Learning | Healthier Lives</div>
+
+  <h1 class="t b g" style="left:35px;top:111px;font-size:24px;line-height:31.9px">Smart FAP Management</h1>
+  <p class="t m" style="left:35px;top:156px;font-size:11.5px;line-height:15.3px">A structured digital backbone for the Family Adoption Programme —<br>from assignment and field visits to referrals, monitoring and reporting.</p>
+
+  <div class="box cream" style="left:35px;top:220.2px;width:524.4px;height:108.9px;border-radius:14.17px"></div>
+  <div class="dark" style="left:34.96px;top:205.21px;width:200.76px;height:32.96px;border-radius:16.48px"></div>
+  <h2 class="t b w" style="left:50px;top:212px;font-size:16px;line-height:21.3px">How It Works</h2>
+
+  <!-- steps: badge centre x, icon centre x -->
+  <div class="icon" style="left:72.61px;top:249.85px;width:30.56px;height:30.56px"><svg><use href="#i-people"/></svg></div>
+  <div class="icon" style="left:176.98px;top:249.85px;width:30.56px;height:30.56px"><svg><use href="#i-doc"/></svg></div>
+  <div class="icon" style="left:281.36px;top:249.85px;width:30.56px;height:30.56px"><svg><use href="#i-doc"/></svg></div>
+  <div class="icon" style="left:385.73px;top:249.85px;width:30.56px;height:30.56px"><svg><use href="#i-hospital"/></svg></div>
+  <div class="icon" style="left:490.1px;top:249.85px;width:30.56px;height:30.56px"><svg><use href="#i-bars"/></svg></div>
+  <svg style="left:114.9px;top:259.8px;width:38px;height:8.6px" aria-hidden="true"><use href="#i-arrow"/></svg>
+  <svg style="left:219.2px;top:259.8px;width:38px;height:8.6px" aria-hidden="true"><use href="#i-arrow"/></svg>
+  <svg style="left:323.6px;top:259.8px;width:38px;height:8.6px" aria-hidden="true"><use href="#i-arrow"/></svg>
+  <svg style="left:428px;top:259.8px;width:38px;height:8.6px" aria-hidden="true"><use href="#i-arrow"/></svg>
+  <div class="b w c" style="left:49.94px;top:243.16px;width:15.98px;height:15.98px;border-radius:50%;background:var(--gold);font-size:9px;line-height:15.98px">1</div>
+  <div class="b w c" style="left:154.31px;top:243.16px;width:15.98px;height:15.98px;border-radius:50%;background:var(--gold);font-size:9px;line-height:15.98px">2</div>
+  <div class="b w c" style="left:258.68px;top:243.16px;width:15.98px;height:15.98px;border-radius:50%;background:var(--gold);font-size:9px;line-height:15.98px">3</div>
+  <div class="b w c" style="left:363.06px;top:243.16px;width:15.98px;height:15.98px;border-radius:50%;background:var(--gold);font-size:9px;line-height:15.98px">4</div>
+  <div class="b w c" style="left:467.43px;top:243.16px;width:15.98px;height:15.98px;border-radius:50%;background:var(--gold);font-size:9px;line-height:15.98px">5</div>
+  <div class="t b g c" style="left:47.9px;top:288px;width:80px;font-size:11px;line-height:14.65px">Assigned<br>Families</div>
+  <div class="t b g c" style="left:152.3px;top:288px;width:80px;font-size:11px;line-height:14.65px">Field<br>Visits</div>
+  <div class="t b g c" style="left:256.6px;top:288px;width:80px;font-size:11px;line-height:14.65px">Structured<br>Data</div>
+  <div class="t b g c" style="left:361px;top:288px;width:80px;font-size:11px;line-height:14.65px">Hospital<br>Referrals</div>
+  <div class="t b g c" style="left:465.4px;top:288px;width:80px;font-size:11px;line-height:14.65px">Academic<br>Monitoring</div>
+
+  <h2 class="t b g" style="left:35px;top:345px;font-size:18px;line-height:23.9px">What the platform manages</h2>
+
+  <!-- 2 x 3 cards: columns at 35 / 304.6, rows at 383 / 491.9 / 600.7 -->
+  <div class="box cream" style="left:35px;top:383px;width:254.7px;height:98.9px;border-radius:12.87px"></div>
+  <div style="left:35px;top:383px;width:254.7px;height:4px;background:var(--gold)"></div>
+  <div class="icon" style="left:47.2px;top:399.3px;width:23.4px;height:23.4px"><svg><use href="#i-people"/></svg></div>
+  <h3 class="t b g" style="left:82px;top:401px;font-size:11.5px;line-height:15.3px">Family &amp; Student Assignment</h3>
+  <p class="t" style="left:49px;top:427px;font-size:11.5px;line-height:15.3px">Allocate and manage adopted families with<br>clear ownership and programme visibility.</p>
+
+  <div class="box cream" style="left:304.6px;top:383px;width:254.7px;height:98.9px;border-radius:12.87px"></div>
+  <div style="left:304.6px;top:383px;width:254.7px;height:4px;background:var(--gold)"></div>
+  <div class="icon" style="left:316.9px;top:399.3px;width:23.4px;height:23.4px"><svg><use href="#i-doc"/></svg></div>
+  <h3 class="t b g" style="left:352px;top:401px;font-size:11.5px;line-height:15.3px">Digital Field Visits</h3>
+  <p class="t" style="left:319px;top:427px;font-size:11.5px;line-height:15.3px">Capture household, demographic and<br>health-related information during<br>community visits.</p>
+
+  <div class="box cream" style="left:35px;top:491.9px;width:254.7px;height:98.9px;border-radius:12.87px"></div>
+  <div style="left:35px;top:491.9px;width:254.7px;height:4px;background:var(--gold)"></div>
+  <div class="icon" style="left:47.2px;top:508.1px;width:23.4px;height:23.4px"><svg><use href="#i-bars"/></svg></div>
+  <h3 class="t b g" style="left:82px;top:510px;font-size:11.5px;line-height:15.3px">Academic Monitoring</h3>
+  <p class="t" style="left:49px;top:536px;font-size:11.5px;line-height:15.3px">Track student activity, visit completion, data<br>quality, follow-ups and FAP participation.</p>
+
+  <div class="box cream" style="left:304.6px;top:491.9px;width:254.7px;height:98.9px;border-radius:12.87px"></div>
+  <div style="left:304.6px;top:491.9px;width:254.7px;height:4px;background:var(--gold)"></div>
+  <div class="icon" style="left:316.9px;top:508.1px;width:23.4px;height:23.4px"><svg><use href="#i-hospital"/></svg></div>
+  <h3 class="t b g" style="left:352px;top:510px;font-size:11.5px;line-height:15.3px">Referral Management</h3>
+  <p class="t" style="left:319px;top:536px;font-size:11.5px;line-height:15.3px">Move families needing further care into a<br>streamlined hospital referral workflow.</p>
+
+  <div class="box cream" style="left:35px;top:600.7px;width:254.7px;height:98.9px;border-radius:12.87px"></div>
+  <div style="left:35px;top:600.7px;width:254.7px;height:4px;background:var(--gold)"></div>
+  <div class="icon" style="left:47.2px;top:617px;width:23.4px;height:23.4px"><svg><use href="#i-doctor"/></svg></div>
+  <h3 class="t b g" style="left:82px;top:619px;font-size:11.5px;line-height:15.3px">Doctor Availability</h3>
+  <p class="t" style="left:49px;top:645px;font-size:11.5px;line-height:15.3px">Help families and programme teams<br>understand specialist availability and<br>consultation pathways.</p>
+
+  <div class="box cream" style="left:304.6px;top:600.7px;width:254.7px;height:98.9px;border-radius:12.87px"></div>
+  <div style="left:304.6px;top:600.7px;width:254.7px;height:4px;background:var(--gold)"></div>
+  <div class="icon" style="left:316.9px;top:617px;width:23.4px;height:23.4px"><svg><use href="#i-bars"/></svg></div>
+  <h3 class="t b g" style="left:352px;top:619px;font-size:11.5px;line-height:15.3px">Reports &amp; Analytics</h3>
+  <p class="t" style="left:319px;top:645px;font-size:11.5px;line-height:15.3px">Turn programme data into dashboards,<br>trends, follow-up lists and institutional<br>reports.</p>
+
+  <div class="dark" style="left:34.96px;top:723.58px;width:524.36px;height:51.93px;border-radius:6.75px"></div>
+  <h2 class="t b w" style="left:49px;top:729px;font-size:13px;line-height:17.3px">Academic Monitoring</h2>
+  <p class="t w" style="left:49px;top:745px;font-size:10px;line-height:13.3px">Faculty and administrators get a clear view of progress without turning FAP<br>into a spreadsheet-management exercise.</p>
+
+  <div class="t m" style="left:35px;top:799px;font-size:8px;line-height:10.6px">MedPulseOS • Family Adoption Programme (FAP)</div>
+  <div class="t b g" style="right:35.28px;top:799px;font-size:8px;line-height:10.6px">02</div>
+</section></div>
+
+<!-- ============ PAGE 3 ============ -->
+<div class="sheet"><section class="page" aria-label="Page 3">
+  <svg style="left:0;top:0;width:595.28px;height:841.89px" aria-hidden="true"><use href="#deco"/></svg>
+  <img src="assets/vibisha-logo.png" alt="Vibisha MedEdu &amp; Healthcare Pvt. Ltd." style="left:35.18px;top:22.43px;width:90.45px;height:68.92px">
+  <div class="t m" style="right:35.5px;top:76px;font-size:9px;line-height:12px;font-style:italic">Better Learning | Healthier Lives</div>
+
+  <h1 class="t b g" style="left:35px;top:111px;font-size:24px;line-height:31.9px">Benefits, Security &amp; Pricing</h1>
+  <p class="t m" style="left:35px;top:156px;font-size:11.5px;line-height:15.3px">Designed to create measurable value for students, patients, faculty<br>and medical institutions.</p>
+
+  <div class="dark" style="left:34.96px;top:206.21px;width:403.5px;height:33.95px;border-radius:16.98px"></div>
+  <h2 class="t b w" style="left:50px;top:213px;font-size:16px;line-height:21.3px">Benefits to Students &amp; Patients</h2>
+
+  <div class="box cream" style="left:35px;top:251.2px;width:254.7px;height:219.7px;border-radius:28.6px"></div>
+  <div class="t b g c sage" style="left:46.94px;top:263.14px;width:230.72px;height:25.97px;border-radius:13px;font-size:11px;line-height:25.97px">STUDENTS</div>
+  <ul class="list" style="--dt:4.7px;left:63px;top:300px;font-size:11.5px;line-height:15.3px">
+    <li style="margin-bottom:3px">Less paperwork and cleaner digital<br>documentation.</li>
+    <li style="margin-bottom:3px">Easy access to assigned families and<br>follow-up history.</li>
+    <li style="margin-bottom:3px">Structured field-visit workflow.</li>
+    <li style="margin-bottom:3px">Better visibility of pending tasks and<br>referrals.</li>
+    <li>Academic participation that can be<br>monitored objectively.</li>
+  </ul>
+
+  <div class="box cream" style="left:304.6px;top:251.2px;width:254.7px;height:219.7px;border-radius:28.6px"></div>
+  <div class="t b g c" style="left:316.61px;top:263.14px;width:230.72px;height:25.97px;border-radius:13px;background:#f4e5c4;font-size:11px;line-height:25.97px">PATIENTS &amp; FAMILIES</div>
+  <ul class="list" style="--dt:4.7px;left:333px;top:300px;font-size:11.5px;line-height:15.3px">
+    <li style="margin-bottom:3px">Continuous follow-up and better<br>continuity of care.</li>
+    <li style="margin-bottom:3px">Digital family health records for<br>organised information.</li>
+    <li style="margin-bottom:3px">Timely referrals when further<br>investigation or treatment is needed.</li>
+    <li style="margin-bottom:3px">Improved awareness of preventive care<br>and health practices.</li>
+    <li>Clearer access to doctor and specialist<br>information.</li>
+  </ul>
+
+  <div class="dark" style="left:34.96px;top:486.87px;width:254.7px;height:173.79px;border-radius:22.6px"></div>
+  <div class="icon" style="left:47.2px;top:499.1px;width:23.4px;height:23.4px;background:#edead9"><svg><use href="#i-lock"/></svg></div>
+  <h2 class="t b w" style="left:80px;top:499px;font-size:13px;line-height:17.3px">Secure &amp; Confidential</h2>
+  <ul class="list w" style="--dt:4.1px;left:62px;top:537px;font-size:11px;line-height:14.65px">
+    <li style="margin-bottom:4px">Role-based access.</li>
+    <li style="margin-bottom:4px">Secure, encrypted database.</li>
+    <li style="margin-bottom:4px">Username/password protected login.</li>
+    <li style="margin-bottom:4px">Privacy &amp; security aligned design.</li>
+    <li>Patient and family information kept<br>confidential.</li>
+  </ul>
+
+  <div class="box cream" style="left:304.6px;top:486.9px;width:254.7px;height:173.8px;border-radius:22.6px"></div>
+  <h2 class="t b g" style="left:320px;top:502px;font-size:15px;line-height:19.9px">Institutional Pricing</h2>
+  <div class="t b gold" style="left:320px;top:541px;font-size:11px;line-height:14.65px">Starting from</div>
+  <div class="t b g" style="left:320px;top:557px;font-size:30px;line-height:39.9px">₹80,000</div>
+  <div class="t b gold" style="left:320px;top:606px;font-size:11px;line-height:14.65px">Flexible • Scalable • Tailored</div>
+  <p class="t m" style="left:320px;top:624px;font-size:10.5px;line-height:13.97px">Final pricing varies by institution size, users,<br>modules, deployment and support.</p>
+
+  <div class="box sage" style="left:35px;top:674.6px;width:524.4px;height:75.9px;border-radius:9.9px"></div>
+  <div class="icon" style="left:48.3px;top:687px;width:25.2px;height:25.2px"><svg><use href="#i-target"/></svg></div>
+  <h2 class="t b g" style="left:86px;top:683px;font-size:16px;line-height:21.3px">Our Goal</h2>
+  <p class="t" style="left:50px;top:705px;font-size:10.5px;line-height:13.97px">To digitally strengthen the Family Adoption Programme, improve community health,<br>and create a seamless bridge between medical students, adopted families,<br>medical colleges and the healthcare system.</p>
+
+  <div class="dark" style="left:34.96px;top:759.5px;width:524.36px;height:23px;border-radius:5.05px"></div>
+  <a class="t b w" href="mailto:contact@medpulseos.com" style="left:45px;top:767px;font-size:10px;line-height:13.3px">contact@medpulseos.com</a>
+  <a class="t b w" href="tel:+919664552098" style="left:285.2px;top:767px;font-size:10px;line-height:13.3px">+91 96645 52098</a>
+  <a class="t b gold" href="https://medpulseos.com" target="_blank" rel="noopener" style="right:46.3px;top:767px;font-size:10px;line-height:13.3px">MEDPULSEOS.COM</a>
+
+  <div class="t m" style="left:35px;top:799px;font-size:8px;line-height:10.6px">MedPulseOS • Family Adoption Programme (FAP)</div>
+  <div class="t b g" style="right:35.28px;top:799px;font-size:8px;line-height:10.6px">03</div>
+</section></div>
+
+<script>
+  // Scale the A4 pages to fit the screen while keeping the brochure's exact proportions.
+  (function () {
+    var root = document.documentElement;
+    function fit() {
+      var avail = Math.min(document.documentElement.clientWidth - 24, 900);
+      root.style.setProperty('--s', Math.max(avail, 200) / 595.28);
+    }
+    fit();
+    window.addEventListener('resize', fit);
+  })();
+
+  // "Let's Connect": download the brochure PDF, then open a prefilled email.
+  (function () {
+    var EMAIL = 'contact@medpulseos.com';
+    var PDF = 'MedPulseOS_Brochure.pdf';
+    var subject = "Interested in MedPulseOS for our institution";
+    var body = [
+      'Hi MedPulseOS team,',
+      '',
+      "I'm interested in MedPulseOS for the Family Adoption Programme (FAP) at our institution. " +
+      'Could you please share more details about the platform, arrange a demo and let us know the pricing for our college?',
+      '',
+      'Name:',
+      'Designation:',
+      'Institution:',
+      'Phone:',
+      '',
+      'Thank you,'
+    ].join('\r\n');
+    var mailto = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+    var btn = document.getElementById('connect');
+    btn.href = mailto; // works even if the click handler below doesn't run
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var a = document.createElement('a');
+      a.href = PDF;
+      a.download = PDF;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { window.location.href = mailto; }, 600);
+    });
+  })();
+</script>
+</body>
+</html>
