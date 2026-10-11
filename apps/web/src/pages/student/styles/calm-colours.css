@@ -1,0 +1,185 @@
+/* ============================================================
+   Calm colours (option 2 from the phone-look preview, 2026-10-11)
+   Loaded last on the student pages only (admin keeps its colours).
+   Everything is scoped to .main-content, so the sidebar and nav bar
+   stay exactly as they are. To go back to the violet look, remove
+   the @import of this file from the student *-styles.css files.
+   - Near-white page, white sections with a thin line, no shadows
+   - One blue accent for things you can tap; greys for the rest
+   - Green / amber / red only where they mean good / warning / bad
+   ============================================================ */
+
+body {
+  --calm-bg: #f7f8fa;
+  background: var(--calm-bg) !important;
+}
+/* Coloured glow blobs behind the page */
+body::before,
+body::after { display: none !important; }
+
+.main-content {
+  --calm-surface: #ffffff;
+  --calm-fill: #f3f4f7;
+  --calm-line: #e5e7ec;
+  --calm-label: #111827;
+  --calm-label-2: #374151;
+  --calm-label-3: #6b7280;
+  --calm-accent: #2f4acc;
+  --calm-accent-hover: #2539a8;
+  --calm-accent-fill: #eef1fd;
+
+  /* Re-point the shared tokens for everything inside the page body */
+  --bg-body: var(--calm-bg);
+  --bg-card: var(--calm-surface);
+  --bg-subtle: var(--calm-fill);
+  --text-primary: var(--calm-label);
+  --text-secondary: var(--calm-label-2);
+  --text-muted: var(--calm-label-3);
+  --border: var(--calm-line);
+  --accent: var(--calm-accent);
+  --accent-subtle: var(--calm-accent-fill);
+  --accent-gradient: var(--calm-accent);
+  --primary-gradient: var(--calm-accent);
+
+  background: var(--calm-bg) !important;
+  color: var(--calm-label);
+}
+.main-content::before,
+.main-content::after { display: none !important; }
+
+/* ── Text ───────────────────────────────────────────────── */
+.main-content :is(h1, .page-title, .page-title-animated) {
+  color: var(--calm-label) !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+.main-content :is(h2, h3, h4, h5) { color: var(--calm-label) !important; }
+.main-content :is(.page-subtitle, .page-header p, .card-subtitle, .section-subtitle) { color: var(--calm-label-3) !important; }
+.main-content :is(.kpi-label, .stat-label, .prof-att-kpi-label, .form-label, label, th) { color: var(--calm-label-3) !important; }
+.main-content :is(.kpi-num, .stat-value, .kpi-value) { color: var(--calm-label) !important; }
+
+/* ── Surfaces: white sections with a thin line ─────────── */
+.main-content :is(.card, .profile-kpi-card, .kpi-card, .chart-card, .stat-card,
+  .exam-record-card, .exams-toolbar, .year-pagination-bar, .analytics-filter-bar,
+  .datewise-container-card, .profile-info-card, .family-selector-board,
+  .schedule-detail-placeholder, .family-card, .family-add-section, .att-subject-card,
+  .schedule-cubic-card, .mp-empty, .empty-state) {
+  background: var(--calm-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--calm-line) !important;
+}
+.main-content :is(.card, .chart-card, .kpi-card, .profile-kpi-card)::before,
+.main-content :is(.card, .chart-card, .kpi-card, .profile-kpi-card)::after { display: none !important; }
+.main-content :is(.schedule-detail-placeholder, .prev-sessions-toggle-card) { border-style: solid !important; }
+
+/* No gradient fills inside the page (progress bars and charts keep theirs) */
+.main-content :is(div, section, span, button, a, header):not(.mp-dp *):not([class*="progress"]):not([class*="bar-fill"]):not([class*="fill"]):not([class*="chart"] *) {
+  background-image: none !important;
+}
+
+/* Icon tiles next to numbers: one quiet tint instead of four colours */
+.main-content :is(.profile-kpi-icon, .kpi-icon, .stat-icon, .card-icon, .mp-empty-icon) {
+  background: var(--calm-accent-fill) !important;
+  color: var(--calm-accent) !important;
+  border: 0 !important;
+}
+
+/* ── Page headers that were dark gradient banners ──────── */
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) {
+  background: var(--calm-surface) !important;
+  color: var(--calm-label) !important;
+  border: 1px solid var(--calm-line) !important;
+}
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero)::before,
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero)::after { display: none !important; }
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) *:not(.btn):not(.btn *):not(svg):not(svg *):not(h1):not(h1 *):not(h2):not(h2 *):not(.hero-standing-score):not(.profile-name) {
+  color: var(--calm-label-3) !important;
+  border-color: var(--calm-line) !important;
+}
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) :is(h1, h2, h1 *, h2 *, .profile-name, .hero-standing-score, .hero-gauge-box > :nth-child(2)) {
+  color: var(--calm-label) !important;
+}
+.main-content :is(.hero-gauge-box, .hero-standing-card) :is(div, span):not(:first-child) { color: var(--calm-label) !important; }
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) :is(.badge, .profile-roll-tag, .verified-badge, .ref-code-tag) {
+  background: var(--calm-fill) !important;
+  border: 0 !important;
+  color: var(--calm-label-2) !important;
+}
+.main-content :is(.hero-gauge-box, .hero-standing-card) {
+  background: var(--calm-fill) !important;
+  border: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.main-content :is(.profile-hero, .exams-hero, .attendance-hero) .btn {
+  background: var(--calm-surface) !important;
+  border: 1px solid var(--calm-line) !important;
+  color: var(--calm-accent) !important;
+}
+
+/* Card title bars that were dark slate */
+.main-content .datewise-top-bar {
+  background: var(--calm-surface) !important;
+  border-bottom: 1px solid var(--calm-line) !important;
+}
+.main-content .datewise-top-bar :is(h2, h3) { color: var(--calm-label) !important; }
+.main-content .datewise-top-bar a { color: var(--calm-accent) !important; opacity: 1 !important; }
+
+/* ── Buttons: one blue for the main action, outlined for the rest ── */
+.main-content :is(.btn-primary, .btn.btn-primary) {
+  background: var(--calm-accent) !important;
+  border: 1px solid var(--calm-accent) !important;
+  color: #ffffff !important;
+}
+.main-content .btn-primary:hover { background: var(--calm-accent-hover) !important; }
+.main-content :is(.btn-secondary, .btn-outline) {
+  background: var(--calm-surface) !important;
+  border: 1px solid var(--calm-line) !important;
+  color: var(--calm-accent) !important;
+}
+/* Profile export buttons had their own blue and red gradients */
+.main-content :is(#cardExportPdfBtn, #cardExportLogbookBtn) {
+  background: var(--calm-surface) !important;
+  border: 1px solid var(--calm-line) !important;
+  color: var(--calm-accent) !important;
+}
+.main-content .schedule-today-jump-btn {
+  background: var(--calm-surface) !important;
+  border: 1px solid var(--calm-line) !important;
+  color: var(--calm-accent) !important;
+}
+
+/* Selected pills and tabs: tinted, not filled dark */
+.main-content :is(.year-pill-btn, .tab-pill-btn, .schedule-dept-pill, .schedule-pagi-btn, .btn-toggle-att, .filter-pill, .view-toggle-btn, .size-btn).active {
+  background: var(--calm-accent-fill) !important;
+  color: var(--calm-accent) !important;
+  border-color: transparent !important;
+}
+.main-content :is(.year-pill-btn, .tab-pill-btn, .schedule-dept-pill, .schedule-pagi-btn, .btn-toggle-att, .filter-pill, .view-toggle-btn, .size-btn).active * { color: var(--calm-accent) !important; }
+
+/* ── Attendance tiles: neutral boxes, colour only on the figure ── */
+.main-content .prof-att-kpi-box,
+.main-content .prof-att-kpi-box.highlight {
+  background: var(--calm-fill) !important;
+  border: 0 !important;
+}
+.main-content .prof-att-kpi-label { color: var(--calm-label-3) !important; }
+.main-content :is(#profAttTheoryPct, #profAttPracticalPct) { color: var(--calm-label) !important; }
+
+/* ── Badges ─────────────────────────────────────────────── */
+.main-content .badge-info { border-color: transparent !important; }
+
+/* Violet and indigo set inline in the page code: the same blue instead */
+.main-content :is([style*="color: rgb(124, 58, 237)"], [style*="color: rgb(109, 40, 217)"], [style*="color: rgb(139, 92, 246)"], [style*="color: rgb(79, 70, 229)"]) {
+  color: var(--calm-accent) !important;
+}
+.main-content :is([style*="background: rgb(124, 58, 237)"], [style*="background: rgb(109, 40, 217)"]) {
+  background: var(--calm-accent) !important;
+}
+.main-content :is([style*="background: rgba(124, 58, 237"], [style*="background: rgba(109, 40, 217"], [style*="background: rgb(245, 243, 255)"], [style*="background: rgba(79, 70, 229"]) {
+  background: var(--calm-accent-fill) !important;
+}
+.main-content :is([style*="rgba(109, 40, 217, 0.2)"], [style*="rgba(124, 58, 237, 0.2)"]) {
+  border-color: transparent !important;
+}
+.main-content .prof-att-kpi-label[style] { color: var(--calm-label-3) !important; }
