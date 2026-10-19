@@ -1,5 +1,17 @@
-import './index-styles.css';
-import { mountPage } from '../../shared/mount';
-import { IndexApp } from './IndexApp';
+import './NotFoundApp.css';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { registerServiceWorker } from '../../shared/pwa';
+import { NotFoundApp } from './NotFoundApp';
 
-mountPage(() => <IndexApp />, { pwa: true });
+// Register offline worker if available
+registerServiceWorker();
+
+const el = document.getElementById('root');
+if (el) {
+    createRoot(el).render(
+        <StrictMode>
+            <NotFoundApp />
+        </StrictMode>
+    );
+}
