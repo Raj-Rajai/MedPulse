@@ -7,8 +7,8 @@
  * - Remove scheduled sessions with confirmation
  * - Generate .ics calendar invites and printable lecture plans
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import { useToast } from '../../hooks/useToasts';
 import { errMessage, readJson, sendJson, todayIso } from '../../lib/http';
 import { SUBJECTS } from '../academic';
@@ -60,6 +60,9 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
     const showToast = useToast();
     const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    // On phones the department filter opens as a centred sheet (position: fixed). The page content is a
+    // size container, which would pin fixed elements to itself, so the sheet is rendered on <body> there.
+    const filterLayer = (node: ReactNode) => (window.matchMedia('(max-width: 768px)').matches ? createPortal(node, document.body) : node);
     const [filterSearch, setFilterSearch] = useState('');
     const filterDropdownRef = useRef<HTMLDivElement>(null);
     const [viewMode, setViewMode] = useState<'strip' | 'table'>('strip');
@@ -550,7 +553,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                 </div>
 
                 {/* Backdrop for click-outside on mobile / desktop */}
-                {isFilterOpen && (
+                {isFilterOpen && filterLayer(
                     <div
                         className="dept-filter-backdrop"
                         onClick={() => setIsFilterOpen(false)}
@@ -559,7 +562,7 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                 )}
 
                 {/* Floating Multi-Select Dropdown Popover */}
-                {isFilterOpen && (
+                {isFilterOpen && filterLayer(
                     <div
                         id="deptMultiSelectDropdown"
                         style={{
@@ -1225,7 +1228,8 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
             )}
 
             {/* MODAL: Add / Edit Teaching Session */}
-            {modalOpen && (
+            {/* On <body>: the page content is a size container, which would pin this fixed overlay to it. */}
+            {modalOpen && createPortal(
                 <div className="modal-overlay" style={{ display: 'flex', zIndex: 1050 }}>
                     <div className="modal-box" style={{ maxWidth: 650, width: '92%', borderRadius: '16px' }}>
                         <div className="modal-header">
@@ -1426,7 +1430,8 @@ export function ScheduleSection({ active, loadSignal }: { active: boolean; loadS
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body,
             )}
             {attendanceLecture && <AttendanceWaitingRoom key={attendanceLecture.id} lecture={attendanceLecture}
                 onClose={() => { setAttendanceLecture(null); loadSchedule(); }} onChanged={() => loadSchedule()}/>}

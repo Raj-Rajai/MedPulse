@@ -2848,6 +2848,7 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 .analytics-tab {
+  flex: 0 0 auto; /* keep each label whole; the row scrolls instead of the labels overlapping */
   padding: 0.65rem 1.15rem;
   border: none;
   background: transparent;
@@ -4435,7 +4436,7 @@ body {
 }
 
 /* ── Prevent Rogue / Injected Right-Side Panels ─────────── */
-body > *:not(#sidebar):not(#sidebarOverlay):not(#mobileNavToggle):not(.main-content):not(header):not(main):not(aside):not(.modal-overlay):not(.mp-attendance):not(.mp-dp):not(.toast-container):not(script):not(style):not(link) {
+body > *:not(#sidebar):not(#sidebarOverlay):not(#mobileNavToggle):not(.main-content):not(header):not(main):not(aside):not(.modal-overlay):not(.mp-attendance):not(.mp-dp):not(.dept-filter-backdrop):not(#deptMultiSelectDropdown):not(.toast-container):not(script):not(style):not(link) {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

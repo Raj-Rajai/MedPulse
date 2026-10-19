@@ -2,8 +2,8 @@
  * student/schedule.html: academic teaching schedule (department pills, horizontal strip of
  * cubic date cards, detail panel, CSV / .ics export).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import { BodyPortal, useStudentChrome } from '../common/Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
 import { StudentBadge, StudentSignInLink, readAuthUser } from '../common/badges';
@@ -72,6 +72,9 @@ export function ScheduleApp() {
     const [user] = useState(readAuthUser);
     const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    // On phones the department filter opens as a centred sheet (position: fixed). The page content is a
+    // size container, which would pin fixed elements to itself, so the sheet is rendered on <body> there.
+    const filterLayer = (node: ReactNode) => (window.matchMedia('(max-width: 768px)').matches ? createPortal(node, document.body) : node);
     const [filterSearch, setFilterSearch] = useState('');
     const filterDropdownRef = useRef<HTMLDivElement>(null);
     const [strip, setStrip] = useState<Strip>({ kind: 'loading' });
@@ -475,7 +478,7 @@ export function ScheduleApp() {
                     </div>
 
                     {/* Backdrop for click-outside on mobile / desktop */}
-                    {isFilterOpen && (
+                    {isFilterOpen && filterLayer(
                         <div
                             className="dept-filter-backdrop"
                             onClick={() => setIsFilterOpen(false)}
@@ -484,7 +487,7 @@ export function ScheduleApp() {
                     )}
 
                     {/* Floating Multi-Select Dropdown Popover */}
-                    {isFilterOpen && (
+                    {isFilterOpen && filterLayer(
                         <div
                             id="deptMultiSelectDropdown"
                             style={{
