@@ -6,12 +6,12 @@
       gap: 12px;
       margin-bottom: 16px;
     }
-    @media (max-width: 900px) {
+    @container main (max-width: 566px) {
       .profile-att-kpis-strip {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-    @media (max-width: 520px) {
+    @container main (max-width: 480px) {
       .profile-att-kpis-strip {
         grid-template-columns: 1fr;
       }

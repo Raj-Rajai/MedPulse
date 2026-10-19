@@ -70,7 +70,7 @@
 
 /* Generic blocks */
 .pt-grid-2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px; }
-@media (max-width: 960px) { .pt-grid-2 { grid-template-columns: 1fr; } }
+@container main (max-width: 860px) { .pt-grid-2 { grid-template-columns: 1fr; } }
 .pt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; margin-bottom: 18px; }
 .pt-card-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .pt-card-h h2 { font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px; }
@@ -126,11 +126,11 @@
 .pt-action .t { font-weight: 750; font-size: 0.88rem; color: var(--text-primary); }
 .pt-action .d { font-size: 0.77rem; color: var(--text-muted); }
 .pt-action .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-@media (max-width: 560px) { .pt-action { flex-wrap: wrap; } .pt-action .btns { width: 100%; } .pt-action .btns .pt-btn { flex: 1; } }
+@container main (max-width: 520px) { .pt-action { flex-wrap: wrap; } .pt-action .btns { width: 100%; } .pt-action .btns .pt-btn { flex: 1; } }
 
 /* Vitals */
 .pt-vitals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-@media (max-width: 420px) { .pt-vitals { grid-template-columns: 1fr; } }
+@container main (max-width: 380px) { .pt-vitals { grid-template-columns: 1fr; } }
 .pt-vital { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; background: var(--bg-subtle); border-left: 4px solid #cbd5e1; }
 .pt-vital.ok { border-left-color: #10b981; } .pt-vital.warn { border-left-color: #f59e0b; } .pt-vital.bad { border-left-color: #ef4444; }
 .pt-vital .lbl { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; gap: 6px; }
@@ -144,7 +144,7 @@
 .pt-care .nm { font-weight: 800; font-size: 1.02rem; color: var(--text-primary); }
 .pt-care .meta { font-size: 0.78rem; color: var(--text-muted); }
 .pt-care-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
-@media (max-width: 420px) { .pt-care-actions { grid-template-columns: 1fr; } }
+@container main (max-width: 380px) { .pt-care-actions { grid-template-columns: 1fr; } }
 
 /* Campaign cards */
 .pt-camp { border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); margin-bottom: 14px; overflow: hidden; }
@@ -162,7 +162,7 @@
 .pt-camp-foot { border-top: 1px solid var(--border); background: var(--bg-subtle); padding: 12px 18px; }
 .pt-rsvp-q { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
 .pt-rsvp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-@media (max-width: 560px) { .pt-rsvp { grid-template-columns: 1fr; } }
+@container main (max-width: 520px) { .pt-rsvp { grid-template-columns: 1fr; } }
 .pt-rsvp button {
   padding: 10px 8px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-card); cursor: pointer;
   font-weight: 750; font-size: 0.83rem; color: var(--text-primary); transition: all 0.15s;
@@ -195,7 +195,7 @@
 .pt-form-row { margin-bottom: 12px; }
 .pt-form-row > label.l { display: block; font-size: 0.78rem; font-weight: 750; color: var(--text-secondary); margin-bottom: 6px; }
 .pt-form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 520px) { .pt-form-2 { grid-template-columns: 1fr; } }
+@container main (max-width: 480px) { .pt-form-2 { grid-template-columns: 1fr; } }
 .pt-input, .pt-select, .pt-textarea {
   width: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--border);
   font: inherit; font-size: 0.86rem; color: var(--text-primary); background: var(--bg-card);
@@ -236,7 +236,7 @@
 .pt-modal-h h2 { color: var(--pt-dark); font-size: 1.15rem; margin: 0; }
 .pt-x { border: 0; background: #f1f5f9; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem; }
 
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   .pt-hero { padding: 18px; }
   .pt-name { font-size: 1.25rem; }
   .pt-hero-actions { width: 100%; }
@@ -253,7 +253,7 @@
 
 /* ============ v2.2: health card, family, hospital ============ */
 .pt-grid-card { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 18px; align-items: start; }
-@media (max-width: 960px) { .pt-grid-card { grid-template-columns: 1fr; } }
+@container main (max-width: 860px) { .pt-grid-card { grid-template-columns: 1fr; } }
 
 .hc {
   position: relative; overflow: hidden; border-radius: 20px; color: #fff; padding: 18px 20px 16px;
@@ -326,7 +326,7 @@
 .hosp-card .ic { width: 54px; height: 54px; flex: 0 0 54px; border-radius: 14px; background: #fef2f2; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
 .hosp-name { font-weight: 800; font-size: 1.05rem; color: var(--text-primary); }
 .hosp-call { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
-@media (max-width: 480px) { .hosp-call { grid-template-columns: 1fr; } }
+@container main (max-width: 440px) { .hosp-call { grid-template-columns: 1fr; } }
 .pt-btn.call { background: #0f766e; border-color: #0f766e; color: #fff; }
 .pt-btn.call:hover { background: #115e59; }
 .pt-btn.sos { background: #dc2626; border-color: #dc2626; color: #fff; }
@@ -420,10 +420,15 @@
 .patient-portal .modal-content { border-radius: 20px; max-width: calc(100vw - 24px); }
 .pt-skip { position: fixed; top: -100px; left: 16px; z-index: 9999; background: white; padding: 12px 20px; border-radius: 8px; color: var(--pt-dark); }
 .pt-skip:focus { top: 12px; }
-@media (max-width: 960px) { .pt-grid-2, .pt-grid-card { grid-template-columns: 1fr; } }
+@container main (max-width: 860px) { .pt-grid-2, .pt-grid-card { grid-template-columns: 1fr; } }
 @media (max-width: 860px) { .patient-portal .main-content { padding: 76px 20px 28px; } .pt-tabs { top: 64px; } }
+
+
 @media (max-width: 560px) {
   .patient-portal .main-content { padding: 72px 14px 24px; }
+}
+
+@container main (max-width: 520px) {
   .pt-page-heading { margin-bottom: 20px; align-items: flex-start; flex-direction: column; } .pt-page-badge { display: none; }
   .pt-heading-actions { width: 100%; justify-content: flex-start; }
   .pt-page-heading p { font-size: .83rem; }
@@ -449,7 +454,7 @@
 /* Shared hospital branding in overview and appointment requests. */
 .pt-hospital-heading { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; }
 .pt-hospital-logo { display: block; width: 88px; max-width: 100%; height: auto; object-fit: contain; flex-shrink: 0; }
-@media (max-width: 560px) {
+@container main (max-width: 520px) {
   .pt-hospital-logo { width: 72px; }
   .pt-hospital-heading { gap: 10px; }
 }

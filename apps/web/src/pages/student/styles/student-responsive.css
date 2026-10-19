@@ -36,6 +36,9 @@
     padding-top: max(58px, calc(44px + env(safe-area-inset-top))) !important;
     padding-bottom: max(24px, calc(16px + env(safe-area-inset-bottom))) !important;
   }
+}
+
+@container main (max-width: 520px) {
 
   /* Compact typography tokens inside student content */
   .page-header {
@@ -130,7 +133,6 @@
   .datewise-table {
     min-width: 500px !important;
     font-size: 0.72rem !important;
-    zoom: 0.84 !important;
   }
 
   .table-wrapper th,
@@ -148,7 +150,7 @@
 }
 
 /* ── 2. Student Dashboard (`IndexApp.tsx`) ─────────────────────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   /* KPI metrics grid: clean 2-column layout */
   .profile-kpis-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -256,7 +258,7 @@
 }
 
 /* ── 3. Student Profile & Attendance (`ProfileApp.tsx`) ────────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   /* Profile Hero Banner */
   .profile-hero {
     padding: 14px 14px 14px !important;
@@ -385,7 +387,7 @@
 }
 
 /* ── 4. Family & Member Management (`FamilyManageApp.tsx`) ─────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   .families-page .page-title {
     font-size: 1.3rem !important;
     letter-spacing: -0.5px !important;
@@ -559,7 +561,7 @@
 }
 
 /* ── 5. Survey Entry (`EntryApp.tsx` & `SurveyForm.tsx`) ───────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   /* Selection Board */
   .family-selector-board {
     padding: 10px 12px !important;
@@ -697,7 +699,7 @@
 }
 
 /* ── 6. Epidemiological Analytics (`AnalyticsApp.tsx`) ─────────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   /* Filter bar */
   .analytics-filter-bar {
     padding: 10px 12px !important;
@@ -765,7 +767,7 @@
 }
 
 /* ── 7. Academic Exams (`ExamsApp.tsx`) ─────────────────────────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   .exams-hero {
     padding: 14px 14px !important;
     border-radius: 12px !important;
@@ -866,7 +868,7 @@
 }
 
 /* ── 8. Teaching Schedule (`ScheduleApp.tsx`) ──────────────────── */
-@media (max-width: 640px) {
+@container main (max-width: 520px) {
   .attendance-hero {
     padding: 14px 14px !important;
     border-radius: 12px !important;
@@ -1006,7 +1008,7 @@
   }
 }
 
-@media (max-width: 420px) {
+@container main (max-width: 380px) {
   .schedule-meta-grid {
     grid-template-columns: 1fr !important;
   }
@@ -1060,7 +1062,7 @@
 }
 
 /* ── 10. Compact Screens (<= 400px, e.g. iPhone SE / Mini) ─────── */
-@media (max-width: 400px) {
+@container main (max-width: 360px) {
   .page-title {
     font-size: 1.15rem !important;
   }

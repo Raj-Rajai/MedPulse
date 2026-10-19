@@ -295,7 +295,7 @@
       color: var(--text-secondary);
       white-space: nowrap;
     }
-    @media (max-width: 900px) {
+    @container main (max-width: 566px) {
       .selector-board-top {
         flex-direction: column;
         align-items: stretch;
@@ -405,11 +405,11 @@
     .survey-action-buttons .btn:hover { transform: none; }
     #memberSurveyForm { padding-bottom: 12px; }
     #memberSurveyForm :is(input, select, textarea) { scroll-margin-bottom: 190px; }
-    @media (max-width: 1100px) {
+    @container main (max-width: 766px) {
       .survey-action-context { flex-basis: 100%; }
       .survey-action-buttons { width: 100%; justify-content: flex-end; }
     }
-    @media (max-width: 540px) {
+    @container main (max-width: 500px) {
       .sticky-actions-bar { padding: 14px; gap: 12px; bottom: max(8px, env(safe-area-inset-bottom)); }
       .survey-action-buttons { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
       .survey-action-buttons .btn { padding: 10px 12px; width: 100%; white-space: normal; }

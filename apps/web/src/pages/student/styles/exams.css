@@ -31,7 +31,7 @@
       position: relative;
       z-index: 2;
     }
-    @media (max-width: 900px) {
+    @container main (max-width: 566px) {
       .hero-split-grid {
         grid-template-columns: 1fr;
       }
@@ -46,7 +46,7 @@
       text-align: right;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
-    @media (max-width: 900px) {
+    @container main (max-width: 566px) {
       .hero-standing-card {
         text-align: left;
       }
@@ -638,18 +638,18 @@
     .score-breakdown-grid.cols-5 {
       grid-template-columns: repeat(5, 1fr);
     }
-    @media (max-width: 1080px) {
+    @container main (max-width: 746px) {
       .score-breakdown-grid.cols-5 {
         grid-template-columns: repeat(3, 1fr);
       }
     }
-    @media (max-width: 768px) {
+    @container main (max-width: 560px) {
       .score-breakdown-grid.cols-3,
       .score-breakdown-grid.cols-5 {
         grid-template-columns: 1fr 1fr;
       }
     }
-    @media (max-width: 480px) {
+    @container main (max-width: 440px) {
       .score-breakdown-grid.cols-3,
       .score-breakdown-grid.cols-5 {
         grid-template-columns: 1fr;
