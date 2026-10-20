@@ -4,6 +4,10 @@ import type { ValidatedField } from '../../../shared/validation';
 import { OPT, fieldKit } from './fields';
 import type { FormValues } from './types';
 
+import { createStudyKit } from './studyFields';
+import { FamilyStudyFormSections } from './FamilyStudyFormSections';
+import type { FamilyStudyData } from './studyTypes';
+
 const display = (open: boolean) => ({ display: open ? 'flex' : 'none' });
 const closeX = { fontSize: '0.8rem', padding: '0.25rem 0.5rem' };
 const h2 = { color: 'var(--primary)', fontSize: '1.3rem' };
@@ -29,26 +33,71 @@ function Header({ title, titleId, style, mb = '1rem', onClose }: { title: ReactN
     );
 }
 
-export function EditFamilyModal({ open, form, set, onClose, onSubmit, saving, phone }: FormModalProps & { phone: ValidatedField }) {
+export function EditFamilyModal({
+    open,
+    form,
+    set,
+    onClose,
+    onSubmit,
+    saving,
+    phone,
+    studyData,
+    setStudyData,
+}: FormModalProps & {
+    phone: ValidatedField;
+    studyData?: FamilyStudyData;
+    setStudyData?: (updater: (prev: FamilyStudyData) => FamilyStudyData) => void;
+}) {
     const k = fieldKit(form, set);
+    const studyKit = studyData && setStudyData
+        ? createStudyKit(studyData, setStudyData, (key, val) => {
+            setStudyData((prev) => ({ ...prev, [key]: val }));
+            if (key === 'head_name') set('efHof', val);
+            if (key === 'village_name') set('efVillage', val);
+            if (key === 'address') set('efAddress', val);
+            if (key === 'city') set('efCity', val);
+            if (key === 'pincode') set('efPincode', val);
+        })
+        : null;
+
     return (
         <div id="editFamilyModal" className="modal-overlay" style={display(open)}>
-            <div className="modal-content">
+            <div className="modal-content" style={{ maxWidth: '880px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
                 <Header title="✏ Edit Household Details" style={h2} onClose={onClose} />
+                <p className="card-desc" style={{ marginBottom: '1rem' }}>
+                    Update official family study record, socio-economic metrics, housing, sanitation, and member parameters.
+                </p>
                 <form id="editFamilyForm" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
-                    <div className="form-grid">
-                        {k.inp('efHof', 'Head of Family (HOF) Name *', { required: true })}
-                        {k.inp('efFamilyName', 'Family Name / Household Label')}
-                        {k.phone('efContactPhone', 'Contact Phone Number', phone)}
-                        {k.inp('efVillage', 'Village / Ward Area *', { required: true })}
-                        {k.inp('efAddress', 'Address / House Plot')}
-                        {k.inp('efCity', 'City / Town')}
-                        {k.inp('efPincode', 'Pincode')}
-                        {k.inp('efTotalCu', 'Total Family CU', { type: 'number', step: '0.1' })}
-                        {k.inp('efCalorie', 'Daily Calorie Intake (kcal/CU/Day)', { type: 'number' })}
-                        {k.sel('efCalorieStatus', 'Calorie Adequacy Status', OPT.calStatus)}
-                        {k.sel('efAdvice', 'Dietary Advice Given?', OPT.advice)}
-                    </div>
+                    {studyKit && studyData && setStudyData ? (
+                        <FamilyStudyFormSections
+                            kit={studyKit}
+                            data={studyData}
+                            setData={setStudyData}
+                            phoneSlot={k.phone('efContactPhone', 'Contact Phone Number', phone)}
+                            nutritionSlot={
+                                <>
+                                    {k.inp('efTotalCu', 'Total Family CU', { type: 'number', step: '0.1' })}
+                                    {k.inp('efCalorie', 'Daily Calorie Intake (kcal/CU/Day)', { type: 'number' })}
+                                    {k.sel('efCalorieStatus', 'Calorie Adequacy Status', OPT.calStatus)}
+                                    {k.sel('efAdvice', 'Dietary Advice Given?', OPT.advice)}
+                                </>
+                            }
+                        />
+                    ) : (
+                        <div className="form-grid">
+                            {k.inp('efHof', 'Head of Family (HOF) Name *', { required: true })}
+                            {k.inp('efFamilyName', 'Family Name / Household Label')}
+                            {k.phone('efContactPhone', 'Contact Phone Number', phone)}
+                            {k.inp('efVillage', 'Village / Ward Area *', { required: true })}
+                            {k.inp('efAddress', 'Address / House Plot')}
+                            {k.inp('efCity', 'City / Town')}
+                            {k.inp('efPincode', 'Pincode')}
+                            {k.inp('efTotalCu', 'Total Family CU', { type: 'number', step: '0.1' })}
+                            {k.inp('efCalorie', 'Daily Calorie Intake (kcal/CU/Day)', { type: 'number' })}
+                            {k.sel('efCalorieStatus', 'Calorie Adequacy Status', OPT.calStatus)}
+                            {k.sel('efAdvice', 'Dietary Advice Given?', OPT.advice)}
+                        </div>
+                    )}
                     <div style={actions('1.5rem')}>
                         <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
                         <button type="submit" className="btn btn-primary" id="saveEditFamilyBtn" disabled={saving}>{saving ? 'Updating...' : '💾 Update Household'}</button>
