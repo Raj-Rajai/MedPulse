@@ -15,11 +15,13 @@ export interface FamilyStudyData {
     asha_address: string;
 
     // General Information
+    household_no: string;
+    head_name: string;
+    family_name: string;
+    contact_phone: string;
     village_name: string;
     tehsil_district: string;
     state: string;
-    household_no: string;
-    head_name: string;
     religion: string;
     caste: string;
     address: string;
@@ -126,11 +128,13 @@ export const DEFAULT_STUDY_DATA: FamilyStudyData = {
     asha_name_experience: '',
     asha_address: '',
 
+    household_no: '',
+    head_name: '',
+    family_name: '',
+    contact_phone: '',
     village_name: 'Santej',
     tehsil_district: 'Kalol / Gandhinagar',
     state: 'Gujarat',
-    household_no: '',
-    head_name: '',
     religion: 'Valmiki',
     caste: 'Valmiki',
     address: 'Near Gram Panchayat, Santej',

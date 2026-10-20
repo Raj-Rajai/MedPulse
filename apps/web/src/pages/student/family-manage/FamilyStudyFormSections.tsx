@@ -4,7 +4,7 @@
  * official "1: Family study" student journal.
  */
 
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, type CSSProperties } from 'react';
 import { STUDY_OPT, getModifiedPrasadClass, CULTURES_CUSTOMS_OPTIONS, type StudyKit } from './studyFields';
 import type { FamilyStudyData } from './studyTypes';
 
@@ -38,9 +38,10 @@ interface SectionHeaderProps {
     title: string;
     isClosed: boolean;
     onToggle: (id: string) => void;
+    style?: CSSProperties;
 }
 
-function SectionHeader({ id, title, isClosed, onToggle }: SectionHeaderProps) {
+function SectionHeader({ id, title, isClosed, onToggle, style }: SectionHeaderProps) {
     return (
         <div
             onClick={() => onToggle(id)}
@@ -61,6 +62,7 @@ function SectionHeader({ id, title, isClosed, onToggle }: SectionHeaderProps) {
                 userSelect: 'none',
                 transition: 'all 0.15s ease',
                 gap: '12px',
+                ...style,
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
@@ -283,8 +285,9 @@ interface Props {
 
 export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, phoneSlot }: Props) {
     const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+        general_info: false,
         cadre: false,
-        general: false,
+        demographics: false,
         socio: false,
         nutrition: false,
         housing: false,
@@ -354,7 +357,25 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
 
     return (
         <div className="family-study-form-sections">
-            {/* 1. Academic & Student Journal Cadre Details */}
+            {/* 1. General Information */}
+            <SectionHeader id="general_info" title="General Information" isClosed={!!collapsed.general_info} onToggle={toggleSection} style={{ marginTop: '0.4rem' }} />
+            <div style={{ display: collapsed.general_info ? 'none' : 'block' }}>
+                <SectionContent desc="Identification, household number, and geographic location details.">
+                    <div className="form-grid">
+                        {kit.inp('roll_no', 'Cadet Roll Number (Authenticated) *', 'e.g. 235', true, 'text', true)}
+                        {kit.inp('household_no', 'Family Number *', 'e.g. 1', false, 'number', true)}
+                        {kit.inp('head_name', 'Head of Family (HOF) Name *', 'Full name of HOF', false, 'text', true)}
+                        {kit.inp('family_name', 'Family Name / Household Label', 'e.g. Patel Household')}
+                        {phoneSlot || kit.inp('contact_phone', 'Contact Phone Number', 'e.g. 9876543210', false, 'tel')}
+                        {kit.inp('village_name', 'Village / Ward Area *', 'RHTC Field Area - Ward 4', false, 'text', true)}
+                        {kit.inp('address', 'House / Street Address', 'e.g. Plot 12, Main Vas')}
+                        {kit.inp('city', 'City / Town', 'e.g. Ahmedabad')}
+                        {kit.inp('pincode', 'Pin Code', 'e.g. 382721')}
+                    </div>
+                </SectionContent>
+            </div>
+
+            {/* 2. Academic & Student Journal Cadre Details */}
             <SectionHeader id="cadre" title="Academic & Cadre Information" isClosed={!!collapsed.cadre} onToggle={toggleSection} />
             <div style={{ display: collapsed.cadre ? 'none' : 'block' }}>
                 <SectionContent desc="Cadet credentials, academic institution and community mentor details.">
@@ -370,22 +391,15 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                 </SectionContent>
             </div>
 
-            {/* 2. General Information */}
-            <SectionHeader id="general" title="General Household Demographics" isClosed={!!collapsed.general} onToggle={toggleSection} />
-            <div style={{ display: collapsed.general ? 'none' : 'block' }}>
-                <SectionContent>
+            {/* 3. Extended Household Demographics & Social Security */}
+            <SectionHeader id="demographics" title="Extended Household Demographics & Social Security" isClosed={!!collapsed.demographics} onToggle={toggleSection} />
+            <div style={{ display: collapsed.demographics ? 'none' : 'block' }}>
+                <SectionContent desc="Extended location, religious background, family composition, and government benefits.">
                     <div className="form-grid">
-                        {kit.inp('household_no', 'Household No. (Family Number) *', 'e.g. 1', false, 'number', true)}
-                        {kit.inp('head_name', 'Name of Head of Family (HOF) *', 'e.g. Vaghela Taraben Somabhai', false, 'text', true)}
-                        {kit.inp('village_name', 'Village name *', 'e.g. Santej', false, 'text', true)}
                         {kit.inp('tehsil_district', 'Tehsil / District', 'e.g. Kalol / Gandhinagar')}
                         {kit.inp('state', 'State', 'e.g. Gujarat')}
                         {kit.inp('religion', 'Religion', 'e.g. Valmiki / Hindu')}
                         {kit.inp('caste', 'Caste', 'e.g. Valmiki')}
-                        {kit.inp('address', 'House / Street Address', 'e.g. Near Gram Panchayat, Santej')}
-                        {kit.inp('city', 'City / Town', 'e.g. Ahmedabad')}
-                        {kit.inp('pincode', 'Pincode', 'e.g. 382721')}
-                        {phoneSlot}
                         {kit.inp('residing_since_years', 'Residing in this area since (Years)', 'e.g. 35', false, 'number')}
                         {kit.inp('native_place', 'Native (Originally belongs to)', 'e.g. Santej')}
                         <div className="form-group">

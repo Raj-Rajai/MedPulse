@@ -335,6 +335,8 @@ export function FamilyManageApp() {
             ...createStudyData,
             household_no: String(targetFamNo),
             head_name: headOfFamily,
+            family_name: createStudyData.family_name || f.cfFamilyName.trim(),
+            contact_phone: cleanContact || createStudyData.contact_phone || '',
             roll_no: rollNumber,
             village_name: createStudyData.village_name || f.cfVillage.trim(),
             address: createStudyData.address || f.cfAddress.trim(),
@@ -348,9 +350,9 @@ export function FamilyManageApp() {
             student_id: loggedInStudent ? loggedInStudent.id : null,
             family_no: targetFamNo,
             head_of_family: headOfFamily,
-            family_name: f.cfFamilyName.trim() || `${headOfFamily} Household`,
-            contact_phone: cleanContact || null,
-            contact_number: cleanContact || null,
+            family_name: createStudyData.family_name.trim() || f.cfFamilyName.trim() || `${headOfFamily} Household`,
+            contact_phone: cleanContact || createStudyData.contact_phone || null,
+            contact_number: cleanContact || createStudyData.contact_phone || null,
             village_ward: createStudyData.village_name || f.cfVillage.trim(),
             village: createStudyData.village_name || f.cfVillage.trim(),
             address: createStudyData.address || f.cfAddress.trim(),
@@ -418,6 +420,8 @@ export function FamilyManageApp() {
         const updatedStudy: FamilyStudyData = {
             ...editStudyData,
             head_name: headOfFamily,
+            family_name: editStudyData.family_name || f.efFamilyName.trim(),
+            contact_phone: cleanContact || editStudyData.contact_phone || '',
             village_name: editStudyData.village_name || f.efVillage.trim(),
             address: editStudyData.address || f.efAddress.trim(),
             city: editStudyData.city || f.efCity.trim(),
@@ -426,9 +430,9 @@ export function FamilyManageApp() {
         const notesJson = encodeNotesPayload(updatedStudy);
         const payload = {
             head_of_family: headOfFamily,
-            family_name: f.efFamilyName.trim() || null,
-            contact_phone: cleanContact || null,
-            contact_number: cleanContact || null,
+            family_name: editStudyData.family_name.trim() || f.efFamilyName.trim() || null,
+            contact_phone: cleanContact || editStudyData.contact_phone || null,
+            contact_number: cleanContact || editStudyData.contact_phone || null,
             village_ward: editStudyData.village_name || f.efVillage.trim(),
             village: editStudyData.village_name || f.efVillage.trim(),
             address: editStudyData.address || f.efAddress.trim(),
@@ -966,6 +970,8 @@ export function FamilyManageApp() {
         setCreateStudyData((prev) => ({ ...prev, [key]: val }));
         if (key === 'household_no') create.set('cfFamilyNo', val);
         if (key === 'head_name') create.set('cfHof', val);
+        if (key === 'family_name') create.set('cfFamilyName', val);
+        if (key === 'contact_phone') create.set('cfContactPhone', val);
         if (key === 'village_name') create.set('cfVillage', val);
         if (key === 'address') create.set('cfAddress', val);
         if (key === 'city') create.set('cfCity', val);

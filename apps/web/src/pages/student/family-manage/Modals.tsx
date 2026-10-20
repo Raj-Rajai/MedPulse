@@ -53,6 +53,8 @@ export function EditFamilyModal({
         ? createStudyKit(studyData, setStudyData, (key, val) => {
             setStudyData((prev) => ({ ...prev, [key]: val }));
             if (key === 'head_name') set('efHof', val);
+            if (key === 'family_name') set('efFamilyName', val);
+            if (key === 'contact_phone') set('efContactPhone', val);
             if (key === 'village_name') set('efVillage', val);
             if (key === 'address') set('efAddress', val);
             if (key === 'city') set('efCity', val);

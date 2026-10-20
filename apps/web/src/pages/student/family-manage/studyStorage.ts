@@ -55,6 +55,8 @@ export function extractStudyData(family: FamilyDetail | null, fallbackDefaults =
     // 3. Populate base family properties into matching study data fields
     if (family.family_no) data.household_no = String(family.family_no);
     if (family.head_of_family) data.head_name = family.head_of_family;
+    if (family.family_name) data.family_name = family.family_name;
+    if (family.contact_phone || (family as any).contact_number) data.contact_phone = family.contact_phone || (family as any).contact_number || '';
     if (family.village_ward) data.village_name = family.village_ward;
     if (family.address) data.address = family.address;
     if (family.city) data.city = family.city;
