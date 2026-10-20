@@ -33,13 +33,106 @@ export function parseCulturesCustoms(raw: string): string[] {
     return selected;
 }
 
+interface SectionHeaderProps {
+    id: string;
+    title: string;
+    isClosed: boolean;
+    onToggle: (id: string) => void;
+}
+
+function SectionHeader({ id, title, isClosed, onToggle }: SectionHeaderProps) {
+    return (
+        <div
+            onClick={() => onToggle(id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(id); } }}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 18px',
+                marginTop: '22px',
+                marginBottom: '8px',
+                background: '#f5f0ff',
+                border: '1.5px solid #e9d5ff',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                userSelect: 'none',
+                transition: 'all 0.15s ease',
+                gap: '12px',
+            }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <span style={{
+                    width: '4px',
+                    height: '20px',
+                    backgroundColor: 'var(--primary)',
+                    borderRadius: '2px',
+                    display: 'inline-block',
+                    flexShrink: 0,
+                }} />
+                <h3 style={{
+                    margin: 0,
+                    fontSize: '1.12rem',
+                    fontWeight: 750,
+                    color: 'var(--primary)',
+                    letterSpacing: '-0.01em',
+                    whiteSpace: 'normal',
+                    wordBreak: 'break-word',
+                }}>
+                    {title}
+                </h3>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{isClosed ? 'Show' : 'Hide'}</span>
+                <span style={{
+                    fontSize: '0.72rem',
+                    display: 'inline-block',
+                    transform: isClosed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                }}>▼</span>
+            </div>
+        </div>
+    );
+}
+
+interface SectionContentProps {
+    children: ReactNode;
+    desc?: string;
+}
+
+function SectionContent({ children, desc }: SectionContentProps) {
+    return (
+        <div
+            className="family-study-section-card"
+            style={{
+                background: '#faf7ff',
+                border: '1px solid #ede9fe',
+                borderRadius: '10px',
+                padding: '16px 18px',
+                marginBottom: '16px',
+            }}
+        >
+            {desc && (
+                <p className="card-desc" style={{ marginBottom: '14px', fontSize: '0.78rem', color: '#64748b' }}>
+                    {desc}
+                </p>
+            )}
+            {children}
+        </div>
+    );
+}
+
 interface MultiSelectProps {
     value: string;
+    isOpen: boolean;
+    onToggle: () => void;
+    onClose: () => void;
     onChange: (val: string) => void;
 }
 
-function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
-    const [isOpen, setIsOpen] = useState(false);
+function CulturesCustomsMultiSelect({ value, isOpen, onToggle, onClose, onChange }: MultiSelectProps) {
     const selected = parseCulturesCustoms(value);
 
     const toggleOption = (opt: string) => {
@@ -49,20 +142,20 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
     };
 
     return (
-        <div className="form-group prasad-span-2 multiselect-group" style={{ position: 'relative' }}>
+        <div className="form-group multiselect-group" style={{ position: 'relative' }}>
             <label htmlFor="study_cultures_customs">Cultures &amp; Customs (Multi-Select)</label>
             <div
                 id="study_cultures_customs"
                 role="combobox"
                 aria-expanded={isOpen}
                 tabIndex={0}
-                onClick={() => setIsOpen((prev) => !prev)}
+                onClick={onToggle}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        setIsOpen((prev) => !prev);
+                        onToggle();
                     } else if (e.key === 'Escape') {
-                        setIsOpen(false);
+                        onClose();
                     }
                 }}
                 style={{
@@ -79,6 +172,11 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
                     transition: 'all 0.15s ease',
                     gap: '8px',
                     userSelect: 'none',
+                    width: '100%',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
                 }}
             >
                 <span
@@ -88,7 +186,10 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        flex: 1,
+                        flex: '1 1 0%',
+                        minWidth: 0,
+                        maxWidth: 'calc(100% - 24px)',
+                        display: 'block',
                     }}
                     title={selected.length > 0 ? selected.join(', ') : undefined}
                 >
@@ -101,6 +202,7 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
                         transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 0.2s ease',
                         flexShrink: 0,
+                        marginLeft: 'auto',
                     }}
                 >
                     ▼
@@ -133,7 +235,7 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    setIsOpen(false);
+                                    onClose();
                                 }}
                             >
                                 Done
@@ -191,88 +293,11 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
         psychosocial: false,
         facility: false,
     });
+    const [culturesOpen, setCulturesOpen] = useState(false);
 
     const toggleSection = (sec: string) => {
         setCollapsed((prev) => ({ ...prev, [sec]: !prev[sec] }));
     };
-
-    const SectionHeader = ({ id, title }: { id: string; title: string }) => {
-        const isClosed = !!collapsed[id];
-        return (
-            <div
-                onClick={() => toggleSection(id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(id); } }}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 18px',
-                    marginTop: '22px',
-                    marginBottom: '8px',
-                    background: '#f5f0ff',
-                    border: '1.5px solid #e9d5ff',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    transition: 'all 0.15s ease',
-                    gap: '12px',
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                    <span style={{
-                        width: '4px',
-                        height: '20px',
-                        backgroundColor: 'var(--primary)',
-                        borderRadius: '2px',
-                        display: 'inline-block',
-                        flexShrink: 0,
-                    }} />
-                    <h3 style={{
-                        margin: 0,
-                        fontSize: '1.12rem',
-                        fontWeight: 750,
-                        color: 'var(--primary)',
-                        letterSpacing: '-0.01em',
-                        whiteSpace: 'normal',
-                        wordBreak: 'break-word',
-                    }}>
-                        {title}
-                    </h3>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', flexShrink: 0 }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{isClosed ? 'Show' : 'Hide'}</span>
-                    <span style={{
-                        fontSize: '0.72rem',
-                        display: 'inline-block',
-                        transform: isClosed ? 'rotate(-90deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s ease',
-                    }}>▼</span>
-                </div>
-            </div>
-        );
-    };
-
-    const SectionContent = ({ children, desc }: { children: ReactNode; desc?: string }) => (
-        <div
-            className="family-study-section-card"
-            style={{
-                background: '#faf7ff',
-                border: '1px solid #ede9fe',
-                borderRadius: '10px',
-                padding: '16px 18px',
-                marginBottom: '16px',
-            }}
-        >
-            {desc && (
-                <p className="card-desc" style={{ marginBottom: '14px', fontSize: '0.78rem', color: '#64748b' }}>
-                    {desc}
-                </p>
-            )}
-            {children}
-        </div>
-    );
 
     // Auto-calculate per capita income and Prasad classification
     const handleIncomeChange = (val: string) => {
@@ -330,7 +355,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
     return (
         <div className="family-study-form-sections">
             {/* 1. Academic & Student Journal Cadre Details */}
-            <SectionHeader id="cadre" title="Academic & Cadre Information" />
+            <SectionHeader id="cadre" title="Academic & Cadre Information" isClosed={!!collapsed.cadre} onToggle={toggleSection} />
             <div style={{ display: collapsed.cadre ? 'none' : 'block' }}>
                 <SectionContent desc="Cadet credentials, academic institution and community mentor details.">
                     <div className="form-grid">
@@ -346,7 +371,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 2. General Information */}
-            <SectionHeader id="general" title="General Household Demographics" />
+            <SectionHeader id="general" title="General Household Demographics" isClosed={!!collapsed.general} onToggle={toggleSection} />
             <div style={{ display: collapsed.general ? 'none' : 'block' }}>
                 <SectionContent>
                     <div className="form-grid">
@@ -383,7 +408,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 3. Socio-Economic Details */}
-            <SectionHeader id="socio" title="Socio-Economic Details & Expenditures" />
+            <SectionHeader id="socio" title="Socio-Economic Details & Expenditures" isClosed={!!collapsed.socio} onToggle={toggleSection} />
             <div style={{ display: collapsed.socio ? 'none' : 'block' }}>
                 <SectionContent desc="Modified Prasad's classification and monthly family expenditure breakdown.">
                     <div className="form-grid">
@@ -475,7 +500,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             {/* 4. Nutritional Assessment */}
             {nutritionSlot && (
                 <>
-                    <SectionHeader id="nutrition" title="Nutritional & Caloric Assessment" />
+                    <SectionHeader id="nutrition" title="Nutritional & Caloric Assessment" isClosed={!!collapsed.nutrition} onToggle={toggleSection} />
                     <div style={{ display: collapsed.nutrition ? 'none' : 'block' }}>
                         <SectionContent>
                             <div className="form-grid">{nutritionSlot}</div>
@@ -485,7 +510,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             )}
 
             {/* 5. Environment - 1. Housing & Physical Environment */}
-            <SectionHeader id="housing" title="Housing & Physical Environment" />
+            <SectionHeader id="housing" title="Housing & Physical Environment" isClosed={!!collapsed.housing} onToggle={toggleSection} />
             <div style={{ display: collapsed.housing ? 'none' : 'block' }}>
                 <SectionContent desc="Structure, materials, ventilation, overcrowding, and kitchen facilities.">
                     <div className="form-grid">
@@ -526,7 +551,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 6. Water Supply & Sanitation */}
-            <SectionHeader id="water" title="Water Supply & Sanitation Facilities" />
+            <SectionHeader id="water" title="Water Supply & Sanitation Facilities" isClosed={!!collapsed.water} onToggle={toggleSection} />
             <div style={{ display: collapsed.water ? 'none' : 'block' }}>
                 <SectionContent>
                     <div className="form-grid">
@@ -550,7 +575,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 7. Biological Environment */}
-            <SectionHeader id="biological" title="Biological Environment & Pest Control" />
+            <SectionHeader id="biological" title="Biological Environment & Pest Control" isClosed={!!collapsed.biological} onToggle={toggleSection} />
             <div style={{ display: collapsed.biological ? 'none' : 'block' }}>
                 <SectionContent desc="Livestock, domestic animals, stable facilities, vector breeding and pests.">
                     <div className="form-grid">
@@ -566,7 +591,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 8. Psychosocial Environment (Option-wise: Good / Bad + Multi-select Cultures & Customs) */}
-            <SectionHeader id="psychosocial" title="Psychosocial Environment" />
+            <SectionHeader id="psychosocial" title="Psychosocial Environment" isClosed={!!collapsed.psychosocial} onToggle={toggleSection} />
             <div style={{ display: collapsed.psychosocial ? 'none' : 'block' }}>
                 <SectionContent desc="Interpersonal relationships (Good / Bad) and community customs.">
                     <div className="form-grid">
@@ -575,6 +600,9 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                         {kit.sel('relation_neighbors', 'Relationship with neighbor', STUDY_OPT.psychosocial)}
                         <CulturesCustomsMultiSelect
                             value={data.cultures_customs || ''}
+                            isOpen={culturesOpen}
+                            onToggle={() => setCulturesOpen((prev) => !prev)}
+                            onClose={() => setCulturesOpen(false)}
                             onChange={(val) => setData((prev) => ({ ...prev, cultures_customs: val }))}
                         />
                     </div>
@@ -582,7 +610,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 9. Available Health Facility in the Area */}
-            <SectionHeader id="facility" title="Available Health Facility in the Area" />
+            <SectionHeader id="facility" title="Available Health Facility in the Area" isClosed={!!collapsed.facility} onToggle={toggleSection} />
             <div style={{ display: collapsed.facility ? 'none' : 'block' }}>
                 <SectionContent>
                     <div className="form-grid">

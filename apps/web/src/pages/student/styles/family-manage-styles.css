@@ -36,9 +36,12 @@
 /* Form grid row & column spacing - generous 20px gap to the next entry */
 .family-study-form-sections .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   column-gap: 16px;
   row-gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Tight 5px coupling between label and input */
@@ -47,6 +50,10 @@
   flex-direction: column;
   gap: 5px;
   margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Shrunk, refined data entry field labels (direct child only) */
@@ -70,6 +77,9 @@
   line-height: 1.4 !important;
   min-height: 38px;
   box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
 }
 
 /* Desktop baseline alignment across columns */
@@ -98,8 +108,21 @@
 /* Mobile: Single-column clean vertical stack with proper 1:4 label vs next-entry ratio */
 @media (max-width: 639px) {
   .family-study-form-sections .form-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     row-gap: 18px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .family-study-form-sections .form-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .family-study-form-sections .form-group.prasad-span-2 {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
   .family-study-form-sections .form-grid .form-group {
     justify-content: flex-start !important;
@@ -120,6 +143,28 @@
 /* ── Multi-Select Dropdown Menu Styling ─────────────────── */
 .family-study-form-sections .multiselect-group {
   position: relative;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.family-study-form-sections #study_cultures_customs {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.family-study-form-sections #study_cultures_customs > span:first-child {
+  min-width: 0 !important;
+  max-width: calc(100% - 22px) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: block !important;
+  flex: 1 1 0% !important;
 }
 
 .family-study-form-sections .multiselect-menu {
