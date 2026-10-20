@@ -130,7 +130,7 @@ export function NotFoundApp() {
             <header className="notfound-header">
                 <a href={primaryDestination.href} className="notfound-brand">
                     <div className="notfound-brand-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                         </svg>
                     </div>
@@ -159,6 +159,22 @@ export function NotFoundApp() {
                                 ✕
                             </button>
                         </div>
+                    ) : isHosp ? (
+                        <div className="notfound-user-chip">
+                            <span className="notfound-user-role" style={{ background: '#0d9488', color: '#ffffff' }}>HMS</span>
+                            <span className="notfound-user-name">Hospital Staff</span>
+                            <button className="notfound-logout-mini" onClick={handleLogout} title="Log Out">
+                                ✕
+                            </button>
+                        </div>
+                    ) : isPat ? (
+                        <div className="notfound-user-chip">
+                            <span className="notfound-user-role" style={{ background: '#e11d48', color: '#ffffff' }}>Patient</span>
+                            <span className="notfound-user-name">Verified Record</span>
+                            <button className="notfound-logout-mini" onClick={handleLogout} title="Log Out">
+                                ✕
+                            </button>
+                        </div>
                     ) : (
                         <a href="/login.html" className="notfound-signin-btn">
                             Sign In
@@ -175,7 +191,7 @@ export function NotFoundApp() {
                         <div className="notfound-pulse-ring notfound-pulse-ring-1" />
                         <div className="notfound-pulse-ring notfound-pulse-ring-2" />
                         <div className="notfound-badge-icon">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="8" x2="12" y2="12" />
                                 <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -204,7 +220,7 @@ export function NotFoundApp() {
                             {copied ? (
                                 <span className="notfound-copied">✓ Copied</span>
                             ) : (
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                     <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
                                     <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                                 </svg>
@@ -222,14 +238,14 @@ export function NotFoundApp() {
                             <div className="notfound-suggestion-body">
                                 <div className="notfound-suggestion-info">
                                     <span className="notfound-suggestion-icon">{suggestion.icon}</span>
-                                    <div>
+                                    <div className="notfound-suggestion-texts">
                                         <div className="notfound-suggestion-name">{suggestion.name}</div>
                                         <div className="notfound-suggestion-sub">{suggestion.description}</div>
                                     </div>
                                 </div>
                                 <a href={suggestion.href} className="notfound-suggestion-action">
                                     <span>Open Page</span>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="9 18 15 12 9 6" />
                                     </svg>
                                 </a>
@@ -240,7 +256,7 @@ export function NotFoundApp() {
                     {/* Primary Actions */}
                     <div className="notfound-actions">
                         <button className="notfound-btn notfound-btn-secondary" onClick={() => window.history.back()}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="19" y1="12" x2="5" y2="12" />
                                 <polyline points="12 19 5 12 12 5" />
                             </svg>
@@ -249,7 +265,7 @@ export function NotFoundApp() {
 
                         <a href={primaryDestination.href} className="notfound-btn notfound-btn-primary">
                             <span>{primaryDestination.label}</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="9 18 15 12 9 6" />
                             </svg>
                         </a>
