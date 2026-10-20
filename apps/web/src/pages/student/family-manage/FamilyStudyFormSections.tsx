@@ -362,7 +362,6 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             <div style={{ display: collapsed.general_info ? 'none' : 'block' }}>
                 <SectionContent desc="Identification, household number, and geographic location details.">
                     <div className="form-grid">
-                        {kit.inp('roll_no', 'Cadet Roll Number (Authenticated) *', 'e.g. 235', true, 'text', true)}
                         {kit.inp('household_no', 'Family Number *', 'e.g. 1', false, 'number', true)}
                         {kit.inp('head_name', 'Head of Family (HOF) Name *', 'Full name of HOF', false, 'text', true)}
                         {kit.inp('family_name', 'Family Name / Household Label', 'e.g. Patel Household')}
