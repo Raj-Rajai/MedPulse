@@ -8,7 +8,7 @@
 @import '../../../styles/calm.css';
 @import '../../../styles/responsive.css';
 
-/* Prasad socio-economic classification select styling */
+/* Prasad & Multi-Select 2-column span */
 @media (min-width: 640px) {
   .prasad-span-2 {
     grid-column: span 2;
@@ -22,17 +22,97 @@
   white-space: nowrap;
 }
 
-/* Ensure all form controls across a grid row have perfectly aligned horizontal baselines */
-.form-grid .form-group {
+/* ── Family Study Structured Form Styling ────────────────── */
+
+/* Container enclosing data entries with a very light purple card background */
+.family-study-section-card {
+  background: #faf7ff;
+  border: 1px solid #ede9fe;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+/* Form grid row & column spacing - generous 20px gap to the next entry */
+.family-study-form-sections .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: 16px;
+  row-gap: 20px;
+}
+
+/* Tight 5px coupling between label and input */
+.family-study-form-sections .form-group {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  gap: 5px;
+  margin-bottom: 0;
 }
 
-.form-grid .form-group label {
-  min-height: 2.2rem;
-  display: flex;
-  align-items: flex-end;
-  line-height: 1.35;
+/* Shrunk, refined data entry labels */
+.family-study-form-sections .form-group label {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #475569;
+  line-height: 1.3;
+  margin-bottom: 0;
 }
 
+/* Shrunk data entry inputs, selects, textareas */
+.family-study-form-sections input:not([type="checkbox"]):not([type="radio"]),
+.family-study-form-sections select,
+.family-study-form-sections textarea {
+  font-size: 0.825rem !important;
+  padding: 8px 11px !important;
+  border-radius: 6px !important;
+  border: 1px solid #dce5dd !important;
+  background: #ffffff;
+  line-height: 1.4 !important;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+
+/* Desktop baseline alignment across columns */
+@media (min-width: 640px) {
+  .family-study-form-sections .form-grid .form-group {
+    justify-content: flex-end;
+  }
+  .family-study-form-sections .form-grid .form-group label {
+    min-height: 2.1rem;
+    display: flex;
+    align-items: flex-end;
+  }
+  .form-grid .form-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .form-grid .form-group label {
+    min-height: 2.2rem;
+    display: flex;
+    align-items: flex-end;
+    line-height: 1.35;
+  }
+}
+
+/* Mobile: Single-column clean vertical stack with proper 1:4 label vs next-entry ratio */
+@media (max-width: 639px) {
+  .family-study-form-sections .form-grid {
+    grid-template-columns: 1fr !important;
+    row-gap: 18px !important;
+  }
+  .family-study-form-sections .form-grid .form-group {
+    justify-content: flex-start !important;
+    gap: 5px !important;
+  }
+  .family-study-form-sections .form-grid .form-group label {
+    min-height: unset !important;
+    display: block !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+  }
+  .form-grid .form-group label {
+    min-height: unset !important;
+    display: block !important;
+  }
+}
