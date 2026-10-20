@@ -4,7 +4,7 @@
  * official "1: Family study" student journal.
  */
 
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { STUDY_OPT, getModifiedPrasadClass, CULTURES_CUSTOMS_OPTIONS, type StudyKit } from './studyFields';
 import type { FamilyStudyData } from './studyTypes';
 
@@ -40,19 +40,7 @@ interface MultiSelectProps {
 
 function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
     const selected = parseCulturesCustoms(value);
-
-    // Close on outside click
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     const toggleOption = (opt: string) => {
         const isChecked = selected.includes(opt);
@@ -61,7 +49,7 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
     };
 
     return (
-        <div className="form-group prasad-span-2" style={{ position: 'relative' }} ref={containerRef}>
+        <div className="form-group prasad-span-2 multiselect-group" style={{ position: 'relative' }}>
             <label htmlFor="study_cultures_customs">Cultures &amp; Customs (Multi-Select)</label>
             <div
                 id="study_cultures_customs"
@@ -120,51 +108,20 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
             </div>
 
             {isOpen && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 'calc(100% + 4px)',
-                        left: 0,
-                        right: 0,
-                        zIndex: 100,
-                        background: '#ffffff',
-                        border: '1.5px solid var(--primary)',
-                        borderRadius: '8px',
-                        boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
-                        maxHeight: '280px',
-                        overflowY: 'auto',
-                        padding: '6px',
-                    }}
-                >
-                    <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '6px 8px 8px',
-                            borderBottom: '1px solid #f1f5f9',
-                            marginBottom: '4px',
-                        }}
-                    >
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)' }}>
+                <div className="multiselect-menu" onClick={(e) => e.stopPropagation()}>
+                    <div className="multiselect-header" onClick={(e) => e.stopPropagation()}>
+                        <span className="multiselect-count-badge">
                             {selected.length} of {CULTURES_CUSTOMS_OPTIONS.length} selected
                         </span>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                             {selected.length > 0 && (
                                 <button
                                     type="button"
+                                    className="multiselect-clear-btn"
                                     onClick={(e) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
                                         onChange('');
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#ef4444',
-                                        fontSize: '0.72rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        padding: '2px 4px',
                                     }}
                                 >
                                     Clear all
@@ -172,19 +129,11 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
                             )}
                             <button
                                 type="button"
+                                className="multiselect-done-btn"
                                 onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
                                     setIsOpen(false);
-                                }}
-                                style={{
-                                    background: 'var(--primary)',
-                                    border: 'none',
-                                    color: '#ffffff',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 600,
-                                    borderRadius: '4px',
-                                    padding: '2px 8px',
-                                    cursor: 'pointer',
                                 }}
                             >
                                 Done
@@ -196,42 +145,21 @@ function CulturesCustomsMultiSelect({ value, onChange }: MultiSelectProps) {
                         return (
                             <label
                                 key={opt}
-                                onClick={(e) => e.stopPropagation()}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    padding: '7px 10px',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.815rem',
-                                    background: isChecked ? '#f5f0ff' : 'transparent',
-                                    color: isChecked ? 'var(--primary)' : '#1e293b',
-                                    fontWeight: isChecked ? 650 : 450,
-                                    transition: 'background 0.12s ease',
-                                    marginBottom: '2px',
-                                    userSelect: 'none',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isChecked) e.currentTarget.style.background = '#f8fafc';
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isChecked) e.currentTarget.style.background = 'transparent';
+                                className={`multiselect-option-label ${isChecked ? 'selected' : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                 }}
                             >
                                 <input
                                     type="checkbox"
+                                    className="multiselect-option-checkbox"
                                     checked={isChecked}
-                                    onChange={() => toggleOption(opt)}
-                                    style={{
-                                        accentColor: 'var(--primary)',
-                                        width: '15px',
-                                        height: '15px',
-                                        cursor: 'pointer',
-                                        flexShrink: 0,
+                                    onChange={(e) => {
+                                        e.stopPropagation();
+                                        toggleOption(opt);
                                     }}
                                 />
-                                <span>{opt}</span>
+                                <span className="multiselect-option-text">{opt}</span>
                             </label>
                         );
                     })}
