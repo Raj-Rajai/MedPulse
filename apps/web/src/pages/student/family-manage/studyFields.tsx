@@ -14,11 +14,11 @@ export const STUDY_OPT = {
     yn: [['Y', 'Yes (Y)'], ['N', 'No (N)']] as Option[],
     yesNo: [['Yes', 'Yes'], ['No', 'No']] as Option[],
     prasadClass: [
-        ['Class I (Upper High)', 'Class I (Upper High - ≥ ₹8,540)'],
-        ['Class II (High)', 'Class II (High - ₹4,270 - ₹8,539)'],
-        ['Class III (Upper Middle)', 'Class III (Upper Middle - ₹2,562 - ₹4,269)'],
-        ['Class IV (Lower Middle)', 'Class IV (Lower Middle - ₹1,281 - ₹2,561)'],
-        ['Class V (Poor/Lower)', 'Class V (Poor / Lower - < ₹1,281)'],
+        ['Class I (Upper Class)', 'Class I: Upper Class (≥ ₹9,769)'],
+        ['Class II (Upper Middle Class)', 'Class II: Upper Middle Class (₹4,885 – ₹9,768)'],
+        ['Class III (Middle Class)', 'Class III: Middle Class (₹2,931 – ₹4,884)'],
+        ['Class IV (Lower Middle Class)', 'Class IV: Lower Middle Class (₹1,465 – ₹2,930)'],
+        ['Class V (Lower Class)', 'Class V: Lower Class (< ₹1,465)'],
     ] as Option[],
     houseOwnership: [['Own', 'Own'], ['Rented', 'Rented']] as Option[],
     locality: [['Urban', 'Urban'], ['Urban slum', 'Urban slum'], ['Rural', 'Rural']] as Option[],
@@ -75,9 +75,45 @@ export const STUDY_OPT = {
     ] as Option[],
 } as const;
 
+/** Normalizes any legacy Prasad values (e.g. from previous drafts) to the new classification */
+export function normalizePrasadClass(val: string): string {
+    if (!val) return 'Class III (Middle Class)';
+    if (val.includes('Class I')) return 'Class I (Upper Class)';
+    if (val.includes('Class II')) return 'Class II (Upper Middle Class)';
+    if (val.includes('Class III')) return 'Class III (Middle Class)';
+    if (val.includes('Class IV')) return 'Class IV (Lower Middle Class)';
+    if (val.includes('Class V')) return 'Class V (Lower Class)';
+    return val;
+}
+
+/** Determines Modified Prasad Classification from Per Capita Monthly Income */
+export function getModifiedPrasadClass(perCapita: number): string {
+    if (perCapita >= 9769) return 'Class I (Upper Class)';
+    if (perCapita >= 4885) return 'Class II (Upper Middle Class)';
+    if (perCapita >= 2931) return 'Class III (Middle Class)';
+    if (perCapita >= 1465) return 'Class IV (Lower Middle Class)';
+    return 'Class V (Lower Class)';
+}
+
 export interface StudyKit {
-    inp: (key: keyof FamilyStudyData, label: string, placeholder?: string, readOnly?: boolean, type?: string, required?: boolean, style?: CSSProperties) => JSX.Element;
-    sel: (key: keyof FamilyStudyData, label: string, options: readonly Option[], onChangeVal?: (v: string) => void) => JSX.Element;
+    inp: (
+        key: keyof FamilyStudyData,
+        label: string,
+        placeholder?: string,
+        readOnly?: boolean,
+        type?: string,
+        required?: boolean,
+        style?: CSSProperties,
+        className?: string
+    ) => JSX.Element;
+    sel: (
+        key: keyof FamilyStudyData,
+        label: string,
+        options: readonly Option[],
+        onChangeVal?: (v: string) => void,
+        style?: CSSProperties,
+        className?: string
+    ) => JSX.Element;
 }
 
 export function createStudyKit(
@@ -86,8 +122,8 @@ export function createStudyKit(
     setField: (key: keyof FamilyStudyData, value: string) => void
 ): StudyKit {
     return {
-        inp: (key, label, placeholder = '', readOnly = false, type = 'text', required = false, style) => (
-            <div className="form-group" style={style}>
+        inp: (key, label, placeholder = '', readOnly = false, type = 'text', required = false, style, className) => (
+            <div className={`form-group ${className || ''}`.trim()} style={style}>
                 <label htmlFor={`study_${String(key)}`}>{label}</label>
                 <input
                     type={type}
@@ -101,19 +137,23 @@ export function createStudyKit(
                 />
             </div>
         ),
-        sel: (key, label, options, onChangeVal) => (
-            <div className="form-group">
-                <label htmlFor={`study_${String(key)}`}>{label}</label>
-                <Select
-                    id={`study_${String(key)}`}
-                    options={options}
-                    value={data[key] ?? ''}
-                    onValue={(val) => {
-                        setField(key, val);
-                        if (onChangeVal) onChangeVal(val);
-                    }}
-                />
-            </div>
-        ),
+        sel: (key, label, options, onChangeVal, style, className) => {
+            const rawVal = data[key] ?? '';
+            const val = key === 'modified_prasad_class' && rawVal ? normalizePrasadClass(rawVal) : rawVal;
+            return (
+                <div className={`form-group ${className || ''}`.trim()} style={style}>
+                    <label htmlFor={`study_${String(key)}`}>{label}</label>
+                    <Select
+                        id={`study_${String(key)}`}
+                        options={options}
+                        value={val}
+                        onValue={(newVal) => {
+                            setField(key, newVal);
+                            if (onChangeVal) onChangeVal(newVal);
+                        }}
+                    />
+                </div>
+            );
+        },
     };
 }

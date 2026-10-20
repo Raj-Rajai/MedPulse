@@ -147,7 +147,7 @@ export const DEFAULT_STUDY_DATA: FamilyStudyData = {
 
     total_family_income_month: '25000',
     per_capita_income_month: '4166',
-    modified_prasad_class: 'Class III (Upper Middle)',
+    modified_prasad_class: 'Class III (Middle Class)',
     house_ownership: 'Own',
     exp_food: '18000',
     exp_clothing: '4000',

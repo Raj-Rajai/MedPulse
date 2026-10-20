@@ -7,3 +7,17 @@
 @import '../../../styles/controls.css';
 @import '../../../styles/calm.css';
 @import '../../../styles/responsive.css';
+
+/* Prasad socio-economic classification select styling */
+@media (min-width: 640px) {
+  .prasad-span-2 {
+    grid-column: span 2;
+  }
+}
+
+.prasad-span-2 select {
+  width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

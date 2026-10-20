@@ -5,7 +5,7 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { STUDY_OPT, type StudyKit } from './studyFields';
+import { STUDY_OPT, getModifiedPrasadClass, type StudyKit } from './studyFields';
 import type { FamilyStudyData } from './studyTypes';
 
 interface Props {
@@ -47,31 +47,38 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '12px 14px',
-                    marginTop: '20px',
+                    padding: '12px 16px',
+                    marginTop: '22px',
                     marginBottom: '12px',
-                    background: '#f8fafc',
-                    borderLeft: '4px solid var(--primary)',
-                    borderTop: '1px solid var(--border)',
-                    borderRight: '1px solid var(--border)',
-                    borderBottom: '1px solid var(--border)',
-                    borderRadius: '6px',
+                    background: '#faf5ff',
+                    border: '1px solid #e9d5ff',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     userSelect: 'none',
-                    transition: 'background 0.15s ease',
+                    transition: 'all 0.15s ease',
                 }}
             >
-                <h3 style={{
-                    margin: 0,
-                    fontSize: '0.96rem',
-                    fontWeight: 700,
-                    color: '#1e293b',
-                    letterSpacing: '-0.01em',
-                }}>
-                    {title}
-                </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>{isClosed ? 'Show' : 'Hide'}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{
+                        width: '4px',
+                        height: '18px',
+                        backgroundColor: 'var(--primary)',
+                        borderRadius: '2px',
+                        display: 'inline-block',
+                        flexShrink: 0,
+                    }} />
+                    <h3 style={{
+                        margin: 0,
+                        fontSize: '0.96rem',
+                        fontWeight: 700,
+                        color: 'var(--primary)',
+                        letterSpacing: '-0.01em',
+                    }}>
+                        {title}
+                    </h3>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{isClosed ? 'Show' : 'Hide'}</span>
                     <span style={{
                         fontSize: '0.72rem',
                         display: 'inline-block',
@@ -83,7 +90,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
         );
     };
 
-    // Auto-calculate per capita income when family income or member count changes
+    // Auto-calculate per capita income and Prasad classification
     const handleIncomeChange = (val: string) => {
         const income = parseFloat(val) || 0;
         const members = parseInt(data.total_family_members, 10) || 1;
@@ -92,6 +99,28 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             ...prev,
             total_family_income_month: val,
             per_capita_income_month: perCapita > 0 ? String(perCapita) : prev.per_capita_income_month,
+            modified_prasad_class: perCapita > 0 ? getModifiedPrasadClass(perCapita) : prev.modified_prasad_class,
+        }));
+    };
+
+    const handlePerCapitaChange = (val: string) => {
+        const pc = parseFloat(val) || 0;
+        setData((prev) => ({
+            ...prev,
+            per_capita_income_month: val,
+            modified_prasad_class: pc > 0 ? getModifiedPrasadClass(pc) : prev.modified_prasad_class,
+        }));
+    };
+
+    const handleMembersChange = (val: string) => {
+        const members = parseInt(val, 10) || 0;
+        const income = parseFloat(data.total_family_income_month) || 0;
+        const perCapita = members > 0 && income > 0 ? Math.round(income / members) : 0;
+        setData((prev) => ({
+            ...prev,
+            total_family_members: val,
+            per_capita_income_month: perCapita > 0 ? String(perCapita) : prev.per_capita_income_month,
+            modified_prasad_class: perCapita > 0 ? getModifiedPrasadClass(perCapita) : prev.modified_prasad_class,
         }));
     };
 
@@ -148,7 +177,16 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     {phoneSlot}
                     {kit.inp('residing_since_years', 'Residing in this area since (Years)', 'e.g. 35', false, 'number')}
                     {kit.inp('native_place', 'Native (Originally belongs to)', 'e.g. Santej')}
-                    {kit.inp('total_family_members', 'Total family members', 'e.g. 6', false, 'number')}
+                    <div className="form-group">
+                        <label htmlFor="study_total_family_members">Total family members</label>
+                        <input
+                            type="number"
+                            id="study_total_family_members"
+                            placeholder="e.g. 6"
+                            value={data.total_family_members}
+                            onChange={(e) => handleMembersChange(e.target.value)}
+                        />
+                    </div>
                     {kit.sel('family_type', 'Type of Family', STUDY_OPT.familyType)}
                     {kit.sel('ayushman_card', 'Ayushman Card (Y/N)', STUDY_OPT.yn)}
                     {kit.inp('ayushman_card_no', 'If Yes, Ayushman Card no.', 'e.g. PMJAY-1234-5678')}
@@ -172,8 +210,24 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                             onChange={(e) => handleIncomeChange(e.target.value)}
                         />
                     </div>
-                    {kit.inp('per_capita_income_month', 'Per Capita income per month (₹)', 'Auto-calculated or e.g. 4166', false, 'number')}
-                    {kit.sel('modified_prasad_class', "Socio-economic classification (Modified Prasad's)", STUDY_OPT.prasadClass)}
+                    <div className="form-group">
+                        <label htmlFor="study_per_capita_income_month">Per Capita income per month (₹)</label>
+                        <input
+                            type="number"
+                            id="study_per_capita_income_month"
+                            placeholder="Auto-calculated or e.g. 4166"
+                            value={data.per_capita_income_month}
+                            onChange={(e) => handlePerCapitaChange(e.target.value)}
+                        />
+                    </div>
+                    {kit.sel(
+                        'modified_prasad_class',
+                        "Socio-economic classification (Modified Prasad's)",
+                        STUDY_OPT.prasadClass,
+                        undefined,
+                        undefined,
+                        'prasad-span-2'
+                    )}
                     {kit.sel('house_ownership', 'House (Own / Rented)', STUDY_OPT.houseOwnership)}
                     {kit.sel('savings', 'Savings (Yes / No)', STUDY_OPT.yesNo)}
                     {kit.sel('debt', 'Debt (Yes / No)', STUDY_OPT.yesNo)}
