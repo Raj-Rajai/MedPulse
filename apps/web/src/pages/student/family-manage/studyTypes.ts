@@ -204,9 +204,9 @@ export const DEFAULT_STUDY_DATA: FamilyStudyData = {
     waste_water_disposal: 'Pipe drainage system',
 
     animal_type: 'Domestic',
-    animal_specify: 'Cow / Buffalo',
+    animal_specify: '',
     stable_cowshed: 'Present (separated)',
-    indoor_pests: 'Mosquito',
+    indoor_pests: '',
     breeding_mosquito: 'N',
     breeding_housefly: 'N',
     outdoor_animals_problem: 'Y',
@@ -214,9 +214,9 @@ export const DEFAULT_STUDY_DATA: FamilyStudyData = {
     relation_family: 'Good',
     relation_relatives: 'Good',
     relation_neighbors: 'Good',
-    cultures_customs: 'ANC / Colostrum / Weaning / Mataji puja',
+    cultures_customs: '',
 
-    health_facility_name: 'Santej Primary Health Centre (PHC)',
-    health_facility_distance: '1.5 km',
+    health_facility_name: '',
+    health_facility_distance: '',
     health_facility_type: 'Govt. (Allopathy)',
 };

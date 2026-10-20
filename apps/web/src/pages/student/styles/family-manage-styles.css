@@ -21,3 +21,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Ensure all form controls across a grid row have perfectly aligned horizontal baselines */
+.form-grid .form-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.form-grid .form-group label {
+  min-height: 2.2rem;
+  display: flex;
+  align-items: flex-end;
+  line-height: 1.35;
+}
+

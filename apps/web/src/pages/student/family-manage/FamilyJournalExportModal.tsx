@@ -432,7 +432,7 @@ export function FamilyJournalExportModal({ open, family, studyData, onClose }: P
                                 <OptionCheck label="Bad" selected={studyData.relation_neighbors === 'Bad'} />
                             </div>
                             <div>
-                                <Field label="Cultures &amp; Customs (ANC / Colostrum / Weaning / Chicken pox, Measles)" value={studyData.cultures_customs} />
+                                <Field label="Cultures &amp; Customs" value={studyData.cultures_customs} />
                             </div>
                         </div>
 

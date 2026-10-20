@@ -5,7 +5,7 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { STUDY_OPT, getModifiedPrasadClass, type StudyKit } from './studyFields';
+import { STUDY_OPT, getModifiedPrasadClass, CULTURES_CUSTOMS_OPTIONS, type StudyKit } from './studyFields';
 import type { FamilyStudyData } from './studyTypes';
 
 interface Props {
@@ -362,12 +362,12 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                 <p className="card-desc" style={{ marginBottom: '10px' }}>Livestock, domestic animals, stable facilities, vector breeding and pests.</p>
                 <div className="form-grid">
                     {kit.sel('animal_type', 'Animal - Type of animals', STUDY_OPT.animalType)}
-                    {kit.inp('animal_specify', 'If animals present, specify', 'e.g. 1 Cow, 2 Goats')}
+                    {kit.inp('animal_specify', 'If animals present, specify', 'e.g. 1 Cow, 2 Goats', false, 'text', false, undefined, 'prasad-span-2')}
                     {kit.sel('stable_cowshed', 'Stable or Cow shed', STUDY_OPT.stableCowshed)}
-                    {kit.inp('indoor_pests', 'Inside house - Problem of (Mosquito/Fly/etc.)', 'e.g. Mosquito, Cockroach')}
-                    {kit.sel('breeding_mosquito', 'Breeding places: For mosquito (Y/N)', STUDY_OPT.yn)}
-                    {kit.sel('breeding_housefly', 'Breeding places: For housefly (Y/N)', STUDY_OPT.yn)}
-                    {kit.sel('outdoor_animals_problem', 'Outside the house - Problem of Dog/Cattle (Y/N)', STUDY_OPT.yn)}
+                    {kit.inp('indoor_pests', 'Inside house - Problem of pests', 'e.g. Mosquito, Cockroach')}
+                    {kit.sel('breeding_mosquito', 'Breeding places: Mosquito', STUDY_OPT.yn)}
+                    {kit.sel('breeding_housefly', 'Breeding places: Housefly', STUDY_OPT.yn)}
+                    {kit.sel('outdoor_animals_problem', 'Outside house - Dog / Cattle problem', STUDY_OPT.yn)}
                 </div>
             </div>
 
@@ -379,7 +379,71 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     {kit.sel('relation_family', 'Relation of each other in the family', STUDY_OPT.psychosocial)}
                     {kit.sel('relation_relatives', 'Relationship with relatives', STUDY_OPT.psychosocial)}
                     {kit.sel('relation_neighbors', 'Relationship with neighbor', STUDY_OPT.psychosocial)}
-                    {kit.inp('cultures_customs', 'Cultures & Customs (ANC/Colostrum/Weaning/Mataji)', 'e.g. ANC registration, Colostrum given, Mataji puja for measles')}
+                </div>
+
+                <div style={{ marginTop: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                        Cultures &amp; Customs
+                    </label>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '8px',
+                        padding: '14px',
+                        background: '#faf5ff',
+                        border: '1px solid #e9d5ff',
+                        borderRadius: '8px',
+                    }}>
+                        {CULTURES_CUSTOMS_OPTIONS.map((opt) => {
+                            const selectedList = (data.cultures_customs || '')
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter(Boolean);
+                            const isChecked = selectedList.includes(opt);
+                            return (
+                                <label
+                                    key={opt}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '7px 12px',
+                                        background: isChecked ? 'rgba(109, 40, 217, 0.08)' : '#ffffff',
+                                        border: isChecked ? '1.5px solid var(--primary)' : '1px solid var(--border)',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.825rem',
+                                        fontWeight: isChecked ? 650 : 500,
+                                        color: isChecked ? 'var(--primary)' : 'var(--text-primary)',
+                                        userSelect: 'none',
+                                        transition: 'all 0.15s ease',
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => {
+                                            const nextList = isChecked
+                                                ? selectedList.filter((item) => item !== opt)
+                                                : [...selectedList, opt];
+                                            setData((prev) => ({
+                                                ...prev,
+                                                cultures_customs: nextList.join(', '),
+                                            }));
+                                        }}
+                                        style={{
+                                            accentColor: 'var(--primary)',
+                                            width: '16px',
+                                            height: '16px',
+                                            cursor: 'pointer',
+                                            flexShrink: 0,
+                                        }}
+                                    />
+                                    <span>{opt}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 

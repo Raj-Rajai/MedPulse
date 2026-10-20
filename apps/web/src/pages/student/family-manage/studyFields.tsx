@@ -75,6 +75,20 @@ export const STUDY_OPT = {
     ] as Option[],
 } as const;
 
+/** Child health, dietary and illness customs options for Cultures & Customs multi-select */
+export const CULTURES_CUSTOMS_OPTIONS = [
+    'Antenatal Care (ANC)',
+    'Colostrum / Infant Feeding Practices',
+    'Weaning / Solid Food Introduction Ceremonies',
+    'Chickenpox',
+    'Measles',
+    'Rubella / German Measles',
+    'Hand, Foot, and Mouth Disease (HFMD)',
+    'High Fever / Seizures',
+    'Teething-related Diarrhea',
+    'Unexplained Wasting / Malnutrition',
+] as const;
+
 /** Normalizes any legacy Prasad values (e.g. from previous drafts) to the new classification */
 export function normalizePrasadClass(val: string): string {
     if (!val) return 'Class III (Middle Class)';
