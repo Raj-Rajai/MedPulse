@@ -15,10 +15,6 @@ export function getSurveyStorageKey(familyId: number, year: ProfessionalYear): s
     return `${STORAGE_PREFIX}${familyId}_${year.replace(/\s+/g, '_')}`;
 }
 
-/**
- * Derives age in years, months, and weeks from Date of Birth.
- * Master Prompt Section 8: DOB is authoritative.
- */
 export function deriveAgeFromDob(dobString: string, refDate = new Date()): { years: number; months: number; weeks: number; display: string } {
     if (!dobString) return { years: 0, months: 0, weeks: 0, display: '' };
     const birth = new Date(dobString);

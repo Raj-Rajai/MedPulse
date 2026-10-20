@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AccordionSectionHeader } from './FastControls';
 import { FOOD_ITEMS, calculateNutritionRow } from './nutritionConstants';
 import type { FamilySurveyRecord } from './types';
@@ -8,6 +9,7 @@ export interface HealthyMacrosSectionProps {
 }
 
 export function HealthyMacrosSection({ surveyRecord, onChangeSurveyRecord }: HealthyMacrosSectionProps) {
+    const [isClosed, setIsClosed] = useState(false);
     const handleDayChange = (foodId: string, valStr: string) => {
         const num = parseFloat(valStr) || 0;
         onChangeSurveyRecord((prev) => {
@@ -67,9 +69,12 @@ export function HealthyMacrosSection({ surveyRecord, onChangeSurveyRecord }: Hea
                 title="Healthy Macros / Food Intake Assessment"
                 subtitle="Enter daily quantity (gm) per item; monthly quantity, Kcal, and Protein calculate automatically"
                 badge={`Total: ${grandTotalKcal.toFixed(0)} kcal / day`}
-                isClosed={false}
-                onToggle={() => {}}
+                isClosed={isClosed}
+                onToggle={() => setIsClosed((prev) => !prev)}
             />
+
+            {!isClosed && (
+                <>
 
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <div style={{ background: '#f5f0ff', padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #e9d5ff' }}>
@@ -188,6 +193,8 @@ export function HealthyMacrosSection({ surveyRecord, onChangeSurveyRecord }: Hea
                     </tfoot>
                 </table>
             </div>
+            </>
+            )}
         </div>
     );
 }

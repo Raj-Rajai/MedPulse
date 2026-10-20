@@ -19,7 +19,6 @@ export function SurveyFormView({
     surveyData,
     onChangeSurveyData,
     currentYear,
-    status,
     saving,
     onSaveDraft,
     onSubmitRecord,
@@ -38,20 +37,6 @@ export function SurveyFormView({
 
     return (
         <form id="memberSurveyForm" onSubmit={(e) => e.preventDefault()}>
-            {/* Status indicator bar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', padding: '0.65rem 1rem', background: '#faf8ff', border: '1px solid #ede9fe', borderRadius: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Record Status:</span>
-                    <span className={`badge ${status === 'submitted' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', padding: '3px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        {status === 'submitted' ? '✓ Submitted' : '✎ Draft'}
-                    </span>
-                    <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>{currentYear}</span>
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    All fields optional • Fast controls enabled
-                </div>
-            </div>
-
             {/* Categorized Clinical Sections */}
             <SurveyCategorySections
                 data={surveyData}

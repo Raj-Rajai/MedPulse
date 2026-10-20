@@ -1,7 +1,29 @@
 import { useState } from 'react';
-import { AccordionSectionHeader, FormField, SegmentedControl, YesNoToggle } from './FastControls';
+import { AccordionSectionHeader, FormField } from './FastControls';
+import { Select, type Option } from '../common/Select';
+import { OPT } from '../family-manage/fields';
+import { STUDY_OPT } from '../family-manage/studyFields';
+import { OPTIONS } from './survey';
 import { deriveAgeFromDob } from './surveyStorage';
 import type { MemberSurveyData } from './types';
+
+export const OCCUPATION_OPTIONS: readonly Option[] = [
+    ['NA', 'NA / Child'],
+    ['Farmer', 'Farmer'],
+    ['House wife', 'House wife'],
+    ['Student', 'Student'],
+    ['Labourer', 'Labourer / Daily Wage'],
+    ['Service / Job', 'Service / Job'],
+    ['Business', 'Business / Trader'],
+    ['Retired', 'Retired'],
+    ['Unemployed', 'Unemployed'],
+    ['Other', 'Other'],
+];
+
+function withCustomOption(options: readonly Option[], currentVal?: string): readonly Option[] {
+    if (!currentVal || options.some(([v]) => v === currentVal)) return options;
+    return [[currentVal, currentVal], ...options];
+}
 
 export interface SurveyCategorySectionsProps {
     data: MemberSurveyData;
@@ -9,7 +31,7 @@ export interface SurveyCategorySectionsProps {
     currentYear: string;
 }
 
-export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCategorySectionsProps) {
+export function SurveyCategorySections({ data, onChange }: SurveyCategorySectionsProps) {
     const [closed, setClosed] = useState<Record<string, boolean>>({
         // Open the first 3 sections by default; user can collapse or expand any
         maternal: true,
@@ -110,8 +132,8 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                     onToggle={toggle}
                 />
                 {!closed.socio && (
-                    <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                        <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div className="category-fields-wrap">
+                        <div className="form-grid">
                             <FormField label="Full Name">
                                 <input
                                     type="text"
@@ -121,19 +143,16 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 />
                             </FormField>
 
-                            <FormField label="Sex" sublabel="M / F / TG">
-                                <SegmentedControl
-                                    options={[
-                                        { label: 'Male (M)', value: 'M' },
-                                        { label: 'Female (F)', value: 'F' },
-                                        { label: 'Transgender (TG)', value: 'TG' },
-                                    ]}
+                            <FormField label="Sex" sublabel="M / F">
+                                <Select
+                                    id="gender"
+                                    options={OPT.gender}
                                     value={data.gender}
-                                    onChange={(v) => update('gender', v)}
+                                    onValue={(v) => update('gender', v)}
                                 />
                             </FormField>
 
-                            <FormField label="Date of Birth" sublabel="Authoritative">
+                            <FormField label="Date of Birth">
                                 <input
                                     type="date"
                                     value={data.date_of_birth}
@@ -141,7 +160,7 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 />
                             </FormField>
 
-                            <FormField label="Age" sublabel="Derived from DOB">
+                            <FormField label="Age">
                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                     <input
                                         type="number"
@@ -163,42 +182,42 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                             </FormField>
 
                             <FormField label="Relation with Head">
-                                <input
-                                    type="text"
+                                <Select
+                                    id="relation_to_hof"
+                                    options={withCustomOption(OPT.relation, data.relation_to_hof)}
                                     value={data.relation_to_hof}
-                                    onChange={(e) => update('relation_to_hof', e.target.value)}
-                                    placeholder="e.g. Head, Wife, Son, Daughter"
+                                    onValue={(v) => update('relation_to_hof', v)}
                                 />
                             </FormField>
 
                             <FormField label="Marital Status">
-                                <input
-                                    type="text"
+                                <Select
+                                    id="marital_status"
+                                    options={withCustomOption(OPT.marital, data.marital_status)}
                                     value={data.marital_status}
-                                    onChange={(e) => update('marital_status', e.target.value)}
-                                    placeholder="Married, Unmarried, Divorced..."
+                                    onValue={(v) => update('marital_status', v)}
                                 />
                             </FormField>
 
                             <FormField label="Education">
-                                <input
-                                    type="text"
+                                <Select
+                                    id="education"
+                                    options={withCustomOption(OPT.education, data.education)}
                                     value={data.education}
-                                    onChange={(e) => update('education', e.target.value)}
-                                    placeholder="Illiterate, Primary, Secondary, Graduate..."
+                                    onValue={(v) => update('education', v)}
                                 />
                             </FormField>
 
                             <FormField label="Occupation">
-                                <input
-                                    type="text"
+                                <Select
+                                    id="occupation"
+                                    options={withCustomOption(OCCUPATION_OPTIONS, data.occupation)}
                                     value={data.occupation}
-                                    onChange={(e) => update('occupation', e.target.value)}
-                                    placeholder="e.g. Farmer, Homemaker, Student..."
+                                    onValue={(v) => update('occupation', v)}
                                 />
                             </FormField>
 
-                            <FormField label="Aadhaar Number" sublabel="Text">
+                            <FormField label="Aadhaar Number">
                                 <input
                                     type="text"
                                     value={data.aadhaar_number}
@@ -208,7 +227,7 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 />
                             </FormField>
 
-                            <FormField label="ABHA ID" sublabel="Text">
+                            <FormField label="ABHA ID">
                                 <input
                                     type="text"
                                     value={data.abha_id}
@@ -236,15 +255,14 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
             <div className="survey-category-card">
                 <AccordionSectionHeader
                     id="health_records_1"
-                    title={`2. Family Health Records - 1 (${currentYear})`}
+                    title={`2. Family Health Records - 1`}
                     subtitle="Vitals, clinical measurements, blood pressure, blood sugar, circumferences"
-                    badge={currentYear}
                     isClosed={!!closed.health_records_1}
                     onToggle={toggle}
                 />
                 {!closed.health_records_1 && (
-                    <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                        <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div className="category-fields-wrap">
+                        <div className="form-grid">
                             <FormField label="PR (Pulse Rate)" sublabel="bpm">
                                 <input
                                     type="number"
@@ -284,9 +302,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                             </FormField>
 
                             <FormField label="Hypertension (HTN)" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="has_htn"
+                                    options={OPTIONS.fHtn}
                                     value={data.has_htn}
-                                    onChange={(v) => update('has_htn', v)}
+                                    onValue={(v) => update('has_htn', v)}
                                 />
                             </FormField>
 
@@ -301,9 +321,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                             </FormField>
 
                             <FormField label="Diabetes Mellitus (DM)" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="has_dm"
+                                    options={OPTIONS.fDm}
                                     value={data.has_dm}
-                                    onChange={(v) => update('has_dm', v)}
+                                    onValue={(v) => update('has_dm', v)}
                                 />
                             </FormField>
 
@@ -318,9 +340,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                             </FormField>
 
                             <FormField label="Anaemia" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="has_anaemia"
+                                    options={OPTIONS.fAnaemia}
                                     value={data.has_anaemia}
-                                    onChange={(v) => update('has_anaemia', v)}
+                                    onValue={(v) => update('has_anaemia', v)}
                                 />
                             </FormField>
 
@@ -365,9 +389,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
 
                             {isFemale && (
                                 <FormField label="Any Pregnant woman in family?" sublabel="Y/N">
-                                    <YesNoToggle
+                                    <Select
+                                        id="is_pregnant_woman"
+                                        options={STUDY_OPT.yn}
                                         value={data.is_pregnant_woman}
-                                        onChange={(v) => update('is_pregnant_woman', v)}
+                                        onValue={(v) => update('is_pregnant_woman', v)}
                                     />
                                 </FormField>
                             )}
@@ -400,23 +426,27 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                     onToggle={toggle}
                 />
                 {!closed.health_status && (
-                    <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                        <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div className="category-fields-wrap">
+                        <div className="form-grid">
                             <FormField label="Past illness during last one year" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="past_illness_last_year"
+                                    options={STUDY_OPT.yn}
                                     value={data.past_illness_last_year}
-                                    onChange={(v) => update('past_illness_last_year', v)}
+                                    onValue={(v) => update('past_illness_last_year', v)}
                                 />
                             </FormField>
 
                             <FormField label="C/O Present illness" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="co_present_illness"
+                                    options={STUDY_OPT.yn}
                                     value={data.co_present_illness}
-                                    onChange={(v) => update('co_present_illness', v)}
+                                    onValue={(v) => update('co_present_illness', v)}
                                 />
                             </FormField>
 
-                            <FormField label="Diagnosis (If Known)" sublabel="Text">
+                            <FormField label="Diagnosis (If Known)">
                                 <input
                                     type="text"
                                     value={data.diagnosis}
@@ -426,9 +456,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                             </FormField>
 
                             <FormField label="Treatment Taken" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="treatment_taken"
+                                    options={OPTIONS.fTreatment}
                                     value={data.treatment_taken}
-                                    onChange={(v) => update('treatment_taken', v)}
+                                    onValue={(v) => update('treatment_taken', v)}
                                 />
                             </FormField>
 
@@ -444,17 +476,21 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 </FormField>
                             )}
 
-                            <FormField label="Oral Health check-up" sublabel="Satisfactory Y/N">
-                                <YesNoToggle
+                            <FormField label="Oral Health check-up">
+                                <Select
+                                    id="oral_health_checkup"
+                                    options={STUDY_OPT.yn}
                                     value={data.oral_health_checkup}
-                                    onChange={(v) => update('oral_health_checkup', v)}
+                                    onValue={(v) => update('oral_health_checkup', v)}
                                 />
                             </FormField>
 
-                            <FormField label="Hygiene status" sublabel="Satisfactory Y/N">
-                                <YesNoToggle
+                            <FormField label="Hygiene status">
+                                <Select
+                                    id="hygiene_status"
+                                    options={[['Y', 'Satisfactory (Y)'], ['N', 'Unsatisfactory (N)']]}
                                     value={data.hygiene_status}
-                                    onChange={(v) => update('hygiene_status', v)}
+                                    onValue={(v) => update('hygiene_status', v)}
                                 />
                             </FormField>
                         </div>
@@ -474,8 +510,8 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                     onToggle={toggle}
                 />
                 {!closed.health_records_2 && (
-                    <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                        <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div className="category-fields-wrap">
+                        <div className="form-grid">
                             <FormField label="Height (Ht)" sublabel="meters">
                                 <input
                                     type="number"
@@ -496,7 +532,7 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 />
                             </FormField>
 
-                            <FormField label="BMI (Body Mass Index)" sublabel="Auto kg/m²" badge="Calculated">
+                            <FormField label="BMI (Body Mass Index)" badge="Calculated">
                                 <input
                                     type="text"
                                     readOnly
@@ -535,39 +571,49 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                             </FormField>
 
                             <FormField label="Under weight" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="is_underweight"
+                                    options={OPTIONS.fUnderweight}
                                     value={data.is_underweight}
-                                    onChange={(v) => update('is_underweight', v)}
+                                    onValue={(v) => update('is_underweight', v)}
                                 />
                             </FormField>
 
                             <FormField label="Over Weight" sublabel="Y/N">
-                                <YesNoToggle
+                                <Select
+                                    id="is_overweight"
+                                    options={OPTIONS.fOverweight}
                                     value={data.is_overweight}
-                                    onChange={(v) => update('is_overweight', v)}
+                                    onValue={(v) => update('is_overweight', v)}
                                 />
                             </FormField>
 
-                            <FormField label="Stunting" sublabel="Low Height-for-Age Y/N">
-                                <YesNoToggle
+                            <FormField label="Stunting" sublabel="Low Height-for-Age">
+                                <Select
+                                    id="is_stunting"
+                                    options={OPTIONS.fStunting}
                                     value={data.is_stunting}
-                                    onChange={(v) => update('is_stunting', v)}
+                                    onValue={(v) => update('is_stunting', v)}
                                 />
                             </FormField>
 
-                            <FormField label="Wasting" sublabel="Low Weight-for-Height Y/N">
-                                <YesNoToggle
+                            <FormField label="Wasting" sublabel="Low Weight-for-Height">
+                                <Select
+                                    id="is_wasting"
+                                    options={OPTIONS.fWasting}
                                     value={data.is_wasting}
-                                    onChange={(v) => update('is_wasting', v)}
+                                    onValue={(v) => update('is_wasting', v)}
                                 />
                             </FormField>
 
                             {/* Severely Wasted - Conditional: age < 5 years (Master Prompt Section 18) */}
                             {isSevereWastingEligible && (
                                 <FormField label="Severely wasted" sublabel="Y/N" badge="Age < 5 yrs">
-                                    <YesNoToggle
+                                    <Select
+                                        id="is_severe_wasting"
+                                        options={OPTIONS.fSevereWasting}
                                         value={data.is_severe_wasting}
-                                        onChange={(v) => update('is_severe_wasting', v)}
+                                        onValue={(v) => update('is_severe_wasting', v)}
                                     />
                                 </FormField>
                             )}
@@ -602,16 +648,18 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                         onToggle={toggle}
                     />
                     {!closed.maternal && (
-                        <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-                                <FormField label="ANC taken" sublabel="Yes/No">
-                                    <YesNoToggle
+                        <div className="category-fields-wrap">
+                            <div className="form-grid">
+                                <FormField label="ANC taken" sublabel="Y/N">
+                                    <Select
+                                        id="anc_taken"
+                                        options={OPTIONS.fAnc}
                                         value={data.anc_taken}
-                                        onChange={(v) => update('anc_taken', v)}
+                                        onValue={(v) => update('anc_taken', v)}
                                     />
                                 </FormField>
 
-                                <FormField label="No. of ANC visits" sublabel="Integer">
+                                <FormField label="No. of ANC visits">
                                     <input
                                         type="number"
                                         min="0"
@@ -622,34 +670,40 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 </FormField>
 
                                 <FormField label="Place" sublabel="ANC facility">
-                                    <SegmentedControl
+                                    <Select
+                                        id="anc_place"
                                         options={[
-                                            { label: 'Govt.', value: 'Government' },
-                                            { label: 'Private', value: 'Private' },
-                                            { label: 'Health worker', value: 'Health worker' },
-                                            { label: 'Others', value: 'Others' },
+                                            ['Government', 'Govt. Hospital / PHC'],
+                                            ['Private', 'Private Clinic / Hospital'],
+                                            ['Health worker', 'Health Worker (ASHA/ANM)'],
+                                            ['Others', 'Others'],
+                                            ['NA', 'NA'],
                                         ]}
                                         value={data.anc_place}
-                                        onChange={(v) => update('anc_place', v)}
+                                        onValue={(v) => update('anc_place', v)}
                                     />
                                 </FormField>
 
-                                <FormField label="Inj. TT" sublabel="Dose 1 / 2 / Booster">
-                                    <SegmentedControl
+                                <FormField label="Inj. TT" sublabel="Dose">
+                                    <Select
+                                        id="inj_tt"
                                         options={[
-                                            { label: '1 (1st Dose)', value: '1' },
-                                            { label: '2 (2nd Dose)', value: '2' },
-                                            { label: 'B (Booster)', value: 'B' },
+                                            ['1', '1 (1st Dose)'],
+                                            ['2', '2 (2nd Dose)'],
+                                            ['B', 'B (Booster)'],
+                                            ['NA', 'NA'],
                                         ]}
                                         value={data.inj_tt}
-                                        onChange={(v) => update('inj_tt', v)}
+                                        onValue={(v) => update('inj_tt', v)}
                                     />
                                 </FormField>
 
                                 <FormField label="IFA tablets" sublabel="Y/N">
-                                    <YesNoToggle
+                                    <Select
+                                        id="ifa_tablets"
+                                        options={STUDY_OPT.yn}
                                         value={data.ifa_tablets}
-                                        onChange={(v) => update('ifa_tablets', v)}
+                                        onValue={(v) => update('ifa_tablets', v)}
                                     />
                                 </FormField>
 
@@ -702,19 +756,19 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                 <div className="survey-category-card">
                     <AccordionSectionHeader
                         id="female"
-                        title="6. Female-Specific Section (Delivery, PNC, Family Planning)"
+                        title="6. Delivery, PNC, Family Planning"
                         subtitle="Institutional/home delivery details, postnatal care, and contraception"
                         badge="Female Only"
                         isClosed={!!closed.female}
                         onToggle={toggle}
                     />
                     {!closed.female && (
-                        <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
+                        <div className="category-fields-wrap">
                             <div style={{ marginBottom: '1.25rem' }}>
                                 <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                                     Delivery History
                                 </h4>
-                                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                                <div className="form-grid">
                                     <FormField label="Place of Delivery">
                                         <input
                                             type="text"
@@ -757,8 +811,8 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                                     Post Natal Care (PNC)
                                 </h4>
-                                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-                                    <FormField label="Total No. of PNC Visits" sublabel="Integer">
+                                <div className="form-grid">
+                                    <FormField label="Total No. of PNC Visits">
                                         <input
                                             type="number"
                                             min="0"
@@ -778,16 +832,20 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                     </FormField>
 
                                     <FormField label="Colostrum Given" sublabel="Y/N">
-                                        <YesNoToggle
+                                        <Select
+                                            id="colostrum_given"
+                                            options={STUDY_OPT.yn}
                                             value={data.colostrum_given}
-                                            onChange={(v) => update('colostrum_given', v)}
+                                            onValue={(v) => update('colostrum_given', v)}
                                         />
                                     </FormField>
 
                                     <FormField label="Breastfeeding" sublabel="Y/N">
-                                        <YesNoToggle
+                                        <Select
+                                            id="breastfeeding"
+                                            options={STUDY_OPT.yn}
                                             value={data.breastfeeding}
-                                            onChange={(v) => update('breastfeeding', v)}
+                                            onValue={(v) => update('breastfeeding', v)}
                                         />
                                     </FormField>
 
@@ -801,9 +859,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                     </FormField>
 
                                     <FormField label="IFA Tablets (PNC)" sublabel="Y/N">
-                                        <YesNoToggle
+                                        <Select
+                                            id="pnc_ifa_tablets"
+                                            options={STUDY_OPT.yn}
                                             value={data.pnc_ifa_tablets}
-                                            onChange={(v) => update('pnc_ifa_tablets', v)}
+                                            onValue={(v) => update('pnc_ifa_tablets', v)}
                                         />
                                     </FormField>
                                 </div>
@@ -813,11 +873,13 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                                     Family Planning Method
                                 </h4>
-                                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                                <div className="form-grid">
                                     <FormField label="Use of any FP methods?" sublabel="Y/N">
-                                        <YesNoToggle
+                                        <Select
+                                            id="fp_methods_used"
+                                            options={STUDY_OPT.yn}
                                             value={data.fp_methods_used}
-                                            onChange={(v) => update('fp_methods_used', v)}
+                                            onValue={(v) => update('fp_methods_used', v)}
                                         />
                                     </FormField>
 
@@ -865,23 +927,26 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                         onToggle={toggle}
                     />
                     {!closed.child && (
-                        <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+                        <div className="category-fields-wrap">
+                            <div className="form-grid" style={{ marginBottom: '1.25rem' }}>
                                 <FormField label="Immunization / MCH / Mamta card" sublabel="Present / Absent">
-                                    <SegmentedControl
+                                    <Select
+                                        id="mamta_card_present"
                                         options={[
-                                            { label: 'Present', value: 'Present' },
-                                            { label: 'Absent', value: 'Absent' },
+                                            ['Present', 'Present'],
+                                            ['Absent', 'Absent'],
                                         ]}
                                         value={data.mamta_card_present}
-                                        onChange={(v) => update('mamta_card_present', v)}
+                                        onValue={(v) => update('mamta_card_present', v)}
                                     />
                                 </FormField>
 
                                 <FormField label="Taking all doses for IPPI rounds?" sublabel="Pulse Polio Y/N">
-                                    <YesNoToggle
+                                    <Select
+                                        id="ippi_all_doses"
+                                        options={STUDY_OPT.yn}
                                         value={data.ippi_all_doses}
-                                        onChange={(v) => update('ippi_all_doses', v)}
+                                        onValue={(v) => update('ippi_all_doses', v)}
                                     />
                                 </FormField>
 
@@ -897,9 +962,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 )}
 
                                 <FormField label="Health workers visit family or not?" sublabel="Y/N">
-                                    <YesNoToggle
+                                    <Select
+                                        id="health_worker_visit"
+                                        options={STUDY_OPT.yn}
                                         value={data.health_worker_visit}
-                                        onChange={(v) => update('health_worker_visit', v)}
+                                        onValue={(v) => update('health_worker_visit', v)}
                                     />
                                 </FormField>
 
@@ -913,9 +980,11 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 </FormField>
 
                                 <FormField label="Access to Anganwadi" sublabel="Yes / No">
-                                    <YesNoToggle
+                                    <Select
+                                        id="anganwadi_access"
+                                        options={STUDY_OPT.yesNo}
                                         value={data.anganwadi_access}
-                                        onChange={(v) => update('anganwadi_access', v)}
+                                        onValue={(v) => update('anganwadi_access', v)}
                                     />
                                 </FormField>
                             </div>
@@ -1046,15 +1115,15 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                 <div className="survey-category-card">
                     <AccordionSectionHeader
                         id="birth_history"
-                        title="8. Birth History (Infants)"
+                        title="8. Birth History"
                         subtitle="Birthplace, attendant, birth weight, and early infant feeding practices"
                         badge="Infant ≤ 1 yr"
                         isClosed={!!closed.birth_history}
                         onToggle={toggle}
                     />
                     {!closed.birth_history && (
-                        <div className="category-fields-wrap" style={{ padding: '0.75rem 1rem 1.25rem' }}>
-                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                        <div className="category-fields-wrap">
+                            <div className="form-grid">
                                 <FormField label="Birth place">
                                     <input
                                         type="text"
@@ -1084,16 +1153,20 @@ export function SurveyCategorySections({ data, onChange, currentYear }: SurveyCa
                                 </FormField>
 
                                 <FormField label="Colostrum given" sublabel="Y/N">
-                                    <YesNoToggle
+                                    <Select
+                                        id="infant_colostrum"
+                                        options={STUDY_OPT.yn}
                                         value={data.infant_colostrum}
-                                        onChange={(v) => update('infant_colostrum', v)}
+                                        onValue={(v) => update('infant_colostrum', v)}
                                     />
                                 </FormField>
 
                                 <FormField label="Breast feeding initiated" sublabel="Y/N">
-                                    <YesNoToggle
+                                    <Select
+                                        id="infant_breastfeeding"
+                                        options={STUDY_OPT.yn}
                                         value={data.infant_breastfeeding}
-                                        onChange={(v) => update('infant_breastfeeding', v)}
+                                        onValue={(v) => update('infant_breastfeeding', v)}
                                     />
                                 </FormField>
 

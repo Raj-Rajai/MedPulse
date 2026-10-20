@@ -1,15 +1,10 @@
-/**
- * student/entry.html: household selection board, multi-year survey records (Year 1, Year 2, Year 3),
- * member roster carousel, categorized clinical survey forms (fast controls, auto-calculations, conditional logic),
- * and household-level Consumption Unit (CU) & Healthy Macros calculations.
- */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BodyPortal, useStudentChrome } from '../common/Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
 import { SignInLink, StudentBadge, logoutReload, readStoredUser } from '../common/badges';
 import { standardSidebar } from '../common/sidebar';
 import { TOAST_ENTRY, useToasts } from '../common/Toasts';
-import { errMsg, runWhenActive } from '../common/utils';
+import { errMsg, getHouseholdDisplayName, runWhenActive } from '../common/utils';
 import { LocationVerificationCard } from '../common/fieldLocation';
 import {
     familyCode,
@@ -81,12 +76,10 @@ export function EntryApp() {
     const [familyId, setFamilyId] = useState<number | null>(null);
     const [familyData, setFamilyData] = useState<FamilyDetail | null>(null);
 
-    // Multi-Year Professional Workflow: Year 1 | Year 2 | Year 3
     const [currentYear, setCurrentYear] = useState<ProfessionalYear>('Year 1');
     const [surveyRecord, setSurveyRecord] = useState<FamilySurveyRecord | null>(null);
     const [yearStarted, setYearStarted] = useState<Record<string, boolean>>({ 'Year 1': true });
 
-    // Primary View Mode: Member Clinical Survey vs Household Nutrition & CU
     const [entryView, setEntryView] = useState<'member' | 'household'>('member');
 
     const [memberId, setMemberId] = useState<number | null>(null);
@@ -346,24 +339,23 @@ export function EntryApp() {
                             <div style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                                 No households registered yet. <a href="/family-manage.html" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'underline' }}>+ Register Household</a>
                             </div>
-                        ) : families.map((f) => (
-                            <div
-                                key={f.id}
-                                className={`family-strip-card ${familyId === f.id ? 'active' : ''}`}
-                                onClick={() => selectFamily(f.id)}
-                                id={`quickFamilyCard_${f.id}`}
-                            >
-                                <div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                        ) : families.map((f) => {
+                            const householdName = getHouseholdDisplayName(f);
+                            return (
+                                <div
+                                    key={f.id}
+                                    className={`family-strip-card ${familyId === f.id ? 'active' : ''}`}
+                                    onClick={() => selectFamily(f.id)}
+                                    id={`quickFamilyCard_${f.id}`}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                                         <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem', fontWeight: 700 }}>{familyCode(f)}</span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>👥 {f.member_count || 0}</span>
                                     </div>
-                                    <div className="family-strip-name" title={f.head_of_family}>{f.head_of_family}</div>
-                                    <div className="family-strip-meta">{f.village_ward || 'Ward'}</div>
+                                    <div className="family-strip-name" title={householdName} style={{ marginBottom: 0 }}>{householdName}</div>
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600, marginTop: '0.35rem' }}>Select →</div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -684,7 +676,7 @@ export function EntryApp() {
                                         }}
                                     >
                                         <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-                                            Household Level: <strong>{familyData.head_of_family}</strong> ({currentYear})
+                                            Household Level: <strong>{getHouseholdDisplayName(familyData)}</strong> ({currentYear})
                                         </div>
                                         <div style={{ display: 'flex', gap: '0.65rem' }}>
                                             <button

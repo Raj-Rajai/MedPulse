@@ -17,36 +17,38 @@ export function YesNoToggle({ id, value, onChange, disabled }: YesNoToggleProps)
     const isNo = value === 'N' || value === 'No' || value === 'false';
 
     return (
-        <div id={id} className="fast-yes-no-group" style={{ display: 'inline-flex', borderRadius: '6px', border: '1.5px solid var(--border)', overflow: 'hidden', height: '34px' }}>
+        <div id={id} className="fast-yes-no-group" style={{ display: 'inline-flex', borderRadius: '6px', border: '1px solid #dce5dd', overflow: 'hidden', height: '38px', background: '#ffffff', width: '100%', boxSizing: 'border-box' }}>
             <button
                 type="button"
                 disabled={disabled}
                 onClick={() => onChange('Y')}
                 style={{
+                    flex: 1,
                     border: 'none',
-                    padding: '0 14px',
+                    padding: '0 12px',
                     fontSize: '0.825rem',
-                    fontWeight: 700,
+                    fontWeight: isYes ? 700 : 500,
                     cursor: disabled ? 'not-allowed' : 'pointer',
-                    background: isYes ? 'var(--primary)' : 'var(--bg-card, #ffffff)',
+                    background: isYes ? 'var(--primary)' : 'transparent',
                     color: isYes ? '#ffffff' : 'var(--text-secondary)',
                     transition: 'all 0.15s ease',
                 }}
             >
                 Yes
             </button>
-            <div style={{ width: '1px', background: 'var(--border)' }} />
+            <div style={{ width: '1px', background: '#e2e8f0' }} />
             <button
                 type="button"
                 disabled={disabled}
                 onClick={() => onChange('N')}
                 style={{
+                    flex: 1,
                     border: 'none',
-                    padding: '0 14px',
+                    padding: '0 12px',
                     fontSize: '0.825rem',
-                    fontWeight: 700,
+                    fontWeight: isNo ? 700 : 500,
                     cursor: disabled ? 'not-allowed' : 'pointer',
-                    background: isNo ? '#ef4444' : 'var(--bg-card, #ffffff)',
+                    background: isNo ? 'var(--primary)' : 'transparent',
                     color: isNo ? '#ffffff' : 'var(--text-secondary)',
                     transition: 'all 0.15s ease',
                 }}
@@ -70,12 +72,12 @@ export interface SegmentedControlProps<T extends string> {
  */
 export function SegmentedControl<T extends string>({ id, options, value, onChange, disabled }: SegmentedControlProps<T>) {
     return (
-        <div id={id} className="fast-segmented-group" style={{ display: 'inline-flex', borderRadius: '6px', border: '1.5px solid var(--border)', overflow: 'hidden', height: '34px', maxWidth: '100%' }}>
+        <div id={id} className="fast-segmented-group" style={{ display: 'inline-flex', borderRadius: '6px', border: '1px solid #dce5dd', overflow: 'hidden', height: '38px', maxWidth: '100%', background: '#ffffff', boxSizing: 'border-box' }}>
             {options.map((opt, idx) => {
                 const active = value === opt.value;
                 return (
-                    <div key={opt.value} style={{ display: 'inline-flex' }}>
-                        {idx > 0 && <div style={{ width: '1px', background: 'var(--border)' }} />}
+                    <div key={opt.value} style={{ display: 'inline-flex', flex: 1 }}>
+                        {idx > 0 && <div style={{ width: '1px', background: '#e2e8f0' }} />}
                         <button
                             type="button"
                             disabled={disabled}
@@ -86,10 +88,11 @@ export function SegmentedControl<T extends string>({ id, options, value, onChang
                                 fontSize: '0.8rem',
                                 fontWeight: active ? 700 : 500,
                                 cursor: disabled ? 'not-allowed' : 'pointer',
-                                background: active ? 'var(--primary)' : 'var(--bg-card, #ffffff)',
+                                background: active ? 'var(--primary)' : 'transparent',
                                 color: active ? '#ffffff' : 'var(--text-secondary)',
                                 transition: 'all 0.15s ease',
                                 whiteSpace: 'nowrap',
+                                width: '100%',
                             }}
                         >
                             {opt.label}
@@ -111,13 +114,13 @@ export interface FormFieldProps {
 
 export function FormField({ label, sublabel, badge, children, style }: FormFieldProps) {
     return (
-        <div className="form-group" style={{ marginBottom: '1rem', ...style }}>
-            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+        <div className="form-group" style={style}>
+            <label>
                 <span>
                     {label}
                     {sublabel && <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginLeft: '0.35rem' }}>({sublabel})</span>}
                 </span>
-                {badge && <span className="badge badge-info" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>{badge}</span>}
+                {badge && <span className="badge badge-info" style={{ fontSize: '0.65rem', padding: '1px 5px', marginLeft: 'auto' }}>{badge}</span>}
             </label>
             {children}
         </div>
@@ -131,25 +134,28 @@ export interface AccordionSectionHeaderProps {
     badge?: string;
     isClosed: boolean;
     onToggle: (id: string) => void;
+    style?: React.CSSProperties;
 }
 
 /**
  * Clean accordion header matching the MedPulse journal aesthetics.
  */
-export function AccordionSectionHeader({ id, title, subtitle, badge, isClosed, onToggle }: AccordionSectionHeaderProps) {
+export function AccordionSectionHeader({ id, title, subtitle, badge, isClosed, onToggle, style }: AccordionSectionHeaderProps) {
     return (
         <div
+            id={`accordionHeader_${id}`}
             onClick={() => onToggle(id)}
             role="button"
             tabIndex={0}
+            aria-expanded={!isClosed}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(id); } }}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '12px 18px',
-                marginTop: '16px',
-                marginBottom: '10px',
+                marginTop: '0',
+                marginBottom: isClosed ? '0' : '12px',
                 background: '#f5f0ff',
                 border: '1.5px solid #e9d5ff',
                 borderRadius: '10px',
@@ -157,6 +163,7 @@ export function AccordionSectionHeader({ id, title, subtitle, badge, isClosed, o
                 userSelect: 'none',
                 transition: 'all 0.15s ease',
                 gap: '12px',
+                ...style,
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flexWrap: 'wrap' }}>

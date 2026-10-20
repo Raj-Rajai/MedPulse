@@ -1,4 +1,6 @@
-import { AccordionSectionHeader, SegmentedControl } from './FastControls';
+import { useState } from 'react';
+import { AccordionSectionHeader } from './FastControls';
+import { Select } from '../common/Select';
 import { calculateFamilyTotalCU, calculateMemberCU, type PhysiologicalStatus, type WorkType } from './cuCalculation';
 import type { FamilySurveyRecord, Member } from './types';
 
@@ -9,6 +11,7 @@ export interface ConsumptionUnitSectionProps {
 }
 
 export function ConsumptionUnitSection({ members, surveyRecord, onChangeSurveyRecord }: ConsumptionUnitSectionProps) {
+    const [isClosed, setIsClosed] = useState(false);
     const handleMemberCuUpdate = (
         memberId: number,
         updates: { workType?: string; physiologicalStatus?: string }
@@ -66,104 +69,100 @@ export function ConsumptionUnitSection({ members, surveyRecord, onChangeSurveyRe
                 title="Calculation of Coefficient / Consumption Unit (CU)"
                 subtitle="Assessment of nutritional consumption units across all household members"
                 badge={`Family Total: ${totalCU} CU`}
-                isClosed={false}
-                onToggle={() => {}}
+                isClosed={isClosed}
+                onToggle={() => setIsClosed((prev) => !prev)}
             />
 
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                Consumption units are calculated based on age, gender, type of work, and physiological additions (+1.4 for pregnancy, +2.5 for lactation) as specified in official guidelines.
-            </p>
+            {!isClosed && (
+                <>
+                    <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                        Consumption units are calculated based on age, gender, type of work, and physiological additions (+1.4 for pregnancy, +2.5 for lactation) as specified in official guidelines.
+                    </p>
 
-            <div className="table-responsive" style={{ overflowX: 'auto' }}>
-                <table className="table" style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                    <thead>
-                        <tr style={{ background: '#f5f0ff', color: 'var(--primary)', textAlign: 'left', borderBottom: '2px solid #e9d5ff' }}>
-                            <th style={{ padding: '10px 12px', width: '50px' }}>Sr.</th>
-                            <th style={{ padding: '10px 12px' }}>Name</th>
-                            <th style={{ padding: '10px 12px', width: '70px' }}>Age</th>
-                            <th style={{ padding: '10px 12px', width: '70px' }}>Sex</th>
-                            <th style={{ padding: '10px 12px', minWidth: '220px' }}>Type of work</th>
-                            <th style={{ padding: '10px 12px', minWidth: '180px' }}>Physiological status</th>
-                            <th style={{ padding: '10px 12px', width: '120px', textAlign: 'right' }}>Coefficient / CU</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {members.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                                    No members registered in this household yet.
-                                </td>
-                            </tr>
-                        ) : members.map((m, idx) => {
-                            const ms = surveyRecord.memberSurveys[m.id];
-                            const isFemale = (ms?.gender || m.gender || '').toUpperCase() === 'F';
-                            const work = (ms?.work_type || 'Moderate') as WorkType;
-                            const phys = (ms?.physiological_status || 'None') as PhysiologicalStatus;
-                            const cuVal = ms?.consumption_unit || '1.0';
+                    <div className="table-responsive" style={{ overflowX: 'auto' }}>
+                        <table className="table" style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                            <thead>
+                                <tr style={{ background: '#f5f0ff', color: 'var(--primary)', textAlign: 'left', borderBottom: '2px solid #e9d5ff' }}>
+                                    <th style={{ padding: '10px 12px', width: '50px' }}>Sr.</th>
+                                    <th style={{ padding: '10px 12px' }}>Name</th>
+                                    <th style={{ padding: '10px 12px', width: '70px' }}>Age</th>
+                                    <th style={{ padding: '10px 12px', width: '70px' }}>Sex</th>
+                                    <th style={{ padding: '10px 12px', minWidth: '220px' }}>Type of work</th>
+                                    <th style={{ padding: '10px 12px', minWidth: '180px' }}>Physiological status</th>
+                                    <th style={{ padding: '10px 12px', width: '120px', textAlign: 'right' }}>Coefficient / CU</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {members.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
+                                            No members registered in this household yet.
+                                        </td>
+                                    </tr>
+                                ) : members.map((m, idx) => {
+                                    const ms = surveyRecord.memberSurveys[m.id];
+                                    const isFemale = (ms?.gender || m.gender || '').toUpperCase() === 'F';
+                                    const work = (ms?.work_type || 'Moderate') as WorkType;
+                                    const phys = (ms?.physiological_status || 'None') as PhysiologicalStatus;
+                                    const cuVal = ms?.consumption_unit || '1.0';
 
-                            return (
-                                <tr key={m.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                    <td style={{ padding: '10px 12px', fontWeight: 600 }}>{idx + 1}</td>
-                                    <td style={{ padding: '10px 12px', fontWeight: 600 }}>{ms?.name || m.name}</td>
-                                    <td style={{ padding: '10px 12px' }}>{ms?.age_years || m.age_years}y</td>
-                                    <td style={{ padding: '10px 12px' }}>
-                                        <span className={`badge ${isFemale ? 'badge-danger' : 'badge-info'}`} style={{ fontSize: '0.72rem' }}>
-                                            {ms?.gender || m.gender || 'M'}
-                                        </span>
+                                    return (
+                                        <tr key={m.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                            <td style={{ padding: '10px 12px', fontWeight: 600 }}>{idx + 1}</td>
+                                            <td style={{ padding: '10px 12px', fontWeight: 600 }}>{ms?.name || m.name}</td>
+                                            <td style={{ padding: '10px 12px' }}>{ms?.age_years || m.age_years}y</td>
+                                            <td style={{ padding: '10px 12px' }}>
+                                                <span className={`badge ${isFemale ? 'badge-danger' : 'badge-info'}`} style={{ fontSize: '0.72rem' }}>
+                                                    {ms?.gender || m.gender || 'M'}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '8px 12px' }}>
+                                                <Select
+                                                    options={[
+                                                        ['Sedentary', 'Sedentary'],
+                                                        ['Moderate', 'Moderate'],
+                                                        ['Heavy', 'Heavy'],
+                                                    ]}
+                                                    value={work}
+                                                    onValue={(val) => handleMemberCuUpdate(m.id, { workType: val })}
+                                                />
+                                            </td>
+                                            <td style={{ padding: '8px 12px' }}>
+                                                {isFemale ? (
+                                                    <Select
+                                                        options={[
+                                                            ['None', 'None'],
+                                                            ['Pregnancy', 'Pregnancy (+1.4)'],
+                                                            ['Lactation', 'Lactation (+2.5)'],
+                                                        ]}
+                                                        value={phys}
+                                                        onValue={(val) => handleMemberCuUpdate(m.id, { physiologicalStatus: val })}
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
+                                                {cuVal}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                            <tfoot>
+                                <tr style={{ background: '#f5f0ff', borderTop: '2px solid var(--primary)', fontWeight: 700 }}>
+                                    <td colSpan={6} style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                                        Total Coefficient / Consumption Unit of Family:
                                     </td>
-                                    <td style={{ padding: '8px 12px' }}>
-                                        <SegmentedControl
-                                            options={[
-                                                { label: 'Sedentary', value: 'Sedentary' },
-                                                { label: 'Moderate', value: 'Moderate' },
-                                                { label: 'Heavy', value: 'Heavy' },
-                                            ]}
-                                            value={work}
-                                            onChange={(val) => handleMemberCuUpdate(m.id, { workType: val })}
-                                        />
-                                    </td>
-                                    <td style={{ padding: '8px 12px' }}>
-                                        {isFemale ? (
-                                            <select
-                                                value={phys}
-                                                onChange={(e) => handleMemberCuUpdate(m.id, { physiologicalStatus: e.target.value })}
-                                                style={{
-                                                    height: '34px',
-                                                    fontSize: '0.8rem',
-                                                    padding: '0 8px',
-                                                    borderRadius: '6px',
-                                                    border: '1.5px solid var(--border)',
-                                                    background: '#ffffff',
-                                                    width: '100%',
-                                                }}
-                                            >
-                                                <option value="None">None</option>
-                                                <option value="Pregnancy">Pregnancy (+1.4)</option>
-                                                <option value="Lactation">Lactation (+2.5)</option>
-                                            </select>
-                                        ) : (
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>
-                                        )}
-                                    </td>
-                                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                                        {cuVal}
+                                    <td style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--primary)', fontSize: '1.1rem' }}>
+                                        {totalCU} CU
                                     </td>
                                 </tr>
-                            );
-                        })}
-                    </tbody>
-                    <tfoot>
-                        <tr style={{ background: '#f5f0ff', borderTop: '2px solid var(--primary)', fontWeight: 700 }}>
-                            <td colSpan={6} style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
-                                Total Coefficient / Consumption Unit of Family:
-                            </td>
-                            <td style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--primary)', fontSize: '1.1rem' }}>
-                                {totalCU} CU
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                            </tfoot>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

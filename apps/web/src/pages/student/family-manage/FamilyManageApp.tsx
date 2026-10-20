@@ -1098,9 +1098,7 @@ export function FamilyManageApp() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                                         <span className="badge badge-info" id="fWorkspaceCode" style={{ fontSize: '0.85rem', padding: '0.35rem 0.65rem' }}>{d ? d.family_code || `FAM-${String(d.family_no).padStart(4, '0')}` : 'FAM-0001'}</span>
                                         <div>
-                                            <h2 id="fWorkspaceTitle" className="card-title" style={{ color: 'var(--primary)', fontSize: '1.3rem', marginBottom: '0.15rem' }}>{d ? (d.family_name ? `${d.family_name} (${d.head_of_family})` : d.head_of_family) : '-'}</h2>
-                                            <div id="fSubhead" style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>{d ? `${d.village_ward || '-'} • ${d.members ? d.members.length : 0} Members Recorded` : ''}</div>
-                                        </div>
+                                            <h2 id="fWorkspaceTitle" className="card-title" style={{ color: 'var(--primary)', fontSize: '1.3rem', marginBottom: '0.15rem' }}>{d ? (d.family_name ? `${d.family_name}`: d.head_of_family) : '-'}</h2>                                        </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                         <button className="btn btn-secondary" onClick={() => setExportJournalOpen(true)} title="Export official student journal proforma (Pages 26-28)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem', borderColor: 'var(--accent)', color: 'var(--accent)', fontWeight: 650, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>📄 Export Family Journal (PDF)</button>
@@ -1113,22 +1111,20 @@ export function FamilyManageApp() {
                                 <div className="fm-household-meta-grid">
                                     <div><span className="fm-meta-label">Head of Family</span><strong id="fHead">{d ? d.head_of_family : '-'}</strong></div>
                                     <div><span className="fm-meta-label">Contact Phone</span><span id="fPhone">{d ? d.contact_phone || d.contact_number || 'None recorded' : '-'}</span></div>
-                                    <div><span className="fm-meta-label">Location</span><span id="fLocation">{d ? [d.address, d.city, d.village_ward, d.pincode].filter(Boolean).join(', ') || '-' : '-'}</span></div>
                                     <div><span className="fm-meta-label">Surveyed By</span><span id="fStudent">{d ? `Roll ${d.roll_number || currentFamilyStudyData.roll_no || '-'}` : '-'}</span></div>
                                     <div><span className="fm-meta-label">Total Family CU</span><strong id="fCu">{d ? String(d.total_cu || 0) : '-'}</strong></div>
                                     <div><span className="fm-meta-label">Caloric Status</span><span id="fCalorie">{d ? <span className={`badge ${d.calorie_status === 'Deficient' ? 'badge-danger' : 'badge-success'}`}>{`${d.calorie_status} (${Math.round(Number(d.calorie_intake_per_cu || 0))} kcal)`}</span> : '-'}</span></div>
                                     <div><span className="fm-meta-label">Prasad Class</span><strong id="fPrasad">{currentFamilyStudyData.modified_prasad_class || 'Class III (Middle Class)'}</strong></div>
                                     <div><span className="fm-meta-label">Housing &amp; Water</span><span id="fHousing">{`${currentFamilyStudyData.house_type || 'Semi pucca'} • ${currentFamilyStudyData.water_source || 'Municipal'}`}</span></div>
                                     <div><span className="fm-meta-label">Psychosocial</span><span id="fPsycho"><span className={`badge ${currentFamilyStudyData.relation_family === 'Bad' ? 'badge-danger' : 'badge-success'}`}>{currentFamilyStudyData.relation_family || 'Good'}</span></span></div>
+                                    <div className="fm-meta-location"><span className="fm-meta-label">Location</span><span id="fLocation">{d ? [d.address, d.city, d.village_ward, d.pincode].filter(Boolean).join(', ') || '-' : '-'}</span></div>
                                 </div>
                             </div>
 
                             <div className="card fm-members-card">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <h2 className="card-title" style={{ marginBottom: '0', fontSize: '1.15rem' }}>Members (<span id="memberCountHeader">{d ? (d.members ? d.members.length : 0) : 0}</span>)</h2>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Select a member to view profile below</span>
-                                    </div>
+                                        <h2 className="card-title" style={{ marginBottom: '0', fontSize: '1.15rem' }}>Members (<span id="memberCountHeader">{d ? (d.members ? d.members.length : 0) : 0}</span>)</h2>                                    </div>
                                     <button className="btn btn-primary" style={{ fontSize: '0.78rem', padding: '0.35rem 0.7rem' }} onClick={openAddMemberModal}>+ Add Member</button>
                                 </div>
 
@@ -1170,7 +1166,7 @@ export function FamilyManageApp() {
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                         <button className="btn btn-secondary" onClick={openEditMemberModal} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✏ Edit Info</button>
-                                        <button className="btn btn-primary" onClick={openProvisionModalForCurrentMember} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem', background: 'linear-gradient(135deg, #0d9488, #2563eb)', border: 'none', color: 'white' }} title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
+                                        <button className="btn btn-secondary" onClick={openProvisionModalForCurrentMember} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }} title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
                                         <button className="btn btn-danger" onClick={confirmDeleteMember} title="Delete this member record" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>🗑 Delete</button>
                                         <button className="btn btn-secondary" onClick={closeMemberDetail} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✕ Close</button>
                                     </div>
@@ -1201,9 +1197,6 @@ export function FamilyManageApp() {
                                                 Open in Data Entry →
                                             </button>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
-                                            Full clinical screening (NCDs, blood pressure, sugar, pediatric growth, maternal care, and ICMR units) is managed on the <strong>Data Entry</strong> page.
-                                        </p>
                                         <div id="detailVitalsGrid" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginBottom: '0.65rem' }}>{m ? <Vitals m={m} /> : null}</div>
                                         <div id="baselineDetailsContent" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem' }}>{m ? <Baseline m={m} /> : null}</div>
                                     </div>

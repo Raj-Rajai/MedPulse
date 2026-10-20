@@ -11,6 +11,7 @@ export interface FamilySummary {
     head_of_family: string;
     village_ward?: string | null;
     member_count?: number;
+    family_name?: string | null;
 }
 
 /** A member as returned inside GET /api/families/:id (survey columns read by key). */

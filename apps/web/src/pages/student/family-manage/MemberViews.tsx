@@ -5,7 +5,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Allergy, Condition, FollowUp, HistoryItem, Lifestyle, Medication, MemberDetail, RosterMember } from './types';
 
-const muted: CSSProperties = { fontSize: '0.825rem', color: 'var(--text-muted)' };
 const capLabel: CSSProperties = { color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, display: 'block' };
 /** Interpolate like the original's template literals (undefined/null print as text). */
 /** Missing fields show as a dash (the original printed the word "undefined"). */
@@ -24,46 +23,95 @@ export function MemberCards({ members, selectedId, onSelect }: { members: Roster
     return (
         <>
             {members.map((m) => {
-                const bpText = m.sbp && m.dbp ? `${m.sbp}/${m.dbp} mmHg` : null;
-                const hbText = m.hb ? `Hb ${m.hb}` : null;
-                const contact = m.contact_number ? ` • 📞 ${m.contact_number}` : '';
+                const bpVal = m.sbp && m.dbp ? `${m.sbp}/${m.dbp}` : m.sbp ? `${m.sbp}` : null;
+                const hbVal = m.hb ? `${m.hb}` : null;
+                const bmiVal = m.bmi ? `${m.bmi}` : null;
+                const relation = m.relation_to_hof || 'Member';
+                const ageStr = m.age_years !== undefined && m.age_years !== null ? `${m.age_years} yrs` : '';
+                const genderStr = m.gender ? `(${m.gender})` : '';
+                const demographics = [relation, ageStr, genderStr].filter(Boolean).join(' • ');
+
                 const tags: ReactNode[] = [];
-                const tag = (cls: string, text: string, key: string) => <span key={key} className={`badge ${cls}`}>{text}</span>;
+                const tag = (cls: string, text: string, key: string) => (
+                    <span key={key} className={`member-tag-chip ${cls}`}>{text}</span>
+                );
                 if (m.conditions_summary) {
                     m.conditions_summary.split(',').forEach((c, i) => {
                         const trimmed = c.trim();
-                        if (trimmed) tags.push(tag('badge-warning', trimmed, 'c' + i));
+                        if (trimmed) tags.push(tag('tag-warning', trimmed, 'c' + i));
                     });
                 }
-                if (m.has_htn === 'Y' && !m.conditions_summary?.includes('Hypertension')) tags.push(tag('badge-warning', 'HTN', 'htn'));
-                if (m.has_dm === 'Y' && !m.conditions_summary?.includes('Diabetes')) tags.push(tag('badge-warning', 'DM', 'dm'));
-                if (m.has_anaemia === 'Y') tags.push(tag('badge-danger', 'Anaemia', 'an'));
-                if (Number(m.age_years) <= 5) tags.push(tag('badge-info', 'Under 5', 'u5'));
-                if (m.anc_taken === 'Y') tags.push(tag('badge-success', 'ANC Reg', 'anc'));
+                if (m.has_htn === 'Y' && !m.conditions_summary?.includes('Hypertension')) tags.push(tag('tag-warning', 'HTN', 'htn'));
+                if (m.has_dm === 'Y' && !m.conditions_summary?.includes('Diabetes')) tags.push(tag('tag-warning', 'DM', 'dm'));
+                if (m.has_anaemia === 'Y') tags.push(tag('tag-danger', 'Anaemia', 'an'));
+                if (Number(m.age_years) <= 5) tags.push(tag('tag-info', 'Under 5', 'u5'));
+                if (m.anc_taken === 'Y') tags.push(tag('tag-success', 'ANC Reg', 'anc'));
+
                 return (
-                    <div key={m.id} className={`member-card ${m.id === selectedId ? 'active' : ''}`} id={`memberCard_${m.id}`} onClick={() => onSelect(m.id)}>
-                        <div>
+                    <div
+                        key={m.id}
+                        className={`member-card ${m.id === selectedId ? 'active' : ''}`}
+                        id={`memberCard_${m.id}`}
+                        onClick={() => onSelect(m.id)}
+                    >
+                        <div className="member-card-body">
                             <div className="member-card-header">
-                                <div>
-                                    <div className="member-name">{m.name}</div>
-                                    <div className="member-relation">{`${m.relation_to_hof || 'Member'} • ${m.age_years} yrs (${m.gender})${contact}`}</div>
-                                    {m.added_by_patient_id
-                                        ? <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '0.68rem', marginTop: '4px' }} title="Added by the family from the patient portal">✍ Added by family</span>
-                                        : m.patient_updated_at
-                                            ? <span className="badge" style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.68rem', marginTop: '4px' }} title="Basic details were updated by the family from the patient portal">✍ Updated by family</span>
-                                            : null}
+                                <div className="member-card-info">
+                                    <h4 className="member-name">{m.name}</h4>
+                                    <div className="member-relation">{demographics}</div>
+                                    {m.contact_number && (
+                                        <div className="member-phone">
+                                            <span className="member-phone-icon">📞</span>
+                                            <span>{m.contact_number}</span>
+                                        </div>
+                                    )}
+                                    {m.added_by_patient_id ? (
+                                        <span className="member-portal-badge portal-added" title="Added by the family from the patient portal">
+                                            ✍ Added by family
+                                        </span>
+                                    ) : m.patient_updated_at ? (
+                                        <span className="member-portal-badge portal-updated" title="Basic details were updated by the family from the patient portal">
+                                            ✍ Updated by family
+                                        </span>
+                                    ) : null}
                                 </div>
-                                <span className="badge badge-info">#{String(m.member_order)}</span>
+                                <span className="member-order-pill">#{String(m.member_order)}</span>
                             </div>
-                            <div className="member-tags">
-                                {tags.length > 0
-                                    ? tags.flatMap((t, i) => (i ? [' ', t] : [t]))
-                                    : <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontStyle: 'italic' }}>No recorded conditions</span>}
-                            </div>
+
+                            {tags.length > 0 && (
+                                <div className="member-tags">
+                                    {tags}
+                                </div>
+                            )}
                         </div>
+
                         <div className="member-card-vitals">
-                            <span>🩺 <strong>{bpText || 'BP: -'}</strong> • <strong>{hbText || 'Hb: -'}</strong> {m.bmi ? <>• BMI: <strong>{m.bmi}</strong></> : ''}</span>
-                            <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.78rem' }}>Inspect →</span>
+                            <div className="member-vitals-group">
+                                {bpVal && (
+                                    <span className="vital-chip">
+                                        <span className="vital-lbl">BP</span>
+                                        <span className="vital-val">{bpVal}</span>
+                                    </span>
+                                )}
+                                {hbVal && (
+                                    <span className="vital-chip">
+                                        <span className="vital-lbl">Hb</span>
+                                        <span className="vital-val">{hbVal}</span>
+                                    </span>
+                                )}
+                                {bmiVal && (
+                                    <span className="vital-chip">
+                                        <span className="vital-lbl">BMI</span>
+                                        <span className="vital-val">{bmiVal}</span>
+                                    </span>
+                                )}
+                                {!bpVal && !hbVal && !bmiVal && (
+                                    <span className="vital-chip-routine">Routine check</span>
+                                )}
+                            </div>
+                            <span className="member-inspect-action">
+                                Inspect →
+                            </span>
                         </div>
                     </div>
                 );
@@ -84,7 +132,7 @@ function Actions({ kind, id, onEdit, onDelete }: { kind: string; id: number; onE
 type Crud = { onEdit: (id: number) => void; onDelete: (id: number) => void };
 
 export function ConditionsList({ items, onEdit, onDelete }: { items: Condition[] } & Crud) {
-    if (!items || items.length === 0) return <div style={muted}>No conditions recorded for this member. Click "+ Add Condition" to record one.</div>;
+    if (!items || items.length === 0) return <div className="sub-entity-empty">No conditions recorded for this member. Click "+ Add Condition" to record one.</div>;
     return (
         <>
             {items.map((c) => (
@@ -109,7 +157,7 @@ export function ConditionsList({ items, onEdit, onDelete }: { items: Condition[]
 }
 
 export function MedicationsList({ items, onEdit, onDelete }: { items: Medication[] } & Crud) {
-    if (!items || items.length === 0) return <div style={muted}>No medications recorded for this member. Click "+ Add Medication" to log prescription.</div>;
+    if (!items || items.length === 0) return <div className="sub-entity-empty">No medications recorded for this member. Click "+ Add Medication" to log prescription.</div>;
     return (
         <>
             {items.map((m) => (
@@ -135,7 +183,7 @@ export function MedicationsList({ items, onEdit, onDelete }: { items: Medication
 }
 
 export function AllergiesList({ items, onEdit, onDelete }: { items: Allergy[] } & Crud) {
-    if (!items || items.length === 0) return <div style={muted}>No allergies recorded for this member. Click "+ Add Allergy" to record.</div>;
+    if (!items || items.length === 0) return <div className="sub-entity-empty">No allergies recorded for this member. Click "+ Add Allergy" to record.</div>;
     return (
         <>
             {items.map((a) => (
@@ -158,7 +206,7 @@ export function AllergiesList({ items, onEdit, onDelete }: { items: Allergy[] } 
 }
 
 export function HistoryList({ items, onEdit, onDelete }: { items: HistoryItem[] } & Crud) {
-    if (!items || items.length === 0) return <div style={muted}>No surgical or past medical events recorded. Click "+ Add History" to log past procedures.</div>;
+    if (!items || items.length === 0) return <div className="sub-entity-empty">No surgical or past medical events recorded. Click "+ Add History" to log past procedures.</div>;
     return (
         <>
             {items.map((h) => (
@@ -186,13 +234,13 @@ export function LifestyleView({ lifestyle }: { lifestyle: Lifestyle | null | und
     const l = lifestyle;
     return (
         <>
-            <div><span style={capLabel}>Tobacco / Smoking</span><strong>{l.smoking_status || 'Never'}</strong> {l.smoking_frequency ? `(${l.smoking_frequency})` : ''}</div>
-            <div><span style={capLabel}>Alcohol</span><strong>{l.alcohol_consumption || 'Never'}</strong></div>
-            <div><span style={capLabel}>Diet Type</span><span>{l.diet_type || 'Vegetarian'}</span></div>
-            <div><span style={capLabel}>Activity Level</span><span>{l.physical_activity_level || 'Moderate'}</span></div>
-            <div><span style={capLabel}>Salt Intake</span><span>{l.salt_intake || 'Normal'}</span></div>
-            <div><span style={capLabel}>Sleep Hours</span><span>{l.sleep_hours_per_night ? `${l.sleep_hours_per_night} hrs/night` : 'Unrecorded'}</span></div>
-            {l.notes ? <div style={{ gridColumn: '1 / -1' }}><span style={capLabel}>Counseling / Lifestyle Notes</span><em>{l.notes}</em></div> : null}
+            <div className="lifestyle-grid-item"><span style={capLabel}>Tobacco / Smoking</span><strong>{l.smoking_status || 'Never'}</strong> {l.smoking_frequency ? `(${l.smoking_frequency})` : ''}</div>
+            <div className="lifestyle-grid-item"><span style={capLabel}>Alcohol</span><strong>{l.alcohol_consumption || 'Never'}</strong></div>
+            <div className="lifestyle-grid-item"><span style={capLabel}>Diet Type</span><span>{l.diet_type || 'Vegetarian'}</span></div>
+            <div className="lifestyle-grid-item"><span style={capLabel}>Activity Level</span><span>{l.physical_activity_level || 'Moderate'}</span></div>
+            <div className="lifestyle-grid-item"><span style={capLabel}>Salt Intake</span><span>{l.salt_intake || 'Normal'}</span></div>
+            <div className="lifestyle-grid-item"><span style={capLabel}>Sleep Hours</span><span>{l.sleep_hours_per_night ? `${l.sleep_hours_per_night} hrs/night` : 'Unrecorded'}</span></div>
+            {l.notes ? <div className="lifestyle-grid-item" style={{ gridColumn: '1 / -1' }}><span style={capLabel}>Counseling / Lifestyle Notes</span><em>{l.notes}</em></div> : null}
         </>
     );
 }
@@ -200,13 +248,13 @@ export function LifestyleView({ lifestyle }: { lifestyle: Lifestyle | null | und
 export function Demographics({ m }: { m: MemberDetail }) {
     return (
         <>
-            <div><span style={capLabel}>Date of Birth</span><strong>{m.date_of_birth || 'Not recorded'}</strong></div>
-            <div><span style={capLabel}>Age / Gender</span><strong>{`${m.age_years} yrs (${m.gender})`}</strong></div>
-            <div><span style={capLabel}>Marital Status</span><span>{m.marital_status || 'NA'}</span></div>
-            <div><span style={capLabel}>Education</span><span>{m.education_level || 'NA'}</span></div>
-            <div><span style={capLabel}>Occupation</span><span>{m.occupation || 'NA'}</span></div>
-            <div><span style={capLabel}>Contact Phone</span><span>{m.contact_number || m.contact_phone || 'None'}</span></div>
-            <div><span style={capLabel}>Physical Activity</span><span>{m.work_type || 'Moderate'}</span></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Date of Birth</span><strong>{m.date_of_birth || 'Not recorded'}</strong></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Age / Gender</span><strong>{`${m.age_years} yrs (${m.gender})`}</strong></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Marital Status</span><span>{m.marital_status || 'NA'}</span></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Education</span><span>{m.education_level || 'NA'}</span></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Occupation</span><span>{m.occupation || 'NA'}</span></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Contact Phone</span><span>{m.contact_number || m.contact_phone || 'None'}</span></div>
+            <div className="demographics-grid-item"><span style={capLabel}>Physical Activity</span><span>{m.work_type || 'Moderate'}</span></div>
         </>
     );
 }
@@ -244,7 +292,7 @@ export function Baseline({ m }: { m: MemberDetail }) {
 export function Timeline({ followUps, onDelete }: { followUps: FollowUp[]; onDelete: (id: number) => void }) {
     if (!followUps || followUps.length === 0) {
         return (
-            <div style={{ background: 'var(--bg-subtle)', border: '1.5px dashed var(--border-light)', borderRadius: 'var(--radius-md)', padding: '1.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <div className="sub-entity-empty" style={{ padding: '2rem 1rem' }}>
                 No follow-up visits recorded yet for this patient.<br />
                 Click <strong>"+ Log New Visit"</strong> above to record an examination visit.
             </div>

@@ -416,4 +416,150 @@
       #btnSaveNext { grid-column: 1 / -1; }
       #memberSurveyForm :is(input, select, textarea) { scroll-margin-bottom: 230px; }
     }
-  
+
+  /* ── Clinical Survey Data Entry Form Styling (Parity with Add Family / Family Study) ── */
+  .survey-sections-container {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .survey-category-card {
+    margin-bottom: 20px;
+  }
+
+  /* Container enclosing data entries with a very light purple card background matching Add Family */
+  .survey-category-card .category-fields-wrap {
+    background: #faf7ff !important;
+    border: 1px solid #ede9fe !important;
+    border-radius: 10px !important;
+    padding: 16px 18px !important;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+  }
+
+  /* Form grid row & column spacing - generous 20px gap to the next entry */
+  .survey-sections-container .form-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)) !important;
+    column-gap: 16px !important;
+    row-gap: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Tight 5px coupling between label and input */
+  .survey-sections-container .form-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Shrunk, refined data entry field labels (direct child only) */
+  .survey-sections-container .form-group > label {
+    font-size: 0.775rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+  }
+
+  /* Shrunk data entry inputs, selects, textareas matching Add Family */
+  .survey-sections-container input:not([type="checkbox"]):not([type="radio"]),
+  .survey-sections-container textarea {
+    font-size: 0.825rem !important;
+    padding: 8px 11px !important;
+    border-radius: 6px !important;
+    border: 1px solid #dce5dd !important;
+    background-color: #ffffff !important;
+    line-height: 1.4 !important;
+    min-height: 38px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    color: #1e293b !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  }
+
+  .survey-sections-container select {
+    font-size: 0.825rem !important;
+    padding: 0 34px 0 11px !important;
+    border-radius: 6px !important;
+    border: 1.5px solid #dce5dd !important;
+    background-color: #ffffff !important;
+    line-height: 1.4 !important;
+    min-height: 38px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    color: #1e293b !important;
+    cursor: pointer !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  }
+
+  .survey-sections-container input:not([type="checkbox"]):not([type="radio"]):focus,
+  .survey-sections-container select:focus,
+  .survey-sections-container textarea:focus {
+    border-color: var(--primary, #7c3aed) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.15) !important;
+  }
+
+  /* Refined radio & bullet inputs */
+  .survey-sections-container input[type="radio"],
+  input[type="radio"] {
+    appearance: auto !important;
+    -webkit-appearance: radio !important;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    accent-color: var(--primary, #7c3aed) !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    vertical-align: middle;
+  }
+
+  /* Desktop baseline alignment across columns */
+  @media (min-width: 640px) {
+    .survey-sections-container .form-grid .form-group {
+      justify-content: flex-end !important;
+    }
+    .survey-sections-container .form-grid .form-group > label {
+      min-height: 2.1rem !important;
+      display: flex !important;
+      align-items: flex-end !important;
+    }
+  }
+
+  /* Mobile: Single-column clean vertical stack with proper 1:4 label vs next-entry ratio */
+  @media (max-width: 639px) {
+    .survey-sections-container .form-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+      row-gap: 18px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .survey-sections-container .form-group {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      justify-content: flex-start !important;
+      gap: 5px !important;
+    }
+    .survey-sections-container .form-grid .form-group > label {
+      min-height: unset !important;
+      display: flex !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+    }
+  }
