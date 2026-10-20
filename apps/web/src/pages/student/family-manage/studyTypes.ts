@@ -122,9 +122,9 @@ export const DEFAULT_STUDY_DATA: FamilyStudyData = {
     address_details: 'Opp. Science City, Sola-Bhadaj Road, Ahmedabad, Gujarat 380060',
     student_name: 'Sangada Pratik Ashishbhai',
     roll_no: '271',
-    mentor_name_designation: 'Dr. Mentor (Assistant Professor, Community Medicine)',
-    asha_name_experience: 'ASHA Worker (5 years experience)',
-    asha_address: 'Santej Sub-Center, Gandhinagar',
+    mentor_name_designation: '',
+    asha_name_experience: '',
+    asha_address: '',
 
     village_name: 'Santej',
     tehsil_district: 'Kalol / Gandhinagar',

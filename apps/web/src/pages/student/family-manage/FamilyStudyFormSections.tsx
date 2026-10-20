@@ -35,33 +35,49 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
         setCollapsed((prev) => ({ ...prev, [sec]: !prev[sec] }));
     };
 
-    const SectionHeader = ({ id, icon, title, badge, desc }: { id: string; icon: string; title: string; badge?: string; desc?: string }) => {
+    const SectionHeader = ({ id, title }: { id: string; title: string }) => {
         const isClosed = !!collapsed[id];
         return (
             <div
                 onClick={() => toggleSection(id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(id); } }}
                 style={{
-                    background: 'linear-gradient(135deg, rgba(109, 40, 217, 0.05), rgba(79, 70, 229, 0.02))',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    margin: '18px 0 10px',
-                    cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    padding: '12px 14px',
+                    marginTop: '20px',
+                    marginBottom: '12px',
+                    background: '#f8fafc',
+                    borderLeft: '4px solid var(--primary)',
+                    borderTop: '1px solid var(--border)',
+                    borderRight: '1px solid var(--border)',
+                    borderBottom: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
                     userSelect: 'none',
-                    transition: 'all 0.2s ease',
+                    transition: 'background 0.15s ease',
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.15rem' }}>{icon}</span>
-                    <strong style={{ fontSize: '0.925rem', color: 'var(--primary)', fontWeight: 650 }}>{title}</strong>
-                    {badge && <span className="badge badge-info" style={{ fontSize: '0.75rem', padding: '2px 7px' }}>{badge}</span>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {desc && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{desc}</span>}
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', transform: isClosed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                <h3 style={{
+                    margin: 0,
+                    fontSize: '0.96rem',
+                    fontWeight: 700,
+                    color: '#1e293b',
+                    letterSpacing: '-0.01em',
+                }}>
+                    {title}
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>{isClosed ? 'Show' : 'Hide'}</span>
+                    <span style={{
+                        fontSize: '0.72rem',
+                        display: 'inline-block',
+                        transform: isClosed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                    }}>▼</span>
                 </div>
             </div>
         );
@@ -101,22 +117,22 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
     return (
         <div className="family-study-form-sections">
             {/* 1. Academic & Student Journal Cadre Details */}
-            <SectionHeader id="cadre" icon="🎓" title="Academic & Cadre Information" badge="Official Journal Header" />
+            <SectionHeader id="cadre" title="Academic & Cadre Information" />
             <div style={{ display: collapsed.cadre ? 'none' : 'block' }}>
                 <p className="card-desc" style={{ marginBottom: '10px' }}>Cadet credentials, academic institution and community mentor details.</p>
                 <div className="form-grid">
                     {kit.inp('college_name', 'College Name, University *', 'e.g. SAL Institute of Medical Sciences', true, 'text', true)}
                     {kit.inp('student_name', 'Name of the Student *', 'e.g. Sangada Pratik Ashishbhai', true, 'text', true)}
                     {kit.inp('roll_no', 'Roll Number *', 'e.g. 271', true, 'text', true)}
-                    {kit.inp('address_details', 'College / Hospital Address', 'e.g. Opp. Science City, Ahmedabad')}
-                    {kit.inp('mentor_name_designation', 'Name of the Mentor with Designation', 'e.g. Dr. Mentor (Asst Prof, PSM/Community Med)')}
-                    {kit.inp('asha_name_experience', 'Name of ASHA Worker & Experience', 'e.g. Smt. Patel (5 yrs experience)')}
+                    {kit.inp('address_details', 'College / Hospital Address', 'e.g. Opp. Science City, Sola-Bhadaj Road, Ahmedabad, Gujarat 380060')}
+                    {kit.inp('mentor_name_designation', 'Name of the Mentor with Designation', 'e.g. Dr. Mentor (Assistant Professor, Community Medicine)')}
+                    {kit.inp('asha_name_experience', 'Name of ASHA Worker & Experience', 'e.g. ASHA Worker (5 years experience)')}
                     {kit.inp('asha_address', 'Address of ASHA Worker', 'e.g. Santej Sub-Center, Gandhinagar')}
                 </div>
             </div>
 
             {/* 2. General Information */}
-            <SectionHeader id="general" icon="📋" title="General Household Demographics" badge="Page 26" />
+            <SectionHeader id="general" title="General Household Demographics" />
             <div style={{ display: collapsed.general ? 'none' : 'block' }}>
                 <div className="form-grid">
                     {kit.inp('household_no', 'Household No. (Family Number) *', 'e.g. 1', false, 'number', true)}
@@ -126,7 +142,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     {kit.inp('state', 'State', 'e.g. Gujarat')}
                     {kit.inp('religion', 'Religion', 'e.g. Valmiki / Hindu')}
                     {kit.inp('caste', 'Caste', 'e.g. Valmiki')}
-                    {kit.inp('address', 'House / Street Address', 'e.g. Near Gram Panchayat')}
+                    {kit.inp('address', 'House / Street Address', 'e.g. Near Gram Panchayat, Santej')}
                     {kit.inp('city', 'City / Town', 'e.g. Ahmedabad')}
                     {kit.inp('pincode', 'Pincode', 'e.g. 382721')}
                     {phoneSlot}
@@ -137,12 +153,12 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     {kit.sel('ayushman_card', 'Ayushman Card (Y/N)', STUDY_OPT.yn)}
                     {kit.inp('ayushman_card_no', 'If Yes, Ayushman Card no.', 'e.g. PMJAY-1234-5678')}
                     {kit.sel('bpl_card', 'BPL Card (Y/N)', STUDY_OPT.yn)}
-                    {kit.inp('govt_schemes_benefits', 'Benefits of any Government schemes', 'e.g. PMJAY, PDS Ration')}
+                    {kit.inp('govt_schemes_benefits', 'Benefits of any Government schemes', 'e.g. PMJAY-MAA Card, PDS Ration')}
                 </div>
             </div>
 
             {/* 3. Socio-Economic Details */}
-            <SectionHeader id="socio" icon="💰" title="Socio-Economic Details & Expenditures" badge="Page 26-27" />
+            <SectionHeader id="socio" title="Socio-Economic Details & Expenditures" />
             <div style={{ display: collapsed.socio ? 'none' : 'block' }}>
                 <p className="card-desc" style={{ marginBottom: '10px' }}>Modified Prasad's classification and monthly family expenditure breakdown.</p>
                 <div className="form-grid">
@@ -163,8 +179,8 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     {kit.sel('debt', 'Debt (Yes / No)', STUDY_OPT.yesNo)}
                 </div>
 
-                <div style={{ marginTop: '14px', padding: '12px', background: 'var(--bg-subtle)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '0.825rem', fontWeight: 650, color: 'var(--primary)', marginBottom: '8px' }}>
+                <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-subtle)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '10px' }}>
                         Approximate Monthly Expenditure Breakdown (₹)
                     </div>
                     <div className="form-grid">
@@ -217,7 +233,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             {/* 4. Nutritional Assessment */}
             {nutritionSlot && (
                 <>
-                    <SectionHeader id="nutrition" icon="🥗" title="Nutritional & Caloric Assessment" badge="Clinical Field Assessment" />
+                    <SectionHeader id="nutrition" title="Nutritional & Caloric Assessment" />
                     <div style={{ display: collapsed.nutrition ? 'none' : 'block' }}>
                         <div className="form-grid">{nutritionSlot}</div>
                     </div>
@@ -225,7 +241,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             )}
 
             {/* 5. Environment - 1. Housing & Physical Environment */}
-            <SectionHeader id="housing" icon="🏡" title="Environment: Housing & Physical Environment" badge="Page 27-28" />
+            <SectionHeader id="housing" title="Housing & Physical Environment" />
             <div style={{ display: collapsed.housing ? 'none' : 'block' }}>
                 <p className="card-desc" style={{ marginBottom: '10px' }}>Structure, materials, ventilation, overcrowding, and kitchen facilities.</p>
                 <div className="form-grid">
@@ -244,9 +260,9 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
                     {kit.sel('lighting', 'Light', STUDY_OPT.adequate)}
                 </div>
 
-                <div style={{ marginTop: '14px', padding: '12px', background: 'var(--bg-subtle)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '0.825rem', fontWeight: 650, color: 'var(--primary)', marginBottom: '8px' }}>
-                        🍳 Kitchen &amp; Cooking Facilities (Page 27-28)
+                <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-subtle)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '10px' }}>
+                        Kitchen &amp; Cooking Facilities
                     </div>
                     <div className="form-grid">
                         {kit.sel('kitchen_separate', 'Kitchen (Separate / Not separate)', STUDY_OPT.kitchenSep)}
@@ -265,7 +281,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 6. Water Supply & Sanitation */}
-            <SectionHeader id="water" icon="💧" title="Water Supply & Sanitation Facilities" badge="Page 28" />
+            <SectionHeader id="water" title="Water Supply & Sanitation Facilities" />
             <div style={{ display: collapsed.water ? 'none' : 'block' }}>
                 <div className="form-grid">
                     {kit.sel('water_supply', 'Water supply available (Y/N)', STUDY_OPT.yn)}
@@ -287,7 +303,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 7. Biological Environment */}
-            <SectionHeader id="biological" icon="🐾" title="2. Biological Environment" badge="Page 28" />
+            <SectionHeader id="biological" title="Biological Environment & Pest Control" />
             <div style={{ display: collapsed.biological ? 'none' : 'block' }}>
                 <p className="card-desc" style={{ marginBottom: '10px' }}>Livestock, domestic animals, stable facilities, vector breeding and pests.</p>
                 <div className="form-grid">
@@ -302,7 +318,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 8. Psychosocial Environment (Option-wise: Good / Bad) */}
-            <SectionHeader id="psychosocial" icon="🤝" title="3. Psychosocial Environment" badge="Page 28" />
+            <SectionHeader id="psychosocial" title="Psychosocial Environment" />
             <div style={{ display: collapsed.psychosocial ? 'none' : 'block' }}>
                 <p className="card-desc" style={{ marginBottom: '10px' }}>Interpersonal relationships (Good / Bad) and community customs.</p>
                 <div className="form-grid">
@@ -314,7 +330,7 @@ export function FamilyStudyFormSections({ kit, data, setData, nutritionSlot, pho
             </div>
 
             {/* 9. Available Health Facility in the Area */}
-            <SectionHeader id="facility" icon="🏥" title="4. Available Health Facility in the Area" badge="Page 28" />
+            <SectionHeader id="facility" title="Available Health Facility in the Area" />
             <div style={{ display: collapsed.facility ? 'none' : 'block' }}>
                 <div className="form-grid">
                     {kit.inp('health_facility_name', 'Specify Facility Name', 'e.g. Santej Primary Health Centre (PHC)')}

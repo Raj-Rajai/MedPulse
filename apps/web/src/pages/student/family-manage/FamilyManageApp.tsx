@@ -1043,12 +1043,11 @@ export function FamilyManageApp() {
                     <div className="card" id="createFamilyCard" style={{ display: createOpen ? 'block' : 'none', border: '1px solid var(--primary-border)', boxShadow: 'var(--shadow-md)', padding: '24px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '8px' }}>
                             <div>
-                                <h2 className="card-title" style={{ color: 'var(--primary)', marginBottom: '0.15rem' }}>Register household: 1. Family study</h2>
-                                <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>Official Student Journal Proforma (Pages 26–28)</span>
+                                <h2 className="card-title" style={{ color: 'var(--primary)', marginBottom: '0.15rem' }}>Register household</h2>
                             </div>
                             <button className="btn btn-secondary" onClick={hideCreateFamilyForm} style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>✕ Close</button>
                         </div>
-                        <p className="card-desc">Enter comprehensive family health, environmental, and socio-economic survey data. All questions are organized per the official medical journal categories.</p>
+                        <p className="card-desc">Enter identification and geographic details for the household. Once created, you can immediately add individual members and structured health profiles.</p>
 
                         <form id="createFamilyForm" onSubmit={(e) => { e.preventDefault(); submitCreateFamily(); }}>
                             <FamilyStudyFormSections

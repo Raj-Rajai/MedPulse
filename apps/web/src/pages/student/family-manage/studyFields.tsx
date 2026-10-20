@@ -96,7 +96,7 @@ export function createStudyKit(
                     placeholder={placeholder}
                     readOnly={readOnly}
                     required={required}
-                    style={readOnly ? { background: 'rgba(109, 40, 217, 0.05)', color: 'var(--accent)', fontWeight: 650, cursor: 'not-allowed' } : undefined}
+                    style={readOnly ? { background: '#faf7ff', borderColor: '#ede9fe', color: '#7c3aed', fontWeight: 600, cursor: 'default' } : undefined}
                     onChange={(e) => setField(key, e.target.value)}
                 />
             </div>

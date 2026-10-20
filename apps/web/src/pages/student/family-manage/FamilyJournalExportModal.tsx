@@ -165,13 +165,13 @@ export function FamilyJournalExportModal({ open, family, studyData, onClose }: P
                                 <Field label="ROLL NO" value={studyData.roll_no || '271'} />
                             </div>
                             <div style={{ gridColumn: '1 / -1' }}>
-                                <Field label="NAME OF THE MENTOR WITH DESIGNATION" value={studyData.mentor_name_designation || 'Dr. Mentor (Assistant Professor, Community Medicine)'} />
+                                <Field label="NAME OF THE MENTOR WITH DESIGNATION" value={studyData.mentor_name_designation || '—'} />
                             </div>
                             <div style={{ gridColumn: '1 / -1' }}>
-                                <Field label="NAME OF ASHA WORKER &amp; EXPERIENCE" value={studyData.asha_name_experience || 'ASHA Worker (5 years experience)'} />
+                                <Field label="NAME OF ASHA WORKER &amp; EXPERIENCE" value={studyData.asha_name_experience || '—'} />
                             </div>
                             <div style={{ gridColumn: '1 / -1' }}>
-                                <Field label="ADDRESS OF ASHA WORKER" value={studyData.asha_address || 'Santej Sub-Center, Gandhinagar'} />
+                                <Field label="ADDRESS OF ASHA WORKER" value={studyData.asha_address || '—'} />
                             </div>
                         </div>
 
