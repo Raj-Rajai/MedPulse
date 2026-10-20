@@ -12,7 +12,7 @@ import { TOAST_ENTRY, useToasts } from '../common/Toasts';
 import { errMsg, runWhenActive } from '../common/utils';
 import { LocationVerificationCard } from '../common/fieldLocation';
 import { Select, selectValue, type Option } from '../common/Select';
-import { familyCode, isSurveyDone, type FamilyDetail, type FamilySummary, type Member } from './types';
+import { isSurveyDone, type FamilyDetail, type FamilySummary, type Member } from './types';
 import { INITIAL_FORM, checkAdultVitals, checkMuac, computeWhr, formFromMember, payloadFromForm, type MuacStatus, type SurveyForm, type Whr } from './survey';
 import { SurveyFormView } from './SurveyForm';
 import { ConfidentialityNoticeModal } from '../../../shared/privacy/ConfidentialityNoticeModal';
@@ -37,14 +37,7 @@ export function EntryApp() {
         closeModal,
     } = useStudentPrivacy(loggedInStudent?.roll_number);
 
-    const [families, setFamilies] = useState<FamilySummary[]>([]);
     const [loadState, setLoadState] = useState<LoadState>('loading');
-    const [query, setQuery] = useState('');
-    /** renderCustomFamilySelect() has run (after loading, or when the menu filters). */
-    const [listRendered, setListRendered] = useState(false);
-    /** The custom trigger keeps the last family that was found in the list. */
-    const [triggerFamily, setTriggerFamily] = useState<FamilySummary | null>(null);
-    const [menuOpen, setMenuOpen] = useState(false);
     const [familyId, setFamilyId] = useState<number | null>(null);
     const [familyData, setFamilyData] = useState<FamilyDetail | null>(null);
     const [dietOpen, setDietOpen] = useState(false);
@@ -59,14 +52,11 @@ export function EntryApp() {
     const [maleAlert, setMaleAlert] = useState<Whr | null>(null);
     const [saving, setSaving] = useState<'save' | 'next' | null>(null);
 
-    const [stripScroll, setStripScroll] = useState<{ id: number; n: number } | null>(null);
     const [rosterScroll, setRosterScroll] = useState<{ id: number; n: number } | null>(null);
     const [dietScroll, setDietScroll] = useState(0);
 
     const familiesRef = useRef<FamilySummary[]>([]);
     const familyDataRef = useRef<FamilyDetail | null>(null);
-    const searchRef = useRef<HTMLInputElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
 
     const members = familyData?.members || [];
     const member = members.find((m) => m.id === memberId) || null;
@@ -88,9 +78,6 @@ export function EntryApp() {
     /* ---- Select family and fetch roster ---- */
     const selectFamily = useCallback(async (id: number, preselectMemberId: number | null = null) => {
         setFamilyId(id);
-        const found = familiesRef.current.find((f) => f.id === id);
-        if (found) setTriggerFamily(found);
-        setStripScroll((s) => ({ id, n: (s?.n || 0) + 1 }));
         try {
             const res = await fetch(`/api/families/${id}`);
             const data = (await res.json()) as FamilyDetail;
@@ -122,13 +109,10 @@ export function EntryApp() {
                 const list = (await res.json()) as FamilySummary[];
                 if (!list || list.length === 0) {
                     setLoadState('empty');
-                    setListRendered(true);
                 } else {
                     if (!Array.isArray(list)) throw new TypeError('allFamilies.map is not a function');
                     familiesRef.current = list;
-                    setFamilies(list);
                     setLoadState('list');
-                    setListRendered(true);
                 }
             } catch (err) {
                 console.error('Error loading families dropdown:', err);
@@ -148,54 +132,11 @@ export function EntryApp() {
 
     /* ---- Scroll effects (scrollIntoView calls of the original) ---- */
     useEffect(() => {
-        if (stripScroll) document.getElementById(`quickFamilyCard_${stripScroll.id}`)?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
-    }, [stripScroll]);
-    useEffect(() => {
         if (rosterScroll) document.getElementById(`rosterCard_${rosterScroll.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }, [rosterScroll]);
     useEffect(() => {
         if (dietScroll) document.getElementById('familyDietCard')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, [dietScroll]);
-
-    /* ---- Custom dropdown ---- */
-    const closeMenu = useCallback(() => setMenuOpen(false), []);
-    useEffect(() => {
-        const onClick = (e: MouseEvent) => {
-            const c = containerRef.current;
-            if (c && !c.contains(e.target as Node)) closeMenu();
-        };
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') closeMenu();
-        };
-        document.addEventListener('click', onClick);
-        document.addEventListener('keydown', onKey);
-        return () => {
-            document.removeEventListener('click', onClick);
-            document.removeEventListener('keydown', onKey);
-        };
-    }, [closeMenu]);
-
-    const toggleMenu = () => {
-        if (menuOpen) {
-            closeMenu();
-            return;
-        }
-        setMenuOpen(true);
-        setQuery('');
-        setListRendered(true);
-        setTimeout(() => searchRef.current?.focus(), 60);
-    };
-    const onCustomSelectFamily = (id: number) => {
-        closeMenu();
-        selectFamily(id);
-    };
-
-    const q = query.toLowerCase().trim();
-    const shown = families.filter((f) => {
-        const code = familyCode(f).toLowerCase();
-        return code.includes(q) || (f.head_of_family || '').toLowerCase().includes(q) || (f.village_ward || '').toLowerCase().includes(q);
-    });
-    const selectedF = triggerFamily;
 
     /* ---- Household diet ---- */
     const toggleDiet = () => {
@@ -314,8 +255,6 @@ export function EntryApp() {
         if (m.anc_taken === 'Y') pills.push(<span key="anc" className="badge badge-success">ANC Reg</span>);
     }
 
-    const familyOptionLabel = (f: FamilySummary) => `[${familyCode(f)}] #${f.family_no} — ${f.head_of_family} (${f.village_ward || 'Ward'}, ${f.member_count || 0} members)`;
-
     return (
         <BodyPortal>
             <SidebarOverlay onClose={standardSidebar.close} />
@@ -338,107 +277,7 @@ export function EntryApp() {
                     </div>
                 </div>
 
-                <div className="family-selector-board card anim-fade-up anim-delay-1">
-                    <div className="selector-board-top">
-                        <div className="custom-select-container" ref={containerRef}>
-                            <label className="family-selector-label">
-                                <span>🏠</span>
-                                <span>Household</span>
-                            </label>
 
-                            <button type="button" id="customSelectTrigger" className={`custom-select-trigger${menuOpen ? ' open' : ''}`} onClick={toggleMenu}>
-                                <div id="customTriggerContent" className="custom-trigger-content">
-                                    {selectedF ? (
-                                        <div className="trigger-active-card">
-                                            <span className="badge badge-info" style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem', fontWeight: 700 }}>{familyCode(selectedF)}</span>
-                                            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', lineHeight: '1.25' }}>
-                                                <span className="trigger-active-title">{selectedF.head_of_family}</span>
-                                                <span className="trigger-active-sub">{`${selectedF.village_ward || 'Field Area'} • 👥 ${selectedF.member_count || 0} members`}</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <span className="trigger-placeholder">{loadState === 'loading' ? 'Loading households…' : loadState === 'empty' ? 'No households yet' : 'Choose a household'}</span>
-                                    )}
-                                </div>
-                                <span className="custom-trigger-arrow" id="customTriggerArrow">▾</span>
-                            </button>
-
-                            <select
-                                id="familySelect" className="family-select-input sr-only" value={familyId != null ? String(familyId) : ''}
-                                onChange={(e) => { const id = parseInt(e.target.value, 10); if (id) selectFamily(id); }}
-                            >
-                                {loadState === 'loading' && <option value="" disabled>Loading surveyed families...</option>}
-                                {loadState === 'empty' && <option value="">No households recorded yet</option>}
-                                {loadState === 'list' && <option value="" disabled>-- Select a Household Unit --</option>}
-                                {loadState === 'list' && families.map((f) => <option key={f.id} value={f.id}>{familyOptionLabel(f)}</option>)}
-                            </select>
-
-                            <div id="customSelectMenu" className="custom-select-menu" style={{ display: menuOpen ? 'block' : 'none' }}>
-                                <div className="custom-select-search-wrap">
-                                    <span className="search-icon">🔍</span>
-                                    <input
-                                        type="text" id="customSelectSearch" className="custom-select-search" ref={searchRef}
-                                        placeholder="Search household code, head name, ward..." autoComplete="off" value={query} onChange={(e) => setQuery(e.target.value)}
-                                    />
-                                </div>
-                                <div className="custom-select-header">
-                                    <span>Surveyed Households</span>
-                                    <span id="customSelectCount" className="badge badge-info">{listRendered ? shown.length : 0}</span>
-                                </div>
-                                <div id="customSelectList" className="custom-select-list">
-                                    {listRendered && (shown.length === 0 ? (
-                                        <div style={{ padding: '1.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                            No households registered under your cadet cadre yet.<br />
-                                            <a href="/family-manage.html" className="btn btn-primary" style={{ marginTop: '10px', fontSize: '0.8rem', padding: '6px 14px' }}>+ Register Household in Family Management</a>
-                                        </div>
-                                    ) : shown.map((f) => {
-                                        const active = familyId === f.id;
-                                        return (
-                                            <div key={f.id} className={`custom-select-item ${active ? 'active' : ''}`} onClick={() => onCustomSelectFamily(f.id)} id={`customFamilyItem_${f.id}`}>
-                                                <div className="custom-select-item-left">
-                                                    <span className="badge badge-info" style={{ fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem 0.5rem', letterSpacing: '0.02em' }}>{familyCode(f)}</span>
-                                                    <div className="custom-select-item-info">
-                                                        <span className="custom-select-item-name">{f.head_of_family}</span>
-                                                        <span className="custom-select-item-meta">{`${f.village_ward || 'Field Area'} • 👥 ${f.member_count || 0} members`}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="custom-select-item-right">{active ? <span className="custom-select-check">✓</span> : null}</div>
-                                            </div>
-                                        );
-                                    }))}
-                                </div>
-                                <div className="custom-select-footer">
-                                    <a href="/family-manage.html" className="custom-select-footer-link">
-                                        <span>➕ Register / Manage Families</span>
-                                        <span>→</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="selector-board-strip-wrap" style={loadState === 'empty' ? { display: 'none' } : undefined}>
-                        <div className="strip-label-row">
-                            <span className="strip-label">Recent households</span>
-                                                    </div>
-                        <div id="quickFamilyStrip" className="family-horizontal-strip">
-                            {listRendered && (shown.length === 0 ? (
-                                <div style={{ padding: '0.5rem 0.25rem', color: 'var(--text-muted)', fontSize: '0.825rem' }}>
-                                    No households registered yet. <a href="/family-manage.html" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'underline' }}>+ Register Household</a>
-                                </div>
-                            ) : shown.map((f) => (
-                                <div key={f.id} className={`family-strip-card ${familyId === f.id ? 'active' : ''}`} onClick={() => onCustomSelectFamily(f.id)} id={`quickFamilyCard_${f.id}`}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                                        <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem' }}>{familyCode(f)}</span>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>👥 {f.member_count || 0}</span>
-                                    </div>
-                                    <div className="family-strip-name" title={f.head_of_family}>{f.head_of_family}</div>
-                                    <div className="family-strip-meta">{f.village_ward || 'Ward'}</div>
-                                </div>
-                            )))}
-                        </div>
-                    </div>
-                </div>
 
                 <div className="card" id="familyDietCard" style={{ display: dietOpen ? 'block' : 'none', border: '1.5px solid var(--accent)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
