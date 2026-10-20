@@ -12,7 +12,7 @@ import { TOAST_ENTRY, useToasts } from '../common/Toasts';
 import { errMsg, runWhenActive } from '../common/utils';
 import { LocationVerificationCard } from '../common/fieldLocation';
 import { Select, selectValue, type Option } from '../common/Select';
-import { isSurveyDone, type FamilyDetail, type FamilySummary, type Member } from './types';
+import { familyCode, isSurveyDone, type FamilyDetail, type FamilySummary, type Member } from './types';
 import { INITIAL_FORM, checkAdultVitals, checkMuac, computeWhr, formFromMember, payloadFromForm, type MuacStatus, type SurveyForm, type Whr } from './survey';
 import { SurveyFormView } from './SurveyForm';
 import { ConfidentialityNoticeModal } from '../../../shared/privacy/ConfidentialityNoticeModal';
@@ -37,6 +37,7 @@ export function EntryApp() {
         closeModal,
     } = useStudentPrivacy(loggedInStudent?.roll_number);
 
+    const [families, setFamilies] = useState<FamilySummary[]>([]);
     const [loadState, setLoadState] = useState<LoadState>('loading');
     const [familyId, setFamilyId] = useState<number | null>(null);
     const [familyData, setFamilyData] = useState<FamilyDetail | null>(null);
@@ -52,6 +53,7 @@ export function EntryApp() {
     const [maleAlert, setMaleAlert] = useState<Whr | null>(null);
     const [saving, setSaving] = useState<'save' | 'next' | null>(null);
 
+    const [stripScroll, setStripScroll] = useState<{ id: number; n: number } | null>(null);
     const [rosterScroll, setRosterScroll] = useState<{ id: number; n: number } | null>(null);
     const [dietScroll, setDietScroll] = useState(0);
 
@@ -78,6 +80,7 @@ export function EntryApp() {
     /* ---- Select family and fetch roster ---- */
     const selectFamily = useCallback(async (id: number, preselectMemberId: number | null = null) => {
         setFamilyId(id);
+        setStripScroll((s) => ({ id, n: (s?.n || 0) + 1 }));
         try {
             const res = await fetch(`/api/families/${id}`);
             const data = (await res.json()) as FamilyDetail;
@@ -112,6 +115,7 @@ export function EntryApp() {
                 } else {
                     if (!Array.isArray(list)) throw new TypeError('allFamilies.map is not a function');
                     familiesRef.current = list;
+                    setFamilies(list);
                     setLoadState('list');
                 }
             } catch (err) {
@@ -131,6 +135,9 @@ export function EntryApp() {
     }, []);
 
     /* ---- Scroll effects (scrollIntoView calls of the original) ---- */
+    useEffect(() => {
+        if (stripScroll) document.getElementById(`quickFamilyCard_${stripScroll.id}`)?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    }, [stripScroll]);
     useEffect(() => {
         if (rosterScroll) document.getElementById(`rosterCard_${rosterScroll.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }, [rosterScroll]);
@@ -277,7 +284,44 @@ export function EntryApp() {
                     </div>
                 </div>
 
+                <div className="card anim-fade-up anim-delay-1" id="householdSelectorCard" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.4rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '1.15rem', lineHeight: 1 }}>🏠</span>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Household (<span id="householdCount">{families.length}</span>)
+                            </span>
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Click a household card below to switch</span>
+                    </div>
 
+                    <div id="quickFamilyStrip" className="family-horizontal-strip">
+                        {loadState === 'loading' ? (
+                            <div style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Loading households…</div>
+                        ) : families.length === 0 ? (
+                            <div style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                No households registered yet. <a href="/family-manage.html" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'underline' }}>+ Register Household</a>
+                            </div>
+                        ) : families.map((f) => (
+                            <div
+                                key={f.id}
+                                className={`family-strip-card ${familyId === f.id ? 'active' : ''}`}
+                                onClick={() => selectFamily(f.id)}
+                                id={`quickFamilyCard_${f.id}`}
+                            >
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                                        <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem', fontWeight: 700 }}>{familyCode(f)}</span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>👥 {f.member_count || 0}</span>
+                                    </div>
+                                    <div className="family-strip-name" title={f.head_of_family}>{f.head_of_family}</div>
+                                    <div className="family-strip-meta">{f.village_ward || 'Ward'}</div>
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600, marginTop: '0.35rem' }}>Select →</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
                 <div className="card" id="familyDietCard" style={{ display: dietOpen ? 'block' : 'none', border: '1.5px solid var(--accent)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
