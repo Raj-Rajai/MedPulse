@@ -190,6 +190,16 @@ export function SurveyCategorySections({ data, onChange }: SurveyCategorySection
                                 />
                             </FormField>
 
+                            <FormField label="Contact Phone Number">
+                                <input
+                                    type="tel"
+                                    value={data.contact_number || ''}
+                                    onChange={(e) => update('contact_number', e.target.value)}
+                                    placeholder="10-digit mobile number"
+                                    maxLength={15}
+                                />
+                            </FormField>
+
                             <FormField label="Marital Status">
                                 <Select
                                     id="marital_status"

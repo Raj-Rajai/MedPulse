@@ -28,7 +28,7 @@ import { FamilyStudyFormSections } from './FamilyStudyFormSections';
 import { FamilyJournalExportModal } from './FamilyJournalExportModal';
 
 const CREATE_DEFAULTS: FormValues = { cfRoll: '271', cfFamilyNo: '', cfHof: '', cfFamilyName: '', cfContactPhone: '', cfVillage: 'Santej', cfAddress: 'Near Gram Panchayat, Santej', cfCity: 'Ahmedabad', cfPincode: '382721', cfTotalCu: '4.0', cfCalorie: '12000', cfCalorieStatus: 'Normal', cfAdvice: 'N' };
-const ADD_DEFAULTS: FormValues = { modalMName: '', modalMRelation: 'Head of Family', modalMGender: 'M', modalMDob: '', modalMAgeYears: '', modalMAgeMonths: '0', modalMMaritalStatus: 'Married', modalMEducation: 'Secondary', modalMOccupation: '', modalMContact: '', modalMWork: 'Moderate' };
+const ADD_DEFAULTS: FormValues = { modalMName: '', modalMRelation: 'Head of Family', modalMGender: 'M', modalMContact: '' };
 const COND_DEFAULTS: FormValues = { condEditId: '', condName: '', condCategory: 'Other', condStatus: 'Active', condSeverity: 'Moderate', condDate: '', condNotes: '' };
 const MED_DEFAULTS: FormValues = { medEditId: '', medName: '', medDosage: '', medFrequency: 'OD (Once daily)', medRoute: 'Oral', medAdherence: 'Good', medPrescribedFor: '', medStartDate: '' };
 const ALG_DEFAULTS: FormValues = { algEditId: '', algAllergen: '', algType: 'Drug', algSeverity: 'Moderate', algReaction: '' };
@@ -776,9 +776,10 @@ export function FamilyManageApp() {
     const saveDraft = (f: FormValues) => {
         if (!selectedFamilyIdRef.current) return;
         const draft = {
-            name: f.modalMName, relation: selectValue(OPT.relation, f.modalMRelation), gender: selectValue(OPT.gender, f.modalMGender), dob: f.modalMDob,
-            ageYears: f.modalMAgeYears, ageMonths: f.modalMAgeMonths, marital: selectValue(OPT.marital, f.modalMMaritalStatus),
-            education: selectValue(OPT.education, f.modalMEducation), occupation: f.modalMOccupation, contact: f.modalMContact, work: selectValue(OPT.work, f.modalMWork),
+            name: f.modalMName,
+            relation: selectValue(OPT.relation, f.modalMRelation),
+            gender: selectValue(OPT.gender, f.modalMGender),
+            contact: f.modalMContact,
             savedAt: new Date().toISOString(),
         };
         localStorage.setItem(draftKey(), JSON.stringify(draft));
@@ -786,13 +787,6 @@ export function FamilyManageApp() {
     const onAddInput = (patch: FormValues) => {
         const next = { ...add.values, ...patch };
         saveDraft(next);
-        if ('modalMDob' in patch && patch.modalMDob) {
-            const { age, months } = ageFromDob(patch.modalMDob);
-            if (age >= 0) {
-                next.modalMAgeYears = String(age);
-                if (age < 2) next.modalMAgeMonths = String(Math.max(0, months));
-            }
-        }
         add.setValues(next);
     };
 
@@ -802,7 +796,7 @@ export function FamilyManageApp() {
         if (draftStr) {
             try {
                 const draft = JSON.parse(draftStr);
-                if (draft.name || draft.dob || draft.ageYears) {
+                if (draft.name || draft.contact) {
                     setDraftAlert(true);
                     return;
                 }
@@ -836,14 +830,7 @@ export function FamilyManageApp() {
             if (d.name) f.modalMName = d.name;
             if (d.relation) f.modalMRelation = d.relation;
             if (d.gender) f.modalMGender = d.gender;
-            if (d.dob) f.modalMDob = d.dob;
-            if (d.ageYears) f.modalMAgeYears = d.ageYears;
-            if (d.ageMonths) f.modalMAgeMonths = d.ageMonths;
-            if (d.marital) f.modalMMaritalStatus = d.marital;
-            if (d.education) f.modalMEducation = d.education;
-            if (d.occupation) f.modalMOccupation = d.occupation;
             if (d.contact) f.modalMContact = d.contact;
-            if (d.work) f.modalMWork = d.work;
             add.setValues(f);
             setDraftAlert(false);
             showToast('Member draft restored', 'info');
@@ -874,14 +861,14 @@ export function FamilyManageApp() {
             name: memberName,
             relation_to_hof: selectValue(OPT.relation, f.modalMRelation),
             gender: selectValue(OPT.gender, f.modalMGender),
-            date_of_birth: f.modalMDob || null,
-            age_years: parseInt(f.modalMAgeYears, 10) || 0,
-            age_months: parseInt(f.modalMAgeMonths || '0', 10),
-            marital_status: selectValue(OPT.marital, f.modalMMaritalStatus),
-            education_level: selectValue(OPT.education, f.modalMEducation),
-            occupation: f.modalMOccupation.trim() || null,
+            date_of_birth: null,
+            age_years: 0,
+            age_months: 0,
+            marital_status: null,
+            education_level: null,
+            occupation: null,
             contact_number: cleanContact || null,
-            work_type: selectValue(OPT.work, f.modalMWork),
+            work_type: null,
         };
         setAddSaving(addAnother ? 'another' : 'save');
         try {

@@ -253,7 +253,9 @@ export function EntryApp() {
     };
 
     /* ---- Derived Quick Vitals Badges for Selected Member ---- */
-    const currentMemberSurvey = memberId && surveyRecord?.memberSurveys ? surveyRecord.memberSurveys[memberId] : null;
+    const currentMemberSurvey = memberId && surveyRecord?.memberSurveys
+        ? (surveyRecord.memberSurveys[memberId] || (member ? createEmptyMemberSurvey(member) : null))
+        : null;
     const avatar = member?.gender === 'F'
         ? { t: '👩', bg: '#fdf2f8', c: '#be185d' }
         : member?.gender === 'M'
@@ -527,7 +529,7 @@ export function EntryApp() {
                                                             )}
                                                         </div>
                                                         <div className="roster-name" title={m.name}>{m.name}</div>
-                                                        <div className="roster-meta">{`${m.relation_to_hof || 'Member'} • ${m.age_years}y (${m.gender})`}</div>
+                                                        <div className="roster-meta">{`${m.relation_to_hof || 'Member'}${Number(m.age_years) > 0 ? ` • ${m.age_years}y` : ''} (${m.gender || 'M'})`}</div>
                                                     </div>
                                                     <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>Select →</div>
                                                 </div>
@@ -596,7 +598,7 @@ export function EntryApp() {
                                                 </div>
                                                 <div id="entryMemberSubtext" style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                                                     {member
-                                                        ? `${member.relation_to_hof || 'Member'} • ${member.age_years} Years, ${member.age_months || 0} Months • Gender: ${member.gender === 'F' ? 'Female (F)' : member.gender === 'M' ? 'Male (M)' : 'TG'} • ${member.occupation || 'No occupation listed'}`
+                                                        ? `${member.relation_to_hof || 'Member'}${Number(member.age_years) > 0 ? ` • ${member.age_years} Years${Number(member.age_months) > 0 ? `, ${member.age_months} Months` : ''}` : ''} • Gender: ${member.gender === 'F' ? 'Female (F)' : member.gender === 'M' ? 'Male (M)' : 'TG'}${member.occupation ? ` • ${member.occupation}` : ''}${member.contact_number ? ` • 📞 ${member.contact_number}` : ''}`
                                                         : '-'}
                                                 </div>
                                             </div>

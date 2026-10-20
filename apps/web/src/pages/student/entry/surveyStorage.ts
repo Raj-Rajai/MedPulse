@@ -76,6 +76,7 @@ export function createEmptyMemberSurvey(m?: Member | null): MemberSurveyData {
         marital_status: m?.marital_status && m.marital_status !== 'NA' ? String(m.marital_status) : 'Unmarried',
         education: String(m?.education || ''),
         occupation: String(m?.occupation || ''),
+        contact_number: String(m?.contact_number || ''),
         abha_id: '',
         addiction: '',
 
@@ -174,6 +175,7 @@ export function createEmptyMemberSurvey(m?: Member | null): MemberSurveyData {
 /**
  * Loads the survey record for a family and professional year.
  * Checks localStorage first; falls back to embedded family notes, then generates defaults.
+ * Synchronizes all family members and master fields so data entered on the family page reflects immediately.
  */
 export function loadFamilySurveyRecord(
     familyId: number,
@@ -181,6 +183,7 @@ export function loadFamilySurveyRecord(
     familyDetail?: FamilyDetail | null
 ): FamilySurveyRecord {
     const key = getSurveyStorageKey(familyId, year);
+    let record: FamilySurveyRecord | null = null;
 
     // 1. LocalStorage lookup
     try {
@@ -188,7 +191,7 @@ export function loadFamilySurveyRecord(
         if (cached) {
             const parsed = JSON.parse(cached) as FamilySurveyRecord;
             if (parsed && parsed.familyId === familyId) {
-                return parsed;
+                record = parsed;
             }
         }
     } catch (e) {
@@ -196,12 +199,12 @@ export function loadFamilySurveyRecord(
     }
 
     // 2. Embedded in family notes lookup
-    if (familyDetail?.notes && familyDetail.notes.includes('medpulse_survey_records')) {
+    if (!record && familyDetail?.notes && familyDetail.notes.includes('medpulse_survey_records')) {
         try {
             const parsedNotes = JSON.parse(familyDetail.notes);
             if (parsedNotes?.survey_records?.[year]) {
                 const rec = parsedNotes.survey_records[year] as FamilySurveyRecord;
-                if (rec) return rec;
+                if (rec) record = rec;
             }
         } catch {
             // ignore JSON parse error
@@ -209,24 +212,58 @@ export function loadFamilySurveyRecord(
     }
 
     // 3. Fallback: Create initial record from existing family members
-    const members = familyDetail?.members || [];
-    const memberSurveys: Record<number, MemberSurveyData> = {};
-    for (const m of members) {
-        memberSurveys[m.id] = createEmptyMemberSurvey(m);
+    if (!record) {
+        record = {
+            familyId,
+            professionalYear: year,
+            status: 'draft',
+            updatedAt: new Date().toISOString(),
+            memberSurveys: {},
+            nutritionIntakeDay: {},
+            totalCu: String(familyDetail?.total_cu || '0'),
+            calorieIntakePerCu: String(familyDetail?.calorie_intake_per_cu || '0'),
+            calorieStatus: familyDetail?.calorie_status || 'Normal',
+            dietaryAdviceGiven: familyDetail?.dietary_advice_given || 'N',
+        };
     }
 
-    return {
-        familyId,
-        professionalYear: year,
-        status: 'draft',
-        updatedAt: new Date().toISOString(),
-        memberSurveys,
-        nutritionIntakeDay: {},
-        totalCu: String(familyDetail?.total_cu || '0'),
-        calorieIntakePerCu: String(familyDetail?.calorie_intake_per_cu || '0'),
-        calorieStatus: familyDetail?.calorie_status || 'Normal',
-        dietaryAdviceGiven: familyDetail?.dietary_advice_given || 'N',
-    };
+    if (!record.memberSurveys) record.memberSurveys = {};
+
+    // 4. Ensure ALL members from familyDetail exist and reflect master entered data
+    const members = familyDetail?.members || [];
+    for (const m of members) {
+        const existing = record.memberSurveys[m.id];
+        if (!existing) {
+            record.memberSurveys[m.id] = createEmptyMemberSurvey(m);
+        } else {
+            // Reflect master fields entered from the family manage page
+            if (m.name && m.name.trim()) existing.name = m.name.trim();
+            if (m.gender) existing.gender = (m.gender || 'M').toUpperCase();
+            if (m.relation_to_hof) existing.relation_to_hof = m.relation_to_hof;
+            if (m.contact_number) existing.contact_number = m.contact_number;
+            if (m.date_of_birth && !existing.date_of_birth) existing.date_of_birth = m.date_of_birth;
+            if (m.age_years != null && (!existing.age_years || existing.age_years === '0' || existing.age_years === '')) {
+                existing.age_years = String(m.age_years);
+            }
+            if (m.age_months != null && (!existing.age_months || existing.age_months === '0' || existing.age_months === '')) {
+                existing.age_months = String(m.age_months);
+            }
+            if (m.marital_status && m.marital_status !== 'NA' && (!existing.marital_status || existing.marital_status === 'Unmarried')) {
+                existing.marital_status = m.marital_status;
+            }
+            if (m.education && !existing.education) existing.education = m.education;
+            if (m.occupation && !existing.occupation) existing.occupation = m.occupation;
+        }
+    }
+
+    // Sync household-level nutrition fields if available
+    if (familyDetail?.total_cu) record.totalCu = String(familyDetail.total_cu);
+    if (familyDetail?.calorie_intake_per_cu) record.calorieIntakePerCu = String(familyDetail.calorie_intake_per_cu);
+    if (familyDetail?.calorie_status) record.calorieStatus = familyDetail.calorie_status;
+    if (familyDetail?.dietary_advice_given) record.dietaryAdviceGiven = familyDetail.dietary_advice_given;
+
+    persistSurveyLocally(record);
+    return record;
 }
 
 /**
@@ -268,6 +305,8 @@ export async function syncSurveyWithBackend(
         const memberPayload = {
             name: ms.name || null,
             gender: ms.gender || null,
+            relation_to_hof: ms.relation_to_hof || null,
+            contact_number: ms.contact_number || null,
             date_of_birth: ms.date_of_birth || null,
             age_years: parseInt(ms.age_years, 10) || null,
             age_months: parseInt(ms.age_months, 10) || null,

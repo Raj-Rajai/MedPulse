@@ -137,21 +137,14 @@ export function AddMemberModal(p: AddMemberProps) {
                     </div>
                 </div>
 
-                <p className="card-desc" style={{ marginBottom: '1rem' }}>Fill in demographics and clinical parameters. Age is automatically calculated if Date of Birth is provided.</p>
+                <p className="card-desc" style={{ marginBottom: '1rem' }}>Enter member identity and household relation. Demographics and clinical survey are recorded on the Data Entry page.</p>
 
                 <form id="addMemberForm" onSubmit={(e) => { e.preventDefault(); p.onSubmit(false); }}>
                     <div className="form-grid">
                         {k.inp('modalMName', 'Full Name *', { required: true, placeholder: 'Member name' })}
                         {k.sel('modalMRelation', 'Relation to Head of Family *', OPT.relation)}
                         {k.sel('modalMGender', 'Gender *', OPT.gender)}
-                        {k.inp('modalMDob', 'Date of Birth (DOB)', { type: 'date' })}
-                        {k.inp('modalMAgeYears', 'Age (Years) *', { type: 'number', min: '0', max: '120', required: true, placeholder: 'e.g. 35' })}
-                        {k.inp('modalMAgeMonths', 'Age (Months - if < 2 yrs)', { type: 'number', min: '0', max: '24' })}
-                        {k.sel('modalMMaritalStatus', 'Marital Status', OPT.marital)}
-                        {k.sel('modalMEducation', 'Education Level', OPT.education)}
-                        {k.inp('modalMOccupation', 'Occupation', { placeholder: 'e.g. Farmer, Homemaker, Student' })}
                         {k.phone('modalMContact', 'Contact Phone Number', p.phone, { placeholder: 'e.g. 9876543210' })}
-                        {k.sel('modalMWork', 'Physical Activity', OPT.work)}
                     </div>
 
                     <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', fontSize: '0.825rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

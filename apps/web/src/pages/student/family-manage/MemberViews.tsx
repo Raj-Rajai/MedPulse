@@ -27,7 +27,7 @@ export function MemberCards({ members, selectedId, onSelect }: { members: Roster
                 const hbVal = m.hb ? `${m.hb}` : null;
                 const bmiVal = m.bmi ? `${m.bmi}` : null;
                 const relation = m.relation_to_hof || 'Member';
-                const ageStr = m.age_years !== undefined && m.age_years !== null ? `${m.age_years} yrs` : '';
+                const ageStr = m.age_years !== undefined && m.age_years !== null && Number(m.age_years) > 0 ? `${m.age_years} yrs` : '';
                 const genderStr = m.gender ? `(${m.gender})` : '';
                 const demographics = [relation, ageStr, genderStr].filter(Boolean).join(' • ');
 

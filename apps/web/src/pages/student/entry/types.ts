@@ -64,6 +64,7 @@ export interface MemberSurveyData {
     marital_status: string;
     education: string;
     occupation: string;
+    contact_number?: string;
     abha_id: string;
     addiction: string;
 
