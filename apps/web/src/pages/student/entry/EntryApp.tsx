@@ -415,15 +415,6 @@ export function EntryApp() {
                                 </div>
                             </div>
                         </div>
-
-                        {familyData && <div id="householdSummaryQuick" className="household-summary-quick" style={{ display: 'flex' }}>
-                            <div className="household-summary-info">
-                                <span className="badge badge-info" id="quickFamilyCode">{familyData.family_code || `FAM-${familyData.family_no}`}</span>
-                                <span className="household-summary-item">HOF: <strong id="quickHofName">{familyData.head_of_family}</strong></span>
-                                <span className="household-summary-item">Location: <strong id="quickVillage">{familyData.village_ward || '-'}</strong></span>
-                            </div>
-                            <button type="button" className="btn btn-secondary" style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem', whiteSpace: 'nowrap' }} onClick={toggleDiet}>🥗 Household Diet</button>
-                        </div>}
                     </div>
 
                     <div className="selector-board-strip-wrap" style={loadState === 'empty' ? { display: 'none' } : undefined}>
