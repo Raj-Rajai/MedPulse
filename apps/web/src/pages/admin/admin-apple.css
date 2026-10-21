@@ -58,14 +58,13 @@
 
 /* ── Phone: real layout at full size, one column ─────────── */
 @media (max-width: 768px) {
-  :root {
-    --mobile-zoom: 1;
-  }
-
   .main-content {
     padding-left: 14px !important;
     padding-right: 14px !important;
   }
+}
+
+@container main (max-width: 560px) {
 
   .admin-page-header .page-title { font-size: 24px !important; }
   .page-header-brand .header-brand-logo { width: 36px !important; height: 36px !important; }
@@ -266,7 +265,6 @@
     overflow: visible !important;
     width: 100% !important;
     font-size: 0.7rem !important;
-    zoom: 0.76 !important;
   }
   .main-content .table-wrapper th,
   .main-content .table-wrapper td {

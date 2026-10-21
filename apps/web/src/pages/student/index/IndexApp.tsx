@@ -16,6 +16,7 @@ interface Family {
     id: number;
     family_code?: string;
     family_no?: number;
+    family_name?: string | null;
     head_of_family?: string;
     village?: string;
     village_ward?: string;
@@ -28,6 +29,7 @@ interface Activity {
     gender?: string;
     age_years?: number;
     head_of_family?: string;
+    family_name?: string;
     visit_date?: string;
     visit_number?: number;
     clinical_notes?: string;
@@ -42,37 +44,56 @@ interface Dashboard {
     recentActivity?: Activity[];
 }
 
+export function getHouseholdDisplayName(f: Family): string {
+    if (f.family_name && f.family_name.trim()) {
+        return f.family_name.trim();
+    }
+    const hof = (f.head_of_family || '').trim();
+    if (hof) {
+        if (/household/i.test(hof)) return hof;
+        const parts = hof.split(/\s+/);
+        const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+        const cap = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
+        return `${cap} Household${f.family_no ? ` ${f.family_no}` : ''}`;
+    }
+    return `Household ${f.family_no || f.id}`;
+}
+
 function FamilyCard({ f }: { f: Family }) {
     const totalM = f.member_count || 0;
     const survM = f.surveyed_members || 0;
     const pct = totalM > 0 ? Math.round((survM / totalM) * 100) : 0;
-    const calStatus = f.calorie_status === 'Normal' ? 'badge-success' : f.calorie_status === 'Deficient' ? 'badge-danger' : 'badge-warning';
+    const householdName = getHouseholdDisplayName(f);
+
     return (
         <div className="profile-household-card">
             <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                    <span className="badge badge-info" style={{ fontSize: '0.72rem', fontWeight: 750 }}>{f.family_code || `FAM-${String(f.family_no).padStart(4, '0')}`}</span>
-                    <span className={`badge ${calStatus}`} style={{ fontSize: '0.7rem' }}>CU: {f.calorie_status || 'Normal'}</span>
+                <div className="household-card-top">
+                    <div className="household-card-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6d28d9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7" />
+                        </svg>
+                    </div>
+                    <div className="household-card-header-info">
+                        <h3 className="household-title">{householdName}</h3>
+                    </div>
                 </div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 750, color: 'var(--text-primary)', marginBottom: '2px' }}>{f.head_of_family}</h3>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                    📍 {f.village || f.village_ward || 'Field Area'} • {totalM} Members
-                </div>
-                <div className="household-progress-bar">
+
+                <div className="household-progress-bar" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
                     <div className="household-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                <div className="household-progress-labels">
                     <span>Survey Completion</span>
                     <span>
                         <strong>{survM}</strong> / {totalM} ({pct}%)
                     </span>
                 </div>
             </div>
-            <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
-                <a href={`/family-manage.html?familyId=${f.id}`} className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', padding: '5px 8px', fontWeight: 650 }}>
+            <div className="household-card-actions">
+                <a href={`/family-manage.html?familyId=${f.id}`} className="household-btn-manage">
                     Manage
                 </a>
-                <a href={`/entry.html?familyId=${f.id}`} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', padding: '5px 8px', fontWeight: 650 }}>
+                <a href={`/entry.html?familyId=${f.id}`} className="household-btn-survey">
                     Survey
                 </a>
             </div>
@@ -83,18 +104,29 @@ function FamilyCard({ f }: { f: Family }) {
 function ActivityItem({ a }: { a: Activity }) {
     const bpText = a.sbp && a.dbp ? `${a.sbp}/${a.dbp} mmHg` : null;
     const rbsText = a.rbs ? `RBS: ${a.rbs} mg/dL` : null;
+    let famLabel = a.family_name;
+    if (!famLabel && a.head_of_family) {
+        if (/household/i.test(a.head_of_family)) {
+            famLabel = a.head_of_family;
+        } else {
+            const rawLast = a.head_of_family.split(/\s+/).pop() || '';
+            const capLast = rawLast.charAt(0).toUpperCase() + rawLast.slice(1);
+            famLabel = `${capLast} Household`;
+        }
+    }
+    famLabel = famLabel || 'Household';
+
     return (
         <div className="timeline-item">
             <div className="timeline-header">
-                <span className="timeline-title">{`${a.member_name ?? ''} (${a.gender ?? ''}, ${a.age_years}y) • ${a.head_of_family ?? ''}'s Family`}</span>
+                <span className="timeline-title">{`${a.member_name ?? ''} (${a.gender ?? ''}, ${a.age_years}y) • ${famLabel}`}</span>
                 <span className="timeline-time">{`${a.visit_date ?? ''} (Visit #${a.visit_number || 1})`}</span>
             </div>
             <div className="timeline-body">
-                <div>{a.clinical_notes || 'Routine follow-up assessment conducted.'}</div>
                 <div className="vitals-pills">
                     {bpText ? <span className="vitals-pill">BP: {bpText}</span> : null}
-                    {rbsText ? <span className="vitals-pill" style={{ background: '#fef3c7', color: '#b45309' }}>{rbsText}</span> : null}
-                    <span className="vitals-pill" style={{ background: '#ecfdf5', color: '#065f46' }}>{a.health_progress || 'Stable'}</span>
+                    {rbsText ? <span className="vitals-pill" style={{ background: '#fefce8', color: '#854d0e', borderColor: '#fef08a' }}>{rbsText}</span> : null}
+                    <span className="vitals-pill" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>{a.health_progress || 'Stable'}</span>
                 </div>
             </div>
         </div>

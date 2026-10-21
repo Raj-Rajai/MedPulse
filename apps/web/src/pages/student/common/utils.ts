@@ -37,6 +37,28 @@ export function shiftIsoDay(iso: string, offset: number): string {
 
 export const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+/** Compute a clean, standardized household display name (e.g. 'Dave Household' or 'Dave Household 1'). */
+export function getHouseholdDisplayName(f?: {
+    family_name?: string | null;
+    head_of_family?: string | null;
+    family_no?: number | string | null;
+    id?: number | string | null;
+} | null): string {
+    if (!f) return 'Household';
+    if (f.family_name && f.family_name.trim()) {
+        return f.family_name.trim();
+    }
+    const hof = (f.head_of_family || '').trim();
+    if (hof) {
+        if (/household/i.test(hof)) return hof;
+        const parts = hof.split(/\s+/);
+        const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+        const cap = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
+        return `${cap} Household${f.family_no ? ` ${f.family_no}` : ''}`;
+    }
+    return `Household ${f.family_no || f.id || ''}`.trim();
+}
+
 /** Run the callback now if the document is visible, otherwise once it becomes visible. */
 export function runWhenActive(callback: () => void): () => void {
     if (document.visibilityState === 'visible') {
@@ -52,3 +74,4 @@ export function runWhenActive(callback: () => void): () => void {
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
 }
+

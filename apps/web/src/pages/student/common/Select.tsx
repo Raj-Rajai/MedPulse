@@ -23,8 +23,15 @@ export function Select({ options, value, onValue, ...rest }: Props) {
     useLayoutEffect(() => {
         if (!matched && ref.current) ref.current.selectedIndex = -1;
     });
+    const currentLabel = options.find(([v]) => v === value)?.[1];
     return (
-        <select ref={ref} {...rest} value={matched ? value : ''} onChange={(e) => onValue(e.target.value)}>
+        <select
+            ref={ref}
+            title={currentLabel || (rest.title ?? undefined)}
+            {...rest}
+            value={matched ? value : ''}
+            onChange={(e) => onValue(e.target.value)}
+        >
             {options.map(([v, label]) => (
                 <option key={v} value={v}>{label}</option>
             ))}

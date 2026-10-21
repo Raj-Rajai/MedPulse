@@ -6,3 +6,789 @@
 @import './phone-layout.css';
 @import '../../../styles/controls.css';
 @import '../../../styles/calm.css';
+@import '../../../styles/responsive.css';
+
+/* Prasad & Multi-Select 2-column span */
+@media (min-width: 640px) {
+  .prasad-span-2 {
+    grid-column: span 2;
+  }
+}
+
+.prasad-span-2 select {
+  width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Family Study Structured Form Styling ────────────────── */
+
+/* Container enclosing data entries with a very light purple card background */
+.family-study-section-card {
+  background: #faf7ff;
+  border: 1px solid #ede9fe;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+/* Form grid row & column spacing - generous 20px gap to the next entry */
+.family-study-form-sections .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  column-gap: 16px;
+  row-gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tight 5px coupling between label and input */
+.family-study-form-sections .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Shrunk, refined data entry field labels (direct child only) */
+.family-study-form-sections .form-group > label {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #475569;
+  line-height: 1.3;
+  margin-bottom: 0;
+}
+
+/* Shrunk data entry inputs, selects, textareas */
+.family-study-form-sections input:not([type="checkbox"]):not([type="radio"]),
+.family-study-form-sections select,
+.family-study-form-sections textarea {
+  font-size: 0.825rem !important;
+  padding: 8px 11px !important;
+  border-radius: 6px !important;
+  border: 1px solid #dce5dd !important;
+  background: #ffffff;
+  line-height: 1.4 !important;
+  min-height: 38px;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Desktop baseline alignment across columns */
+@media (min-width: 640px) {
+  .family-study-form-sections .form-grid .form-group {
+    justify-content: flex-end;
+  }
+  .family-study-form-sections .form-grid .form-group > label {
+    min-height: 2.1rem;
+    display: flex;
+    align-items: flex-end;
+  }
+  .form-grid .form-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .form-grid .form-group > label {
+    min-height: 2.2rem;
+    display: flex;
+    align-items: flex-end;
+    line-height: 1.35;
+  }
+}
+
+/* Mobile: Single-column clean vertical stack with proper 1:4 label vs next-entry ratio */
+@media (max-width: 639px) {
+  .family-study-form-sections .form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    row-gap: 18px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .family-study-form-sections .form-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .family-study-form-sections .form-group.prasad-span-2 {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .family-study-form-sections .form-grid .form-group {
+    justify-content: flex-start !important;
+    gap: 5px !important;
+  }
+  .family-study-form-sections .form-grid .form-group > label {
+    min-height: unset !important;
+    display: block !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+  }
+  .form-grid .form-group > label {
+    min-height: unset !important;
+    display: block !important;
+  }
+}
+
+/* ── Multi-Select Dropdown Menu Styling ─────────────────── */
+.family-study-form-sections .multiselect-group {
+  position: relative;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.family-study-form-sections #study_cultures_customs {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.family-study-form-sections #study_cultures_customs > span:first-child {
+  min-width: 0 !important;
+  max-width: calc(100% - 22px) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: block !important;
+  flex: 1 1 0% !important;
+}
+
+.family-study-form-sections .multiselect-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  z-index: 100;
+  background: #ffffff;
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.family-study-form-sections .multiselect-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.family-study-form-sections .multiselect-count-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.family-study-form-sections .multiselect-clear-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.family-study-form-sections .multiselect-done-btn {
+  background: var(--primary);
+  border: none;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 5px;
+  padding: 4px 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(109, 40, 217, 0.3);
+  transition: opacity 0.15s ease;
+}
+
+.family-study-form-sections .multiselect-done-btn:hover {
+  opacity: 0.9;
+}
+
+/* Option rows in dropdown - strict horizontal flex row */
+.family-study-form-sections .multiselect-menu label.multiselect-option-label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  margin: 0 0 2px 0 !important;
+  border-radius: 6px !important;
+  min-height: unset !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  background: transparent;
+  color: #1e293b;
+  font-size: 0.815rem !important;
+  font-weight: 450 !important;
+  line-height: 1.35 !important;
+  transition: background 0.12s ease;
+}
+
+.family-study-form-sections .multiselect-menu label.multiselect-option-label.selected {
+  background: #f5f0ff !important;
+  color: var(--primary) !important;
+  font-weight: 650 !important;
+}
+
+.family-study-form-sections .multiselect-menu label.multiselect-option-label:hover {
+  background: #f8fafc;
+}
+
+.family-study-form-sections .multiselect-menu label.multiselect-option-label.selected:hover {
+  background: #ede9fe !important;
+}
+
+/* Checkbox overrides inside dropdown */
+.family-study-form-sections .multiselect-menu input[type="checkbox"].multiselect-option-checkbox {
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+  display: inline-block !important;
+  min-height: unset !important;
+  height: 18px !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  accent-color: var(--primary) !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+.family-study-form-sections .multiselect-menu .multiselect-option-text {
+  font-size: 0.815rem !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+  line-height: 1.35 !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline !important;
+  word-break: break-word !important;
+}
+
+/* ── Clean & Uncluttered Member Roster Cards ──────────────── */
+.fm-members-card .member-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 10px !important;
+  margin-top: 8px !important;
+  max-height: 520px !important;
+  overflow-y: auto !important;
+  padding: 4px 6px 12px 2px !important;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.member-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 110px !important;
+  position: relative !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.member-card:hover {
+  border-color: #a78bfa !important;
+  box-shadow: 0 6px 18px -2px rgba(109, 40, 217, 0.12) !important;
+  transform: translateY(-2px) !important;
+}
+
+.member-card.active {
+  border-color: #7c3aed !important;
+  background: #faf7ff !important;
+  box-shadow: 0 0 0 1.5px #7c3aed, 0 6px 18px -2px rgba(124, 58, 237, 0.15) !important;
+}
+
+.member-card-body {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+}
+
+.member-card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  margin-bottom: 3px !important;
+}
+
+.member-card-info {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.member-name {
+  font-size: 0.9rem !important;
+  font-weight: 650 !important;
+  color: #0f172a !important;
+  line-height: 1.25 !important;
+  margin: 0 0 2px 0 !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.member-relation {
+  font-size: 0.73rem !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+}
+
+.member-phone {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 0.71rem !important;
+  color: #64748b !important;
+  margin-top: 3px !important;
+  line-height: 1.3 !important;
+}
+
+.member-phone-icon {
+  font-size: 0.68rem !important;
+  opacity: 0.85 !important;
+}
+
+.member-order-pill {
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  color: #7c3aed !important;
+  background: #f5f3ff !important;
+  border: 1px solid #ede9fe !important;
+  padding: 1.5px 6.5px !important;
+  border-radius: 999px !important;
+  line-height: 1.2 !important;
+  flex-shrink: 0 !important;
+  transition: all 0.15s ease !important;
+}
+
+.member-card.active .member-order-pill {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+}
+
+.member-tags {
+  display: flex !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  margin-top: auto !important;
+  margin-bottom: 2px !important;
+  padding-top: 4px !important;
+}
+
+.member-tag-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 1.5px 6.5px !important;
+  border-radius: 999px !important;
+  font-size: 0.67rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.3 !important;
+}
+
+.member-tag-chip.tag-warning {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+.member-tag-chip.tag-danger {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.member-tag-chip.tag-info {
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+.member-tag-chip.tag-success {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.member-portal-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 0.65rem !important;
+  font-weight: 600 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  margin-top: 4px !important;
+  width: fit-content !important;
+}
+
+.member-portal-badge.portal-added {
+  background: #f0fdf4 !important;
+  color: #15803d !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.member-portal-badge.portal-updated {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+.member-card-vitals {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border-top: 1px solid #f1f5f9 !important;
+  padding-top: 7px !important;
+  margin-top: 7px !important;
+}
+
+.member-vitals-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+}
+
+.vital-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 0.67rem !important;
+  line-height: 1.25 !important;
+  padding: 2px 5px !important;
+  border-radius: 4px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  white-space: nowrap !important;
+}
+
+.vital-chip .vital-lbl {
+  font-size: 0.58rem !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  margin-right: 2px !important;
+  text-transform: uppercase !important;
+}
+
+.vital-chip .vital-val {
+  font-weight: 650 !important;
+  color: #0f172a !important;
+}
+
+.vital-chip-routine {
+  font-size: 0.68rem !important;
+  color: #94a3b8 !important;
+  font-style: italic !important;
+}
+
+.member-inspect-action {
+  font-size: 0.71rem !important;
+  font-weight: 650 !important;
+  color: #7c3aed !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin-left: auto !important;
+  transition: transform 0.15s ease, color 0.15s ease !important;
+}
+
+.member-card:hover .member-inspect-action {
+  transform: translateX(3px) !important;
+  color: #6d28d9 !important;
+}
+
+/* ── Page-wide Clean & Uncluttered Workspace Styling ─────────── */
+
+/* 1. Household Data Card */
+.fm-household-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 1.25rem 1.4rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.fm-household-card .card-title {
+  font-size: 1.25rem !important;
+  font-weight: 750 !important;
+  color: #1e1b4b !important;
+  letter-spacing: -0.015em !important;
+}
+
+.fm-household-meta-grid {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 0.85rem 1.1rem !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+  gap: 0.75rem 1rem !important;
+}
+.fm-household-meta-grid .fm-meta-location,
+.fm-household-meta-grid > div:last-child {
+  grid-column: 1 / -1 !important;
+  border-top: 1px solid #edf2f7;
+  padding-top: 0.65rem;
+  margin-top: 0.15rem;
+}
+
+.fm-household-meta-grid > div {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.fm-meta-label {
+  color: #64748b !important;
+  font-size: 0.67rem !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  margin-bottom: 2px !important;
+}
+
+.fm-household-meta-grid strong,
+.fm-household-meta-grid span:not(.fm-meta-label):not(.badge) {
+  font-size: 0.835rem !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  word-break: break-word !important;
+}
+
+/* 2. Household Members Card */
+.fm-members-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 1.25rem 1.4rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.fm-members-card .card-title {
+  font-size: 1.2rem !important;
+  font-weight: 750 !important;
+  color: #1e1b4b !important;
+  letter-spacing: -0.015em !important;
+}
+
+/* 3. Member Detail Workspace */
+.fm-member-detail-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 1.35rem 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+#detailMemberName {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: #1e1b4b !important;
+  letter-spacing: -0.02em !important;
+}
+
+#detailMemberMeta {
+  font-size: 0.84rem !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  margin-top: 3px !important;
+}
+
+/* Summary Chips Row */
+.summary-chips-row {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.summary-chip {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.15s ease !important;
+  cursor: default !important;
+}
+
+.summary-chip:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.summary-chip strong {
+  font-size: 0.82rem !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  margin-left: 2px !important;
+}
+
+/* Demographics & Lifestyle Grid Items */
+.demographics-grid-item,
+.lifestyle-grid-item {
+  background: #f8fafc !important;
+  border: 1px solid #edf2f7 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.demographics-grid-item strong,
+.demographics-grid-item span:not([style*="uppercase"]),
+.lifestyle-grid-item strong,
+.lifestyle-grid-item span:not([style*="uppercase"]) {
+  font-size: 0.835rem !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+
+/* Sub-Entity Clinical Cards */
+.fm-subentities-grid .sub-entity-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 1.1rem 1.2rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.fm-subentities-grid .sub-entity-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+}
+
+.sub-entity-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 0.85rem !important;
+  padding-bottom: 0.6rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.sub-entity-title {
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Empty State Box in Clinical Sections */
+.sub-entity-empty {
+  background: #f8fafc !important;
+  border: 1.5px dashed #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 1.15rem 0.9rem !important;
+  text-align: center !important;
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+  line-height: 1.45 !important;
+}
+
+/* Baseline Vitals Chips */
+.calc-preview {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 9px !important;
+  border-radius: 6px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  font-size: 0.77rem !important;
+  font-weight: 500 !important;
+  color: #475569 !important;
+}
+
+.calc-preview strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* 4. Longitudinal Follow-ups Card */
+.fm-bottom-followup {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 1.25rem 1.4rem !important;
+  margin-bottom: 1.75rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 5. Location Verification Card */
+#fieldLocationCard {
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #fafaf9 !important;
+  box-shadow: none !important;
+}
+
+/* 6. Back Button */
+.btn-secondary {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+}
+

@@ -2,10 +2,11 @@
  * student/schedule.html: academic teaching schedule (department pills, horizontal strip of
  * cubic date cards, detail panel, CSV / .ics export).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal, flushSync } from 'react-dom';
 import { BodyPortal, useStudentChrome } from '../common/Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
+import { PageHero } from '../common/PageHero';
 import { StudentBadge, StudentSignInLink, readAuthUser } from '../common/badges';
 import { scheduleSidebar } from '../common/sidebar';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
@@ -72,6 +73,9 @@ export function ScheduleApp() {
     const [user] = useState(readAuthUser);
     const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    // On phones the department filter opens as a centred sheet (position: fixed). The page content is a
+    // size container, which would pin fixed elements to itself, so the sheet is rendered on <body> there.
+    const filterLayer = (node: ReactNode) => (window.matchMedia('(max-width: 768px)').matches ? createPortal(node, document.body) : node);
     const [filterSearch, setFilterSearch] = useState('');
     const filterDropdownRef = useRef<HTMLDivElement>(null);
     const [strip, setStrip] = useState<Strip>({ kind: 'loading' });
@@ -308,39 +312,24 @@ export function ScheduleApp() {
             {toasts}
             <main className="main-content">
                 <ActiveAttendanceBanner onOpen={() => { setFillSession(null); setFillModalOpen(true); }}/>
-                <div className="attendance-hero anim-fade-up">
-                    <div className="hero-split-grid">
-                        <div className="hero-left-col">
-                            <div className="profile-identity-group" style={{ marginBottom: '8px' }}>
-                                <div className="profile-avatar-wrapper" style={{ width: '60px', height: '60px', borderRadius: '17px' }}>
-                                    <div className="profile-avatar-inner" style={{ fontSize: '1.6rem', borderRadius: '14px' }}>🗓</div>
-                                    <div className="profile-badge-online" title="Active Semester" />
-                                </div>
-                                <div>
-                                    <h1 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#ffffff', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span>Schedule</span>
-                                        <span className="profile-roll-tag" id="heroRollBadge">{`Roll ${roll || '235'}`}</span>
-                                    </h1>
-                                    <div className="profile-sub-pills">
-                                        <span id="heroCadetName">{(user && user.name) || 'Dhruv Patel'}</span>
-                                        <span>•</span>
-                                        <span id="heroCadetBatch">{(user && user.batch_year) || '3rd Year MBBS'}</span>
-                                        <span>•</span>
-                                        <span>Semester - 5</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
-                                <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem', padding: '4px 12px' }}>📚 NMC CBME curriculum</span>
-                            </div>
-                        </div>
-                        <div className="hero-gauge-box">
-                            <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.05em', marginBottom: '2px' }}>Today</div>
-                            <div style={{ fontSize: '1.25rem', fontWeight: '850', color: '#ffffff' }} id="heroTodayDateLabel">{longDate(today)}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: '650', marginTop: '4px' }} id="heroTotalSessionsCount">{total === null ? 'Loading teaching schedule...' : `${total} sessions scheduled`}</div>
-                        </div>
-                    </div>
-                </div>
+                <PageHero
+                    icon="🗓"
+                    title="Schedule"
+                    name={user?.name || 'Dhruv Patel'}
+                    meta={[
+                        <span id="heroRollBadge">{`Roll ${roll || '235'}`}</span>,
+                        <span id="heroCadetBatch">{(user && user.batch_year) || '3rd Year MBBS'}</span>,
+                        'Semester 5',
+                    ]}
+                    stat={{
+                        label: 'Today',
+                        value: longDate(today),
+                        valueId: 'heroTodayDateLabel',
+                        sub: total === null ? 'Loading schedule…' : `${total} sessions scheduled`,
+                        subId: 'heroTotalSessionsCount',
+                    }}
+                    facts={[{ label: 'Curriculum', value: 'NMC CBME', icon: '📚', tone: 'green' }]}
+                />
                 <div className="schedule-filter-bar anim-fade-up" style={{ position: 'relative', zIndex: 40, marginBottom: '18px' }} ref={filterDropdownRef}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                         {/* Primary Multi-Select Dropdown Button */}
@@ -475,7 +464,7 @@ export function ScheduleApp() {
                     </div>
 
                     {/* Backdrop for click-outside on mobile / desktop */}
-                    {isFilterOpen && (
+                    {isFilterOpen && filterLayer(
                         <div
                             className="dept-filter-backdrop"
                             onClick={() => setIsFilterOpen(false)}
@@ -484,7 +473,7 @@ export function ScheduleApp() {
                     )}
 
                     {/* Floating Multi-Select Dropdown Popover */}
-                    {isFilterOpen && (
+                    {isFilterOpen && filterLayer(
                         <div
                             id="deptMultiSelectDropdown"
                             style={{

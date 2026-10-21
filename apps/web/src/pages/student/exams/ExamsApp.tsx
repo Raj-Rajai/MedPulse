@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BodyPortal, useStudentChrome } from '../common/Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
+import { PageHero } from '../common/PageHero';
 import { SignInLink, StudentBadge, readAuthUser } from '../common/badges';
 import { standardSidebar } from '../common/sidebar';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
@@ -200,40 +201,29 @@ export function ExamsApp() {
             <MobileNavToggle onToggle={standardSidebar.toggle} />
             {toasts}
             <main className="main-content">
-                <div className="exams-hero anim-fade-up">
-                    <div className="hero-split-grid">
-                        <div className="hero-left-col">
-                            <div className="profile-identity-group" style={{ marginBottom: "10px" }}>
-                                <div className="profile-avatar-wrapper" style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ec4899 100%)" }}>
-                                    <div className="profile-avatar-inner" style={{ fontSize: "1.7rem", borderRadius: "15px" }}>🏆</div>
-                                    <div className="profile-badge-online" style={{ background: "#eab308", boxShadow: "0 0 8px rgba(234, 179, 8, 0.6)" }} title="Distinction Standing" />
-                                </div>
-                                <div>
-                                    <h1 style={{ fontSize: "1.45rem", fontWeight: "800", color: "#ffffff", marginBottom: "3px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                                        <span>Exams</span>
-                                        <span className="profile-roll-tag" id="heroRollBadge">{st ? 'Roll ' + (st.roll_number || '235') : 'Roll 235'}</span>
-                                    </h1>
-                                    <div className="profile-sub-pills">
-                                        <span id="heroCadetName">{st ? st.name || 'Dhruv Patel' : 'Dhruv Patel'}</span>
-                                        <span>•</span>
-                                        <span id="heroCadetBatch">{summary ? BATCH[summary.year] || BATCH.all : BATCH['3']}</span>
-                                        <span>•</span>
-                                        <span>Semester - 5</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px", flexWrap: "wrap" }}>
-                                {hasResults && <span className="badge badge-success" id="examStandingBadge" style={{ fontSize: "0.8rem", padding: "5px 12px", background: "rgba(16, 185, 129, 0.25)", color: "#6ee7b7", border: "1px solid rgba(16, 185, 129, 0.5)" }}>{'🌟 ' + (sd.standing || 'Pass')}</span>}
-                                {hasResults && <span className={elig === null ? 'badge' : elig ? 'badge badge-success' : 'badge badge-warning'} id="heroUnivEligibilityBadge" style={{ background: "rgba(59, 130, 246, 0.25)", color: "#93c5fd", border: "1px solid rgba(59, 130, 246, 0.5)", fontSize: "0.8rem", padding: "5px 12px" }}>{elig === null ? '✅ University Exam Eligibility: CLEARED (IA ≥ 50%)' : elig ? '✅ University Exam Eligibility: CLEARED (IA Combined ' + uElig.ia_combined_pct + '%)' : '⚠ Remedial IA Required for University Eligibility'}</span>}
-                            </div>
-                        </div>
-                        {hasResults && <div className="hero-standing-card">
-                            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", letterSpacing: "0.05em", marginBottom: "4px" }}>Overall</div>
-                            <div className="hero-standing-score" id="heroCumulativePct">{summary ? (sd.cumulative_overall?.percentage || 0) + '%' : '--%'}</div>
-                            <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.85)", marginTop: "4px" }} id="heroTotalMarksFraction">{`${sd.cumulative_overall?.obtained || 0} / ${sd.cumulative_overall?.max || 0} marks`}</div>
-                        </div>}
-                    </div>
-                </div>
+                <PageHero
+                    icon="🏆"
+                    title="Exams"
+                    name={st?.name || 'Dhruv Patel'}
+                    meta={[
+                        <span id="heroRollBadge">{st ? 'Roll ' + (st.roll_number || '235') : 'Roll 235'}</span>,
+                        <span id="heroCadetBatch">{summary ? BATCH[summary.year] || BATCH.all : BATCH['3']}</span>,
+                        'Semester 5',
+                    ]}
+                    stat={hasResults ? {
+                        label: 'Overall',
+                        value: (sd.cumulative_overall?.percentage || 0) + '%',
+                        valueId: 'heroCumulativePct',
+                        sub: `${sd.cumulative_overall?.obtained || 0} / ${sd.cumulative_overall?.max || 0} marks`,
+                        subId: 'heroTotalMarksFraction',
+                    } : undefined}
+                    facts={hasResults ? [
+                        { label: 'Standing', value: sd.standing || 'Pass', icon: '🌟', tone: 'green', id: 'examStandingBadge' },
+                        elig
+                            ? { label: 'University exam', value: `Eligible · IA ${uElig.ia_combined_pct}%`, icon: '✅', tone: 'blue', id: 'heroUnivEligibilityBadge' }
+                            : { label: 'University exam', value: 'Remedial IA needed', icon: '⚠', tone: 'amber', id: 'heroUnivEligibilityBadge' },
+                    ] : []}
+                />
                 <div className="year-pagination-bar anim-fade-up" id="yearPaginationBar">
                     <div className="year-nav-left">
                         <button className="year-nav-arrow-btn" id="btnPrevYear" onClick={() => navigateYear(-1)} disabled={year === '1'} title="Previous MBBS Academic Year">

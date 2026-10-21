@@ -5,3 +5,233 @@
 @import './phone-layout.css';
 @import '../../../styles/controls.css';
 @import '../../../styles/calm.css';
+@import '../../../styles/responsive.css';
+
+/* ── Modern, Clean, Simple Home Dashboard Aesthetics ───────── */
+.profile-household-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.profile-household-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.household-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.household-card-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background-color: #f5f3ff;
+  border: 1px solid #ede9fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6d28d9;
+}
+
+.household-card-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.household-card-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 0;
+  margin-bottom: 8px;
+  flex-wrap: nowrap;
+}
+
+.household-card-badges .badge,
+.household-card-badges .household-badge {
+  font-size: 0.67rem;
+  font-weight: 650;
+  border-radius: 5px;
+  padding: 1.5px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.household-badge-code {
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid rgba(109, 40, 217, 0.2);
+  border-radius: 5px;
+  padding: 1.5px 6px;
+  white-space: nowrap;
+}
+
+.household-badge {
+  font-size: 0.67rem;
+  font-weight: 650;
+  border-radius: 5px;
+  padding: 1.5px 6px;
+  white-space: nowrap;
+}
+
+.household-badge-normal {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.household-badge-danger {
+  color: #9a3412;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
+.household-badge-warning {
+  color: #854d0e;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+}
+
+.household-title {
+  font-size: 1.02rem;
+  font-weight: 650;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.household-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.household-progress-bar {
+  width: 100%;
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0 0 6px;
+}
+
+.household-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #7c3aed);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.household-progress-labels {
+  font-size: 0.74rem;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.household-progress-labels strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.household-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.household-btn-manage {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  min-height: 38px;
+}
+
+.household-btn-manage:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.household-btn-survey {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  min-height: 38px;
+}
+
+.household-btn-survey:hover {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #c4b5fd;
+}
+
+/* Timeline calm refinement */
+.activity-timeline .timeline-item::before {
+  background: #8b5cf6 !important;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25) !important;
+}
+
+.activity-timeline .timeline-body {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.activity-timeline .vitals-pills {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+.activity-timeline .vitals-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+

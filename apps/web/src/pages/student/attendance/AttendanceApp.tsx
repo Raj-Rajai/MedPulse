@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BodyPortal, useStudentChrome } from '../common/Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
+import { PageHero } from '../common/PageHero';
 import { SignInLink, StudentBadge, readAuthUser } from '../common/badges';
 import { standardSidebar } from '../common/sidebar';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
@@ -145,48 +146,30 @@ export function AttendanceApp() {
             <MobileNavToggle onToggle={standardSidebar.toggle} />
             {toasts}
         <main className="main-content">
-            <div className="attendance-hero anim-fade-up">
-                <div className="hero-split-grid">
-                    <div className="hero-left-col">
-                        <div className="profile-identity-group" style={{ marginBottom: "8px" }}>
-                            <div className="profile-avatar-wrapper" style={{ width: "60px", height: "60px", borderRadius: "17px" }}>
-                                <div className="profile-avatar-inner" style={{ fontSize: "1.6rem", borderRadius: "14px" }}>📅</div>
-                                <div className="profile-badge-online" title="Active Semester" />
-                            </div>
-                            <div>
-                                <h1 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#ffffff", marginBottom: "2px", display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <span>Student Attendance Portal</span>
-                                    <span className="profile-roll-tag" id="heroRollBadge">{st ? 'Roll ' + (st.roll_number || '235') : 'Roll 235'}</span>
-                                </h1>
-                                <div className="profile-sub-pills">
-                                    <span id="heroCadetName">{st ? st.name || 'Dhruv Patel' : 'Dhruv Patel'}</span>
-                                    <span>•</span>
-                                    <span id="heroCadetBatch">{st ? st.batch_year || '3rd Year MBBS' : '3rd Year MBBS'}</span>
-                                    <span>•</span>
-                                    <span>Semester - 5</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "10px", flexWrap: "wrap" }}>
-                            <span className="badge" id="nmcStatusBadge" style={{ background: "rgba(16, 185, 129, 0.25)", color: "#6ee7b7", border: "1px solid rgba(16, 185, 129, 0.5)", fontSize: "0.78rem", padding: "4px 12px" }}>{"✅ NMC Compliance: ≥75% Theory & ≥80% Practical"}</span>
-                        </div>
-                    </div>
-                    <div className="hero-gauge-box">
-                        <div className="gauge-circle">
-                            <svg viewBox="0 0 100 100">
-                                <circle className="gauge-bg" cx="50" cy="50" r="42" />
-                                <circle className="gauge-fill" id="gaugeCircleFill" cx="50" cy="50" r="42" strokeDasharray="264" strokeDashoffset="264" style={gaugeStyle} />
-                            </svg>
-                            <div className="gauge-text" id="gaugeTextVal">{ov ? pct + '%' : '--%'}</div>
-                        </div>
-                        <div>
-                            <div style={{ fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", letterSpacing: "0.04em" }}>Aggregate Attendance</div>
-                            <div style={{ fontSize: "1.15rem", fontWeight: "800", color: "#ffffff" }} id="heroAttendedFraction">{ov ? `${ov.attended_classes || 0} / ${ov.total_classes || 0} Classes` : '-- / -- Classes'}</div>
-                            <div style={{ fontSize: "0.74rem", color: "rgba(255,255,255,0.75)" }} id="heroEligibleSubjectsCount">{ov ? `${ov.eligible_subjects || 0} of ${ov.total_subjects || 0} Subjects Eligible` : '-- Subjects Eligible'}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <PageHero
+                icon="📅"
+                title="Attendance"
+                name={st?.name || 'Dhruv Patel'}
+                meta={[
+                    <span id="heroRollBadge">{st ? 'Roll ' + (st.roll_number || '235') : 'Roll 235'}</span>,
+                    <span id="heroCadetBatch">{st ? st.batch_year || '3rd Year MBBS' : '3rd Year MBBS'}</span>,
+                    'Semester 5',
+                ]}
+                stat={{
+                    label: 'Overall',
+                    value: ov ? pct + '%' : '--%',
+                    valueId: 'gaugeTextVal',
+                    visual: (
+                        <svg className="ph-ring" viewBox="0 0 100 100" aria-hidden="true">
+                            <circle className="gauge-bg" cx="50" cy="50" r="42" />
+                            <circle className="gauge-fill" id="gaugeCircleFill" cx="50" cy="50" r="42" strokeDasharray="264" strokeDashoffset="264" style={gaugeStyle} />
+                        </svg>
+                    ),
+                    sub: ov ? `${ov.attended_classes || 0} of ${ov.total_classes || 0} classes · ${ov.eligible_subjects || 0} of ${ov.total_subjects || 0} subjects eligible` : 'Loading…',
+                    subId: 'heroAttendedFraction',
+                }}
+                facts={[{ label: 'NMC minimum', value: '75% theory · 80% practical', icon: '✅', tone: 'green', id: 'nmcStatusBadge' }]}
+            />
             <div className="datewise-container-card anim-fade-up">
                 <div className="datewise-top-bar">
                     <h2>Datewise Attendance</h2>

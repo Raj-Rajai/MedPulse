@@ -320,12 +320,19 @@
       max-height: 90vh;
       overflow-y: auto;
     }
-    @media (max-width: 1024px) {
+    @container main (max-width: 690px) {
       .admin-grid-2col {
         grid-template-columns: 1fr !important;
       }
     }
     @media (max-width: 640px) {
+      .modal-content {
+        padding: 20px 16px !important;
+        border-radius: var(--radius-lg) !important;
+      }
+    }
+
+@container main (max-width: 520px) {
       .burden-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
@@ -336,12 +343,8 @@
       .burden-card .burden-num {
         font-size: 1.35rem !important;
       }
-      .modal-content {
-        padding: 20px 16px !important;
-        border-radius: var(--radius-lg) !important;
-      }
-    }
-    @media (max-width: 420px) {
+}
+    @container main (max-width: 380px) {
       .burden-grid {
         grid-template-columns: 1fr !important;
       }
@@ -362,7 +365,7 @@
       min-width: 0;
       flex: 1 1 auto;
     }
-    @media (max-width: 640px) {
+    @container main (max-width: 520px) {
       .admin-page-header {
         margin-bottom: 18px !important;
         gap: 10px !important;
@@ -387,7 +390,7 @@
         margin-top: 3px !important;
       }
     }
-    @media (max-width: 420px) {
+    @container main (max-width: 380px) {
       #adminPageHeading {
         font-size: 1.15rem !important;
       }
@@ -400,7 +403,7 @@
       }
     }
 
-    @media (max-width: 640px) {
+    @container main (max-width: 520px) {
       .table-responsive,
       .table-wrapper {
         overflow-x: auto !important;
@@ -415,7 +418,6 @@
       table#adminExamsTable,
       table#campaignsTable,
       table#adminAttendanceTable {
-        zoom: 0.78 !important;
         font-size: 0.75rem !important;
       }
       .table-responsive th,

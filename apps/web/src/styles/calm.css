@@ -114,6 +114,6 @@
 .privacy-badge-row { display: none !important; }
 
 /* Schedule: on phones the date cards are swiped, so the scroll buttons are just clutter */
-@media (max-width: 860px) {
+@container main (max-width: 600px) {
   .main-content .schedule-pagi-btn[title^="Scroll cards"] { display: none !important; }
 }

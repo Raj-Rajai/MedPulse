@@ -32,7 +32,7 @@
       z-index: 2;
       flex-wrap: wrap;
     }
-    @media (max-width: 900px) {
+    @container main (max-width: 566px) {
       .hero-split-grid {
         flex-direction: column;
         align-items: flex-start;
@@ -57,7 +57,7 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       margin-left: auto;
     }
-    @media (max-width: 900px) {
+    @container main (max-width: 566px) {
       .hero-gauge-box {
         margin-left: 0;
         align-items: flex-start;
@@ -226,7 +226,7 @@
       gap: 10px;
     }
     .schedule-actions-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    @media (max-width: 640px) {
+    @container main (max-width: 520px) {
       .schedule-scroll-wrapper { padding: 0 18px !important; }
       .schedule-scroll-nav-btn {
         width: 28px !important;

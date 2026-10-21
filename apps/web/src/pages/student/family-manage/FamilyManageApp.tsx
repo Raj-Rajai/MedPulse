@@ -21,9 +21,14 @@ import { AllergiesList, Baseline, ConditionsList, Demographics, HistoryList, Lif
 import { ageFromDob, inputValue, isoToday, type FamilyDetail, type FamilyRow, type FormValues, type Lifestyle, type MemberDetail } from './types';
 import { ConfidentialityNoticeModal } from '../../../shared/privacy/ConfidentialityNoticeModal';
 import { useStudentPrivacy } from '../../../shared/privacy/useStudentPrivacy';
+import { DEFAULT_STUDY_DATA, type FamilyStudyData } from './studyTypes';
+import { extractStudyData, persistStudyDataLocally, encodeNotesPayload } from './studyStorage';
+import { createStudyKit as createStudyKitHelper } from './studyFields';
+import { FamilyStudyFormSections } from './FamilyStudyFormSections';
+import { FamilyJournalExportModal } from './FamilyJournalExportModal';
 
-const CREATE_DEFAULTS: FormValues = { cfRoll: '235', cfFamilyNo: '', cfHof: '', cfFamilyName: '', cfContactPhone: '', cfVillage: 'RHTC Field Area - Ward 4', cfAddress: '', cfCity: '', cfPincode: '', cfTotalCu: '4.0', cfCalorie: '12000', cfCalorieStatus: 'Normal', cfAdvice: 'N' };
-const ADD_DEFAULTS: FormValues = { modalMName: '', modalMRelation: 'Head of Family', modalMGender: 'M', modalMDob: '', modalMAgeYears: '', modalMAgeMonths: '0', modalMMaritalStatus: 'Married', modalMEducation: 'Secondary', modalMOccupation: '', modalMContact: '', modalMWork: 'Moderate' };
+const CREATE_DEFAULTS: FormValues = { cfRoll: '271', cfFamilyNo: '', cfHof: '', cfFamilyName: '', cfContactPhone: '', cfVillage: 'Santej', cfAddress: 'Near Gram Panchayat, Santej', cfCity: 'Ahmedabad', cfPincode: '382721', cfTotalCu: '4.0', cfCalorie: '12000', cfCalorieStatus: 'Normal', cfAdvice: 'N' };
+const ADD_DEFAULTS: FormValues = { modalMName: '', modalMRelation: 'Head of Family', modalMGender: 'M', modalMContact: '' };
 const COND_DEFAULTS: FormValues = { condEditId: '', condName: '', condCategory: 'Other', condStatus: 'Active', condSeverity: 'Moderate', condDate: '', condNotes: '' };
 const MED_DEFAULTS: FormValues = { medEditId: '', medName: '', medDosage: '', medFrequency: 'OD (Once daily)', medRoute: 'Oral', medAdherence: 'Good', medPrescribedFor: '', medStartDate: '' };
 const ALG_DEFAULTS: FormValues = { algEditId: '', algAllergen: '', algType: 'Drug', algSeverity: 'Moderate', algReaction: '' };
@@ -140,23 +145,60 @@ export function FamilyManageApp() {
     const create = useForm(CREATE_DEFAULTS);
     const [createOpen, setCreateOpen] = useState(false);
     const [createSaving, setCreateSaving] = useState(false);
+    const [createStudyData, setCreateStudyData] = useState<FamilyStudyData>(DEFAULT_STUDY_DATA);
+    const [editStudyData, setEditStudyData] = useState<FamilyStudyData>(DEFAULT_STUDY_DATA);
+    const [currentFamilyStudyData, setCurrentFamilyStudyData] = useState<FamilyStudyData>(DEFAULT_STUDY_DATA);
+    const [exportJournalOpen, setExportJournalOpen] = useState(false);
     const cfPhone = useValidatedField('phone', true);
+
     useEffect(() => {
-        if (loggedInStudent) create.set('cfRoll', String(loggedInStudent.roll_number));
+        const studentRoll = loggedInStudent ? String(loggedInStudent.roll_number) : '271';
+        const studentName = loggedInStudent?.name || 'Sangada Pratik Ashishbhai';
+        const collegeName = 'SAL Institute of Medical Sciences';
+        create.set('cfRoll', studentRoll);
+        setCreateStudyData((prev) => ({
+            ...prev,
+            roll_no: studentRoll,
+            student_name: studentName,
+            college_name: collegeName,
+        }));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const showCreateFamilyForm = () => {
         const list = familiesRef.current;
         const nextNo = list.length > 0 ? Math.max(...list.map((f) => f.family_no || 0)) + 1 : 1;
-        create.setValues((f) => ({ ...f, cfFamilyNo: String(nextNo), ...(loggedInStudent ? { cfRoll: String(loggedInStudent.roll_number) } : {}) }));
+        const defaultRoll = loggedInStudent ? String(loggedInStudent.roll_number) : '271';
+        const defaultStudentName = loggedInStudent?.name || 'Sangada Pratik Ashishbhai';
+        const defaultCollege = 'SAL Institute of Medical Sciences';
+
+        create.setValues((f) => ({
+            ...f,
+            cfFamilyNo: String(nextNo),
+            cfRoll: defaultRoll,
+            cfVillage: 'Santej',
+            cfCity: 'Ahmedabad',
+            cfPincode: '382721',
+        }));
+
+        setCreateStudyData({
+            ...DEFAULT_STUDY_DATA,
+            household_no: String(nextNo),
+            roll_no: defaultRoll,
+            student_name: defaultStudentName,
+            college_name: defaultCollege,
+            village_name: 'Santej',
+            head_name: '',
+        });
+
         setCreateOpen(true);
         scrollLater('createFamilyCard');
-        focusLater('cfHof');
+        focusLater('study_head_name');
     };
     const hideCreateFamilyForm = () => {
         setCreateOpen(false);
         create.reset();
+        setCreateStudyData(DEFAULT_STUDY_DATA);
     };
 
     /* ---- Workspace state (globals of the original script kept in refs where later awaits read them) ---- */
@@ -217,6 +259,8 @@ export function FamilyManageApp() {
             const data = (await res.json()) as FamilyDetail;
             if (selectedFamilyIdRef.current !== familyId) return;
             setFamilyData(data);
+            const study = extractStudyData(data);
+            setCurrentFamilyStudyData(study);
             setLoadStatus((s) => ({ ...s, shown: false }));
             setDetailShown(true);
             setMemberQuery('');
@@ -276,36 +320,60 @@ export function FamilyManageApp() {
 
     const submitCreateFamily = async () => {
         const f = create.values;
-        const rollNumber = (f.cfRoll && f.cfRoll.trim()) || (loggedInStudent ? String(loggedInStudent.roll_number) : '235');
+        const rollNumber = createStudyData.roll_no || (f.cfRoll && f.cfRoll.trim()) || (loggedInStudent ? String(loggedInStudent.roll_number) : '271');
+        const headOfFamily = (createStudyData.head_name && createStudyData.head_name.trim()) || f.cfHof.trim();
+        if (!headOfFamily) {
+            showToast('Please enter Head of Family (HOF) name', 'error');
+            focusLater('study_head_name');
+            return;
+        }
         const cleanContact = checkPhone(f.cfContactPhone, cfPhone, 'cfContactPhone', toast, focusLater);
         if (cleanContact === null) return;
         setCreateSaving(true);
+        const targetFamNo = parseInt(createStudyData.household_no || f.cfFamilyNo, 10) || 1;
+        const studyPayload: FamilyStudyData = {
+            ...createStudyData,
+            household_no: String(targetFamNo),
+            head_name: headOfFamily,
+            family_name: createStudyData.family_name || f.cfFamilyName.trim(),
+            contact_phone: cleanContact || createStudyData.contact_phone || '',
+            roll_no: rollNumber,
+            village_name: createStudyData.village_name || f.cfVillage.trim(),
+            address: createStudyData.address || f.cfAddress.trim(),
+            city: createStudyData.city || f.cfCity.trim(),
+            pincode: createStudyData.pincode || f.cfPincode.trim(),
+        };
+        const notesJson = encodeNotesPayload(studyPayload);
         const payload = {
             roll_number: rollNumber,
             student_roll: rollNumber,
             student_id: loggedInStudent ? loggedInStudent.id : null,
-            family_no: parseInt(f.cfFamilyNo, 10),
-            head_of_family: f.cfHof.trim(),
-            family_name: f.cfFamilyName.trim() || null,
-            contact_phone: cleanContact || null,
-            contact_number: cleanContact || null,
-            village_ward: f.cfVillage.trim(),
-            address: f.cfAddress.trim(),
-            city: f.cfCity.trim() || null,
-            pincode: f.cfPincode.trim() || null,
+            family_no: targetFamNo,
+            head_of_family: headOfFamily,
+            family_name: createStudyData.family_name.trim() || f.cfFamilyName.trim() || `${headOfFamily} Household`,
+            contact_phone: cleanContact || createStudyData.contact_phone || null,
+            contact_number: cleanContact || createStudyData.contact_phone || null,
+            village_ward: createStudyData.village_name || f.cfVillage.trim(),
+            village: createStudyData.village_name || f.cfVillage.trim(),
+            address: createStudyData.address || f.cfAddress.trim(),
+            city: createStudyData.city || f.cfCity.trim() || null,
+            pincode: createStudyData.pincode || f.cfPincode.trim() || null,
             total_cu: parseFloat(f.cfTotalCu) || 0,
             calorie_intake_per_cu: parseInt(f.cfCalorie) || 0,
             calorie_status: selectValue(OPT.calStatus, f.cfCalorieStatus),
             dietary_advice_given: selectValue(OPT.advice, f.cfAdvice),
+            notes: notesJson,
             members: [],
         };
         try {
             const res = await jsonFetch('/api/families', 'POST', payload);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to create family');
+            const newId = data.family_id || (data.family && data.family.id);
+            persistStudyDataLocally([targetFamNo, newId, data.family_code], studyPayload);
+            setCurrentFamilyStudyData(studyPayload);
             showToast(`Household #${payload.family_no} created successfully!`, 'success');
             hideCreateFamilyForm();
-            const newId = data.family_id || (data.family && data.family.id);
             selectedFamilyIdRef.current = newId;
             await loadFamilies();
             if (newId) selectFamily(newId);
@@ -324,11 +392,20 @@ export function FamilyManageApp() {
     const openEditFamilyModal = () => {
         const d = familyData;
         if (!d) return;
+        const study = extractStudyData(d);
+        setEditStudyData(study);
         editFamily.setValues({
-            efHof: d.head_of_family || '', efFamilyName: d.family_name || '', efContactPhone: d.contact_phone || d.contact_number || '',
-            efVillage: d.village_ward || '', efAddress: d.address || '', efCity: d.city || '', efPincode: d.pincode || '',
-            efTotalCu: String(d.total_cu || 0), efCalorie: String(d.calorie_intake_per_cu || 0),
-            efCalorieStatus: d.calorie_status || 'Normal', efAdvice: d.dietary_advice_given || 'N',
+            efHof: d.head_of_family || study.head_name || '',
+            efFamilyName: d.family_name || '',
+            efContactPhone: d.contact_phone || d.contact_number || '',
+            efVillage: d.village_ward || study.village_name || '',
+            efAddress: d.address || study.address || '',
+            efCity: d.city || study.city || '',
+            efPincode: d.pincode || study.pincode || '',
+            efTotalCu: String(d.total_cu || 0),
+            efCalorie: String(d.calorie_intake_per_cu || 0),
+            efCalorieStatus: d.calorie_status || 'Normal',
+            efAdvice: d.dietary_advice_given || 'N',
         });
         setEditFamilyOpen(true);
     };
@@ -339,24 +416,40 @@ export function FamilyManageApp() {
         const cleanContact = checkPhone(f.efContactPhone, efPhone, 'efContactPhone', toast, focusLater);
         if (cleanContact === null) return;
         setEditFamilySaving(true);
+        const headOfFamily = editStudyData.head_name.trim() || f.efHof.trim();
+        const updatedStudy: FamilyStudyData = {
+            ...editStudyData,
+            head_name: headOfFamily,
+            family_name: editStudyData.family_name || f.efFamilyName.trim(),
+            contact_phone: cleanContact || editStudyData.contact_phone || '',
+            village_name: editStudyData.village_name || f.efVillage.trim(),
+            address: editStudyData.address || f.efAddress.trim(),
+            city: editStudyData.city || f.efCity.trim(),
+            pincode: editStudyData.pincode || f.efPincode.trim(),
+        };
+        const notesJson = encodeNotesPayload(updatedStudy);
         const payload = {
-            head_of_family: f.efHof.trim(),
-            family_name: f.efFamilyName.trim() || null,
-            contact_phone: cleanContact || null,
-            contact_number: cleanContact || null,
-            village_ward: f.efVillage.trim(),
-            address: f.efAddress.trim(),
-            city: f.efCity.trim() || null,
-            pincode: f.efPincode.trim() || null,
+            head_of_family: headOfFamily,
+            family_name: editStudyData.family_name.trim() || f.efFamilyName.trim() || null,
+            contact_phone: cleanContact || editStudyData.contact_phone || null,
+            contact_number: cleanContact || editStudyData.contact_phone || null,
+            village_ward: editStudyData.village_name || f.efVillage.trim(),
+            village: editStudyData.village_name || f.efVillage.trim(),
+            address: editStudyData.address || f.efAddress.trim(),
+            city: editStudyData.city || f.efCity.trim() || null,
+            pincode: editStudyData.pincode || f.efPincode.trim() || null,
             total_cu: parseFloat(f.efTotalCu) || 0,
             calorie_intake_per_cu: parseInt(f.efCalorie) || 0,
             calorie_status: selectValue(OPT.calStatus, f.efCalorieStatus),
             dietary_advice_given: selectValue(OPT.advice, f.efAdvice),
+            notes: notesJson,
         };
         try {
             const res = await jsonFetch(`/api/families/${famId}`, 'PUT', payload);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to update household');
+            persistStudyDataLocally([famId, familyData?.family_no, familyData?.family_code], updatedStudy);
+            setCurrentFamilyStudyData(updatedStudy);
             showToast('Household details updated', 'success');
             setEditFamilyOpen(false);
             await loadFamilies();
@@ -683,9 +776,10 @@ export function FamilyManageApp() {
     const saveDraft = (f: FormValues) => {
         if (!selectedFamilyIdRef.current) return;
         const draft = {
-            name: f.modalMName, relation: selectValue(OPT.relation, f.modalMRelation), gender: selectValue(OPT.gender, f.modalMGender), dob: f.modalMDob,
-            ageYears: f.modalMAgeYears, ageMonths: f.modalMAgeMonths, marital: selectValue(OPT.marital, f.modalMMaritalStatus),
-            education: selectValue(OPT.education, f.modalMEducation), occupation: f.modalMOccupation, contact: f.modalMContact, work: selectValue(OPT.work, f.modalMWork),
+            name: f.modalMName,
+            relation: selectValue(OPT.relation, f.modalMRelation),
+            gender: selectValue(OPT.gender, f.modalMGender),
+            contact: f.modalMContact,
             savedAt: new Date().toISOString(),
         };
         localStorage.setItem(draftKey(), JSON.stringify(draft));
@@ -693,13 +787,6 @@ export function FamilyManageApp() {
     const onAddInput = (patch: FormValues) => {
         const next = { ...add.values, ...patch };
         saveDraft(next);
-        if ('modalMDob' in patch && patch.modalMDob) {
-            const { age, months } = ageFromDob(patch.modalMDob);
-            if (age >= 0) {
-                next.modalMAgeYears = String(age);
-                if (age < 2) next.modalMAgeMonths = String(Math.max(0, months));
-            }
-        }
         add.setValues(next);
     };
 
@@ -709,7 +796,7 @@ export function FamilyManageApp() {
         if (draftStr) {
             try {
                 const draft = JSON.parse(draftStr);
-                if (draft.name || draft.dob || draft.ageYears) {
+                if (draft.name || draft.contact) {
                     setDraftAlert(true);
                     return;
                 }
@@ -743,14 +830,7 @@ export function FamilyManageApp() {
             if (d.name) f.modalMName = d.name;
             if (d.relation) f.modalMRelation = d.relation;
             if (d.gender) f.modalMGender = d.gender;
-            if (d.dob) f.modalMDob = d.dob;
-            if (d.ageYears) f.modalMAgeYears = d.ageYears;
-            if (d.ageMonths) f.modalMAgeMonths = d.ageMonths;
-            if (d.marital) f.modalMMaritalStatus = d.marital;
-            if (d.education) f.modalMEducation = d.education;
-            if (d.occupation) f.modalMOccupation = d.occupation;
             if (d.contact) f.modalMContact = d.contact;
-            if (d.work) f.modalMWork = d.work;
             add.setValues(f);
             setDraftAlert(false);
             showToast('Member draft restored', 'info');
@@ -781,14 +861,14 @@ export function FamilyManageApp() {
             name: memberName,
             relation_to_hof: selectValue(OPT.relation, f.modalMRelation),
             gender: selectValue(OPT.gender, f.modalMGender),
-            date_of_birth: f.modalMDob || null,
-            age_years: parseInt(f.modalMAgeYears, 10) || 0,
-            age_months: parseInt(f.modalMAgeMonths || '0', 10),
-            marital_status: selectValue(OPT.marital, f.modalMMaritalStatus),
-            education_level: selectValue(OPT.education, f.modalMEducation),
-            occupation: f.modalMOccupation.trim() || null,
+            date_of_birth: null,
+            age_years: 0,
+            age_months: 0,
+            marital_status: null,
+            education_level: null,
+            occupation: null,
             contact_number: cleanContact || null,
-            work_type: selectValue(OPT.work, f.modalMWork),
+            work_type: null,
         };
         setAddSaving(addAnother ? 'another' : 'save');
         try {
@@ -873,6 +953,18 @@ export function FamilyManageApp() {
 
     /* ---- Render ---- */
     const ck = fieldKit(create.values, create.set);
+    const createStudyKit = createStudyKitHelper(createStudyData, setCreateStudyData, (key, val) => {
+        setCreateStudyData((prev) => ({ ...prev, [key]: val }));
+        if (key === 'household_no') create.set('cfFamilyNo', val);
+        if (key === 'head_name') create.set('cfHof', val);
+        if (key === 'family_name') create.set('cfFamilyName', val);
+        if (key === 'contact_phone') create.set('cfContactPhone', val);
+        if (key === 'village_name') create.set('cfVillage', val);
+        if (key === 'address') create.set('cfAddress', val);
+        if (key === 'city') create.set('cfCity', val);
+        if (key === 'pincode') create.set('cfPincode', val);
+        if (key === 'roll_no') create.set('cfRoll', val);
+    });
     const fk = fieldKit(fu.values, fu.set);
     const d = familyData;
     const m = memberData;
@@ -941,32 +1033,33 @@ export function FamilyManageApp() {
                         <button className="btn btn-primary" onClick={showCreateFamilyForm}>+ Add family</button>
                     </section>
 
-                    <div className="card" id="createFamilyCard" style={{ display: createOpen ? 'block' : 'none', border: '1px solid var(--primary-border)', boxShadow: 'var(--shadow-md)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                            <h2 className="card-title" style={{ color: 'var(--primary)', marginBottom: '0' }}>Register household</h2>
+                    <div className="card" id="createFamilyCard" style={{ display: createOpen ? 'block' : 'none', border: '1px solid var(--primary-border)', boxShadow: 'var(--shadow-md)', padding: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '8px' }}>
+                            <div>
+                                <h2 className="card-title" style={{ color: 'var(--primary)', marginBottom: '0.15rem' }}>Register household</h2>
+                            </div>
                             <button className="btn btn-secondary" onClick={hideCreateFamilyForm} style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>✕ Close</button>
                         </div>
                         <p className="card-desc">Enter identification and geographic details for the household. Once created, you can immediately add individual members and structured health profiles.</p>
 
                         <form id="createFamilyForm" onSubmit={(e) => { e.preventDefault(); submitCreateFamily(); }}>
-                            <div className="form-grid">
-                                {ck.inp('cfRoll', 'Cadet Roll Number (Authenticated) *', { readOnly: true, style: { background: 'rgba(109, 40, 217, 0.05)', color: 'var(--accent)', fontWeight: 700, cursor: 'not-allowed' }, title: 'Locked to authenticated student account' })}
-                                {ck.inp('cfFamilyNo', 'Family Number *', { type: 'number', min: '1', required: true, placeholder: 'e.g. 1' })}
-                                {ck.inp('cfHof', 'Head of Family (HOF) Name *', { required: true, placeholder: 'Full name of HOF' })}
-                                {ck.inp('cfFamilyName', 'Family Name / Household Label', { placeholder: 'e.g. Patel Household' })}
-                                {ck.phone('cfContactPhone', 'Contact Phone Number', cfPhone, { placeholder: 'e.g. 9876543210' })}
-                                {ck.inp('cfVillage', 'Village / Ward Area *', { required: true, placeholder: 'e.g. RHTC Field Area - Ward 4' })}
-                                {ck.inp('cfAddress', 'House / Street Address', { placeholder: 'e.g. Plot 12, Main Vas' })}
-                                {ck.inp('cfCity', 'City / Town', { placeholder: 'e.g. Ahmedabad' })}
-                                {ck.inp('cfPincode', 'Pincode', { placeholder: 'e.g. 380001' })}
-                                {ck.inp('cfTotalCu', 'Total Family CU', { type: 'number', step: '0.1', placeholder: 'e.g. 4.0' })}
-                                {ck.inp('cfCalorie', 'Daily Calorie Intake (kcal/CU/Day)', { type: 'number', placeholder: 'e.g. 12000' })}
-                                {ck.sel('cfCalorieStatus', 'Calorie Adequacy Status', OPT.calStatus)}
-                                {ck.sel('cfAdvice', 'Dietary Advice Given?', OPT.advice)}
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.25rem' }}>
+                            <FamilyStudyFormSections
+                                kit={createStudyKit}
+                                data={createStudyData}
+                                setData={setCreateStudyData}
+                                phoneSlot={ck.phone('cfContactPhone', 'Contact Phone Number', cfPhone, { placeholder: 'e.g. 9876543210' })}
+                                nutritionSlot={
+                                    <>
+                                        {ck.inp('cfTotalCu', 'Total Family CU', { type: 'number', step: '0.1', placeholder: 'e.g. 4.0' })}
+                                        {ck.inp('cfCalorie', 'Daily Calorie Intake (kcal/CU/Day)', { type: 'number', placeholder: 'e.g. 12000' })}
+                                        {ck.sel('cfCalorieStatus', 'Calorie Adequacy Status', OPT.calStatus)}
+                                        {ck.sel('cfAdvice', 'Dietary Advice Given?', OPT.advice)}
+                                    </>
+                                }
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                                 <button type="button" className="btn btn-secondary" onClick={hideCreateFamilyForm}>Cancel</button>
-                                <button type="submit" className="btn btn-primary" id="createFamilyBtn" disabled={createSaving}>{createSaving ? 'Saving...' : 'Save household'}</button>
+                                <button type="submit" className="btn btn-primary" id="createFamilyBtn" disabled={createSaving}>{createSaving ? 'Saving...' : '💾 Save Household & Study Record'}</button>
                             </div>
                         </form>
                     </div>
@@ -998,11 +1091,10 @@ export function FamilyManageApp() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                                         <span className="badge badge-info" id="fWorkspaceCode" style={{ fontSize: '0.85rem', padding: '0.35rem 0.65rem' }}>{d ? d.family_code || `FAM-${String(d.family_no).padStart(4, '0')}` : 'FAM-0001'}</span>
                                         <div>
-                                            <h2 id="fWorkspaceTitle" className="card-title" style={{ color: 'var(--primary)', fontSize: '1.3rem', marginBottom: '0.15rem' }}>{d ? (d.family_name ? `${d.family_name} (${d.head_of_family})` : d.head_of_family) : '-'}</h2>
-                                            <div id="fSubhead" style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>{d ? `${d.village_ward || '-'} • ${d.members ? d.members.length : 0} Members Recorded` : ''}</div>
-                                        </div>
+                                            <h2 id="fWorkspaceTitle" className="card-title" style={{ color: 'var(--primary)', fontSize: '1.3rem', marginBottom: '0.15rem' }}>{d ? (d.family_name ? `${d.family_name}`: d.head_of_family) : '-'}</h2>                                        </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <button className="btn btn-secondary" onClick={() => setExportJournalOpen(true)} title="Export official student journal proforma (Pages 26-28)" style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem', borderColor: 'var(--accent)', color: 'var(--accent)', fontWeight: 650, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>📄 Export Family Journal (PDF)</button>
                                         <button className="btn btn-secondary" onClick={openEditFamilyModal} title="Edit household identification and address" style={{ fontSize: '0.8rem', padding: '0.4rem 0.7rem' }}>✏ Edit Household</button>
                                         <button className="btn btn-primary" onClick={openAddMemberModal} style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem' }}>➕ Add Member</button>
                                         <button className="btn btn-danger" onClick={confirmDeleteFamily} title="Delete this family and all its members" style={{ padding: '0.4rem 0.65rem', fontSize: '0.8rem' }}>🗑 Delete</button>
@@ -1012,19 +1104,20 @@ export function FamilyManageApp() {
                                 <div className="fm-household-meta-grid">
                                     <div><span className="fm-meta-label">Head of Family</span><strong id="fHead">{d ? d.head_of_family : '-'}</strong></div>
                                     <div><span className="fm-meta-label">Contact Phone</span><span id="fPhone">{d ? d.contact_phone || d.contact_number || 'None recorded' : '-'}</span></div>
-                                    <div><span className="fm-meta-label">Location</span><span id="fLocation">{d ? [d.address, d.city, d.village_ward, d.pincode].filter(Boolean).join(', ') || '-' : '-'}</span></div>
-                                    <div><span className="fm-meta-label">Surveyed By</span><span id="fStudent">{d ? `Roll ${d.roll_number || '-'}` : '-'}</span></div>
+                                    <div><span className="fm-meta-label">Surveyed By</span><span id="fStudent">{d ? `Roll ${d.roll_number || currentFamilyStudyData.roll_no || '-'}` : '-'}</span></div>
                                     <div><span className="fm-meta-label">Total Family CU</span><strong id="fCu">{d ? String(d.total_cu || 0) : '-'}</strong></div>
                                     <div><span className="fm-meta-label">Caloric Status</span><span id="fCalorie">{d ? <span className={`badge ${d.calorie_status === 'Deficient' ? 'badge-danger' : 'badge-success'}`}>{`${d.calorie_status} (${Math.round(Number(d.calorie_intake_per_cu || 0))} kcal)`}</span> : '-'}</span></div>
+                                    <div><span className="fm-meta-label">Prasad Class</span><strong id="fPrasad">{currentFamilyStudyData.modified_prasad_class || 'Class III (Middle Class)'}</strong></div>
+                                    <div><span className="fm-meta-label">Housing &amp; Water</span><span id="fHousing">{`${currentFamilyStudyData.house_type || 'Semi pucca'} • ${currentFamilyStudyData.water_source || 'Municipal'}`}</span></div>
+                                    <div><span className="fm-meta-label">Psychosocial</span><span id="fPsycho"><span className={`badge ${currentFamilyStudyData.relation_family === 'Bad' ? 'badge-danger' : 'badge-success'}`}>{currentFamilyStudyData.relation_family || 'Good'}</span></span></div>
+                                    <div className="fm-meta-location"><span className="fm-meta-label">Location</span><span id="fLocation">{d ? [d.address, d.city, d.village_ward, d.pincode].filter(Boolean).join(', ') || '-' : '-'}</span></div>
                                 </div>
                             </div>
 
                             <div className="card fm-members-card">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <h2 className="card-title" style={{ marginBottom: '0', fontSize: '1.15rem' }}>Members (<span id="memberCountHeader">{d ? (d.members ? d.members.length : 0) : 0}</span>)</h2>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Select a member to view profile below</span>
-                                    </div>
+                                        <h2 className="card-title" style={{ marginBottom: '0', fontSize: '1.15rem' }}>Members (<span id="memberCountHeader">{d ? (d.members ? d.members.length : 0) : 0}</span>)</h2>                                    </div>
                                     <button className="btn btn-primary" style={{ fontSize: '0.78rem', padding: '0.35rem 0.7rem' }} onClick={openAddMemberModal}>+ Add Member</button>
                                 </div>
 
@@ -1066,7 +1159,7 @@ export function FamilyManageApp() {
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                         <button className="btn btn-secondary" onClick={openEditMemberModal} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✏ Edit Info</button>
-                                        <button className="btn btn-primary" onClick={openProvisionModalForCurrentMember} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem', background: 'linear-gradient(135deg, #0d9488, #2563eb)', border: 'none', color: 'white' }} title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
+                                        <button className="btn btn-secondary" onClick={openProvisionModalForCurrentMember} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }} title="Provision or inspect Patient Health Portal credentials">📱 Provision Patient Account</button>
                                         <button className="btn btn-danger" onClick={confirmDeleteMember} title="Delete this member record" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>🗑 Delete</button>
                                         <button className="btn btn-secondary" onClick={closeMemberDetail} style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>✕ Close</button>
                                     </div>
@@ -1097,9 +1190,6 @@ export function FamilyManageApp() {
                                                 Open in Data Entry →
                                             </button>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
-                                            Full clinical screening (NCDs, blood pressure, sugar, pediatric growth, maternal care, and ICMR units) is managed on the <strong>Data Entry</strong> page.
-                                        </p>
                                         <div id="detailVitalsGrid" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginBottom: '0.65rem' }}>{m ? <Vitals m={m} /> : null}</div>
                                         <div id="baselineDetailsContent" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem' }}>{m ? <Baseline m={m} /> : null}</div>
                                     </div>
@@ -1228,7 +1318,23 @@ export function FamilyManageApp() {
                 <LocationVerificationCard buttonLabel="Check location" />
             </main>
 
-            <EditFamilyModal open={editFamilyOpen} form={editFamily.values} set={editFamily.set} onClose={() => setEditFamilyOpen(false)} onSubmit={submitEditFamily} saving={editFamilySaving} phone={efPhone} />
+            <EditFamilyModal
+                open={editFamilyOpen}
+                form={editFamily.values}
+                set={editFamily.set}
+                onClose={() => setEditFamilyOpen(false)}
+                onSubmit={submitEditFamily}
+                saving={editFamilySaving}
+                phone={efPhone}
+                studyData={editStudyData}
+                setStudyData={setEditStudyData}
+            />
+            <FamilyJournalExportModal
+                open={exportJournalOpen}
+                family={familyData}
+                studyData={currentFamilyStudyData}
+                onClose={() => setExportJournalOpen(false)}
+            />
             <AddMemberModal
                 open={addOpen} familyNo={familyNoLabel} draftAlert={draftAlert} form={add.values} set={add.set} onFormInput={onAddInput}
                 onClose={closeAddMemberModal} onSubmit={submitNewMember} saving={addSaving} onRestore={restoreMemberDraft} onDiscard={discardMemberDraft}
