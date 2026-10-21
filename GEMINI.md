@@ -6,5 +6,4 @@
 - If an API response structure or field is missing, adapt and handle it gracefully on the frontend side without modifying any backend files.
 
 ## 2. Git Branch & Push Invariants
-- **Active Branch**: All work, development, and commits must be made on branch `Split/Raj`.
-- **Target Remote**: All `git push` commands must target `origin Split/Raj` (`git push origin Split/Raj`). Never push directly to `main`.
+- Direct commits and pushes to `main` (`origin main`) are permitted as directed by the user.
