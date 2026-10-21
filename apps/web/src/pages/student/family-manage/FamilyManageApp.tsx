@@ -1183,6 +1183,64 @@ export function FamilyManageApp() {
                                         </div>
                                     </div>
 
+                                    <div className="sub-entity-card full-width" id="followUpWorkspaceCard">
+                                        <div className="sub-entity-header" style={{ flexWrap: 'wrap', gap: '0.75rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', background: '#f5f3ff', color: 'var(--primary)', border: '1px solid #ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
+                                                    🩺
+                                                </div>
+                                                <div>
+                                                    <span className="sub-entity-title" style={{ fontSize: '1.05rem', marginBottom: '0.15rem' }}>
+                                                        Longitudinal Follow-up Visits — <span id="fuTargetMemberName" style={{ color: 'var(--primary)' }}>{m ? m.name : 'No Member Selected'}</span>
+                                                    </span>
+                                                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                                        Chronological examination visits, blood pressure/sugar control, medication compliance, and clinical progress
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginLeft: 'auto' }}>
+                                                <span className="badge badge-info" id="fuVisitsCountBadge">{`${m && m.follow_ups ? m.follow_ups.length : 0} Visits Recorded`}</span>
+                                                <button className="btn btn-primary" id="btnLogFollowUp" style={{ fontSize: '0.85rem', padding: '0.45rem 0.95rem' }} onClick={toggleFollowUpForm}>
+                                                    + Log New Visit
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div id="followUpFormContainer" style={{ display: fuOpen ? 'block' : 'none', background: '#faf5ff', border: '1.5px solid #e9d5ff', borderRadius: 'var(--radius-lg)', padding: '1.25rem', margin: '0.75rem 0 1.25rem 0' }}>
+                                            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#6b21a8', marginBottom: '0.85rem' }}>
+                                                Record Follow-Up Examination Visit
+                                            </h3>
+                                            <form id="followUpForm" onSubmit={(e) => { e.preventDefault(); submitFollowUp(); }}>
+                                                <div className="form-grid">
+                                                    {fk.inp('fuDate', 'Visit Date *', { type: 'date', required: true })}
+                                                    {fk.inp('fuSbp', 'Follow-up SBP (mmHg)', { type: 'number', placeholder: 'e.g. 130' })}
+                                                    {fk.inp('fuDbp', 'Follow-up DBP (mmHg)', { type: 'number', placeholder: 'e.g. 80' })}
+                                                    {fk.inp('fuRbs', 'Follow-up RBS (mg/dl)', { type: 'number', placeholder: 'e.g. 120' })}
+                                                    {fk.inp('fuHb', 'Follow-up Hb (g/dl)', { type: 'number', step: '0.1', placeholder: 'e.g. 10.5' })}
+                                                    {fk.inp('fuWeight', 'Follow-up Weight (kg)', { type: 'number', step: '0.5', placeholder: 'e.g. 58.0' })}
+                                                    {fk.sel('fuCompliance', 'Treatment Compliance', OPT.compliance)}
+                                                    {fk.sel('fuProgress', 'Clinical Health Progress', OPT.progress)}
+                                                    {fk.inp('fuNextDate', 'Next Scheduled Visit Date', { type: 'date' })}
+                                                </div>
+                                                {fk.area('fuNotes', 'Clinical Examination Notes & Counseling Given *', { rows: 2, placeholder: 'e.g. Adherent to antihypertensive therapy. Dietary salt restriction observed. Pallor improved.', required: true }, { marginTop: '0.85rem' })}
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+                                                    <button type="button" className="btn btn-secondary" onClick={toggleFollowUpForm}>Cancel</button>
+                                                    <button type="submit" className="btn btn-primary" id="saveFuBtn" disabled={fuSaving}>{fuSaving ? 'Saving...' : '💾 Save Follow-up Visit'}</button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <div id="timelineContainer">
+                                            {m
+                                                ? <Timeline followUps={m.follow_ups || []} onDelete={(id) => subDelete('Delete Follow-Up', 'Are you sure you want to remove this examination visit record?', `/api/follow-ups/${id}`, 'Failed to delete follow-up', 'Follow-up visit removed')} />
+                                                : (
+                                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '2.5rem 1rem', textAlign: 'center' }}>
+                                                        Select a member above to view and log their longitudinal follow-up examination visits.
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </div>
+
                                     <div className="sub-entity-card">
                                         <div className="sub-entity-header">
                                             <span className="sub-entity-title">📝 Field Survey &amp; Baseline Vitals</span>
@@ -1252,64 +1310,6 @@ export function FamilyManageApp() {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="card fm-bottom-followup" id="followUpWorkspaceCard" style={{ display: memberShown ? 'block' : 'none' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ width: '42px', height: '42px', borderRadius: 'var(--radius-md)', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem' }}>
-                                        🩺
-                                    </div>
-                                    <div>
-                                        <h2 className="card-title" style={{ marginBottom: '0.15rem', fontSize: '1.25rem' }}>
-                                            Longitudinal Follow-up Visits — <span id="fuTargetMemberName" style={{ color: 'var(--primary)' }}>{m ? m.name : 'No Member Selected'}</span>
-                                        </h2>
-                                        <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-                                            Chronological examination visits, blood pressure/sugar control, medication compliance, and clinical progress
-                                        </div>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <span className="badge badge-info" id="fuVisitsCountBadge">{`${m && m.follow_ups ? m.follow_ups.length : 0} Visits Recorded`}</span>
-                                    <button className="btn btn-success" id="btnLogFollowUp" style={{ fontSize: '0.85rem', padding: '0.45rem 0.95rem' }} onClick={toggleFollowUpForm}>
-                                        + Log New Visit
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div id="followUpFormContainer" style={{ display: fuOpen ? 'block' : 'none', background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-                                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#166534', marginBottom: '0.85rem' }}>
-                                    Record Follow-Up Examination Visit
-                                </h3>
-                                <form id="followUpForm" onSubmit={(e) => { e.preventDefault(); submitFollowUp(); }}>
-                                    <div className="form-grid">
-                                        {fk.inp('fuDate', 'Visit Date *', { type: 'date', required: true })}
-                                        {fk.inp('fuSbp', 'Follow-up SBP (mmHg)', { type: 'number', placeholder: 'e.g. 130' })}
-                                        {fk.inp('fuDbp', 'Follow-up DBP (mmHg)', { type: 'number', placeholder: 'e.g. 80' })}
-                                        {fk.inp('fuRbs', 'Follow-up RBS (mg/dl)', { type: 'number', placeholder: 'e.g. 120' })}
-                                        {fk.inp('fuHb', 'Follow-up Hb (g/dl)', { type: 'number', step: '0.1', placeholder: 'e.g. 10.5' })}
-                                        {fk.inp('fuWeight', 'Follow-up Weight (kg)', { type: 'number', step: '0.5', placeholder: 'e.g. 58.0' })}
-                                        {fk.sel('fuCompliance', 'Treatment Compliance', OPT.compliance)}
-                                        {fk.sel('fuProgress', 'Clinical Health Progress', OPT.progress)}
-                                        {fk.inp('fuNextDate', 'Next Scheduled Visit Date', { type: 'date' })}
-                                    </div>
-                                    {fk.area('fuNotes', 'Clinical Examination Notes & Counseling Given *', { rows: 2, placeholder: 'e.g. Adherent to antihypertensive therapy. Dietary salt restriction observed. Pallor improved.', required: true }, { marginTop: '0.85rem' })}
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-                                        <button type="button" className="btn btn-secondary" onClick={toggleFollowUpForm}>Cancel</button>
-                                        <button type="submit" className="btn btn-primary" id="saveFuBtn" disabled={fuSaving}>{fuSaving ? 'Saving...' : '💾 Save Follow-up Visit'}</button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div id="timelineContainer">
-                                {m
-                                    ? <Timeline followUps={m.follow_ups || []} onDelete={(id) => subDelete('Delete Follow-Up', 'Are you sure you want to remove this examination visit record?', `/api/follow-ups/${id}`, 'Failed to delete follow-up', 'Follow-up visit removed')} />
-                                    : (
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '2.5rem 1rem', textAlign: 'center' }}>
-                                            Select a member above to view and log their longitudinal follow-up examination visits.
-                                        </div>
-                                    )}
                             </div>
                         </div>
                     </div>

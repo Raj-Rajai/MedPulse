@@ -520,9 +520,17 @@
     font-size: 0.7rem !important;
   }
 
-  .member-tags .badge {
+  .member-tags {
+    justify-content: flex-start !important;
+    margin-top: 4px !important;
+    margin-bottom: 2px !important;
+    width: 100% !important;
+  }
+
+  .member-tags .badge,
+  .member-tags .member-tag-chip {
     font-size: 0.64rem !important;
-    padding: 1px 5px !important;
+    padding: 1px 6px !important;
   }
 
   .member-card-vitals {

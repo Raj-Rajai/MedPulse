@@ -45,7 +45,6 @@ export function ProfileApp() {
     const [dateIso, setDateIso] = useState(TODAY);
     const [dateInput, setDateInput] = useState('');
     const [datewise, setDatewise] = useState<{ data: DatewiseData | null; iso: string; error: string | null }>({ data: null, iso: TODAY, error: null });
-    const [copied, setCopied] = useState(false);
     const [csvBusy, setCsvBusy] = useState(false);
     const [pdfBusy, setPdfBusy] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
@@ -134,8 +133,6 @@ export function ProfileApp() {
         }
         navigator.clipboard.writeText(code).then(() => {
             showToast(`Copied referral code ${code} to clipboard!`, 'success');
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
         }).catch((err) => {
             console.error('Clipboard copy failed:', err);
             showToast(`Referral code: ${code}`, 'info');
@@ -458,68 +455,18 @@ export function ProfileApp() {
                         </div>
                     </div>
                 </div>
-                <div className="profile-content-grid anim-fade-up">
-                    <div className="profile-info-card" style={{ border: '1px solid rgba(14, 165, 233, 0.35)', background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06), rgba(99, 102, 241, 0.04))', position: 'relative', overflow: 'hidden', marginBottom: '0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <h2 style={{ fontSize: '1.15rem', fontWeight: '750', margin: '0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span>🏷 Patient Adoption Referral Code</span>
-                                </h2>
-                                <span className="badge badge-info" style={{ fontSize: '0.72rem', letterSpacing: '0.03em' }}>Cadet Key</span>
-                            </div>
-                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.45' }}>
-                                Share this unique referral code with your adopted families. When they sign up or log in, they enter this code under{' '}
-                                <strong>"Adopted by a Medical Cadet?"</strong>
-                                {' '}to link their patient account to your survey records.
-                            </p>
-                            <div style={{ background: '#ffffff', border: '1.5px dashed #0284c7', borderRadius: 'var(--radius-md)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)' }}>
-                                <div>
-                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>Your Adoption Code</div>
-                                    <div id="cadetReferralCode" style={{ fontFamily: 'monospace', fontSize: '1.25rem', fontWeight: '800', color: '#0284c7', letterSpacing: '0.06em' }}>{refCode ?? 'Loading...'}</div>
-                                </div>
-                                <button className="btn btn-secondary" id="copyReferralBtn" onClick={copyCadetReferralCode} style={{ background: '#f0f9ff', borderColor: '#bae6fd', color: '#0284c7', fontWeight: '700', fontSize: '0.82rem', padding: '7px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }} title="Copy code to clipboard">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                    </svg>
-                                    <span id="copyReferralText">{copied ? 'Copied!' : 'Copy'}</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div style={{ fontSize: '0.76rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px' }}>
-                            <span>💡 Automatically routes the patient's vitals &amp; consultations to your portfolio and institutional hospital.</span>
-                        </div>
-                    </div>
-                    <div className="profile-info-card" style={{ marginBottom: '0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <h2 style={{ fontSize: '1.15rem', fontWeight: '750', margin: '0', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span>🔒 Access &amp; Security</span>
-                                </h2>
-                                <span className="badge badge-success" style={{ fontSize: '0.72rem' }}>PIN Protected</span>
-                            </div>
-                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: '1.45' }}>Your portal session is authenticated using your 4-digit Student PIN. Change your PIN anytime to maintain data security and clinical record privacy.</p>
-                            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-md)', padding: '14px 16px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Portal Access PIN</div>
-                                    <div style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '0.35em', color: 'var(--text-primary)' }}>••••</div>
-                                </div>
-                                <span className="badge badge-success">Active</span>
-                            </div>
-                        </div>
-                        <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ width: '100%', justifyContent: 'center', marginTop: '10px', fontWeight: '650' }}>Update Access PIN</button>
-                    </div>
-                    <div className="profile-info-card" style={{ marginBottom: '0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div className="profile-content-grid anim-fade-up" style={{ gridTemplateColumns: '1fr' }}>
+                    <div className="profile-info-card" style={{ marginBottom: '0' }}>
                         <div>
                             <h2 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '8px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span>📄 Official Field Survey Proforma</span>
                             </h2>
                             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: '1.45' }}>Download the official Community Medicine (PSM) survey proforma containing all 43 columns, baseline socio-demographics, and latest clinical follow-up records.</p>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
-                            <button className="btn btn-secondary" id="cardExportCsvBtn" disabled={csvBusy} onClick={exportProformaCsv} style={{ width: '100%', justifyContent: 'center', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{csvBusy ? '⏳ Generating CSV...' : '📥 Download Survey CSV (43 Cols)'}</button>
-                            <button className="btn btn-primary" id="cardExportPdfBtn" disabled={pdfBusy} onClick={exportProformaPdf} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', boxShadow: '0 4px 12px rgba(2,132,199,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{pdfBusy ? '⏳ Generating PDF...' : '📄 Download Polished PDF Report'}</button>
-                            <button className="btn btn-primary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 12px rgba(244,63,94,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨 Export Logbook</button>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                            <button className="btn btn-secondary" id="cardExportCsvBtn" disabled={csvBusy} onClick={exportProformaCsv} style={{ flex: '1 1 200px', justifyContent: 'center', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{csvBusy ? '⏳ Generating CSV...' : '📥 Download Survey CSV (43 Cols)'}</button>
+                            <button className="btn btn-primary" id="cardExportPdfBtn" disabled={pdfBusy} onClick={exportProformaPdf} style={{ flex: '1 1 200px', justifyContent: 'center', background: 'linear-gradient(135deg, #0284c7, #0369a1)', border: 'none', boxShadow: '0 4px 12px rgba(2,132,199,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>{pdfBusy ? '⏳ Generating PDF...' : '📄 Download Polished PDF Report'}</button>
+                            <button className="btn btn-primary" id="cardExportLogbookBtn" onClick={() => window.print()} style={{ flex: '1 1 180px', justifyContent: 'center', background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none', boxShadow: '0 4px 12px rgba(244,63,94,0.35)', fontWeight: '650', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>🖨 Export Logbook</button>
                         </div>
                     </div>
                 </div>

@@ -531,12 +531,23 @@
   .badge-status,
   [class*="-badge"]:not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]),
   [class*="-pill"]:not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]),
-  [class*="-tag"]:not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]) {
+  [class*="-tag"]:not(.member-tags):not([class*="-group"]):not([class*="-container"]):not([class*="-wrapper"]) {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
     white-space: nowrap !important;
+  }
+
+  /* Member card tags (Under 5, ANC, HTN, etc.) flush to the left under member name/relation */
+  .member-tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    margin-top: 4px !important;
+    margin-bottom: 2px !important;
+    width: 100% !important;
   }
 
   .profile-att-table .badge,
