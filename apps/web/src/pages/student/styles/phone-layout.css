@@ -539,11 +539,11 @@
     white-space: nowrap !important;
   }
 
-  /* Member card tags (Under 5, ANC, HTN, etc.) flush to the left under member name/relation */
+  /* Member card tags (Under 5, ANC, HTN, etc.) flush to the right below #1, #2 order pill */
   .member-tags {
     display: flex !important;
     flex-wrap: wrap !important;
-    justify-content: flex-start !important;
+    justify-content: flex-end !important;
     align-items: center !important;
     margin-top: 4px !important;
     margin-bottom: 2px !important;
