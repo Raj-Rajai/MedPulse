@@ -66,10 +66,17 @@ export function ExamsApp() {
     subjectRef.current = subject;
     const [typeFilter, setTypeFilter] = useState('all');
     const [search, setSearch] = useState('');
-    // Phones start on the cards view; the wide marksheet table needs a desktop-width screen.
-    const [view, setView] = useState<'table' | 'cards'>(() => (window.matchMedia('(max-width: 768px)').matches ? 'cards' : 'table'));
+    // Table toggle active by default across all viewports
+    const [view, setView] = useState<'table' | 'cards'>('table');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSizeState] = useState<number | 'all'>(3);
+
+    useEffect(() => {
+        const activeBtn = document.querySelector<HTMLElement>('#yearPillsGroup .year-pill-btn.active');
+        if (activeBtn) {
+            activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+        }
+    }, [year]);
 
     const loadExamsSummary = async (y: string) => {
         try {

@@ -286,10 +286,14 @@
   }
   .year-pills-container {
     min-width: 0;
+    justify-content: flex-start !important;
     flex-wrap: nowrap !important;
     flex: 1 1 auto;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    padding: 2px 4px;
+    scroll-padding: 0 4px;
   }
   .year-pills-container::-webkit-scrollbar {
     display: none;

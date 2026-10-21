@@ -802,11 +802,15 @@
   }
 
   .year-pills-container {
+    min-width: 0 !important;
+    justify-content: flex-start !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     flex-wrap: nowrap !important;
     gap: 4px !important;
     scrollbar-width: none !important;
+    padding: 2px 4px !important;
+    scroll-padding: 0 4px !important;
   }
 
   .year-pills-container::-webkit-scrollbar {
