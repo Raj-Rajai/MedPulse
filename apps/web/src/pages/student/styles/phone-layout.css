@@ -540,6 +540,25 @@
   }
 
   /* Member card tags (Under 5, ANC, HTN, etc.) flush to the right below #1, #2 order pill */
+  .member-cards-grid {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: auto !important;
+  }
+  .member-card {
+    min-height: unset !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+  .member-card-body {
+    flex: 1 0 auto !important;
+    min-height: min-content !important;
+  }
+  .member-card-vitals {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+  }
   .member-tags {
     display: flex !important;
     flex-wrap: wrap !important;

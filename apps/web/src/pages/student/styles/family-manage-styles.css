@@ -318,6 +318,7 @@
   flex-direction: column !important;
   justify-content: space-between !important;
   min-height: 110px !important;
+  height: auto !important;
   position: relative !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
@@ -337,7 +338,8 @@
 .member-card-body {
   display: flex !important;
   flex-direction: column !important;
-  flex: 1 !important;
+  flex: 1 0 auto !important;
+  min-height: min-content !important;
 }
 
 .member-card-header {
@@ -486,7 +488,8 @@
   gap: 6px !important;
   border-top: 1px solid #f1f5f9 !important;
   padding-top: 7px !important;
-  margin-top: 7px !important;
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
 }
 
 .member-vitals-group {

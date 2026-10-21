@@ -502,6 +502,8 @@
 
   /* Member cards */
   .member-cards-grid {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: auto !important;
     gap: 8px !important;
     padding: 8px 0 !important;
     max-height: 480px !important;
@@ -510,6 +512,16 @@
   .member-card {
     padding: 10px 12px !important;
     border-radius: 8px !important;
+    min-height: unset !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .member-card-body {
+    flex: 1 0 auto !important;
+    min-height: min-content !important;
   }
 
   .member-name {
@@ -536,7 +548,8 @@
   .member-card-vitals {
     font-size: 0.7rem !important;
     padding-top: 6px !important;
-    margin-top: 6px !important;
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
   }
 
   /* Subentities (Conditions, Meds, Allergies, History, Lifestyle) */
