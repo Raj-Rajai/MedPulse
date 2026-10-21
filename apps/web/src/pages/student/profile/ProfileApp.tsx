@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BodyPortal, useStudentChrome } from '../common/Page';
+import { PageHero } from '../common/PageHero';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
 import { SignInLink, StudentBadge, logoutToLogin, readStoredUser } from '../common/badges';
 import { standardSidebar } from '../common/sidebar';
@@ -299,58 +300,35 @@ export function ProfileApp() {
             <MobileNavToggle onToggle={standardSidebar.toggle} />
             {toasts}
             <main className="main-content">
-                <div className="profile-hero anim-fade-up">
-                    <div className="profile-hero-content">
-                        <div className="profile-identity-group">
-                            <img src="/images/sal-logo.png" alt="SAL Logo" className="header-brand-logo" style={{ height: '64px', width: '64px', borderRadius: '12px', background: '#ffffff', padding: '4px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }} />
-                            <div className="profile-avatar-wrapper">
-                                <div className="profile-avatar-inner" id="heroAvatarIcon">👨‍⚕</div>
-                                <div className="profile-badge-online" title="Active Field Posting" />
-                            </div>
-                            <div className="profile-details-area">
-                                <h1>
-                                    <span id="heroStudentName">{(s && s.name) || 'Dhruv Patel'}</span>
-                                    <span className="profile-roll-tag" id="heroRollBadge">Roll {(s && s.roll_number) || '235'}</span>
-                                    <span className="badge badge-success" style={{ fontSize: '0.72rem', padding: '2px 9px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.22)', border: '1px solid rgba(16, 185, 129, 0.45)', color: '#6ee7b7', fontWeight: '700', letterSpacing: '0.02em' }}>Verified</span>
-                                </h1>
-                                <div className="profile-sub-pills" style={{ marginBottom: '6px' }}>
-                                    <span id="heroCollegeName">{`${(s && s.college_name) || 'SAL Institute of Medical Sciences & Hospital'}${locPart}`}</span>
-                                    <span>•</span>
-                                    <span id="heroPostingUnit">{(s && s.posting_unit) || 'Community Medicine Unit 3'}</span>
-                                    <span>•</span>
-                                    <span style={{ color: '#6ee7b7', fontWeight: '650' }}>Active Field Posting</span>
-                                    <span>•</span>
-                                    <span className="referral-pill" id="heroReferralBadge" onClick={copyCadetReferralCode} title="Click to copy Patient Adoption Referral Code" style={{ cursor: 'pointer', background: 'rgba(14, 165, 233, 0.25)', border: '1px solid rgba(14, 165, 233, 0.4)', color: '#bae6fd', fontFamily: 'monospace', fontWeight: '700', padding: '2px 8px', borderRadius: '6px' }}>{`Ref: ${refCode ?? 'Pending'}`}</span>
-                                </div>
-                                <div className="profile-sub-pills" style={{ fontSize: '0.82rem', color: 'rgba(255, 255, 255, 0.88)', gap: '10px', flexWrap: 'wrap' }}>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                                        <span>🎓</span>
-                                        <span id="heroBatchYear">{(s && s.batch_year) || '3rd Year MBBS (PSM Batch 2024-25)'}</span>
-                                    </span>
-                                    <span>•</span>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                                        <span>🏥</span>
-                                        <span id="heroDepartment">Community Medicine (PSM)</span>
-                                    </span>
-                                    <span>•</span>
-                                    <a id="heroEmailLink" href={s && s.email ? `mailto:${s.email}` : 'mailto:dhruv.patel@medpulse.edu'} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#bae6fd', textDecoration: 'none' }} title="Institutional Email">
-                                        <span>✉</span>
-                                        <span id="heroEmail">{(s && s.email) || 'dhruv.patel@medpulse.edu'}</span>
-                                    </a>
-                                    <span>•</span>
-                                    <a id="heroPhoneLink" href={s && s.phone ? `tel:${s.phone}` : 'tel:+919876543210'} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#bae6fd', textDecoration: 'none' }} title="Official Contact Phone">
-                                        <span>📞</span>
-                                        <span id="heroPhone">{(s && s.phone) || '+91 98765 43210'}</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="profile-hero-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%', maxWidth: '440px' }}>
-                            <button className="btn btn-secondary" onClick={openEditProfileModal} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650', width: '100%', justifyContent: 'center' }}>✏ Edit Profile</button>
-                            <button className="btn btn-secondary" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }} style={{ background: 'rgba(255,255,255,0.18)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff', fontWeight: '650', width: '100%', justifyContent: 'center' }}>🔒 Change PIN</button>
-                        </div>
-                    </div>
-                </div>
+                <PageHero
+                    className="ph-profile"
+                    icon={<img src="/images/sal-logo.png" alt="SAL Education" className="ph-logo" />}
+                    title={<>
+                        <span id="heroStudentName">{(s && s.name) || 'Dhruv Patel'}</span>
+                        <span className="ph-verified" title="Verified student">✅ Verified</span>
+                    </>}
+                    name={(s && s.name) || 'Dhruv Patel'}
+                    meta={[
+                        <span id="heroRollBadge">Roll {(s && s.roll_number) || '235'}</span>,
+                        <span id="heroCollegeName">{`${(s && s.college_name) || 'SAL Institute of Medical Sciences & Hospital'}${locPart}`}</span>,
+                    ]}
+                    facts={[
+                        { label: 'Year', value: <span id="heroBatchYear">{(s && s.batch_year) || '3rd Year MBBS (PSM Batch 2024-25)'}</span>, icon: '🎓', tone: 'violet' },
+                        { label: 'Posting', value: <span id="heroPostingUnit">{(s && s.posting_unit) || 'Community Medicine Unit 3'}</span>, icon: '🏥', tone: 'green', title: 'Active field posting' },
+                        { label: 'Referral code', value: <span id="heroReferralBadge" className="ph-mono">{`Ref: ${refCode ?? 'Pending'}`}</span>, icon: '📋', tone: 'blue', title: 'Copy your patient referral code', onClick: copyCadetReferralCode },
+                    ]}
+                    actions={<>
+                        <a className="ph-link" id="heroEmailLink" href={s && s.email ? `mailto:${s.email}` : 'mailto:dhruv.patel@medpulse.edu'}>
+                            <span aria-hidden="true">✉</span><span id="heroEmail">{(s && s.email) || 'dhruv.patel@medpulse.edu'}</span>
+                        </a>
+                        <a className="ph-link" id="heroPhoneLink" href={s && s.phone ? `tel:${s.phone}` : 'tel:+919876543210'}>
+                            <span aria-hidden="true">📞</span><span id="heroPhone">{(s && s.phone) || '+91 98765 43210'}</span>
+                        </a>
+                        <span className="ph-actions-spacer" />
+                        <button className="ph-btn" onClick={openEditProfileModal}>✏ Edit profile</button>
+                        <button className="ph-btn" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }}>🔒 Change PIN</button>
+                    </>}
+                />
                 <div className="card anim-fade-up" style={{ marginBottom: '24px', padding: '22px 26px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
