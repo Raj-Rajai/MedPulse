@@ -6,10 +6,7 @@
  * The field-location card is moved to the end of <main> with its button renamed, like the original.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
-import { SignInLink, StudentBadge, logoutToLogin, readStoredUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
+import { readStoredUser } from '../common/badges';
 import { TOAST_PROFILE, useToasts } from '../common/Toasts';
 import { errMsg, runWhenActive } from '../common/utils';
 import { LocationVerificationCard } from '../common/fieldLocation';
@@ -62,7 +59,6 @@ function checkPhone(value: string, field: ValidatedField, inputId: string, toast
 }
 
 export function FamilyManageApp() {
-    useStudentChrome(standardSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PROFILE);
     const [loggedInStudent] = useState(readStoredUser);
 
@@ -1007,14 +1003,7 @@ export function FamilyManageApp() {
     };
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="families" onToggle={standardSidebar.toggle}
-                badge={loggedInStudent ? <StudentBadge roll={String(loggedInStudent.roll_number)} mode="profile" onLogout={logoutToLogin} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
-
+        <>
             <main className="main-content">
                 <div id="globalAlert" style={{ display: 'none' }} />
 
@@ -1363,7 +1352,7 @@ export function FamilyManageApp() {
                 />
             )}
             {toasts}
-        </BodyPortal>
+        </>
     );
 }
 

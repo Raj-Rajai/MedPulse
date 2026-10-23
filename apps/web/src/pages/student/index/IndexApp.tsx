@@ -2,10 +2,7 @@
  * student/index.html: Community Medicine dashboard (KPIs, assigned households, recent activity, proforma exports).
  */
 import { useEffect, useState } from 'react';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
-import { SignInLink, StudentBadge, logoutToLogin, readStoredUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
+import { readStoredUser } from '../common/badges';
 import { TOAST_INDEX, useToasts } from '../common/Toasts';
 import { errMsg } from '../common/utils';
 import type { StudentSession } from '../../../shared/session';
@@ -134,7 +131,6 @@ function ActivityItem({ a }: { a: Activity }) {
 }
 
 export function IndexApp() {
-    useStudentChrome(standardSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_INDEX);
     const [user] = useState<StudentSession | null>(readStoredUser);
     const [data, setData] = useState<Dashboard | null>(null);
@@ -170,15 +166,9 @@ export function IndexApp() {
     const activities = data?.recentActivity || [];
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="home" onToggle={standardSidebar.toggle}
-                badge={user ? <StudentBadge roll={String(user.roll_number || '235')} mode="profile" onLogout={logoutToLogin} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
+        <>
             {toasts}
-        <main className="main-content">
+            <main className="main-content">
             <div className="page-header anim-fade-up">
                 <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                     <img src="/images/sal-logo.png" alt="SAL Logo" className="header-brand-logo" />
@@ -269,6 +259,6 @@ export function IndexApp() {
                 saving={privacySaving}
             />
         )}
-        </BodyPortal>
+        </>
     );
 }

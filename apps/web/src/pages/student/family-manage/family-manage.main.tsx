@@ -1,10 +1,10 @@
-import '../styles/family-manage-styles.css';
+import '../common/student-styles.css';
 import { mountPage } from '../../../shared/mount';
 import { installFieldLocation } from '../common/fieldLocation';
-import { FamilyManageApp } from './FamilyManageApp';
+import { StudentPortalApp } from '../common/StudentPortal';
 
 // family-manage.html loaded auth-guard.js, then field-location.js (which wraps the guarded fetch), and pwa.js.
 mountPage(() => {
     installFieldLocation();
-    return <FamilyManageApp />;
+    return <StudentPortalApp initialRoute="families" />;
 }, { pwa: true });

@@ -1,10 +1,11 @@
 /**
  * The dark collapsible sidebar shared by every student page (the <aside> block that each
  * original page repeated verbatim), plus the backdrop overlay and the mobile drawer button.
- * Each page passes its own active link, its own sidebar handlers and its own user badge.
+ *
+ * Supports client-side SPA navigation via `onNavigate` so switching pages is instant and
+ * flicker-free without reloading the browser window.
  */
-import type { ReactNode } from 'react';
-import { toggleNavGroup } from '../../../shared/nav-glider';
+import { useState, type ReactNode } from 'react';
 
 export type StudentRoute = 'profile' | 'schedule' | 'attendance' | 'exams' | 'home' | 'families' | 'entry' | 'analytics';
 
@@ -12,6 +13,7 @@ interface SidebarProps {
     active: StudentRoute;
     logoTitle?: string;
     onToggle: () => void;
+    onNavigate?: (route: StudentRoute, href: string) => void;
     badge: ReactNode;
 }
 
@@ -35,12 +37,47 @@ export function MobileNavToggle({ onToggle }: { onToggle: () => void }) {
     );
 }
 
-export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse Health Portal', onToggle, badge }: SidebarProps) {
+const getStudentHref = (path: string) => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/student')) {
+        return `/student${path}`;
+    }
+    return path;
+};
+
+export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse Health Portal', onToggle, onNavigate, badge }: SidebarProps) {
     const inGroup = active === 'home' || active === 'families' || active === 'entry' || active === 'analytics';
+
+    const [manualGroupOpen, setManualGroupOpen] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem('medpulse_navGroupCommMed_open') === '1';
+    });
+
+    const isGroupOpen = inGroup || manualGroupOpen;
+
+    const handleGroupToggle = () => {
+        setManualGroupOpen((prev) => {
+            const next = !prev;
+            try {
+                localStorage.setItem('medpulse_navGroupCommMed_open', next ? '1' : '0');
+            } catch {
+                /* ignore */
+            }
+            return next;
+        });
+    };
+
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, route: StudentRoute, path: string) => {
+        const href = getStudentHref(path);
+        if (onNavigate) {
+            e.preventDefault();
+            onNavigate(route, href);
+        }
+    };
+
     return (
         <aside className="sidebar" id="sidebar">
             <div className="sidebar-header">
-                <a href="/" className="sidebar-logo" title={logoTitle}>
+                <a href={getStudentHref('/index.html')} onClick={(e) => handleLinkClick(e, 'home', '/index.html')} className="sidebar-logo" title={logoTitle}>
                     <div className="logo-icon" style={{ background: '#ffffff', padding: '2px' }}>
                         <img src="/images/sal-logo.png" alt="SAL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 'var(--radius-md)' }} />
                     </div>
@@ -61,7 +98,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                 </button>
             </div>
             <nav className="sidebar-nav">
-                <a href="/profile.html" className={cls(active === 'profile')} data-route="profile" data-title="Profile">
+                <a href={getStudentHref('/profile.html')} onClick={(e) => handleLinkClick(e, 'profile', '/profile.html')} className={cls(active === 'profile')} data-route="profile" data-title="Profile">
                     <div className="nav-icon-box">
                         <svg {...icon}>
                             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
@@ -70,7 +107,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                     </div>
                     <span className="link-label">Profile</span>
                 </a>
-                <a href="/schedule.html" className={cls(active === 'schedule')} data-route="schedule" data-title="Schedule">
+                <a href={getStudentHref('/schedule.html')} onClick={(e) => handleLinkClick(e, 'schedule', '/schedule.html')} className={cls(active === 'schedule')} data-route="schedule" data-title="Schedule">
                     <div className="nav-icon-box">
                         <svg {...icon}>
                             <circle cx="12" cy="12" r="10" />
@@ -79,7 +116,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                     </div>
                     <span className="link-label">Schedule</span>
                 </a>
-                <a href="/exams.html" className={cls(active === 'exams')} data-route="exams" data-title="Exams">
+                <a href={getStudentHref('/exams.html')} onClick={(e) => handleLinkClick(e, 'exams', '/exams.html')} className={cls(active === 'exams')} data-route="exams" data-title="Exams">
                     <div className="nav-icon-box">
                         <svg {...icon}>
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -91,9 +128,9 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                     </div>
                     <span className="link-label">Exams</span>
                 </a>
-                <div className={inGroup ? 'sidebar-nav-group open has-active-child' : 'sidebar-nav-group'} id="navGroupCommMed">
+                <div className={`sidebar-nav-group${isGroupOpen ? ' open' : ''}${inGroup ? ' has-active-child' : ''}`} id="navGroupCommMed">
                     <button
-                        type="button" className="sidebar-link sidebar-group-toggle" id="btnGroupCommMed" onClick={() => toggleNavGroup('navGroupCommMed')}
+                        type="button" className="sidebar-link sidebar-group-toggle" id="btnGroupCommMed" onClick={handleGroupToggle}
                         title="Community Medicine" data-route="community-medicine" data-title="Community Medicine"
                     >
                         <div className="nav-icon-box">
@@ -110,7 +147,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                         </svg>
                     </button>
                     <div className="sidebar-subnav" id="subnavCommMed">
-                        <a href="/index.html" className={cls(active === 'home', true)} data-route="home" data-title="Home">
+                        <a href={getStudentHref('/index.html')} onClick={(e) => handleLinkClick(e, 'home', '/index.html')} className={cls(active === 'home', true)} data-route="home" data-title="Home">
                             <div className="nav-icon-box">
                                 <svg {...icon}>
                                     <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -119,7 +156,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                             </div>
                             <span className="link-label">Home</span>
                         </a>
-                        <a href="/family-manage.html" className={cls(active === 'families', true)} data-route="families" data-title="Families">
+                        <a href={getStudentHref('/family-manage.html')} onClick={(e) => handleLinkClick(e, 'families', '/family-manage.html')} className={cls(active === 'families', true)} data-route="families" data-title="Families">
                             <div className="nav-icon-box">
                                 <svg {...icon}>
                                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -130,7 +167,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                             </div>
                             <span className="link-label">Families</span>
                         </a>
-                        <a href="/entry.html" className={cls(active === 'entry', true)} data-route="entry" data-title="Data Entry">
+                        <a href={getStudentHref('/entry.html')} onClick={(e) => handleLinkClick(e, 'entry', '/entry.html')} className={cls(active === 'entry', true)} data-route="entry" data-title="Data Entry">
                             <div className="nav-icon-box">
                                 <svg {...icon}>
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -142,7 +179,7 @@ export function StudentSidebar({ active, logoTitle = 'SAL Education • MedPulse
                             </div>
                             <span className="link-label">Data Entry</span>
                         </a>
-                        <a href="/analytics.html" className={cls(active === 'analytics', true)} data-route="analytics" data-title="Analytics">
+                        <a href={getStudentHref('/analytics.html')} onClick={(e) => handleLinkClick(e, 'analytics', '/analytics.html')} className={cls(active === 'analytics', true)} data-route="analytics" data-title="Analytics">
                             <div className="nav-icon-box">
                                 <svg {...icon}>
                                     <line x1="18" y1="20" x2="18" y2="10" />

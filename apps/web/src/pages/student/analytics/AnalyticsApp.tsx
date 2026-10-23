@@ -3,10 +3,7 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
-import { SignInLink, StudentBadge, logoutReload, readStoredUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
+import { readStoredUser } from '../common/badges';
 import { runWhenActive } from '../common/utils';
 import { AUDIT_META, type AuditId } from './audit';
 import { renderChart, type ChartKey, type AnalyticsData, type PatientCurve } from './charts';
@@ -195,7 +192,6 @@ function AuditBody({ audit }: { audit: AuditState | null }) {
 }
 
 export function AnalyticsApp() {
-    useStudentChrome(standardSidebar);
     const [user] = useState(readStoredUser);
 
     const {
@@ -384,13 +380,7 @@ export function AnalyticsApp() {
     }
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="analytics" logoTitle="SAL Education • HEALTH PORTAL" onToggle={standardSidebar.toggle}
-                badge={user ? <StudentBadge roll={String(user.roll_number)} mode="profile" onLogout={logoutReload} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
+        <>
         <main className="main-content">
             <div className="page-header anim-fade-up" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
                 <div>
@@ -726,6 +716,6 @@ export function AnalyticsApp() {
                 saving={privacySaving}
             />
         )}
-        </BodyPortal>
+        </>
     );
 }

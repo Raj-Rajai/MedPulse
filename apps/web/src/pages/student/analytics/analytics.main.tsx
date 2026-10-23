@@ -1,5 +1,5 @@
-import '../styles/analytics-styles.css';
+import '../common/student-styles.css';
 import { mountPage } from '../../../shared/mount';
-import { AnalyticsApp } from './AnalyticsApp';
+import { StudentPortalApp } from '../common/StudentPortal';
 
-mountPage(() => <AnalyticsApp />, { pwa: true });
+mountPage(() => <StudentPortalApp initialRoute="analytics" />, { pwa: true });

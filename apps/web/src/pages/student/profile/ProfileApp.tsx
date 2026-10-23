@@ -3,11 +3,8 @@
  * PIN card, proforma exports, and the Edit Profile / Change PIN modals.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BodyPortal, useStudentChrome } from '../common/Page';
 import { PageHero } from '../common/PageHero';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
-import { SignInLink, StudentBadge, logoutToLogin, readStoredUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
+import { readStoredUser } from '../common/badges';
 import { TOAST_PROFILE, useToasts } from '../common/Toasts';
 import { downloadBlob, errMsg, runWhenActive, shiftIsoDay } from '../common/utils';
 import { MedPulseAuth } from '../../../shared/session';
@@ -36,7 +33,6 @@ interface ProfileData {
 const TODAY = new Date().toLocaleDateString('en-CA');
 
 export function ProfileApp() {
-    useStudentChrome(standardSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PROFILE);
     const [loggedInUser] = useState(readStoredUser);
     const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -288,13 +284,7 @@ export function ProfileApp() {
     const locPart = s ? (s.college_city && s.college_state ? ` (${s.college_city}, ${s.college_state})` : s.college_city ? ` (${s.college_city})` : '') : '';
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="profile" onToggle={standardSidebar.toggle}
-                badge={loggedInUser ? <StudentBadge roll={String(loggedInUser.roll_number)} mode="logout" onLogout={logoutToLogin} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
+        <>
             {toasts}
             <main className="main-content">
                 <PageHero
@@ -483,6 +473,6 @@ export function ProfileApp() {
                 onClose={() => setFillAttOpen(false)}
                 onSuccess={handleFillSuccess}
             />
-        </BodyPortal>
+        </>
     );
 }

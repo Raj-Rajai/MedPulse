@@ -2,15 +2,10 @@
  * student/attendance.html: hero KPI ring, day-wise lecture sheet and the subject-wise table.
  */
 import { useEffect, useRef, useState } from 'react';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
 import { PageHero } from '../common/PageHero';
-import { SignInLink, StudentBadge, readAuthUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
 import { DatewiseTableBody, type DatewiseData } from '../common/Datewise';
 import { downloadCsvDataUri, errMsg, runWhenActive, shiftIsoDay } from '../common/utils';
-import { MedPulseAuth } from '../../../shared/session';
 import { SubjectRows, type AttSubject } from './SubjectRows';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
 
@@ -23,14 +18,8 @@ interface SubjectWise {
     subjects?: AttSubject[];
 }
 
-function logoutStudent() {
-    MedPulseAuth.logout();
-}
-
 export function AttendanceApp() {
-    useStudentChrome(standardSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PLAIN);
-    const [user] = useState(readAuthUser);
     const dateIso = useRef(TODAY);
     const [dateInput, setDateInput] = useState('');
     const dateRef = useRef<HTMLInputElement>(null);
@@ -134,16 +123,9 @@ export function AttendanceApp() {
         };
     }
     const sm = dw?.data.summary || {};
-    const roll = user ? String(user.roll_number || '235') : null;
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="attendance" onToggle={standardSidebar.toggle}
-                badge={roll ? <StudentBadge roll={roll} mode="logout" onLogout={logoutStudent} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
+        <>
             {toasts}
         <main className="main-content">
             <PageHero
@@ -309,6 +291,6 @@ export function AttendanceApp() {
                 loadSubjectWiseTable();
             }}
         />
-        </BodyPortal>
+        </>
     );
 }

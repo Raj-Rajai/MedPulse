@@ -3,14 +3,9 @@
  * consolidated marksheet table and paginated result cards, CSV export.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
 import { PageHero } from '../common/PageHero';
-import { SignInLink, StudentBadge, readAuthUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
 import { errMsg, runWhenActive } from '../common/utils';
-import { MedPulseAuth } from '../../../shared/session';
 import { ExamCards, paginate } from './ExamCards';
 import { MarksheetTable } from './MarksheetTable';
 import type { Exam } from './types';
@@ -43,14 +38,8 @@ const STATIC_SUBJECTS: [string, string][] = [
 ];
 const TYPE_PRIORITY: Record<string, number> = { University: 1, Preliminary: 2, 'IA-2': 3, 'IA-1': 4 };
 
-function logoutStudent() {
-    MedPulseAuth.logout();
-}
-
 export function ExamsApp() {
-    useStudentChrome(standardSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PLAIN);
-    const [user] = useState(readAuthUser);
     const [year, setYear] = useState('3');
     const [summary, setSummary] = useState<{ year: string; data: Summary } | null>(null);
     // Name / roll only change when a summary carries a student (otherwise the previous one stays).
@@ -196,16 +185,9 @@ export function ExamsApp() {
     const lastInfo = useRef<typeof info>(null);
     if (info) lastInfo.current = info;
     const shownInfo = info || lastInfo.current;
-    const roll = user ? String(user.roll_number || '235') : null;
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="exams" onToggle={standardSidebar.toggle}
-                badge={roll ? <StudentBadge roll={roll} mode="logout" onLogout={logoutStudent} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
+        <>
             {toasts}
             <main className="main-content">
                 <PageHero
@@ -404,6 +386,6 @@ export function ExamsApp() {
                     </div>
                 </div>
             </main>
-        </BodyPortal>
+        </>
     );
 }

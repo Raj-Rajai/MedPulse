@@ -1,0 +1,16 @@
+/* ============================================================
+   MedPulse — Unified Student Portal Stylesheet
+   Combines all student styles so navigation across pages is instant,
+   smooth, and free of stylesheet loading flashes.
+   ============================================================ */
+
+@import '../../../styles/style.css';
+@import '../styles/index-styles.css';
+@import '../styles/profile-styles.css';
+@import '../styles/schedule-styles.css';
+@import '../styles/exams-styles.css';
+@import '../styles/family-manage-styles.css';
+@import '../styles/entry-styles.css';
+@import '../styles/analytics-styles.css';
+@import '../styles/student-responsive.css';
+@import '../styles/phone-layout.css';

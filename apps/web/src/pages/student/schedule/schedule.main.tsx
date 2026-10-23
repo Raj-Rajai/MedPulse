@@ -1,6 +1,6 @@
-import '../styles/schedule-styles.css';
+import '../common/student-styles.css';
 import { mountPage } from '../../../shared/mount';
-import { ScheduleApp } from './ScheduleApp';
+import { StudentPortalApp } from '../common/StudentPortal';
 
 // schedule.html did not load pwa.js.
-mountPage(() => <ScheduleApp />);
+mountPage(() => <StudentPortalApp initialRoute="schedule" />);

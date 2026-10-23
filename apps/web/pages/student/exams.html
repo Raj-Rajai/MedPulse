@@ -14,7 +14,7 @@
     (function() {
       try {
         if (window.innerWidth > 860) {
-          var c = localStorage.getItem('sidebar_collapsed');
+          var c = localStorage.getItem('sidebar_collapsed') || localStorage.getItem('medpulse_sidebar_collapsed');
           if (c === '1' || c === 'true') {
             document.documentElement.classList.add('sidebar-collapsed');
           }

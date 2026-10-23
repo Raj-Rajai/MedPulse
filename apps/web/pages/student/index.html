@@ -12,8 +12,8 @@
           document.documentElement.classList.remove('preload-transitions');
         });
       });
-      const savedCollapsed = localStorage.getItem('medpulse_sidebar_collapsed');
-      if (savedCollapsed === '1' && window.innerWidth > 860) {
+      const savedCollapsed = localStorage.getItem('sidebar_collapsed') || localStorage.getItem('medpulse_sidebar_collapsed');
+      if ((savedCollapsed === '1' || savedCollapsed === 'true') && window.innerWidth > 860) {
         document.documentElement.classList.add('sidebar-collapsed');
       }
     })();

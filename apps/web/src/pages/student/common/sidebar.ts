@@ -20,24 +20,25 @@ function collapseToggle(): void {
     const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
     document.body.classList.toggle('sidebar-collapsed', isCollapsed);
     localStorage.setItem('sidebar_collapsed', isCollapsed ? '1' : '0');
+    localStorage.setItem('medpulse_sidebar_collapsed', isCollapsed ? '1' : '0');
 }
 
 export const standardSidebar: SidebarControls = {
     toggle() {
         if (window.innerWidth <= MOBILE_MAX) {
-            const isOpen = sb()!.classList.toggle('open');
-            ov()?.classList.toggle('active', isOpen);
+            const isOpen = sb()?.classList.toggle('open');
+            ov()?.classList.toggle('active', !!isOpen);
         } else collapseToggle();
     },
     close() {
         if (window.innerWidth <= MOBILE_MAX) {
             sb()?.classList.remove('open');
+            document.body.classList.remove('sidebar-mobile-open');
             ov()?.classList.remove('active');
-        } else {
-            document.documentElement.classList.add('sidebar-collapsed');
-            document.body.classList.add('sidebar-collapsed');
-            localStorage.setItem('sidebar_collapsed', '1');
         }
+        // On desktop (> MOBILE_MAX), navigation between pages must NEVER
+        // alter the user's chosen collapsed/expanded mode.
+        // Minimised stays minimised; full drawer mode stays full drawer.
     },
 };
 
@@ -55,10 +56,6 @@ export const scheduleSidebar: SidebarControls = {
             sb()?.classList.remove('open');
             document.body.classList.remove('sidebar-mobile-open');
             ov()?.classList.remove('active');
-        } else {
-            document.documentElement.classList.add('sidebar-collapsed');
-            document.body.classList.add('sidebar-collapsed');
-            localStorage.setItem('sidebar_collapsed', '1');
         }
         window.dispatchEvent(new Event('resize'));
     },
@@ -68,7 +65,7 @@ export const indexSidebar: SidebarControls = standardSidebar;
 
 /** initSidebar(): sync the stored collapsed state on desktop, always expanded on phones. */
 export function initSidebar(): void {
-    const stored = localStorage.getItem('sidebar_collapsed');
+    const stored = localStorage.getItem('sidebar_collapsed') || localStorage.getItem('medpulse_sidebar_collapsed');
     const isCollapsed = (stored === '1' || stored === 'true') && window.innerWidth > MOBILE_MAX;
     document.documentElement.classList.toggle('sidebar-collapsed', isCollapsed);
     document.body.classList.toggle('sidebar-collapsed', isCollapsed);

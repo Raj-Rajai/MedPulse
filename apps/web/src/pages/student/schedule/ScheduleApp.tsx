@@ -4,14 +4,10 @@
  */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal, flushSync } from 'react-dom';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
 import { PageHero } from '../common/PageHero';
-import { StudentBadge, StudentSignInLink, readAuthUser } from '../common/badges';
-import { scheduleSidebar } from '../common/sidebar';
+import { readAuthUser } from '../common/badges';
 import { TOAST_PLAIN, useToasts } from '../common/Toasts';
 import { errMsg } from '../common/utils';
-import { MedPulseAuth } from '../../../shared/session';
 import { FillAttendanceModal, type FillableLecture } from '../common/FillAttendanceModal';
 import { ActiveAttendanceBanner } from '../common/StudentAttendanceRoom';
 
@@ -63,12 +59,7 @@ const icsText = (v: string) => v.replace(/\\/g, '\\\\').replace(/;/g, '\\;').rep
 
 const isDoap = (item: ScheduleItem) => (item.teaching_type || '').toUpperCase().includes('DOAP');
 
-function logoutStudent() {
-    MedPulseAuth.logout();
-}
-
 export function ScheduleApp() {
-    useStudentChrome(scheduleSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_PLAIN);
     const [user] = useState(readAuthUser);
     const [selectedDepts, setSelectedDepts] = useState<string[] | null>(null);
@@ -302,13 +293,7 @@ export function ScheduleApp() {
     const roll = user ? String(user.roll_number || '235') : null;
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={scheduleSidebar.close} />
-            <StudentSidebar
-                active="schedule" onToggle={scheduleSidebar.toggle}
-                badge={roll ? <StudentBadge roll={roll} mode="logout" onLogout={logoutStudent} /> : <StudentSignInLink />}
-            />
-            <MobileNavToggle onToggle={scheduleSidebar.toggle} />
+        <>
             {toasts}
             <main className="main-content">
                 <ActiveAttendanceBanner onOpen={() => { setFillSession(null); setFillModalOpen(true); }}/>
@@ -991,6 +976,6 @@ export function ScheduleApp() {
                     loadScheduleData();
                 }}
             />
-        </BodyPortal>
+        </>
     );
 }

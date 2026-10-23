@@ -1,5 +1,5 @@
-import '../styles/attendance-styles.css';
+import '../common/student-styles.css';
 import { mountPage } from '../../../shared/mount';
-import { AttendanceApp } from './AttendanceApp';
+import { StudentPortalApp } from '../common/StudentPortal';
 
-mountPage(() => <AttendanceApp />, { pwa: true });
+mountPage(() => <StudentPortalApp initialRoute="profile" />, { pwa: true });

@@ -1,5 +1,5 @@
-import '../styles/exams-styles.css';
+import '../common/student-styles.css';
 import { mountPage } from '../../../shared/mount';
-import { ExamsApp } from './ExamsApp';
+import { StudentPortalApp } from '../common/StudentPortal';
 
-mountPage(() => <ExamsApp />, { pwa: true });
+mountPage(() => <StudentPortalApp initialRoute="exams" />, { pwa: true });

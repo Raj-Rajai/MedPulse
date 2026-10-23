@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { BodyPortal, useStudentChrome } from '../common/Page';
-import { MobileNavToggle, SidebarOverlay, StudentSidebar } from '../common/StudentSidebar';
-import { SignInLink, StudentBadge, logoutReload, readStoredUser } from '../common/badges';
-import { standardSidebar } from '../common/sidebar';
+import { readStoredUser } from '../common/badges';
 import { TOAST_ENTRY, useToasts } from '../common/Toasts';
 import { errMsg, getHouseholdDisplayName, runWhenActive } from '../common/utils';
 import { LocationVerificationCard } from '../common/fieldLocation';
@@ -58,7 +55,6 @@ function checkYearStatus(
 }
 
 export function EntryApp() {
-    useStudentChrome(standardSidebar);
     const { showToast, container: toasts } = useToasts(TOAST_ENTRY);
     const [loggedInStudent] = useState(readStoredUser);
 
@@ -295,14 +291,7 @@ export function EntryApp() {
     const isYearActive = yearStarted[currentYear] || yearStatus !== 'none';
 
     return (
-        <BodyPortal>
-            <SidebarOverlay onClose={standardSidebar.close} />
-            <StudentSidebar
-                active="entry"
-                onToggle={standardSidebar.toggle}
-                badge={loggedInStudent ? <StudentBadge roll={String(loggedInStudent.roll_number)} mode="profile" onLogout={logoutReload} /> : <SignInLink />}
-            />
-            <MobileNavToggle onToggle={standardSidebar.toggle} />
+        <>
             {toasts}
 
             <main className="main-content">
@@ -719,6 +708,6 @@ export function EntryApp() {
                     saving={privacySaving}
                 />
             )}
-        </BodyPortal>
+        </>
     );
 }

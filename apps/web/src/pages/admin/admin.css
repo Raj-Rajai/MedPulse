@@ -32,17 +32,13 @@
       box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
     }
 
-    /* Royal Amber Sliding Glider in Admin Console */
-    #adminSidebarNav #sidebarGlider,
-    .sidebar-glider {
-      background: rgba(245, 158, 11, 0.16) !important;
-      border: 1.5px solid rgba(245, 158, 11, 0.5) !important;
-      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.32) !important;
-    }
-
+    /* Royal Amber Active and Hover in Admin Console */
     #adminSidebarNav .sidebar-link.active {
       color: #fbbf24 !important;
       font-weight: 700 !important;
+      background: rgba(245, 158, 11, 0.16) !important;
+      border: 1.5px solid rgba(245, 158, 11, 0.5) !important;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.32) !important;
     }
 
     #adminSidebarNav .sidebar-link.active .nav-icon-box svg {
@@ -53,12 +49,10 @@
     #adminSidebarNav .sidebar-link:hover {
       background: rgba(245, 158, 11, 0.08) !important;
       color: #fbbf24 !important;
-      transform: translateX(4px);
     }
 
     #adminSidebarNav .sidebar-link:hover .nav-icon-box svg {
       stroke: #fbbf24 !important;
-      transform: scale(1.15);
     }
 
     /* Views & Tab Transition Physics */
