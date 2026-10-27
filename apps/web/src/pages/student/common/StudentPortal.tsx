@@ -22,6 +22,10 @@ import { ExamsApp } from '../exams/ExamsApp';
 import { FamilyManageApp } from '../family-manage/FamilyManageApp';
 import { EntryApp } from '../entry/EntryApp';
 import { AnalyticsApp } from '../analytics/AnalyticsApp';
+import { UpcomingApp } from '../upcoming/UpcomingApp';
+
+/** Schedule and Exams open the Upcoming page for now; ScheduleApp and ExamsApp are kept for later. */
+const SHOW_UPCOMING_FOR_SCHEDULE_AND_EXAMS = true;
 
 export function getBasePrefix(): string {
     if (typeof window === 'undefined') return '';
@@ -139,8 +143,8 @@ export function StudentPortalApp({ initialRoute }: StudentPortalProps) {
     const renderActivePage = (): ReactNode => {
         switch (route) {
             case 'profile': return <ProfileApp />;
-            case 'schedule': return <ScheduleApp />;
-            case 'exams': return <ExamsApp />;
+            case 'schedule': return SHOW_UPCOMING_FOR_SCHEDULE_AND_EXAMS ? <UpcomingApp feature="Schedule" /> : <ScheduleApp />;
+            case 'exams': return SHOW_UPCOMING_FOR_SCHEDULE_AND_EXAMS ? <UpcomingApp feature="Exams" /> : <ExamsApp />;
             case 'home': return <IndexApp />;
             case 'families': return <FamilyManageApp />;
             case 'entry': return <EntryApp />;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './privacy.css';
 import { StudentPrivacyPolicyContent } from './StudentPrivacyPolicyContent';
 
@@ -21,6 +21,49 @@ export interface ConfidentialityNoticeModalProps {
     saving?: boolean;
 }
 
+/**
+ * Read-then-acknowledge gate for every notice: the checkbox unlocks only once the body has been
+ * scrolled to the end (or fits without scrolling), and the continue button only once it is ticked.
+ */
+function useReadGate(open: boolean, key: string) {
+    const [readToEnd, setReadToEnd] = useState(false);
+    const [agreed, setAgreed] = useState(false);
+    const nodeRef = useRef<HTMLDivElement | null>(null);
+
+    const check = useCallback(() => {
+        const el = nodeRef.current;
+        if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 8) setReadToEnd(true);
+    }, []);
+
+    // Start over each time a notice opens.
+    useEffect(() => {
+        if (!open) return;
+        setReadToEnd(false);
+        setAgreed(false);
+    }, [open, key]);
+
+    useEffect(() => {
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, [check]);
+
+    const bodyRef = useCallback((el: HTMLDivElement | null) => {
+        nodeRef.current = el;
+        if (el) requestAnimationFrame(check);
+    }, [check]);
+
+    return { bodyRef, onScroll: check, readToEnd, agreed, setAgreed };
+}
+
+function AckCheckbox({ gate, label }: { gate: ReturnType<typeof useReadGate>; label: string }) {
+    return (
+        <label className={`privacy-ack${gate.readToEnd ? '' : ' locked'}`} title={gate.readToEnd ? undefined : 'Scroll to the end of the notice first'}>
+            <input type="checkbox" checked={gate.agreed} disabled={!gate.readToEnd} onChange={(e) => gate.setAgreed(e.target.checked)} />
+            <span>{gate.readToEnd ? label : 'Scroll to the end of the notice to continue'}</span>
+        </label>
+    );
+}
+
 export function ConfidentialityNoticeModal({
     type,
     context = 'MY_FAMILY',
@@ -32,6 +75,7 @@ export function ConfidentialityNoticeModal({
     saving = false,
 }: ConfidentialityNoticeModalProps) {
     const [policyOpen, setPolicyOpen] = useState(false);
+    const gate = useReadGate(open, `${type}:${context}`);
 
     if (!open) return null;
 
@@ -110,7 +154,7 @@ export function ConfidentialityNoticeModal({
                             Protected workspace • Student access • Confidential patient, family &amp; clinical data
                         </p>
                     </div>
-                    <div className="privacy-modal-body">
+                    <div className="privacy-modal-body" ref={gate.bodyRef} onScroll={gate.onScroll}>
                         <div className="privacy-alert-box danger">
                             <div className="privacy-alert-title">
                                 <span>⚠ You're entering a confidential workspace</span>
@@ -160,9 +204,7 @@ export function ConfidentialityNoticeModal({
                         </div>
                     </div>
                     <div className="privacy-modal-footer">
-                        <div className="privacy-footer-note">
-                            🛡 Privacy first • Purpose first • Minimum necessary data
-                        </div>
+                        <AckCheckbox gate={gate} label="I have read and understood this notice" />
                         <div className="privacy-btn-group">
                             <button
                                 type="button"
@@ -175,6 +217,7 @@ export function ConfidentialityNoticeModal({
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={onContinue}
+                                disabled={!gate.agreed}
                                 style={{ padding: '8px 20px', fontWeight: 700 }}
                             >
                                 I Understand &amp; Continue
@@ -207,7 +250,7 @@ export function ConfidentialityNoticeModal({
                             A clear explanation of how information supports your Community Medicine / FAP training
                         </p>
                     </div>
-                    <div className="privacy-modal-body">
+                    <div className="privacy-modal-body" ref={gate.bodyRef} onScroll={gate.onScroll}>
                         <div className="privacy-alert-box info">
                             <div className="privacy-alert-title">
                                 <span>🌿 Your work matters. Your responsibility matters too.</span>
@@ -282,9 +325,7 @@ export function ConfidentialityNoticeModal({
                         </div>
                     </div>
                     <div className="privacy-modal-footer">
-                        <div className="privacy-footer-note">
-                            🔒 Server-recorded consent • Version v1.0.0 • FAP Scope
-                        </div>
+                        <AckCheckbox gate={gate} label="I have read this notice and give my consent" />
                         <div className="privacy-btn-group">
                             <button
                                 type="button"
@@ -307,7 +348,7 @@ export function ConfidentialityNoticeModal({
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={onConsent}
-                                disabled={saving}
+                                disabled={saving || !gate.agreed}
                                 style={{ padding: '8px 22px', fontWeight: 700 }}
                             >
                                 {saving ? '⏳ Recording...' : 'I Agree & Continue'}
@@ -340,7 +381,7 @@ export function ConfidentialityNoticeModal({
                             Please review before entering this {isPatient ? 'family' : 'administrative surveillance'} workspace
                         </p>
                     </div>
-                    <div className="privacy-modal-body">
+                    <div className="privacy-modal-body" ref={gate.bodyRef} onScroll={gate.onScroll}>
                         <div className="privacy-alert-box danger">
                             <div className="privacy-alert-title">
                                 <span>⚠ This is a confidential family workspace</span>
@@ -397,9 +438,7 @@ export function ConfidentialityNoticeModal({
                         </div>
                     </div>
                     <div className="privacy-modal-footer">
-                        <div className="privacy-footer-note">
-                            Confidential information • Authorized access only
-                        </div>
+                        <AckCheckbox gate={gate} label="I have read and understood this notice" />
                         <div className="privacy-btn-group">
                             <button
                                 type="button"
@@ -412,6 +451,7 @@ export function ConfidentialityNoticeModal({
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={onContinue}
+                                disabled={!gate.agreed}
                                 style={{ padding: '8px 20px', fontWeight: 700 }}
                             >
                                 I Understand &amp; Continue

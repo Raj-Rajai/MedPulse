@@ -2,60 +2,55 @@
  * MedPulse faculty & administrative command center (frontend/admin/admin.html).
  * Owns the active tab, the data shared between tabs and every modal; each tab is its own section
  * component under ./sections.
+ *
+ * The Attendance, Schedule, Exam marks and University admins sections (./sections/attendance,
+ * ./sections/schedule, ./sections/exams, ./sections/uniAdmins) are kept in the codebase but are no
+ * longer reachable from the console.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { updateSidebarGlider } from '../../shared/nav-glider';
 import { AdminHeader, type Heading } from './components/AdminHeader';
 import { AdminSidebar } from './components/AdminSidebar';
-import { GeofencePanel } from './geofence/GeofencePanel';
-import { useCadets, useColleges, useOverview, useUniAdmins } from './hooks/useAdminData';
+import { useCadets, useColleges, useOverview } from './hooks/useAdminData';
 import { useExports } from './hooks/useExports';
 import { useModal } from './hooks/useModal';
 import { ToastProvider, useToast } from './hooks/useToasts';
-import { errMessage, flashRow } from './lib/http';
+import { ENROLLMENT_LABEL, useAcademicYears } from './lib/academic';
+import { errMessage } from './lib/http';
 import { closeAdminSidebar, toggleAdminSidebar } from './lib/sidebar';
-import { AttendanceSection } from './sections/attendance/AttendanceSection';
-import { ScheduleSection } from './sections/schedule/ScheduleSection';
 import { CampaignRosterModal } from './sections/campaigns/CampaignRosterModal';
 import { CampaignsSection } from './sections/campaigns/CampaignsSection';
-import { ExamsSection } from './sections/exams/ExamsSection';
+import { AdminConfigSection } from './sections/config/AdminConfigSection';
 import { ExportsSection } from './sections/exports/ExportsSection';
 import { HouseholdsSection } from './sections/households/HouseholdsSection';
 import { OverviewSection } from './sections/overview/OverviewSection';
 import { AddStudentModal, EditStudentModal, InspectCadetModal, ResetPinModal } from './sections/students/StudentModals';
 import { StudentsSection, type CadetActions } from './sections/students/StudentsSection';
-import { AppointUniAdminModal, EditUniAdminModal, ResetUniAdminPinModal, type QuotaNote } from './sections/uniAdmins/UniAdminModals';
-import { UniAdminsSection } from './sections/uniAdmins/UniAdminsSection';
-import type { AdminTab, Campaign, Cadet, UniAdmin } from './types';
+import type { AdminTab, Campaign, Cadet } from './types';
 import { ConfidentialityNoticeModal } from '../../shared/privacy/ConfidentialityNoticeModal';
 
-/** admin-geofence.js exists in the original frontend but admin.html never loads it. */
-const SHOW_GEOFENCE_PANEL = false;
-
-const TAB_HEADERS: Record<AdminTab, Heading> = {
-    overview: { title: 'Overview', sub: '' },
+/** Tabs the console links to; any other tab falls back to the overview. */
+const TAB_HEADERS: Partial<Record<AdminTab, Heading>> = {
+    overview: { title: 'Analysis', sub: '' },
     students: { title: 'Students', sub: '' },
-    attendance: { title: 'Attendance', sub: '' },
-    schedule: { title: 'Schedule', sub: '' },
-    exams: { title: 'Exams', sub: '' },
     households: { title: 'Households', sub: '' },
     campaigns: { title: 'Campaigns', sub: '' },
-    uniAdmins: { title: 'University admins', sub: '' },
     exports: { title: 'Exports', sub: '' },
+    config: { title: 'Admin config', sub: '' },
 };
 
 /** The heading the page shows before any tab switch. */
-const INITIAL_HEADING: Heading = TAB_HEADERS.overview;
+const INITIAL_HEADING: Heading = TAB_HEADERS.overview!;
 
 /** Tabs whose section loads its own data when the tab is opened. */
-type SignalTab = 'attendance' | 'schedule' | 'exams' | 'households' | 'campaigns';
+type SignalTab = 'households' | 'campaigns';
 
 function AdminConsole() {
     const showToast = useToast();
     const [activeTab, setActiveTab] = useState<AdminTab>('overview');
     const [heading, setHeading] = useState<Heading>(INITIAL_HEADING);
     const [switches, setSwitches] = useState(0);
-    const [signals, setSignals] = useState<Record<SignalTab, number>>({ attendance: 0, schedule: 0, exams: 0, households: 0, campaigns: 0 });
+    const [signals, setSignals] = useState<Record<SignalTab, number>>({ households: 0, campaigns: 0 });
 
     const [householdNoticeOpen, setHouseholdNoticeOpen] = useState(false);
     const prevTabRef = useRef<AdminTab | null>(null);
@@ -70,51 +65,33 @@ function AdminConsole() {
     const overview = useOverview(showToast);
     const cadets = useCadets(showToast);
     const colleges = useColleges(showToast);
-    const uni = useUniAdmins(showToast);
     const exports = useExports(showToast);
+    const academic = useAcademicYears();
 
-    // uniAdminCollegeSelect: "SAL Hospital" (1) until the college list replaces its options.
-    const [selectedUni, setSelectedUni] = useState('1');
-    const selectedUniRef = useRef('1');
-    const selectUni = (id: string) => {
-        selectedUniRef.current = id;
-        setSelectedUni(id);
-    };
-    useEffect(() => {
-        if (colleges.options && colleges.options.length) selectUni(String(colleges.options[0].id));
-    }, [colleges.options]);
-
-    const [quotaNote, setQuotaNote] = useState<QuotaNote>({ text: 'Strict Quota: Max 10 University Admins', color: '#d97706' });
-    useEffect(() => {
-        const v = uni.view;
-        if (!v) return;
-        setQuotaNote({
-            text: v.full ? `⚠ Quota Full: ${v.curA}/${v.maxQ} seats used` : `Seats: ${v.curA}/${v.maxQ} used (${v.rem} available)`,
-            color: v.full ? '#dc2626' : '#d97706',
-        });
-    }, [uni.view]);
+    // Reload what depends on academic years after a change in Admin Config or a bulk move.
+    const reloadAcademic = useCallback(() => {
+        academic.load();
+        cadets.load();
+    }, [academic.load, cadets.load]);
 
     const addStudent = useModal<true>();
     const editStudent = useModal<Cadet>();
     const resetPin = useModal<Cadet>();
     const inspect = useModal<number>();
-    const appoint = useModal<string>();
-    const editUni = useModal<UniAdmin>();
-    const resetUniPin = useModal<UniAdmin>();
     const roster = useModal<Campaign>();
 
-    const loadUni = uni.load;
-    const switchTab = useCallback((tab: AdminTab) => {
+    const switchTab = useCallback((requested: AdminTab) => {
+        const tab: AdminTab = TAB_HEADERS[requested] ? requested : 'overview';
         setActiveTab(tab);
         if (window.innerWidth <= 860) closeAdminSidebar();
-        setHeading(TAB_HEADERS[tab] || TAB_HEADERS.overview);
+        setHeading(TAB_HEADERS[tab]!);
         setSwitches((n) => n + 1);
 
-        if (tab === 'overview') overview.load();
-        else if (tab === 'students') cadets.load();
-        else if (tab === 'uniAdmins') loadUni(selectedUniRef.current || 1);
-        else if (tab !== 'exports') setSignals((s) => ({ ...s, [tab]: s[tab] + 1 }));
-    }, [overview.load, cadets.load, colleges.load, loadUni]);
+        if (tab === 'overview') { overview.load(); cadets.load(); academic.load(); }
+        else if (tab === 'students') { cadets.load(); academic.load(); }
+        else if (tab === 'config') academic.load();
+        else if (tab === 'households' || tab === 'campaigns') setSignals((s) => ({ ...s, [tab]: s[tab] + 1 }));
+    }, [overview.load, cadets.load, academic.load]);
 
     // Keep the sidebar glider on the active link after every switch.
     useEffect(() => {
@@ -136,7 +113,7 @@ function AdminConsole() {
     };
 
     const deleteStudent = async (s: Cadet) => {
-        if (!confirm(`Are you sure you want to delete Cadet ${s.name} (Roll ${s.roll_number}) and ALL associated survey households and medical records?\n\nThis action cannot be undone.`)) return;
+        if (!confirm(`Delete ${s.name} (${ENROLLMENT_LABEL} ${s.roll_number}) and all of their surveyed households and medical records?\n\nThis cannot be undone.`)) return;
         try {
             const res = await fetch(`/api/admin/students/${s.id}`, { method: 'DELETE' });
             const data = (await res.json()) as { message?: string; error?: string };
@@ -148,36 +125,12 @@ function AdminConsole() {
         }
     };
 
-    const deleteUniAdmin = async (a: UniAdmin) => {
-        if (!confirm(`Are you sure you want to remove University Administrator "${a.name}"?\n\nThis will revoke their access and free up 1 administrative seat for this university.`)) return;
-        try {
-            const res = await fetch(`/api/admin/university-admins/${a.id}`, { method: 'DELETE' });
-            const data = (await res.json()) as { message?: string; error?: string };
-            if (!res.ok) throw new Error(data.error || 'Failed to remove administrator');
-            showToast(data.message as string, 'success');
-            loadUni(selectedUniRef.current || 1);
-        } catch (err) {
-            showToast(errMessage(err), 'error');
-        }
-    };
-
-    const cadetActions: CadetActions = {
-        openAttendance: (id) => { switchTab('attendance'); flashRow(`attRow-${id}`); },
-        openExams: (id) => { switchTab('exams'); flashRow(`examRow-${id}`); },
+    const cadetActions: CadetActions = useMemo(() => ({
         edit: (id) => { const s = cadets.find(id); if (s) editStudent.show(s); },
         resetPin: (s) => resetPin.show(s),
         inspect: (id) => inspect.show(id),
         remove: deleteStudent,
-    };
-
-    const openAppoint = () => {
-        if (uni.quota) {
-            const curA = uni.quota.current_admins || 0;
-            const maxQ = uni.quota.max_admins || 10;
-            setQuotaNote((n) => ({ ...n, text: `Quota Status: ${curA}/${maxQ} seats used (${maxQ - curA} available)` }));
-        }
-        appoint.show(selectedUniRef.current || '1');
-    };
+    }), [cadets.find]);
 
     return (
         <>
@@ -187,35 +140,22 @@ function AdminConsole() {
             <main className="main-content">
                 <AdminHeader heading={heading} />
 
-                <OverviewSection active={activeTab === 'overview'} stats={overview.stats} />
+                <OverviewSection active={activeTab === 'overview'} stats={overview.stats} cadets={cadets.all} years={academic.years} onOpen={switchTab} />
                 <StudentsSection
-                    active={activeTab === 'students'} all={cadets.all} rows={cadets.rows} setRows={cadets.setRows}
-                    collegeOptions={colleges.options} actions={cadetActions} onAdd={() => addStudent.show(true)}
+                    active={activeTab === 'students'} all={cadets.all} years={academic.years} actions={cadetActions} onAdd={() => addStudent.show(true)} onChanged={reloadAcademic}
                     exports={exports} onRefresh={() => switchTab('students')} showToast={showToast}
                 />
-                <AttendanceSection active={activeTab === 'attendance'} loadSignal={signals.attendance} />
-                <ScheduleSection active={activeTab === 'schedule'} loadSignal={signals.schedule} />
-                <ExamsSection active={activeTab === 'exams'} loadSignal={signals.exams} />
-                <HouseholdsSection active={activeTab === 'households'} loadSignal={signals.households} />
-                <UniAdminsSection
-                    active={activeTab === 'uniAdmins'} admins={uni.admins} view={uni.view} collegeOptions={colleges.options}
-                    selectedUni={selectedUni} onSelectUni={(id) => { selectUni(id); loadUni(id); }}
-                    onAppoint={openAppoint} onEdit={(id) => { const a = uni.find(id); if (a) editUni.show(a); }}
-                    onResetPin={(a) => resetUniPin.show(a)} onDelete={deleteUniAdmin}
-                />
-                <ExportsSection active={activeTab === 'exports'} exports={exports} collegeOptions={colleges.options} />
+                <HouseholdsSection active={activeTab === 'households'} loadSignal={signals.households} cadets={cadets.all} />
                 <CampaignsSection active={activeTab === 'campaigns'} loadSignal={signals.campaigns} onOpenRoster={(c) => roster.show(c)} />
-                {SHOW_GEOFENCE_PANEL && <GeofencePanel />}
+                <ExportsSection active={activeTab === 'exports'} exports={exports} />
+                <AdminConfigSection active={activeTab === 'config'} years={academic.years} defaultArea={academic.defaultArea} onChanged={reloadAcademic} />
             </main>
 
             {/* MODALS */}
-            <AddStudentModal modal={addStudent} collegeOptions={colleges.options} onSaved={refreshAfterCadetChange} />
-            <EditStudentModal modal={editStudent} collegeOptions={colleges.options} onSaved={refreshAfterCadetChange} />
+            <AddStudentModal modal={addStudent} collegeOptions={colleges.options} years={academic.years} onSaved={() => { refreshAfterCadetChange(); academic.load(); }} />
+            <EditStudentModal modal={editStudent} collegeOptions={colleges.options} years={academic.years} onSaved={() => { refreshAfterCadetChange(); academic.load(); }} />
             <ResetPinModal modal={resetPin} />
             <InspectCadetModal modal={inspect} />
-            <AppointUniAdminModal modal={appoint} collegeOptions={colleges.options} note={quotaNote} onSaved={(id) => loadUni(id)} />
-            <EditUniAdminModal modal={editUni} onSaved={(id) => loadUni(id)} />
-            <ResetUniAdminPinModal modal={resetUniPin} />
             <CampaignRosterModal modal={roster} />
             <ConfidentialityNoticeModal
                 type="SENSITIVE_HOUSEHOLD"

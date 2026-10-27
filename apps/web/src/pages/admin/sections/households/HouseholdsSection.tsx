@@ -1,8 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { MessageRow } from '../../components/ModalOverlay';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DataTable, type Column } from '../../components/DataTable';
 import { useToast } from '../../hooks/useToasts';
+import { academicYearOf, byAcademicYear, byStudyOrder, distinctSorted, ENROLLMENT_LABEL, studyYearOf, UNASSIGNED } from '../../lib/academic';
 import { datePart, errMessage } from '../../lib/http';
-import type { Household } from '../../types';
+import type { Cadet, Household } from '../../types';
+
+/** A household row with its surveyor's academic year and study year (joined from the cadet roster). */
+type HouseholdRow = Household & { academic_year: string; study_year: string };
+
+const CALORIE: Record<string, string> = { D: 'Deficient', E: 'Excess' };
+const calorieLabel = (s?: string | null) => (s && CALORIE[s]) || 'Normal';
 
 function CalorieBadge({ status }: { status?: string | null }) {
     if (status === 'D') return <span className="badge badge-danger">Deficient</span>;
@@ -10,23 +17,33 @@ function CalorieBadge({ status }: { status?: string | null }) {
     return <span className="badge badge-info">Normal</span>;
 }
 
-/** VIEW 3: Global household registry (loadGlobalHouseholds / filterHouseholds). */
-export function HouseholdsSection({ active, loadSignal }: { active: boolean; loadSignal: number }) {
+const COLUMNS: Column<HouseholdRow>[] = [
+    { key: 'code', label: 'Family Code', value: (f) => f.family_code || 'FAM-' + f.family_no, render: (f) => <code>{f.family_code || 'FAM-' + f.family_no}</code> },
+    { key: 'no', label: 'Family No.', value: (f) => f.family_no, numeric: true },
+    { key: 'hof', label: 'Head of Family', value: (f) => f.head_of_family, render: (f) => <span className="mm-strong">{f.head_of_family || ''}</span> },
+    { key: 'village', label: 'Village / Ward', value: (f) => f.village || 'Field Block' },
+    { key: 'surveyor', label: 'Surveyor Name', value: (f) => f.student_name },
+    { key: 'enrollment', label: ENROLLMENT_LABEL, value: (f) => f.roll_number, render: (f) => <span className="mm-code">{f.roll_number || ''}</span> },
+    { key: 'year', label: 'Academic Year', value: (f) => f.academic_year },
+    { key: 'study', label: 'Study Year', value: (f) => f.study_year },
+    { key: 'members', label: 'Members', value: (f) => f.members_count || 0, numeric: true, align: 'center' },
+    { key: 'calorie', label: 'Calorie Status', value: (f) => calorieLabel(f.calorie_status), align: 'center', render: (f) => <CalorieBadge status={f.calorie_status} /> },
+    { key: 'date', label: 'Survey Date', value: (f) => f.survey_date || datePart(f.created_at) },
+];
+
+/** VIEW 3: Global household registry with academic year filter, column filters and pagination. */
+export function HouseholdsSection({ active, loadSignal, cadets }: { active: boolean; loadSignal: number; cadets: Cadet[] | null }) {
     const showToast = useToast();
-    const allRef = useRef<Household[]>([]);
-    const [count, setCount] = useState(0);
-    const [rows, setRows] = useState<Household[] | null>(null);
+    const [families, setFamilies] = useState<Household[] | null>(null);
     const [q, setQ] = useState('');
-    const [surveyor, setSurveyor] = useState('');
+    const [year, setYear] = useState('');
+    const [study, setStudy] = useState('');
 
     const load = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/families');
             if (!res.ok) throw new Error('Failed to load global households');
-            const families = (await res.json()) as Household[];
-            allRef.current = families;
-            setCount(families.length);
-            setRows(families);
+            setFamilies((await res.json()) as Household[]);
         } catch (err) {
             showToast(errMessage(err), 'error');
         }
@@ -36,83 +53,60 @@ export function HouseholdsSection({ active, loadSignal }: { active: boolean; loa
         if (loadSignal) load();
     }, [loadSignal, load]);
 
-    const applyFilter = (query: string, cadet: string) => {
-        const ql = query.toLowerCase().trim();
-        setRows(allRef.current.filter((f) => {
-            const matchesQ = !ql || (f.head_of_family && f.head_of_family.toLowerCase().includes(ql)) || (f.family_code && f.family_code.toLowerCase().includes(ql)) || (f.village && f.village.toLowerCase().includes(ql)) || (f.student_name && f.student_name.toLowerCase().includes(ql)) || (f.roll_number && f.roll_number.toLowerCase().includes(ql));
-            const matchesCadet = !cadet || String(f.student_id) === String(cadet);
-            return matchesQ && matchesCadet;
-        }));
-    };
+    const all = useMemo<HouseholdRow[] | null>(() => {
+        if (!families) return null;
+        const byId = new Map((cadets || []).map((c) => [c.id, c]));
+        return families.map((f) => {
+            const c = byId.get(f.student_id);
+            return { ...f, academic_year: c ? academicYearOf(c) : UNASSIGNED, study_year: studyYearOf(c?.batch_year) };
+        });
+    }, [families, cadets]);
+
+    const years = useMemo(() => distinctSorted((all || []).map((f) => f.academic_year), byAcademicYear), [all]);
+    const studies = useMemo(() => distinctSorted((all || []).map((f) => f.study_year), byStudyOrder), [all]);
+
+    const rows = useMemo(() => {
+        if (!all) return null;
+        const ql = q.toLowerCase().trim();
+        return all.filter((f) => {
+            const matchesQ = !ql || [f.head_of_family, f.family_code, f.village, f.student_name, f.roll_number].some((v) => v && v.toLowerCase().includes(ql));
+            return matchesQ && (!year || f.academic_year === year) && (!study || f.study_year === study);
+        });
+    }, [all, q, year, study]);
 
     return (
         <div id="viewHouseholds" className={`admin-view-pane${active ? ' active' : ''}`}>
             <div className="card">
-                {/* Filter Toolbar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
+                <div className="mm-card-head">
                     <div>
-                        <h2 className="card-title" style={{ marginBottom: 4, fontSize: '1.25rem' }}>
-                            🏡 Global Household Registry (<span id="householdTotalCount">{count}</span> Households)
-                        </h2>
-                        <p className="card-desc" style={{ margin: 0 }}>
-                            Consolidated household surveillance records across all students with socio-demographics.
-                        </p>
+                        <h2 className="card-title">Global households <span className="mm-count" id="householdTotalCount">{families ? families.length : 0}</span></h2>
+                        <p className="card-desc">Every surveyed household across all students, with the surveyor who registered it.</p>
                     </div>
-
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <input type="text" id="householdSearchInput" className="search-input" placeholder="🔍 Search family code, HOF, village..." value={q}
-                            onChange={(e) => { setQ(e.target.value); applyFilter(e.target.value, surveyor); }}
-                            style={{ maxWidth: 250, fontSize: '0.82rem', padding: '0.45rem 0.8rem' }} />
-
-                        <select id="householdCadetFilter" value={surveyor} onChange={(e) => { setSurveyor(e.target.value); applyFilter(q, e.target.value); }} style={{ padding: '0.45rem 0.8rem', fontSize: '0.82rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: '#fff', maxWidth: 200 }}>
-                            <option value="">All Surveyors (Cadets)</option>
-                        </select>
+                    <div className="mm-toolbar">
+                        <button className="btn btn-secondary" onClick={load} title="Reload households">↺ Refresh</button>
                     </div>
                 </div>
 
-                {/* Households Table */}
-                <div className="table-wrapper">
-                    <table id="householdsTable">
-                        <thead>
-                            <tr>
-                                <th>Family Code</th>
-                                <th>Family No.</th>
-                                <th>Head of Family (HOF)</th>
-                                <th>Village / Ward</th>
-                                <th>Surveyor Cadet</th>
-                                <th>Institution</th>
-                                <th style={{ textAlign: 'center' }}>Members</th>
-                                <th style={{ textAlign: 'center' }}>Calorie Status</th>
-                                <th>Survey Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="householdsTbody">
-                            {rows === null ? (
-                                <MessageRow colSpan={9} padding={24}>Loading household surveillance registry...</MessageRow>
-                            ) : rows.length === 0 ? (
-                                <MessageRow colSpan={9} padding={24}>No surveyed households recorded</MessageRow>
-                            ) : (
-                                rows.map((f, i) => (
-                                    <tr key={i}>
-                                        <td><code>{f.family_code || 'FAM-' + f.family_no}</code></td>
-                                        <td><strong>#{f.family_no}</strong></td>
-                                        <td><strong style={{ color: 'var(--text-primary)' }}>{f.head_of_family || ''}</strong></td>
-                                        <td>{f.village || 'Field Block'}</td>
-                                        <td>
-                                            <strong>{f.student_name || ''}</strong>
-                                            {' '}
-                                            <span className="badge badge-primary" style={{ fontSize: '0.68rem', marginLeft: 4 }}>Roll {f.roll_number || ''}</span>
-                                        </td>
-                                        <td>{f.college_name || 'SAL'}</td>
-                                        <td style={{ textAlign: 'center' }}><span className="badge badge-success">{f.members_count || 0} Members</span></td>
-                                        <td style={{ textAlign: 'center' }}><CalorieBadge status={f.calorie_status} /></td>
-                                        <td>{f.survey_date || datePart(f.created_at)}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                <div className="mm-filters">
+                    <input type="search" id="householdSearchInput" className="search-input" placeholder="Search family code, head of family, village, surveyor" value={q} onChange={(e) => setQ(e.target.value)} />
+                    <select id="householdYearFilter" value={year} onChange={(e) => setYear(e.target.value)} aria-label="Academic year">
+                        <option value="">All academic years</option>
+                        {years.map((y) => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                    <select id="householdStudyFilter" value={study} onChange={(e) => setStudy(e.target.value)} aria-label="Study year">
+                        <option value="">All study years</option>
+                        {studies.map((y) => <option key={y} value={y}>{y}</option>)}
+                    </select>
                 </div>
+
+                <DataTable
+                    id="householdsTable"
+                    columns={COLUMNS}
+                    rows={rows}
+                    rowKey={(f, i) => `${f.student_id}-${f.family_no}-${i}`}
+                    loadingText="Loading the household registry..."
+                    emptyText="No surveyed households match the current filters."
+                />
             </div>
         </div>
     );

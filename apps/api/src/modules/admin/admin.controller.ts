@@ -79,13 +79,13 @@ export class AdminController {
     @UseGuards(AdminGuard)
     createStudent(@Req() req: Request) {
         try {
-            const { roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status } = req.body;
+            const { roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status, academic_year_id } = req.body;
             if (!roll_number || !name) {
                 throw fail(400, 'Roll number and student name are required');
             }
 
             const result = this.admins.createStudent(
-                { roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status },
+                { roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status, academic_year_id },
                 req.admin,
             );
 
@@ -104,8 +104,8 @@ export class AdminController {
     updateStudent(@Req() req: Request) {
         try {
             const studentId = req.params.id;
-            const { name, email, phone, batch_year, posting_unit, college_id, status } = req.body;
-            const updated = this.admins.updateStudent(studentId, { name, email, phone, batch_year, posting_unit, college_id, status });
+            const { name, email, phone, batch_year, posting_unit, college_id, status, academic_year_id } = req.body;
+            const updated = this.admins.updateStudent(studentId, { name, email, phone, batch_year, posting_unit, college_id, status, academic_year_id });
             if (!updated) {
                 throw fail(404, 'Cadet record not found');
             }

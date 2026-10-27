@@ -93,12 +93,13 @@ export class AdminModel {
 
     getStudents({ college_id, status, search }: Record<string, any>): Row[] {
         let query = `
-            SELECT s.*, c.name as college_name,
+            SELECT s.*, c.name as college_name, ay.label as academic_year,
                    (SELECT COUNT(*) FROM families f WHERE f.student_id = s.id) as families_count,
                    (SELECT COUNT(*) FROM family_members m JOIN families f ON m.family_id = f.id WHERE f.student_id = s.id) as members_count,
                    (SELECT COUNT(*) FROM follow_ups fu WHERE fu.student_id = s.id) as followups_count
             FROM students s
             LEFT JOIN colleges c ON s.college_id = c.id
+            LEFT JOIN academic_years ay ON s.academic_year_id = ay.id
             WHERE 1=1
         `;
         const params: any[] = [];
@@ -122,7 +123,18 @@ export class AdminModel {
         return cleanList(rows);
     }
 
-    createStudent({ roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status }: Record<string, any>, requesterAdmin: Row): Row {
+    /** A valid academic_years id from a request value, the current year when absent, or null. */
+    private academicYearId(value: unknown, fallbackToCurrent: boolean): number | null {
+        if (value !== undefined && value !== null && value !== '') {
+            const row = this.db.prepare('SELECT id FROM academic_years WHERE id = ?').get(Number(value));
+            if (row) return Number(row.id);
+        }
+        if (!fallbackToCurrent) return null;
+        const current = this.db.prepare('SELECT id FROM academic_years WHERE is_current = 1').get();
+        return current ? Number(current.id) : null;
+    }
+
+    createStudent({ roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status, academic_year_id }: Record<string, any>, requesterAdmin: Row): Row {
         const cleanRoll = roll_number.toString().trim();
         const existing = this.db.prepare('SELECT id FROM students WHERE LOWER(roll_number) = LOWER(?)').get(cleanRoll);
         if (existing) {
@@ -133,8 +145,8 @@ export class AdminModel {
         const referralCode = generateUniqueReferralCode(this.db, targetCollegeId, cleanRoll);
 
         const stmt = this.db.prepare(`
-            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status, academic_year_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         const result = stmt.run(
             cleanRoll,
@@ -146,7 +158,8 @@ export class AdminModel {
             posting_unit ? posting_unit.trim() : 'RHTC - Rural Health Training Center',
             targetCollegeId,
             referralCode,
-            status ? status.trim() : 'Active'
+            status ? status.trim() : 'Active',
+            this.academicYearId(academic_year_id, true)
         );
 
         const newStudent = this.db.prepare(`
@@ -159,9 +172,14 @@ export class AdminModel {
         return { student: clean(newStudent) };
     }
 
-    updateStudent(studentId: any, { name, email, phone, batch_year, posting_unit, college_id, status }: Record<string, any>): Row | null {
+    updateStudent(studentId: any, { name, email, phone, batch_year, posting_unit, college_id, status, academic_year_id }: Record<string, any>): Row | null {
         const current = this.db.prepare('SELECT * FROM students WHERE id = ?').get(studentId);
         if (!current) return null;
+
+        // Only when the form sends it; '' or null unassigns the student.
+        if (academic_year_id !== undefined) {
+            this.db.prepare('UPDATE students SET academic_year_id = ? WHERE id = ?').run(this.academicYearId(academic_year_id, false), studentId);
+        }
 
         this.db.prepare(`
             UPDATE students

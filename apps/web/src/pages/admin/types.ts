@@ -2,7 +2,7 @@
 
 export type AdminTab =
     | 'overview' | 'students' | 'attendance' | 'schedule' | 'exams' | 'households'
-    | 'campaigns' | 'uniAdmins' | 'exports';
+    | 'campaigns' | 'uniAdmins' | 'exports' | 'config';
 
 export interface AdminScheduleItem {
     id: number;
@@ -81,6 +81,9 @@ export interface Cadet {
     college_name?: string | null;
     referral_code?: string | null;
     batch_year?: string | null;
+    /** Session the student belongs to (academic_years), e.g. 2026-2027. */
+    academic_year_id?: number | null;
+    academic_year?: string | null;
     posting_unit?: string | null;
     status?: string | null;
     families_count: number;
@@ -172,3 +175,20 @@ export interface ApiError {
     error?: string;
     message?: string;
 }
+
+/** An academic year (session) from /api/admin/academic-years, with its optional field area. */
+export interface AcademicYear {
+    id: number;
+    label: string;
+    start_date?: string | null;
+    end_date?: string | null;
+    is_current: number | boolean;
+    area_name?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    radius?: number | null;
+    area_updated_at?: string | null;
+    students_count: number;
+}
+
+export interface FieldArea { name: string; latitude: number | string; longitude: number | string; radius: number | string }

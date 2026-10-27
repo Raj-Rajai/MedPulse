@@ -32,6 +32,9 @@ interface ProfileData {
 
 const TODAY = new Date().toLocaleDateString('en-CA');
 
+/** The attendance card (summary + day-wise) is hidden from the profile; its code and loaders stay here. */
+const SHOW_ATTENDANCE = false;
+
 export function ProfileApp() {
     const { showToast, container: toasts } = useToasts(TOAST_PROFILE);
     const [loggedInUser] = useState(readStoredUser);
@@ -101,8 +104,10 @@ export function ProfileApp() {
     useEffect(() => {
         return runWhenActive(() => {
             loadStudentProfile();
-            loadProfileAttendance();
-            loadDatewise(TODAY);
+            if (SHOW_ATTENDANCE) {
+                loadProfileAttendance();
+                loadDatewise(TODAY);
+            }
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -316,7 +321,7 @@ export function ProfileApp() {
                         <button className="ph-btn" onClick={() => { setPin({ cur: '', n1: '', n2: '' }); setPinOpen(true); }}>🔒 Change PIN</button>
                     </>}
                 />
-                <div className="card anim-fade-up" style={{ marginBottom: '24px', padding: '22px 26px' }}>
+                {SHOW_ATTENDANCE && <div className="card anim-fade-up" style={{ marginBottom: '24px', padding: '22px 26px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                             <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(79, 70, 229, 0.1)', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: '0' }}>📅</div>
@@ -444,7 +449,7 @@ export function ProfileApp() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>}
                 <div className="profile-content-grid anim-fade-up" style={{ gridTemplateColumns: '1fr' }}>
                     <div className="profile-info-card" style={{ marginBottom: '0' }}>
                         <div>

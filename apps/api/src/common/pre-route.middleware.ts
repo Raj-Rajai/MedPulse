@@ -33,7 +33,7 @@ export function apiPreRouteMiddleware(app: INestApplication) {
             } catch (_) {
                 location = null;
             }
-            const error = checkLocation(geofence.getArea(req.student.college_id), location);
+            const error = checkLocation(geofence.getAreaForStudent(req.student), location);
             if (error) return res.status(403).json({ error, code: 'LOCATION_REQUIRED' });
         }
 

@@ -27,6 +27,8 @@ export default defineConfig({
     build: {
         outDir: resolve(__dirname, 'dist'),
         emptyOutDir: true,
+        // The student portal bundle is ~560 kB (163 kB gzipped); raise the 500 kB warning threshold.
+        chunkSizeWarningLimit: 700,
         assetsDir: 'shared/assets',
         rollupOptions: { input: inputs },
     },

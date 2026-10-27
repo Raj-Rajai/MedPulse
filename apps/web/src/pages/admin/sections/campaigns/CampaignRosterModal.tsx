@@ -10,15 +10,15 @@ const cell: CSSProperties = { padding: '8px 10px' };
 const th: CSSProperties = { padding: '8px 10px' };
 
 function RsvpBadge({ status }: { status?: string | null }) {
-    if (status === 'Acknowledged') return <span className="badge" style={{ background: '#d1fae5', color: '#047857', fontWeight: 700 }}>✅ Confirmed</span>;
-    if (status === 'Declined') return <span className="badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>Declined</span>;
-    return <span className="badge" style={{ background: '#f1f5f9', color: '#64748b' }}>⏳ Delivered</span>;
+    if (status === 'Acknowledged') return <span className="badge badge-success">Confirmed</span>;
+    if (status === 'Declined') return <span className="badge badge-danger">Declined</span>;
+    return <span className="badge mm-badge-neutral">Delivered</span>;
 }
 
 function CadetCallBadge({ status }: { status?: string | null }) {
-    if (status === 'Assisted') return <span className="badge" style={{ background: '#dcfce7', color: '#15803d', fontWeight: 700 }}>🌟 Assisted</span>;
-    if (status === 'Contacted') return <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1', fontWeight: 700 }}>📞 Contacted</span>;
-    return <span className="badge" style={{ background: '#fffbeb', color: '#b45309' }}>Pending</span>;
+    if (status === 'Assisted') return <span className="badge badge-success">Assisted</span>;
+    if (status === 'Contacted') return <span className="badge badge-info">Contacted</span>;
+    return <span className="badge badge-warning">Pending</span>;
 }
 
 /** MODAL: campaign target roster (openCampaignRosterModal). */
@@ -57,7 +57,7 @@ export function CampaignRosterModal({ modal }: { modal: ModalState<Campaign> }) 
                 <button className="btn btn-secondary" onClick={modal.hide} style={closeBtnStyle}>✕</button>
             </div>
 
-            <div style={{ maxHeight: 480, overflowY: 'auto' }}>
+            <div className="table-wrapper" style={{ maxHeight: 480, overflowY: 'auto' }}>
                 <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
@@ -94,7 +94,7 @@ export function CampaignRosterModal({ modal }: { modal: ModalState<Campaign> }) 
                                     </td>
                                     <td style={cell}>
                                         <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{r.cadet_name || 'Cadet'}</div>
-                                        <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Roll {r.cadet_roll || '-'}</div>
+                                        <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Enrollment No. {r.cadet_roll || '-'}</div>
                                     </td>
                                     <td style={cell}>
                                         <CadetCallBadge status={r.cadet_call_status} />

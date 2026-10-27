@@ -267,3 +267,33 @@
     justify-content: center;
   }
 }
+
+/* Acknowledge checkbox (footer, bottom left): unlocks after the notice is scrolled to the end */
+.privacy-ack {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-primary, #1e293b);
+  cursor: pointer;
+  user-select: none;
+}
+.privacy-ack input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+}
+.privacy-ack.locked {
+  color: var(--text-muted, #64748b);
+  cursor: not-allowed;
+}
+.privacy-ack.locked input { cursor: not-allowed; }
+.privacy-modal-footer .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
