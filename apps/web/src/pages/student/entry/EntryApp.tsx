@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { readStoredUser } from '../common/badges';
+import { medpulseMemberId } from '../common/memberIdentity';
 import { TOAST_ENTRY, useToasts } from '../common/Toasts';
 import { errMsg, getHouseholdDisplayName, runWhenActive } from '../common/utils';
 import { LocationVerificationCard } from '../common/fieldLocation';
@@ -518,6 +519,7 @@ export function EntryApp() {
                                                             )}
                                                         </div>
                                                         <div className="roster-name" title={m.name}>{m.name}</div>
+                                                        {m.medpulse_id && <div className="roster-meta">MedPulse ID: {medpulseMemberId(m)}</div>}
                                                         <div className="roster-meta">{`${m.relation_to_hof || 'Member'}${Number(m.age_years) > 0 ? ` • ${m.age_years}y` : ''} (${m.gender || 'M'})`}</div>
                                                     </div>
                                                     <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>Select →</div>
@@ -569,10 +571,11 @@ export function EntryApp() {
                                                 {avatar.t}
                                             </div>
                                             <div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                                                     <h2 id="entryMemberName" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0' }}>
                                                         {member ? member.name : '-'}
                                                     </h2>
+                                                    {member?.medpulse_id && <span className="badge badge-info" id="entryMemberMedpulseId" aria-label="MedPulse ID">{medpulseMemberId(member)}</span>}
                                                     <span className="badge badge-info" id="entryMemberOrder">
                                                         {member ? `#${member.member_order}` : '#1'}
                                                     </span>

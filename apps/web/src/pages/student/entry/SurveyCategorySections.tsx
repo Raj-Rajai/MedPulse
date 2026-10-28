@@ -227,25 +227,6 @@ export function SurveyCategorySections({ data, onChange }: SurveyCategorySection
                                 />
                             </FormField>
 
-                            <FormField label="Aadhaar Number">
-                                <input
-                                    type="text"
-                                    value={data.aadhaar_number}
-                                    onChange={(e) => update('aadhaar_number', e.target.value)}
-                                    placeholder="12-digit Aadhaar (optional)"
-                                    maxLength={16}
-                                />
-                            </FormField>
-
-                            <FormField label="ABHA ID">
-                                <input
-                                    type="text"
-                                    value={data.abha_id}
-                                    onChange={(e) => update('abha_id', e.target.value)}
-                                    placeholder="14-digit ABHA number or address"
-                                />
-                            </FormField>
-
                             <FormField label="Addiction (If any)">
                                 <input
                                     type="text"

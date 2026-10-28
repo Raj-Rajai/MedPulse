@@ -3,6 +3,7 @@ import type { Request } from 'express';
 import { DatabaseService } from '../database/database.service';
 import { clean, Row } from '../common/row';
 import { fail } from '../common/http-error';
+import { PortalSessionService, publicIdentity } from './portal-session.service';
 
 const STUDENT_SELECT = 'SELECT s.*, c.name as college_name FROM students s LEFT JOIN colleges c ON s.college_id = c.id';
 const PATIENT_SELECT = `
@@ -12,159 +13,54 @@ const PATIENT_SELECT = `
             LEFT JOIN students s ON p.student_id = s.id
             LEFT JOIN colleges c ON s.college_id = c.id`;
 
-const header = (req: Request, name: string): string | undefined => {
-    const v = req.headers[name];
-    return Array.isArray(v) ? v[0] : v;
-};
-const query = (req: Request, name: string): string | undefined => {
-    const v = (req.query as Record<string, unknown>)[name];
-    return v === undefined ? undefined : String(v);
-};
-
 /**
  * Identity resolution for the four portals plus the multi-tenant access checks.
- * Logic and SQL are unchanged from backend/middleware/auth.middleware.js.
+ * Identity is resolved exclusively from an opaque, expiring server session.
  * Each authenticate* method throws the original 401 body or attaches the identity to `req`.
  */
 @Injectable()
 export class AuthService {
-    constructor(private readonly database: DatabaseService) {}
+    constructor(private readonly database: DatabaseService, private readonly sessions: PortalSessionService) {}
 
     private get db() {
         return this.database.db;
     }
 
-    /** Medical Students / Cadets */
     authenticateStudent(req: Request): void {
-        const studentIdHeader = header(req, 'x-student-id');
-        const rollHeader = header(req, 'x-roll-number');
-        const authHeader = header(req, 'authorization');
-        const queryStudentId = query(req, 'student_id');
-        const queryRoll = query(req, 'roll_number');
-
-        let student: Row | undefined;
-
-        if (studentIdHeader) {
-            student = this.db.prepare(`${STUDENT_SELECT} WHERE s.id = ?`).get(studentIdHeader);
-        } else if (rollHeader) {
-            student = this.db.prepare(`${STUDENT_SELECT} WHERE s.roll_number = ?`).get(rollHeader.toString().trim());
-        } else if (authHeader && authHeader.startsWith('Bearer ')) {
-            const tokenVal = authHeader.replace('Bearer ', '').trim();
-            if (!isNaN(tokenVal as unknown as number)) {
-                student = this.db.prepare(`${STUDENT_SELECT} WHERE s.id = ? OR s.roll_number = ?`).get(tokenVal, tokenVal);
-            } else {
-                student = this.db.prepare(`${STUDENT_SELECT} WHERE s.roll_number = ?`).get(tokenVal);
-            }
-        } else if (queryStudentId) {
-            student = this.db.prepare(`${STUDENT_SELECT} WHERE s.id = ?`).get(queryStudentId);
-        } else if (queryRoll) {
-            student = this.db.prepare(`${STUDENT_SELECT} WHERE s.roll_number = ?`).get(queryRoll.toString().trim());
-        }
-
-        if (!student) {
-            throw fail(401, 'Authentication required. Please sign in to access MedPulse.');
-        }
-
-        req.student = clean(student)!;
+        const id = this.sessions.resolve(req, 'student');
+        const student = this.db.prepare(`${STUDENT_SELECT} WHERE s.id = ?`).get(id);
+        if (!student || student.status === 'Inactive') throw fail(401, 'Student account unavailable.');
+        req.student = publicIdentity(clean(student)!);
         req.studentId = student.id;
         req.rollNumber = student.roll_number;
     }
 
-    /** University Super Admin & University Admins */
     authenticateAdmin(req: Request): void {
-        const adminTokenHeader = header(req, 'x-admin-token');
-        const adminIdHeader = header(req, 'x-admin-id');
-        const authHeader = header(req, 'authorization');
-        const queryToken = query(req, 'admin_token');
-        const queryId = query(req, 'admin_id');
-
-        let admin: Row | undefined;
-
-        if (adminIdHeader) {
-            admin = this.db.prepare('SELECT * FROM admins WHERE id = ?').get(adminIdHeader);
-        } else if (adminTokenHeader) {
-            const idFromToken = adminTokenHeader.replace('admin-', '').trim();
-            admin = this.db.prepare('SELECT * FROM admins WHERE id = ? OR username = ?').get(idFromToken, adminTokenHeader);
-        } else if (authHeader && authHeader.startsWith('Bearer ')) {
-            const tokenVal = authHeader.replace('Bearer ', '').trim();
-            const idFromToken = tokenVal.replace('admin-', '').trim();
-            admin = this.db.prepare('SELECT * FROM admins WHERE id = ? OR username = ?').get(idFromToken, tokenVal);
-        } else if (queryId) {
-            admin = this.db.prepare('SELECT * FROM admins WHERE id = ?').get(queryId);
-        } else if (queryToken) {
-            const idFromToken = queryToken.replace('admin-', '').trim();
-            admin = this.db.prepare('SELECT * FROM admins WHERE id = ? OR username = ?').get(idFromToken, queryToken);
-        }
-
-        if (!admin) {
-            throw fail(401, 'Administrative authorization required. Please sign in as Faculty / Admin.');
-        }
-
-        req.admin = clean(admin)!;
+        const id = this.sessions.resolve(req, 'admin');
+        const admin = this.db.prepare('SELECT * FROM admins WHERE id = ?').get(id);
+        if (!admin || admin.status === 'Inactive') throw fail(401, 'Admin account unavailable.');
+        req.admin = publicIdentity(clean(admin)!);
         req.adminId = admin.id;
     }
 
-    /** Patients (Independent & Dependents) */
     authenticatePatient(req: Request): void {
-        const patientIdHeader = header(req, 'x-patient-id');
-        const authHeader = header(req, 'authorization');
-        const queryPatientId = query(req, 'patient_id');
-
-        let patient: Row | undefined;
-
-        if (patientIdHeader) {
-            patient = this.db.prepare(`${PATIENT_SELECT}
-            WHERE p.id = ?
-        `).get(patientIdHeader);
-        } else if (authHeader && authHeader.startsWith('Bearer ')) {
-            const tokenVal = authHeader.replace('Bearer ', '').trim();
-            const idFromToken = tokenVal.replace('patient-', '').trim();
-            patient = this.db.prepare(`${PATIENT_SELECT}
-            WHERE p.id = ? OR p.patient_uid = ?
-        `).get(idFromToken, tokenVal);
-        } else if (queryPatientId) {
-            patient = this.db.prepare(`${PATIENT_SELECT}
-            WHERE p.id = ?
-        `).get(queryPatientId);
-        }
-
-        if (!patient) {
-            throw fail(401, 'Patient authentication required. Please sign in to your patient account.');
-        }
-
-        req.patient = clean(patient)!;
+        const id = this.sessions.resolve(req, 'patient');
+        const patient = this.db.prepare(`${PATIENT_SELECT} WHERE p.id = ? AND p.status = 'Active'`).get(id);
+        if (!patient) throw fail(401, 'Patient account unavailable.');
+        req.patient = publicIdentity(clean(patient)!);
         req.patientId = patient.id;
     }
 
-    /** Hospital Super Admins & Hospital Admins */
     authenticateHospitalAdmin(req: Request): void {
-        const authHeader = header(req, 'authorization');
-        const adminId =
-            header(req, 'x-hospital-admin-id') ||
-            (authHeader && authHeader.startsWith('Bearer hosp-') ? authHeader.replace('Bearer hosp-', '').trim() : null);
-
-        if (!adminId) {
-            throw fail(401, 'Hospital authentication required. Please sign in.');
-        }
-
-        let admin: Row | undefined;
-        try {
-            admin = this.db.prepare(`
-            SELECT ha.*, h.name as hospital_name, h.code as hospital_code, h.type as hospital_type, 
-                   h.city as hospital_city, h.bed_capacity, h.max_super_admins, h.max_admins
-            FROM hospital_admins ha
-            JOIN hospitals h ON ha.hospital_id = h.id
+        const id = this.sessions.resolve(req, 'hospital');
+        const admin = this.db.prepare(`
+            SELECT ha.*, h.name AS hospital_name, h.code AS hospital_code, h.type AS hospital_type,
+                   h.city AS hospital_city, h.bed_capacity, h.max_super_admins, h.max_admins
+            FROM hospital_admins ha JOIN hospitals h ON ha.hospital_id = h.id
             WHERE ha.id = ? AND ha.status = 'Active'
-        `).get(adminId);
-        } catch (err) {
-            throw fail(500, (err as Error).message);
-        }
-
-        if (!admin) {
-            throw fail(401, 'Hospital admin session invalid or expired.');
-        }
-
-        req.hospitalAdmin = clean(admin)!;
+        `).get(id);
+        if (!admin) throw fail(401, 'Hospital account unavailable.');
+        req.hospitalAdmin = publicIdentity(clean(admin)!);
         req.hospitalId = admin.hospital_id;
     }
 

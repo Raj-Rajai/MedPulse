@@ -79,36 +79,11 @@ export function installAuthGuard(): boolean {
         logoutHospitalAdmin,
     });
 
-    // 3. Inject auth headers into every API call
+    // Browser storage is only a display preview. The backend authenticates HttpOnly cookies.
     const originalFetch = window.fetch.bind(window);
     window.fetch = function (input: RequestInfo | URL, init: RequestInit = {}) {
-        init = init || {};
         const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url || '';
-        const activeUser = getUser();
-        const activeAdmin = getAdmin();
-        const activePatient = getPatient();
-        const activeHospitalAdmin = getHospitalAdmin();
-        const headers = new Headers(init.headers instanceof Headers || Array.isArray(init.headers) ? init.headers : { ...(init.headers as Record<string, string>) });
-
-        if (activeAdmin && (url.includes('/api/admin/') || isAdminPage)) {
-            if (!headers.has('X-Admin-Id') && activeAdmin.id) headers.set('X-Admin-Id', String(activeAdmin.id));
-            if (!headers.has('X-Admin-Token')) headers.set('X-Admin-Token', 'admin-' + activeAdmin.id);
-            if (!headers.has('Authorization')) headers.set('Authorization', 'Bearer admin-' + activeAdmin.id);
-            init.headers = headers;
-        } else if (activeHospitalAdmin && (url.includes('/api/hospital/') || isHospitalPage)) {
-            if (!headers.has('X-Hospital-Admin-Id') && activeHospitalAdmin.id) headers.set('X-Hospital-Admin-Id', String(activeHospitalAdmin.id));
-            if (!headers.has('Authorization')) headers.set('Authorization', 'Bearer hosp-' + activeHospitalAdmin.id);
-            init.headers = headers;
-        } else if (activePatient && (url.includes('/api/patient/') || isPatientPage)) {
-            if (!headers.has('X-Patient-Id') && activePatient.id) headers.set('X-Patient-Id', String(activePatient.id));
-            if (!headers.has('Authorization')) headers.set('Authorization', 'Bearer patient-' + activePatient.id);
-            init.headers = headers;
-        } else if (activeUser && url.includes('/api/')) {
-            if (!headers.has('X-Student-Id') && activeUser.id) headers.set('X-Student-Id', String(activeUser.id));
-            if (!headers.has('X-Roll-Number') && activeUser.roll_number) headers.set('X-Roll-Number', String(activeUser.roll_number));
-            init.headers = headers;
-        }
-
+        init = { ...init, credentials: init.credentials || 'same-origin' };
         return originalFetch(input, init).then((response) => {
             if (response.status === 401 && (url.includes('/api/admin/') || isAdminPage) && !url.includes('/api/admin/login')) {
                 console.warn('[MedPulse Auth] Admin session expired or invalid. Redirecting to admin login.');

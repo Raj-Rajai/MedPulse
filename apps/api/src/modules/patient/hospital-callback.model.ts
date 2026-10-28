@@ -57,6 +57,16 @@ export class HospitalCallbackModel {
         return clean(this.db.prepare(`${SELECT} WHERE r.id = ?`).get(id));
     }
 
+    private patientView(row: Row | null): Row | null {
+        if (!row) return null;
+        const { id, status, channel, department, created_at, for_member_name, preferred_time, scheduled_for, patient_confirmation } = row;
+        return { id, status, channel, department, created_at, for_member_name, preferred_time, scheduled_for, patient_confirmation };
+    }
+    private audit(role: string, actor: number, action: string, id: number) {
+        this.db.prepare(`INSERT INTO portal_privacy_audit (actor_role, actor_id, action, resource_type, resource_id, created_at)
+            VALUES (?, ?, ?, 'hospital_request', ?, ?)`).run(role, actor, action, id, Date.now());
+    }
+
     getHospitalForPatient(patient: Row): Row | null {
         const h = this.db.prepare(`
             SELECT id, name, code, type, city, district, state, contact_phone, contact_email
@@ -91,11 +101,12 @@ export class HospitalCallbackModel {
         `).run(p.id, hospital ? hospital.id : null, memberId, channel, dept, why,
             message ? String(message).trim().slice(0, 1000) : null,
             preferred_time ? String(preferred_time).trim().slice(0, 80) : null);
-        return this.getOne(Number(info.lastInsertRowid));
+        this.audit('patient', p.id, 'request_created', Number(info.lastInsertRowid));
+        return this.patientView(this.getOne(Number(info.lastInsertRowid)));
     }
 
     listForPatient(patientId: unknown): Row[] {
-        return cleanList(this.db.prepare(`${SELECT} WHERE r.patient_id = ? ORDER BY r.created_at DESC, r.id DESC`).all(patientId));
+        return cleanList(this.db.prepare(`${SELECT} WHERE r.patient_id = ? ORDER BY r.created_at DESC, r.id DESC`).all(patientId)).map((row) => this.patientView(row)!);
     }
 
     cancel(requestId: unknown, patientId: unknown): Row | null {
@@ -103,7 +114,8 @@ export class HospitalCallbackModel {
         if (!r) throw new StatusError('Request not found', 404);
         if (!OPEN.includes(r.status)) throw new StatusError(`Request is already ${r.status}`);
         this.db.prepare(`UPDATE hospital_callback_requests SET status = 'Cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(requestId);
-        return this.getOne(requestId);
+        this.audit('patient', Number(patientId), 'request_status_changed', Number(requestId));
+        return this.patientView(this.getOne(requestId));
     }
 
     confirm(requestId: unknown, patientId: unknown, confirmed: boolean): Row | null {
@@ -115,7 +127,8 @@ export class HospitalCallbackModel {
         if (!confirmed) {
             this.db.prepare(`UPDATE hospital_callback_requests SET status = 'Open', resolved_at = NULL WHERE id = ?`).run(requestId);
         }
-        return this.getOne(requestId);
+        this.audit('patient', Number(patientId), 'request_status_changed', Number(requestId));
+        return this.patientView(this.getOne(requestId));
     }
 
     /* ---------------- HMS contract (hospital admins) ---------------- */
@@ -149,6 +162,7 @@ export class HospitalCallbackModel {
             WHERE id = ?
         `).run(status, note ? String(note).trim().slice(0, 500) : null, scheduled_for ? String(scheduled_for).trim().slice(0, 80) : null,
             admin.id, status, status, requestId);
+        this.audit('hospital', admin.id, 'appointment_updated', Number(requestId));
         return this.getOne(requestId);
     }
 }

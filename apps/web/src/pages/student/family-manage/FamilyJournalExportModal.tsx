@@ -6,6 +6,7 @@
 
 import type { FamilyDetail } from './types';
 import type { FamilyStudyData } from './studyTypes';
+import { medpulseMemberId } from '../common/memberIdentity';
 
 interface Props {
     open: boolean;
@@ -43,7 +44,7 @@ export function FamilyJournalExportModal({ open, family, studyData, onClose }: P
                 dietary_advice: family.dietary_advice_given,
             },
             study_journal: studyData,
-            members: family.members || [],
+            members: (family.members || []).map((member) => ({ ...member, medpulse_id: medpulseMemberId(member) })),
         };
 
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
@@ -469,7 +470,10 @@ export function FamilyJournalExportModal({ open, family, studyData, onClose }: P
                                         family.members.map((m, idx) => (
                                             <tr key={m.id || idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
                                                 <td style={{ padding: '6px' }}>{idx + 1}</td>
-                                                <td style={{ padding: '6px', fontWeight: 650 }}>{m.name || '—'}</td>
+                                                <td style={{ padding: '6px', fontWeight: 650 }}>
+                                                    {m.name || '—'}
+                                                    {m.medpulse_id && <div style={{ fontSize: '0.7rem', fontWeight: 400 }}>MedPulse ID: {medpulseMemberId(m)}</div>}
+                                                </td>
                                                 <td style={{ padding: '6px' }}>{m.relation_to_hof || '—'}</td>
                                                 <td style={{ padding: '6px' }}>{m.gender || '—'} / {m.age_years || '—'} yrs</td>
                                                 <td style={{ padding: '6px' }}>{m.occupation || '—'}</td>

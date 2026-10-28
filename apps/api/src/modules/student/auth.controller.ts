@@ -1,13 +1,15 @@
-import { Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { fail, HttpError, serverError } from '../../common/http-error';
 import type { Row } from '../../common/row';
 import { StudentModel } from './student.model';
+import { PortalSessionService, publicIdentity } from '../../auth/portal-session.service';
+import { StudentGuard } from '../../auth/guards';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 @Controller()
 export class AuthController {
-    constructor(private readonly students: StudentModel) {}
+    constructor(private readonly students: StudentModel, private readonly sessions: PortalSessionService) {}
 
     @Post('auth/register')
     @HttpCode(201)
@@ -56,10 +58,12 @@ export class AuthController {
                 status,
             });
 
+            if (!newStudent) throw fail(500, 'Student registration could not be completed.');
+            this.sessions.issue(req, 'student', newStudent.id);
             return {
                 success: true,
                 message: 'Student registration completed successfully',
-                student: newStudent,
+                student: publicIdentity(newStudent),
             };
         } catch (err) {
             if (err instanceof HttpError) throw err;
@@ -93,9 +97,10 @@ export class AuthController {
                 throw fail(401, 'Invalid PIN / Password');
             }
 
+            this.sessions.issue(req, 'student', student.id);
             return {
                 success: true,
-                student,
+                student: publicIdentity(student),
             };
         } catch (err) {
             throw serverError(err);
@@ -103,23 +108,8 @@ export class AuthController {
     }
 
     @Get('auth/me')
+    @UseGuards(StudentGuard)
     me(@Req() req: Request) {
-        try {
-            const { roll_number, id } = req.query as Record<string, any>;
-            let student: Row | null = null;
-            if (id) {
-                student = this.students.findById(id);
-            } else if (roll_number) {
-                student = this.students.findByRoll(roll_number);
-            }
-
-            if (!student) {
-                throw fail(404, 'Student not found');
-            }
-
-            return student;
-        } catch (err) {
-            throw serverError(err);
-        }
+        return req.student;
     }
 }

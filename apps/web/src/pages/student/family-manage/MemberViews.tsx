@@ -3,6 +3,7 @@
  * member profile (selectMember + render*List) and the follow-up timeline (renderFollowUpsTimeline).
  */
 import type { CSSProperties, ReactNode } from 'react';
+import { medpulseMemberId } from '../common/memberIdentity';
 import type { Allergy, Condition, FollowUp, HistoryItem, Lifestyle, Medication, MemberDetail, RosterMember } from './types';
 
 const capLabel: CSSProperties = { color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, display: 'block' };
@@ -58,6 +59,7 @@ export function MemberCards({ members, selectedId, onSelect }: { members: Roster
                             <div className="member-card-header">
                                 <div className="member-card-info">
                                     <h4 className="member-name">{m.name}</h4>
+                                    {m.medpulse_id && <div className="member-relation">MedPulse ID: {medpulseMemberId(m)}</div>}
                                     <div className="member-relation">{demographics}</div>
                                     {m.contact_number && (
                                         <div className="member-phone">

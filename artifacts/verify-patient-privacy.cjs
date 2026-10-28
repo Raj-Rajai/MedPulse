@@ -1,0 +1,123 @@
+const assert = require('node:assert/strict');
+const { chromium } = require('playwright');
+const { mkdirSync } = require('node:fs');
+const { join } = require('node:path');
+
+(async () => {
+    const browser = await chromium.launch({ channel: 'chrome', headless: true });
+    const out = join(__dirname, 'patient-privacy');
+    mkdirSync(out, { recursive: true });
+    try {
+        const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+        const errors = [], calls = [];
+        page.on('pageerror', error => errors.push(error.message));
+        await page.addInitScript(() => {
+            localStorage.setItem('medpulse_patient', JSON.stringify({ id: 71, name: 'Jordan Example', patient_uid: 'PAT-DEMO-0001' }));
+            window.print = () => { window.__didPrint = true; };
+            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async value => { window.__copied = value; } } });
+        });
+        const card = { id: 71, name: 'Jordan Example', patient_uid: 'PAT-DEMO-0001', age_years: 38, gender: 'F', date_of_birth: '1988-01-02', phone: '9000000001', address: 'PRIVATE_ADDRESS', emergency_contact_name: 'Private contact', emergency_contact_phone: '9000000099', blood_group: 'A+', family_role: 'Head' };
+        const family = { can_edit: true, family: { family_name: 'Example household', family_code: 'FAM-DEMO' }, members: [
+            { id: 71, name: 'Jordan Example', is_self: true, medpulse_id: 'MP-00000071', can_view_records: true, relation_to_hof: 'Head', surveyed: true },
+            { id: 72, name: 'Taylor Example', medpulse_id: 'MP-00000072', can_view_records: false, relation_to_hof: 'Spouse', account_patient_id: 72, sbp: 161, dbp: 93, conditions: 'PRIVATE_DIAGNOSIS' },
+            { id: 73, name: 'Casey Example', medpulse_id: 'MP-00000073', can_view_records: false, can_request_guardian: true, relation_to_hof: 'Child' },
+        ] };
+        const records = { member: { id: 71, name: 'Jordan Example', sbp: 151, dbp: 92, rbs: 172, hb: 11, bmi: 24 }, provenance: { source: 'Family health survey', verified: false, recorded_at: '2026-10-20' }, medications: [{ id: 1, name: 'PRIVATE_MEDICINE', dosage: '10 mg', source: 'Family health survey', recorded_at: '2026-10-20', verified: false }], conditions: [{ id: 2, condition_name: 'PRIVATE_DIAGNOSIS', status: 'Active', recorded_at: '2026-10-20' }], allergies: [], follow_ups: [{ id: 3, visit_number: 1, visit_date: '2026-10-20', source: 'Family health survey follow-up', sbp: 151, dbp: 92, next_visit_date: '2026-12-01' }] };
+        await page.route('**/api/**', async route => {
+            const req = route.request(), path = new URL(req.url()).pathname;
+            calls.push({ path, method: req.method(), body: req.postData() ? JSON.parse(req.postData()) : null });
+            let json = {};
+            if (path === '/api/patient/card') json = { card };
+            else if (path === '/api/patient/overview') json = { record_available: true, next_visit_date: '2026-12-01' };
+            else if (path === '/api/patient/family') json = family;
+            else if (path.endsWith('/records')) json = records;
+            else if (path === '/api/patient/hospital') json = { hospital: { name: 'Example care hospital', city: 'Example city', contact_phone: '9000000030' }, departments: ['General Medicine', 'Dental'], reasons: ['Book appointment', 'Other'] };
+            else if (path === '/api/patient/hospital-requests') json = { requests: [{ id: 1, status: 'Scheduled', department: 'General Medicine', scheduled_for: '2026-12-01 10:00', created_at: '2026-10-20', hospital_note: 'PRIVATE_STAFF_NOTE' }] };
+            else if (path === '/api/patient/notifications') json = { notifications: [{ notification_id: 1, campaign_title: 'Health camp invitation', event_date: '2026-12-10', venue: 'Community hall', matched_keyword: 'PRIVATE_DIAGNOSIS', matched_condition_detail: 'PRIVATE_DIAGNOSIS' }] };
+            else if (path === '/api/patient/access') json = { grants: [] };
+            else if (path === '/api/patient/corrections') json = req.method() === 'POST' ? { id: 72, status: 'Pending' } : { corrections: [] };
+            await route.fulfill({ json });
+        });
+        await page.goto('http://localhost:5173/patient/patient.html#overview');
+        await page.getByRole('heading', { name: 'Your latest check-up is available.' }).waitFor({ timeout: 60000 });
+        assert.equal(calls.filter(c => c.path.endsWith('/records')).length, 0, 'Clinical records must not be prefetched');
+        let text = await page.locator('body').innerText();
+        for (const secret of ['PRIVATE_MEDICINE', 'PRIVATE_DIAGNOSIS', 'PRIVATE_STAFF_NOTE', 'PRIVATE_ADDRESS', '9000000001', 'A+']) assert.ok(!text.includes(secret), secret);
+        assert.equal(await page.getByRole('tab').count(), 4);
+        await page.screenshot({ path: join(out, 'care-reminders-desktop.png'), fullPage: true });
+        await page.getByRole('tab', { name: 'Appointments', exact: false }).click();
+        assert.ok(!(await page.locator('body').innerText()).includes('PRIVATE_STAFF_NOTE'));
+        assert.equal(await page.locator('#reqMsg').inputValue(), '');
+        await page.screenshot({ path: join(out, 'appointments-desktop.png'), fullPage: true });
+        await page.getByRole('tab', { name: 'My family', exact: true }).click();
+        await page.getByRole('heading', { name: 'Connected as a family. Private as individuals.' }).waitFor();
+        assert.ok(!(await page.locator('body').innerText()).includes('PRIVATE_DIAGNOSIS'));
+        assert.ok(!(await page.locator('body').innerText()).includes('161/93'));
+        assert.equal(await page.getByRole('button', { name: 'Open authorized record' }).count(), 0);
+        await page.screenshot({ path: join(out, 'family-desktop.png'), fullPage: true });
+        const grantButton = page.getByRole('button', { name: 'Grant access to my records' });
+        assert.equal(await grantButton.isDisabled(), true);
+        await page.getByRole('combobox', { name: 'Share my own records with' }).selectOption('72');
+        assert.equal(await grantButton.isDisabled(), true);
+        await page.getByRole('checkbox', { name: /I consent to this person/ }).check();
+        await grantButton.click();
+        await page.waitForFunction(() => document.body.innerText.includes('Access granted for 30 days.'));
+        assert.ok(calls.some(c => c.path === '/api/patient/access' && c.method === 'POST' && c.body.consent === true));
+        await page.getByRole('button', { name: 'Request guardian access', exact: true }).click();
+        await page.getByRole('textbox', { name: 'Your relationship to this child' }).fill('Parent');
+        await page.getByRole('checkbox', { name: /I am requesting access as a guardian/ }).check();
+        await page.getByRole('button', { name: 'Submit for verification' }).click();
+        await page.waitForFunction(() => document.body.innerText.includes('Guardian request submitted.'));
+        assert.ok(calls.some(c => c.path.endsWith('/73/guardian-request') && c.body.confirm === true));
+        await page.getByRole('button', { name: 'Identification card', exact: true }).click();
+        await page.locator('#healthCard').waitFor();
+        const cardText = await page.locator('#healthCard').innerText();
+        for (const secret of ['A+', '9000000001', '9000000099', 'PRIVATE_ADDRESS', '1988-01-02']) assert.ok(!cardText.includes(secret));
+        const qr = await page.evaluate(async card => (await import('/src/pages/patient/ProfilePanel.tsx')).cardReference(card), card);
+        assert.equal(qr, 'MEDPULSE-ID:PAT-DEMO-0001');
+        await page.getByRole('button', { name: 'Copy patient ID', exact: true }).click();
+        await page.waitForFunction(() => window.__copied === 'PAT-DEMO-0001');
+        await page.getByRole('button', { name: 'View or edit private contact details' }).click();
+        assert.equal(await page.locator('.pt-private-profile input:disabled').inputValue(), '9000000001');
+        await page.emulateMedia({ media: 'print' });
+        assert.equal(await page.locator('.pt-private-profile input:visible').count(), 0);
+        assert.equal(await page.locator('#healthCard').isVisible(), true);
+        const printed = await page.locator('body').innerText();
+        for (const secret of ['9000000001', 'PRIVATE_ADDRESS', 'PRIVATE_MEDICINE', 'PRIVATE_STAFF_NOTE']) assert.ok(!printed.includes(secret));
+        await page.screenshot({ path: join(out, 'identification-print.png'), fullPage: true });
+        await page.emulateMedia({ media: 'screen' });
+        await page.getByRole('button', { name: 'Hide private contact details' }).click();
+        await page.screenshot({ path: join(out, 'identification-desktop.png'), fullPage: true });
+        await page.getByRole('tab', { name: 'Health records', exact: true }).click();
+        assert.equal(await page.getByText('PRIVATE_MEDICINE', { exact: false }).count(), 0);
+        assert.equal(calls.filter(c => c.path.endsWith('/records')).length, 0);
+        await page.getByRole('button', { name: 'Open my health records', exact: true }).click();
+        await page.getByText('PRIVATE_MEDICINE 10 mg', { exact: true }).waitFor();
+        await page.evaluate(() => {
+            Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+        await page.getByRole('button', { name: 'Open my health records', exact: true }).waitFor();
+        assert.equal(await page.getByText('PRIVATE_MEDICINE', { exact: false }).count(), 0);
+        await page.evaluate(() => { delete document.hidden; document.dispatchEvent(new Event('visibilitychange')); });
+        await page.getByRole('button', { name: 'Open my health records', exact: true }).click();
+        await page.getByText('PRIVATE_MEDICINE 10 mg', { exact: true }).waitFor();
+        assert.ok((await page.locator('body').innerText()).includes('not clinically verified'));
+        await page.screenshot({ path: join(out, 'records-desktop.png'), fullPage: true });
+        await page.getByRole('textbox', { name: 'What needs correcting?' }).fill('Synthetic correction for review.');
+        await page.getByRole('button', { name: 'Request a correction' }).click();
+        await page.getByText('Correction request submitted for review.', { exact: false }).waitFor();
+        assert.ok(calls.some(c => c.path === '/api/patient/corrections' && c.method === 'POST'));
+        assert.ok(!calls.some(c => c.path.startsWith('/api/members/') && c.method === 'PUT'));
+        await page.getByRole('tab', { name: 'My family', exact: true }).click();
+        assert.equal(await page.getByText('PRIVATE_MEDICINE', { exact: false }).count(), 0);
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.screenshot({ path: join(out, 'family-mobile.png'), fullPage: true });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Mobile page must not overflow');
+        await page.getByRole('button', { name: 'Identification card', exact: true }).click();
+        await page.screenshot({ path: join(out, 'identification-mobile.png'), fullPage: true });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        assert.deepEqual(errors, []);
+        console.log('PASS: four-section navigation, private defaults, lazy clinical access, family minimization, QR contents, printed card, correction requests and mobile layouts.');
+    } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

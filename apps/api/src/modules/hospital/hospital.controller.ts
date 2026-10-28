@@ -1,3 +1,4 @@
+import { PortalSessionService, publicIdentity } from '../../auth/portal-session.service';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller, Delete, Get, HttpCode, Post, Put, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
@@ -11,6 +12,7 @@ export class HospitalController {
     constructor(
         private readonly hospitals: HospitalModel,
         private readonly visits: HospitalVisitModel,
+        private readonly sessions: PortalSessionService,
     ) {}
 
     @Post('hospital/login')
@@ -27,9 +29,9 @@ export class HospitalController {
                 throw fail(401, 'Invalid hospital credentials or incorrect PIN.');
             }
 
+            this.sessions.issue(req, 'hospital', admin.id);
             return {
                 success: true,
-                token: `hosp-${admin.id}`,
                 admin: {
                     id: admin.id,
                     hospital_id: admin.hospital_id,

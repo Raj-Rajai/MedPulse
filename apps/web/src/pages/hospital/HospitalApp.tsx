@@ -11,6 +11,7 @@ import {
 } from './api';
 import { Icon, IconSpan, type IconName } from './icons';
 import { PatientDossier } from './PatientDossier';
+import { PrivacyRequests } from './PrivacyRequests';
 import { PatientTable } from './PatientTable';
 import { RegisteredTable } from './RegisteredTable';
 import { type FapRef, type RegForm, RegistrationDialog, resetForm } from './RegistrationDialog';
@@ -589,6 +590,7 @@ export function HospitalApp() {
                             )) : <p className="empty">No students with accessible FAP records.</p>) : null}
                         </div>
                     </section>
+                    {view === 'overview' && <PrivacyRequests onOpen={openPatient} />}
                     <footer><span id="updatedAt">{updatedAt}</span><span>MedPulse · Student surveys to hospital care</span></footer>
                 </main>
             </div>

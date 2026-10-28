@@ -22,7 +22,7 @@ import { RecordsPanel } from './RecordsPanel';
 import { Sidebar } from './Sidebar';
 import { TABS, type CampNotification, type FamilyPayload, type HospitalRequest, type PatientCard, type PortalState, type RecordsPayload, type TabId } from './types';
 import { api, digits, genderLabel, initials, logoutPatient, parseDay, todayIso } from './util';
-import { ConfidentialityNoticeModal } from '../../shared/privacy/ConfidentialityNoticeModal';
+
 
 const EMPTY_STATE: PortalState = { card: null, records: null, family: null, notifs: [], requests: [], hospital: null, departments: [], reasons: [] };
 type ModalId = 'memberModal' | 'famModal' | 'linkModal' | 'rsvpModal' | 'confirmModal';
@@ -31,17 +31,15 @@ type RefreshKey = 'card' | 'family' | 'notifs' | 'requests' | 'records';
 interface Toast { id: number; message: string; type: ToastType; fading: boolean }
 
 const TAB_BUTTONS: { tab: TabId; label: string; count?: string }[] = [
-    { tab: 'overview', label: '🏠 Overview ', count: 'cntOverview' },
-    { tab: 'profile', label: '▣ Health Card ', count: 'cntProfile' },
-    { tab: 'family', label: '👪 Family' },
-    { tab: 'hospital', label: '🏥 Hospital ', count: 'cntHospital' },
-    { tab: 'campaigns', label: '📣 Camps ', count: 'cntCampaigns' },
-    { tab: 'records', label: '📋 Records' },
+    { tab: 'hospital', label: 'Appointments', count: 'cntHospital' },
+    { tab: 'records', label: 'Health records' },
+    { tab: 'family', label: 'My family' },
+    { tab: 'overview', label: 'Care reminders', count: 'cntOverview' },
 ];
 
 const initialTab = (): TabId => {
     const h = window.location.hash.slice(1);
-    return (TABS as string[]).includes(h) ? (h as TabId) : 'overview';
+    return (TABS as string[]).includes(h) ? (h as TabId) : 'hospital';
 };
 
 export function PatientApp() {
@@ -88,8 +86,8 @@ export function PatientApp() {
     }, []);
 
     const loadAll = useCallback(async () => {
-        const [card, rec, fam, notif, hosp, reqs] = await Promise.allSettled([
-            api<{ card: PatientCard }>('/api/patient/card'), api<RecordsPayload>('/api/patient/records'), api<FamilyPayload>('/api/patient/family'),
+        const [card, overview, fam, notif, hosp, reqs] = await Promise.allSettled([
+            api<{ card: PatientCard }>('/api/patient/card'), api<NonNullable<PortalState['overview']>>('/api/patient/overview'), api<FamilyPayload>('/api/patient/family'),
             api<{ notifications?: CampNotification[] }>('/api/patient/notifications'),
             api<{ hospital: PortalState['hospital']; departments?: string[]; reasons?: string[] }>('/api/patient/hospital'),
             api<{ requests?: HospitalRequest[] }>('/api/patient/hospital-requests'),
@@ -98,7 +96,7 @@ export function PatientApp() {
         setSt((old) => {
             const next = { ...old };
             if (card.status === 'fulfilled') next.card = card.value.card;
-            if (rec.status === 'fulfilled') next.records = rec.value;
+            if (overview.status === 'fulfilled') next.overview = overview.value;
             if (fam.status === 'fulfilled') next.family = fam.value;
             next.notifs = notif.status === 'fulfilled' ? (notif.value.notifications || []) : [];
             if (hosp.status === 'fulfilled') { next.hospital = hosp.value.hospital; next.departments = hosp.value.departments || []; next.reasons = hosp.value.reasons || []; }
@@ -169,19 +167,14 @@ export function PatientApp() {
     /* ---------- tabs ---------- */
     const [tab, setTab] = useState<TabId>(initialTab);
     const [tabSeq, setTabSeq] = useState(0);
-    const [familyNoticeOpen, setFamilyNoticeOpen] = useState(false);
-    const prevTabRef = useRef<TabId | null>(null);
-
-    useEffect(() => {
-        if (tab === 'family' && prevTabRef.current !== 'family') {
-            setFamilyNoticeOpen(true);
-        }
-        prevTabRef.current = tab;
-    }, [tab]);
-
+    const [recordsBusy, setRecordsBusy] = useState(false);
+    const recordRequest = useRef(0);
     const tabRefs = useRef<Partial<Record<TabId, HTMLButtonElement | null>>>({});
     const showTab = useCallback((name: TabId | string, push = true) => {
-        const next: TabId = (TABS as string[]).includes(name) ? (name as TabId) : 'overview';
+        const next: TabId = (TABS as string[]).includes(name) ? (name as TabId) : 'hospital';
+        recordRequest.current += 1;
+        setSt(old => ({ ...old, records: null }));
+        setRecordsBusy(false);
         setTab(next);
         setTabSeq((n) => n + 1);
         if (push && window.location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`);
@@ -208,6 +201,19 @@ export function PatientApp() {
         showTab(TABS[next]);
         tabs[next].focus({ preventScroll: true });
     };
+
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+        const reset = () => { clearTimeout(timer); timer = setTimeout(logoutPatient, 15 * 60 * 1000); };
+        const hide = () => {
+            if (document.hidden) { recordRequest.current += 1; setSt(old => ({ ...old, records: null })); setRecordsBusy(false); }
+        };
+        reset();
+        document.addEventListener('pointerdown', reset);
+        document.addEventListener('keydown', reset);
+        document.addEventListener('visibilitychange', hide);
+        return () => { clearTimeout(timer); document.removeEventListener('pointerdown', reset); document.removeEventListener('keydown', reset); document.removeEventListener('visibilitychange', hide); };
+    }, []);
 
     /* ---------- mark camp alerts read when the camps tab is open ---------- */
     const readSent = useRef(false);
@@ -312,14 +318,28 @@ export function PatientApp() {
     const actions: PortalActions = {
         showTab,
         showToast,
-        printCard() {
+        async openRecords(memberId) {
+            showTab('records');
+            const version = ++recordRequest.current;
+            setRecordsBusy(true);
+            try {
+                const records = await api<RecordsPayload>(memberId ? `/api/patient/family/members/${memberId}/records` : '/api/patient/records');
+                if (version === recordRequest.current && !document.hidden) setSt(old => ({ ...old, records }));
+            } catch (error) { showToast((error as Error).message, 'error'); }
+            finally { if (version === recordRequest.current) setRecordsBusy(false); }
+        },
+        async printCard() {
+            try { await api('/api/patient/card/action', { method: 'POST', body: { action: 'print' } }); }
+            catch (error) { showToast((error as Error).message, 'error'); return; }
             document.body.classList.add('print-card');
             const done = () => { document.body.classList.remove('print-card'); window.removeEventListener('afterprint', done); };
             window.addEventListener('afterprint', done);
             window.print();
             setTimeout(done, 1500);
         },
-        copyUid() {
+        async copyUid() {
+            try { await api('/api/patient/card/action', { method: 'POST', body: { action: 'copy' } }); }
+            catch (error) { showToast((error as Error).message, 'error'); return; }
             const c = stRef.current.card;
             const uid = c && c.patient_uid; if (!uid) return;
             (navigator.clipboard ? navigator.clipboard.writeText(uid) : Promise.reject())
@@ -413,7 +433,7 @@ export function PatientApp() {
             const clean = (s: unknown) => String(s || '').replace(/[\\;,]/g, (m) => '\\' + m).replace(/\n/g, '\\n');
             const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MedPulse//Patient//EN', 'BEGIN:VEVENT',
                 `UID:medpulse-camp-${id}@medpulse`, `DTSTAMP:${ymd(new Date())}T000000Z`, `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${ymd(end)}`,
-                `SUMMARY:${clean(n.campaign_title)}`, `LOCATION:${clean(n.venue)}`, `DESCRIPTION:${clean(n.campaign_description)}`,
+                'SUMMARY:Health camp appointment', `LOCATION:${clean(n.venue)}`, 'DESCRIPTION:View event details in your patient portal.',
                 'BEGIN:VALARM', 'TRIGGER:-PT15H', 'ACTION:DISPLAY', 'DESCRIPTION:Health camp tomorrow', 'END:VALARM',
                 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
             const a = document.createElement('a');
@@ -514,7 +534,7 @@ export function PatientApp() {
         try {
             const d = await api<{ message?: string; patient?: Record<string, unknown> }>('/api/patient/link-referral', { method: 'POST', body: { referral_code: linkCode.trim() } });
             showToast(d.message || 'Health survey connected', 'success');
-            if (d.patient) { try { const p = { ...d.patient }; delete p.pin; localStorage.setItem('medpulse_patient', JSON.stringify(p)); } catch { /* ignore */ } }
+            if (d.patient) { try { const p = { id: d.patient.id, name: d.patient.name, patient_uid: d.patient.patient_uid }; localStorage.setItem('medpulse_patient', JSON.stringify(p)); } catch { /* ignore */ } }
             setOpenModals((m) => ({ ...m, linkModal: false }));
             await loadAll();
         } catch (e) { showToast((e as Error).message, 'error'); }
@@ -536,7 +556,7 @@ export function PatientApp() {
         name: hc.name || 'Patient',
         avatar: initials(hc.name),
         uid: hc.patient_uid || 'PAT-····',
-        ageGender: [hc.age_years ? `${hc.age_years} yrs` : null, genderLabel(hc.gender), hc.blood_group && hc.blood_group !== 'Unknown' ? `🩸 ${hc.blood_group}` : null].filter(Boolean).join(' · ') || '—',
+        ageGender: [hc.age_years ? `${hc.age_years} yrs` : null, genderLabel(hc.gender)].filter(Boolean).join(' · ') || '—',
         role: hc.family_role === 'Head' ? '👑 Head of family' : '👪 Family member',
     } : { greet: 'Welcome', name: 'Loading…', avatar: '–', uid: 'PAT-····', ageGender: '–', role: '–' };
 
@@ -566,8 +586,8 @@ export function PatientApp() {
                     <div className="pt-page-heading">
                         <div>
                             <p className="pt-eyebrow">{t('YOUR PATIENT PORTAL')}</p>
-                            <h2>{t('Your health, in one place.')}</h2>
-                            <p>{t('Stay connected to your care, your family and your hospital.')}</p>
+                            <h2>{t('Your care. Your privacy.')}</h2>
+                            <p>{t('Appointments, personal records and family access, on your terms.')}</p>
                         </div>
                         <div className="pt-heading-actions">
                             <label className="pt-lang" htmlFor="patientLanguage"><span>{t('Language')}</span><select id="patientLanguage" className="pt-select" value={lang} onChange={(e) => setPatientLanguage(e.target.value)}><option value="en">{t('English')}</option><option value="gu">ગુજરાતી</option></select></label>
@@ -589,7 +609,7 @@ export function PatientApp() {
                             </div>
                         </div>
                         <div className="pt-hero-actions">
-                            <button className="pt-hero-btn" onClick={() => showTab('profile')}>{t('▣ My card')}</button>
+                            <button id="tab-profile" className="pt-hero-btn" onClick={() => showTab('profile')}>{t('Identification card')}</button>
                             <button className="pt-hero-btn" onClick={logoutPatient}>{t('🚪 Sign out')}</button>
                         </div>
                     </header>
@@ -606,13 +626,15 @@ export function PatientApp() {
                         })}
                     </nav>
 
-                    <OverviewPanel s={st} a={actions} loaded={loaded} active={tab === 'overview'} />
-                    <ProfilePanel s={st} a={actions} active={tab === 'profile'} />
-                    <FamilyPanel s={st} a={actions} active={tab === 'family'} />
-                    <HospitalPanel s={st} a={actions} loaded={loaded} active={tab === 'hospital'} form={reqForm} setForm={setReqForm}
-                        refs={{ reqDept: reqDeptRef, reqMsg: reqMsgRef }} busy={reqBusy} onSubmit={() => void submitRequest()} />
-                    <CampaignsPanel s={st} a={actions} loaded={loaded} active={tab === 'campaigns'} />
-                    <RecordsPanel s={st} a={actions} loaded={loaded} active={tab === 'records'} />
+                    <div className="pt-emergency" role="note"><strong>{t('Need urgent help?')}</strong> {t('For a medical emergency, seek immediate emergency care. Do not wait for a portal reply or callback.')}</div>
+                    {tab === 'overview' && <OverviewPanel s={st} a={actions} loaded={loaded} active />}
+                    {tab === 'profile' && <ProfilePanel s={st} a={actions} active />}
+                    {tab === 'family' && <FamilyPanel s={st} a={actions} active />}
+                    {tab === 'hospital' && <HospitalPanel s={st} a={actions} loaded={loaded} active form={reqForm} setForm={setReqForm}
+                        refs={{ reqDept: reqDeptRef, reqMsg: reqMsgRef }} busy={reqBusy} onSubmit={() => void submitRequest()} />}
+                    {tab === 'campaigns' && <><h2 id="tab-campaigns">{t('Health camps')}</h2><CampaignsPanel s={st} a={actions} loaded={loaded} active /></>}
+                    {tab === 'records' && <RecordsPanel s={st} a={actions} loaded={loaded} active busy={recordsBusy} />}
+                    <footer className="pt-privacy-footer">{t('Private by default. Record access is checked and logged. Sign out when using a shared device.')}</footer>
 
                 </div>
             </main>
@@ -626,16 +648,7 @@ export function PatientApp() {
             <RsvpModal open={!!openModals.rsvpModal} rsvp={rsvpCtx ? rsvpCtx.rsvp : null} quick={rsvpQuick} setQuick={setRsvpQuick} note={rsvpNote} setNote={setRsvpNote}
                 onClose={() => closeModal('rsvpModal')} onSubmit={submitRsvpNote} />
             <ConfirmModal open={!!openModals.confirmModal} state={confirmState} onCancel={() => closeModal('confirmModal')} onOk={confirmOk} />
-            <ConfidentialityNoticeModal
-                type="SENSITIVE_HOUSEHOLD"
-                context="MY_FAMILY"
-                open={familyNoticeOpen}
-                onContinue={() => setFamilyNoticeOpen(false)}
-                onClose={() => {
-                    setFamilyNoticeOpen(false);
-                    showTab('overview');
-                }}
-            />
+
         </LangContext.Provider>
     );
     return createPortal(page, document.body);

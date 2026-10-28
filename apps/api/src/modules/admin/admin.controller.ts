@@ -1,3 +1,4 @@
+import { PortalSessionService, publicIdentity } from '../../auth/portal-session.service';
 import { Controller, Delete, Get, HttpCode, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AdminGuard } from '../../auth/guards';
@@ -13,6 +14,7 @@ export class AdminController {
         private readonly admins: AdminModel,
         private readonly colleges: CollegeModel,
         private readonly exports: ExportService,
+        private readonly sessions: PortalSessionService,
     ) {}
 
     // Authentication & Profile
@@ -33,10 +35,10 @@ export class AdminController {
                 throw fail(401, 'Invalid administrator PIN / Password');
             }
 
+            this.sessions.issue(req, 'admin', admin.id);
             return {
                 success: true,
-                admin,
-                token: `admin-${admin.id}`,
+                admin: publicIdentity(admin),
             };
         } catch (err) {
             throw serverError(err);

@@ -7,9 +7,24 @@
  */
 
 import { calculateMemberCU } from './cuCalculation';
+import { medpulseMemberId } from '../common/memberIdentity';
 import type { FamilyDetail, FamilySurveyRecord, Member, MemberSurveyData, ProfessionalYear, SurveyStatus } from './types';
 
 const STORAGE_PREFIX = 'medpulse_survey_v1_';
+
+/** Migrate older surveys and prevent retired identity fields from being saved again. */
+export function normalizeSurveyIdentity(record: FamilySurveyRecord): FamilySurveyRecord {
+    return {
+        ...record,
+        memberSurveys: Object.fromEntries(Object.entries(record.memberSurveys || {}).map(([id, survey]) => {
+            const { aadhaar_number: _aadhaar, abha_id: _abha, ...data } = survey as MemberSurveyData & {
+                aadhaar_number?: unknown;
+                abha_id?: unknown;
+            };
+            return [id, { ...data, medpulse_id: data.medpulse_id || '' }];
+        })),
+    };
+}
 
 export function getSurveyStorageKey(familyId: number, year: ProfessionalYear): string {
     return `${STORAGE_PREFIX}${familyId}_${year.replace(/\s+/g, '_')}`;
@@ -71,13 +86,12 @@ export function createEmptyMemberSurvey(m?: Member | null): MemberSurveyData {
         age_months: ageM,
         gender: gender as any,
         date_of_birth: dob,
-        aadhaar_number: '',
+        medpulse_id: m ? medpulseMemberId(m) : '',
         relation_to_hof: m?.relation_to_hof || 'Family Member',
         marital_status: m?.marital_status && m.marital_status !== 'NA' ? String(m.marital_status) : 'Unmarried',
         education: String(m?.education || ''),
         occupation: String(m?.occupation || ''),
         contact_number: String(m?.contact_number || ''),
-        abha_id: '',
         addiction: '',
 
         // Health Records - 1
@@ -227,7 +241,7 @@ export function loadFamilySurveyRecord(
         };
     }
 
-    if (!record.memberSurveys) record.memberSurveys = {};
+    record = normalizeSurveyIdentity(record);
 
     // 4. Ensure ALL members from familyDetail exist and reflect master entered data
     const members = familyDetail?.members || [];
@@ -236,6 +250,8 @@ export function loadFamilySurveyRecord(
         if (!existing) {
             record.memberSurveys[m.id] = createEmptyMemberSurvey(m);
         } else {
+            // The API member record is authoritative, including for older cached surveys.
+            existing.medpulse_id = medpulseMemberId(m);
             // Reflect master fields entered from the family manage page
             if (m.name && m.name.trim()) existing.name = m.name.trim();
             if (m.gender) existing.gender = (m.gender || 'M').toUpperCase();
@@ -272,7 +288,7 @@ export function loadFamilySurveyRecord(
 export function persistSurveyLocally(record: FamilySurveyRecord): void {
     try {
         const key = getSurveyStorageKey(record.familyId, record.professionalYear);
-        localStorage.setItem(key, JSON.stringify(record));
+        localStorage.setItem(key, JSON.stringify(normalizeSurveyIdentity(record)));
     } catch (e) {
         console.warn('Failed to save survey to localStorage:', e);
     }
@@ -287,11 +303,11 @@ export async function syncSurveyWithBackend(
     record: FamilySurveyRecord,
     statusOverride?: SurveyStatus
 ): Promise<void> {
-    const finalRecord: FamilySurveyRecord = {
+    const finalRecord: FamilySurveyRecord = normalizeSurveyIdentity({
         ...record,
         status: statusOverride || record.status,
         updatedAt: new Date().toISOString(),
-    };
+    });
 
     // Always persist to localStorage first
     persistSurveyLocally(finalRecord);

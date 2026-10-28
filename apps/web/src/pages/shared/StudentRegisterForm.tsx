@@ -1,3 +1,4 @@
+import { storeSessionPreview } from '../../shared/session';
 /**
  * Student cadre registration form (the "registerPane" form of login.html and register.html).
  * Same fields, validation, request and redirects as the original handleRegister().
@@ -157,7 +158,7 @@ export function StudentRegisterForm({
                 localStorage.removeItem('medpulse_patient');
                 localStorage.removeItem('medpulse_hospital_admin');
             }
-            localStorage.setItem('medpulse_user', JSON.stringify(data.student));
+            storeSessionPreview('medpulse_user', data.student);
 
             setTimeout(() => {
                 const params = new URLSearchParams(window.location.search);

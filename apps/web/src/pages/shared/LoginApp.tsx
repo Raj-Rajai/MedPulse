@@ -1,3 +1,4 @@
+import { storeSessionPreview } from '../../shared/session';
 /**
  * login.html: student / faculty admin / patient / hospital sign-in (plus patient registration).
  * Port of the inline scripts of frontend/shared/login.html.
@@ -263,7 +264,7 @@ export function LoginApp() {
     /** Complete login: store session data and redirect */
     const completeLogin = (pending: OtpPendingState) => {
         pending.clearKeys.forEach((k) => localStorage.removeItem(k));
-        localStorage.setItem(pending.storageKey, JSON.stringify(pending.responseData));
+        storeSessionPreview(pending.storageKey, pending.responseData);
         window.location.href = pending.redirectUrl;
     };
 
@@ -578,7 +579,7 @@ export function LoginApp() {
             localStorage.removeItem('medpulse_user');
             localStorage.removeItem('medpulse_admin');
             localStorage.removeItem('medpulse_hospital_admin');
-            localStorage.setItem('medpulse_patient', JSON.stringify(data.patient));
+            storeSessionPreview('medpulse_patient', data.patient);
             setTimeout(() => {
                 window.location.href = portalTarget('/patient', '/patient/patient.html');
             }, 1100);

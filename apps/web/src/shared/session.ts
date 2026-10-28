@@ -49,8 +49,13 @@ function read<T>(key: string, valid: (v: T) => boolean): T | null {
         return null;
     }
 }
+export function storeSessionPreview(key: string, value: unknown): void {
+    if (!value || typeof value !== 'object') return;
+    const allowed = ['id', 'name', 'roll_number', 'patient_uid', 'username', 'role', 'hospital_id', 'hospital_name', 'college_id', 'college_name', 'batch_year', 'posting_unit', 'status', 'department'];
+    localStorage.setItem(key, JSON.stringify(Object.fromEntries(Object.entries(value).filter(([field]) => allowed.includes(field)))));
+}
 function write(key: string, value: unknown): void {
-    if (value) localStorage.setItem(key, JSON.stringify(value));
+    if (value) storeSessionPreview(key, value);
     else localStorage.removeItem(key);
 }
 
@@ -69,21 +74,26 @@ export const clearAdmin = () => localStorage.removeItem(KEYS.admin);
 export const clearPatient = () => localStorage.removeItem(KEYS.patient);
 export const clearHospitalAdmin = () => localStorage.removeItem(KEYS.hospital);
 
+async function endSession(role: string, redirect: string): Promise<void> {
+    try { await fetch(`/api/session/${role}/logout`, { method: 'POST', credentials: 'same-origin', cache: 'no-store' }); }
+    finally { window.location.replace(redirect); }
+}
+
 export function logout(): void {
     clearUser();
-    window.location.replace('/login.html');
+    void endSession('student', '/login.html');
 }
 export function logoutAdmin(): void {
     clearAdmin();
-    window.location.replace('/login.html?admin=1');
+    void endSession('admin', '/login.html?admin=1');
 }
 export function logoutPatient(): void {
     clearPatient();
-    window.location.replace('/login.html?patient=1');
+    void endSession('patient', '/login.html?patient=1');
 }
 export function logoutHospitalAdmin(): void {
     clearHospitalAdmin();
-    window.location.replace('/login.html?hospital=1');
+    void endSession('hospital', '/login.html?hospital=1');
 }
 
 /** The same object the original exposed as window.MedPulseAuth. */

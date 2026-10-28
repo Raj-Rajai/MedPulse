@@ -5,6 +5,7 @@ import type { PatientCard, TabId } from './types';
 export type ToastType = 'info' | 'success' | 'error';
 
 export interface PortalActions {
+    openRecords: (memberId?: number) => void;
     showTab: (tab: TabId | string, push?: boolean) => void;
     showToast: (message: string, type?: ToastType, duration?: number) => void;
     printCard: () => void;

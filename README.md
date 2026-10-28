@@ -29,6 +29,27 @@ npm start                                      # http://localhost:3000
 ```
 Environment: `PORT`, `MEDPULSE_DB_PATH`, `MEDPULSE_FRONTEND_DIR`, `MEDPULSE_ROOT`.
 
+## Member identity on local and hosted servers
+
+The backend assigns every saved family member a permanent `medpulse_id` (for example,
+`MP-00000001`). A startup migration backfills existing members and installs a database-wide
+unique index and assignment/immutability triggers. This applies to all students, bulk family
+creation, and patient-added members. The browser displays the API value; it never allocates IDs.
+The database assigns and checks the ID atomically during insertion, so concurrent requests
+cannot reserve the same ID. A failed insert does not return a member or an assigned ID.
+
+Deploy the backend and frontend together and restart the backend to apply the migration.
+Use one persistent SQLite database for the deployment, set `MEDPULSE_DB_PATH` to that file on a
+persistent volume, and retain it across deployments and restarts. The supplied free Render
+configuration does not configure a persistent volume; configure persistent storage before using
+it for live data. Independent SQLite files are independent databases, not a shared ID registry.
+
+Identity checks (Node 22.5+ after building the API):
+```bash
+npm --prefix apps/api run build
+node --test apps/api/test/member-identity.test.cjs
+```
+
 ## Parity check
 ```bash
 npm run build

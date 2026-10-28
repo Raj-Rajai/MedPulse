@@ -66,6 +66,7 @@ export interface ApiOptions { method?: string; body?: unknown }
 /** fetch wrapper of patient.js: JSON body, 401 signs the patient out, `error` field becomes the thrown message. */
 export async function api<T = Record<string, unknown>>(path: string, opts: ApiOptions = {}): Promise<T> {
     const res = await fetch(path, {
+        credentials: 'same-origin', cache: 'no-store',
         method: opts.method || 'GET',
         headers: opts.body ? { 'Content-Type': 'application/json' } : undefined,
         body: opts.body ? JSON.stringify(opts.body) : undefined,

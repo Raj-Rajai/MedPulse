@@ -17,6 +17,7 @@ export interface FamilySummary {
 /** A member as returned inside GET /api/families/:id (survey columns read by key). */
 export interface Member {
     id: number;
+    medpulse_id?: string | null;
     name?: string;
     member_order?: Scalar;
     relation_to_hof?: string | null;
@@ -59,13 +60,12 @@ export interface MemberSurveyData {
     age_months: string;
     gender: 'M' | 'F' | 'TG' | string;
     date_of_birth: string;
-    aadhaar_number: string;
+    medpulse_id: string;
     relation_to_hof: string;
     marital_status: string;
     education: string;
     occupation: string;
     contact_number?: string;
-    abha_id: string;
     addiction: string;
 
     // Family Health Records - 1 (First/Second/Third Year) (Data entry.pdf p. 1, 2, 4, 6)

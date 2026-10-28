@@ -146,8 +146,8 @@ export function LinkModal({ open, code, setCode, feedback, busy, codeRef, onClos
     const tone = feedback.kind === 'ok' ? FEEDBACK_OK : feedback.kind === 'error' ? FEEDBACK_ERR : {};
     return (
         <Overlay id="linkModal" open={open} onClose={onClose} maxWidth={440} labelledBy="linkTitle">
-            <div className="pt-modal-h"><h2 id="linkTitle">{t('🔗 Connect your health survey')}</h2><CloseX onClose={onClose} /></div>
-            <p className="pt-sub" style={{ marginBottom: 12 }}>{t('If a medical student surveyed your family, enter the referral code they gave you (for example ')}<code>SAL-235-DA9B</code>{t('). Your survey health data will then show here.')}</p>
+            <div className="pt-modal-h"><h2 id="linkTitle">{t('Connect your care team')}</h2><CloseX onClose={onClose} /></div>
+            <p className="pt-sub" style={{ marginBottom: 12 }}>{t('Enter the referral code given by your medical student. This connects your household to the care team. It does not automatically unlock another person’s existing health records.')}</p>
             <form onSubmit={prevent(onSubmit)}>
                 <input id="linkCode" ref={codeRef} className="pt-input" required placeholder={t('SAL-235-XXXX')} autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} style={{ fontFamily: 'ui-monospace,monospace', fontWeight: 700, textTransform: 'uppercase' }} />
                 <div id="linkFeedback" style={{ fontSize: '0.8rem', marginTop: 8, display: feedback.kind === 'hidden' ? 'none' : 'block', padding: '6px 10px', borderRadius: 8, ...tone }}>

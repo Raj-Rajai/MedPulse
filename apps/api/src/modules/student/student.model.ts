@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { clean, cleanList, Row } from '../../common/row';
 import { generateUniqueReferralCode } from '../../common/referral';
+import { fail } from '../../common/http-error';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface StudentInput {
@@ -238,15 +239,12 @@ export class StudentModel {
         // Check if patient already exists for this member
         const existing = this.db.prepare('SELECT * FROM patients WHERE family_member_id = ? OR phone = ?').get(member.id, patientPhone);
         if (existing) {
-            if (pin && pin.trim().length >= 4) {
-                this.db.prepare('UPDATE patients SET pin = ? WHERE id = ?').run(patientPin, existing.id);
-            }
+            if (existing.family_member_id !== member.id) throw fail(409, 'This phone belongs to a different patient account. Ask the care team to verify account ownership.');
             return {
                 alreadyExists: true,
-                message: `Patient account already exists for ${existing.name}.`,
+                message: `Patient account already exists for ${existing.name}. Their existing PIN is unchanged.`,
                 patient_uid: existing.patient_uid,
                 phone: existing.phone,
-                pin: patientPin,
                 name: existing.name,
             };
         }

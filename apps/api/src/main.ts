@@ -19,6 +19,18 @@ export async function createApp(): Promise<NestExpressApplication> {
     // Request body parsers (same as the original server.js)
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+    server.use('/api', (req, res, next) => {
+        res.setHeader('Cache-Control', 'no-store, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin) {
+            let originHost: string;
+            try { originHost = new URL(req.headers.origin).host; }
+            catch { return res.status(403).json({ error: 'Invalid request origin.' }); }
+            if (originHost !== req.headers.host) return res.status(403).json({ error: 'Cross-origin changes are not allowed.' });
+        }
+        next();
+    });
 
     // Portal page routes + shared/static assets
     registerPortals(server);

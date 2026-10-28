@@ -4,8 +4,7 @@ import { daysUntil, fmtDay } from './util';
 
 export function cardCompleteness(c: PatientCard): { pct: number; missing: string[] } {
     const items: [string, boolean][] = [
-        ['Date of birth', !!c.date_of_birth], ['Blood group', !!c.blood_group && c.blood_group !== 'Unknown'],
-        ['Address', !!(c.address || c.family_address)], ['Emergency contact', !!(c.emergency_contact_name && c.emergency_contact_phone)],
+        ['Name', !!c.name], ['Patient ID', !!c.patient_uid],
     ];
     const missing = items.filter((i) => !i[1]).map((i) => i[0]);
     return { pct: Math.round(((items.length - missing.length) / items.length) * 100), missing };

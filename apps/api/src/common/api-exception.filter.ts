@@ -1,7 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, NotFoundException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import finalhandler from 'finalhandler';
-import { HttpError } from './http-error';
+import { HttpError, StatusError } from './http-error';
 import { SPA_INDEX } from '../portals/portals';
 
 /**
@@ -22,6 +22,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
         if (exception instanceof HttpError) {
             res.status(exception.status).json(exception.body);
+            return;
+        }
+        if (exception instanceof StatusError) {
+            res.status(exception.status).json({ error: exception.message, status: exception.status });
             return;
         }
 

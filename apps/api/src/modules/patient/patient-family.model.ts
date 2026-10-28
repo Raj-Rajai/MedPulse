@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { clean, cleanList, Row } from '../../common/row';
 import { StatusError } from '../../common/http-error';
+import { publicIdentity } from '../../auth/portal-session.service';
+import { canReadMember, isMinor } from './patient-privacy.service';
 
 /**
  * CRM: Patient profile card + patient-managed family (head of family).
@@ -200,11 +202,12 @@ export class PatientFamilyModel {
         delete card.pin;                                // never send credentials to the client
         const age = ageFromDob(card.date_of_birth);
         if (age) card.age_years = age.years;
-        card.blood_groups = BLOOD_GROUPS;
+        delete card.blood_group;
         return card;
     }
 
     updateProfile(patientId: unknown, body: Record<string, any> = {}): Row {
+        if (body.blood_group !== undefined) throw new StatusError('Request a clinical correction for blood group information.', 403);
         const p = this.ensureFamily(patientId);
         const next = {
             name: body.name !== undefined ? str(body.name, 80) : p.name,
@@ -259,7 +262,7 @@ export class PatientFamilyModel {
         `).get(p.family_id);
 
         const members = this.db.prepare(`
-            SELECT m.id, m.member_order, m.name, m.relation_to_hof, m.gender, m.age_years, m.age_months, m.date_of_birth,
+            SELECT m.id, m.medpulse_id, m.member_order, m.name, m.relation_to_hof, m.gender, m.age_years, m.age_months, m.date_of_birth,
                    m.contact_number, m.marital_status, m.education, m.occupation,
                    m.sbp, m.dbp, m.rbs, m.hb, m.bmi, m.weight_kg, m.height_m, m.has_htn, m.has_dm, m.has_anaemia,
                    m.added_by_patient_id, m.patient_updated_at, m.updated_at,
@@ -277,13 +280,20 @@ export class PatientFamilyModel {
             role: p.family_role,
             can_edit: canEdit,
             relations: RELATIONS,
-            members: cleanList(members).map((m) => ({
-                ...m,
-                is_self: m.id === p.family_member_id,
-                surveyed: !m.added_by_patient_id,
-                can_edit: canEdit && m.id !== p.family_member_id,
-                can_delete: canEdit && m.id !== p.family_member_id && m.added_by_patient_id === p.id && !this.hasHealthData(m)
-            }))
+            members: cleanList(members).map((m) => {
+                const self = m.id === p.family_member_id;
+                const account = this.db.prepare('SELECT id FROM patients WHERE family_member_id = ? AND status = ?').get(m.id, 'Active');
+                const basicEditable = canEdit && !self && m.added_by_patient_id === p.id && !account;
+                return {
+                    id: m.id, name: m.name, medpulse_id: m.medpulse_id, relation_to_hof: m.relation_to_hof,
+                    is_self: self, surveyed: !m.added_by_patient_id, age_years: m.age_years, gender: m.gender,
+                    can_view_records: canReadMember(this.db, p, { ...m, family_id: p.family_id }),
+                    can_request_guardian: !self && isMinor(m), account_patient_id: account?.id || null,
+                    can_edit: basicEditable, can_delete: basicEditable && !this.hasHealthData(m),
+                    ...(self || basicEditable ? { date_of_birth: m.date_of_birth, contact_number: m.contact_number,
+                        occupation: m.occupation, education: m.education, marital_status: m.marital_status } : {}),
+                };
+            })
         };
     }
 
@@ -374,6 +384,8 @@ export class PatientFamilyModel {
         const p = this.requireHead(patientId);
         const m = this.getMemberInFamily(p, memberId);
         if (m.id === p.family_member_id) throw new StatusError('Edit your own details from your Profile.');
+        const account = this.db.prepare('SELECT id FROM patients WHERE family_member_id = ?').get(m.id);
+        if (m.added_by_patient_id !== p.id || account) throw new StatusError('This member manages their own details or is managed by the care team.', 403);
         const data = this.memberPayload(body, m);
         if (data.name === null) throw new StatusError('Member name cannot be empty.');
         const keys = Object.keys(data);

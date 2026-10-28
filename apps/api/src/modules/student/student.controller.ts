@@ -11,10 +11,9 @@ export class StudentController {
 
     @Get('students')
     @UseGuards(StudentGuard)
-    getStudents() {
+    getStudents(@Req() req: Request) {
         try {
-            const rows = this.students.getAll();
-            return rows;
+            return [req.student];
         } catch (err) {
             throw serverError(err);
         }
@@ -70,10 +69,10 @@ export class StudentController {
     }
 
     @Get('students/profile')
+    @UseGuards(StudentGuard)
     getProfile(@Req() req: Request) {
         try {
-            const { roll_number, student_id } = req.query as Record<string, any>;
-            const profileData = this.students.getProfile(student_id, roll_number);
+            const profileData = this.students.getProfile(req.studentId, req.rollNumber);
             if (!profileData) {
                 throw fail(404, 'Student record not found');
             }
@@ -155,10 +154,10 @@ export class StudentController {
                 res.status(200);
                 return {
                     success: true,
+                    alreadyExists: true,
                     message: result.message,
                     patient_uid: result.patient_uid,
                     phone: result.phone,
-                    pin: result.pin,
                     name: result.name,
                 };
             }

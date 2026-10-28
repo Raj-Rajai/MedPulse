@@ -42,6 +42,10 @@ export interface FamilyInfo {
 export interface FamilyMember {
     id: number;
     name: string;
+    medpulse_id?: string;
+    can_view_records?: boolean;
+    can_request_guardian?: boolean;
+    account_patient_id?: number | null;
     is_self?: boolean | number;
     relation_to_hof?: string | null;
     account_uid?: string | null;
@@ -72,9 +76,10 @@ export interface FamilyPayload {
     relations?: string[];
 }
 
-export interface Medication { name?: string; dosage?: string | null; frequency?: string | null; reason?: string | null }
-export interface Condition { condition_name?: string; notes?: string | null; status?: string | null }
-export interface Allergy { allergen?: string; reaction?: string | null; allergy_type?: string | null; severity?: string | null }
+export interface RecordSource { id?: number; recorded_at?: string | null; source?: string; verified?: boolean }
+export interface Medication extends RecordSource { name?: string; dosage?: string | null; frequency?: string | null; reason?: string | null; currently_taking?: string | null }
+export interface Condition extends RecordSource { condition_name?: string; notes?: string | null; status?: string | null }
+export interface Allergy extends RecordSource { allergen?: string; reaction?: string | null; allergy_type?: string | null; severity?: string | null }
 export interface FollowUp {
     visit_number?: number | null;
     visit_date?: string | null;
@@ -88,6 +93,7 @@ export interface FollowUp {
     [k: string]: unknown;
 }
 export interface RecordsPayload {
+    provenance?: { source: string; verified: boolean; recorded_at?: string | null };
     member?: { sbp?: number | null; dbp?: number | null; rbs?: number | null; hb?: number | null; bmi?: number | string | null; [k: string]: unknown } | null;
     medications?: Medication[];
     conditions?: Condition[];
@@ -138,6 +144,7 @@ export interface HospitalRequest {
 }
 
 export interface PortalState {
+    overview?: { record_available: boolean; next_visit_date: string | null };
     card: PatientCard | null;
     records: RecordsPayload | null;
     family: FamilyPayload | null;
@@ -149,4 +156,4 @@ export interface PortalState {
 }
 
 export type TabId = 'overview' | 'profile' | 'family' | 'hospital' | 'campaigns' | 'records';
-export const TABS: TabId[] = ['overview', 'profile', 'family', 'hospital', 'campaigns', 'records'];
+export const TABS: TabId[] = ['hospital', 'records', 'family', 'overview', 'profile', 'campaigns'];

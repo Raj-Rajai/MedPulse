@@ -1,12 +1,14 @@
+import { PortalSessionService, publicIdentity } from '../../auth/portal-session.service';
 import { Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { PatientGuard } from '../../auth/guards';
 import { fail, HttpError, serverError } from '../../common/http-error';
 import { PatientModel } from './patient.model';
+import { PatientPrivacyService } from './patient-privacy.service';
 
 @Controller()
 export class PatientController {
-    constructor(private readonly patients: PatientModel) {}
+    constructor(private readonly patients: PatientModel, private readonly sessions: PortalSessionService, private readonly privacy: PatientPrivacyService) {}
 
     @Post('patient/verify-referral')
     @HttpCode(200)
@@ -70,11 +72,11 @@ export class PatientController {
                 throw fail(400, result.message);
             }
 
+            this.sessions.issue(req, 'patient', result.patient.id);
             return {
                 success: true,
                 message: `Patient account registered successfully as ${result.modelType}.`,
-                patient: result.patient,
-                token: result.token
+                patient: publicIdentity(result.patient)
             };
         } catch (err) {
             throw serverError(err);
@@ -101,11 +103,11 @@ export class PatientController {
                 throw fail(401, 'Invalid PIN / Passcode.');
             }
 
+            this.sessions.issue(req, 'patient', result.patient.id);
             return {
                 success: true,
                 message: 'Signed in successfully.',
-                patient: result.patient,
-                token: result.token
+                patient: publicIdentity(result.patient)
             };
         } catch (err) {
             throw serverError(err);
@@ -136,7 +138,7 @@ export class PatientController {
             return {
                 success: true,
                 message: `Successfully linked to Medical Cadet ${result.student.name} (${result.student.college_name})!`,
-                patient: result.patient
+                patient: publicIdentity(result.patient)
             };
         } catch (err) {
             throw serverError(err);
@@ -148,6 +150,7 @@ export class PatientController {
     getRecords(@Req() req: Request) {
         try {
             const records = this.patients.getRecords(req.patient);
+            this.privacy.audit('patient', req.patientId, 'records_read', 'member', req.patient.family_member_id);
             return records;
         } catch (err) {
             throw serverError(err);

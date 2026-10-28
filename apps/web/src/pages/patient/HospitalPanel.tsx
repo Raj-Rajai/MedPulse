@@ -9,14 +9,13 @@ import { digits, fmtWhen, isMobile, waLink } from './util';
 export function HospitalButtons({ s, a, compact }: { s: PortalState; a: PortalActions; compact?: boolean }) {
     const t = useT();
     const phone = digits(s.hospital && s.hospital.contact_phone);
-    const c = s.card;
     return (
         <div className="hosp-call">
             {phone
                 ? <a className="pt-btn call" href={`tel:${phone}`}>{t(`📞 Call${compact ? '' : ' helpdesk'}`)}</a>
                 : <button className="pt-btn" disabled>{t('📞 No phone')}</button>}
             {isMobile(phone)
-                ? <a className="pt-btn wa" href={waLink(phone, `Hello, I am ${c ? c.name : ''} (${c ? c.patient_uid : ''}).`)} target="_blank" rel="noopener">{t('💬 WhatsApp')}</a>
+                ? <a className="pt-btn wa" href={waLink(phone)} target="_blank" rel="noopener">{t('💬 WhatsApp')}</a>
                 : <button className="pt-btn primary" onClick={a.focusRequestMessage}>{t('✉ Request call')}</button>}
         </div>
     );
@@ -47,7 +46,7 @@ function RequestItem({ r, s, a }: { r: HospitalRequest; s: PortalState; a: Porta
                 </div>
             ) : null}
             {r.scheduled_for && r.status !== 'Cancelled' ? <div className="pt-appt">{t(`📅 Appointment: ${r.scheduled_for}`)}</div> : null}
-            {r.hospital_note ? <div className="reply">{t('🏥 ')}<strong>{t(`${r.handled_by_name || 'Hospital'}:`)}</strong>{t(` ${r.hospital_note}`)}</div> : null}
+
             {r.patient_confirmation === 'Disputed' ? <div className="pt-rsvp-note" style={{ color: '#b91c1c' }}>{t("You said this wasn't resolved, so it's open again.")}</div> : null}
             {needsRequestConfirm(r) ? (
                 <div className="pt-confirm"><div className="grow">{t('Did the hospital sort this out?')}</div>
@@ -142,7 +141,7 @@ export function HospitalPanel({ s, a, loaded, active, form, setForm, refs, busy,
                             </div>
                             <div className="pt-form-row">
                                 <label className="l" htmlFor="reqMsg">{t('Message ')}<span style={{ fontWeight: 500, color: 'var(--text-muted)' }}>{t('(optional)')}</span></label>
-                                <textarea id="reqMsg" className="pt-textarea" ref={refs.reqMsg} maxLength={1000} placeholder={t('e.g. BP tablet makes me dizzy in the morning')} value={form.msg} onChange={(e) => setForm({ msg: e.target.value })} />
+                                <textarea id="reqMsg" className="pt-textarea" ref={refs.reqMsg} maxLength={1000} placeholder={t('Optional information for the hospital. Include only what is needed.')} value={form.msg} onChange={(e) => setForm({ msg: e.target.value })} />
                             </div>
                             <div className="pt-why" style={{ background: '#fef2f2', borderColor: '#fecaca', color: '#991b1b', marginBottom: 12 }}>
                                 <span aria-hidden="true">!</span><div>{t('For a medical emergency, seek immediate care at the nearest emergency department. Do not wait for a callback.')}</div>

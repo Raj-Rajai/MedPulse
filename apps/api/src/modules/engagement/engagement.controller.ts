@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import { PatientGuard } from '../../auth/guards';
 import { fail, HttpError, StatusError } from '../../common/http-error';
 import { EngagementModel } from './engagement.model';
+import { patientNotificationView } from '../../common/patient-notification';
 
 // Map model validation errors to proper HTTP status codes
 function handle<T>(fn: () => T): T {
@@ -41,7 +42,7 @@ export class EngagementController {
                 'Not Attending': 'Noted. The camp team has been informed you cannot attend.',
                 'Need Help': 'Your student will call you to help you attend.'
             };
-            return { success: true, message: messages[rsvp], ...result };
+            return { success: true, message: messages[rsvp], notification: patientNotificationView(result.notification) };
         });
     }
 
@@ -51,7 +52,7 @@ export class EngagementController {
     confirmCampaignContact(@Req() req: Request) {
         return handle(() => {
             const notification = this.engagement.confirmCampaignContact(parseInt(req.params.id as string, 10), req.patientId, toBool(req.body && req.body.confirmed));
-            return { success: true, notification };
+            return { success: true, notification: patientNotificationView(notification) };
         });
     }
 }

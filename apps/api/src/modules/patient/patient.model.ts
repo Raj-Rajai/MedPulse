@@ -3,6 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { clean, cleanList, Row } from '../../common/row';
 import { PatientFamilyModel } from './patient-family.model';
+import { publicIdentity } from '../../auth/portal-session.service';
+import { canReadMember } from './patient-privacy.service';
+import { StatusError } from '../../common/http-error';
 
 @Injectable()
 export class PatientModel {
@@ -92,12 +95,8 @@ export class PatientModel {
             if (!collision) break;
         }
 
-        // Attempt to auto-link with family_members record by contact_number
-        let familyMemberId = null;
-        const matchingMember = this.db.prepare('SELECT id FROM family_members WHERE contact_number = ? LIMIT 1').get(cleanPhone);
-        if (matchingMember) {
-            familyMemberId = matchingMember.id;
-        }
+        // Public registration never proves ownership of an existing medical record.
+        const familyMemberId = null;
 
         const insertStmt = this.db.prepare(`
             INSERT INTO patients (patient_uid, name, phone, email, pin, date_of_birth, age_years, gender, address, model_type, student_id, referral_code_used, family_member_id, hospital_id, status)
@@ -127,8 +126,7 @@ export class PatientModel {
 
         return {
             modelType,
-            patient: newPatient,
-            token: `patient-${newPatient.id}`
+            patient: publicIdentity(newPatient)
         };
     }
 
@@ -169,8 +167,7 @@ export class PatientModel {
         }
 
         return {
-            patient: clean(patient),
-            token: `patient-${patient.id}`
+            patient: publicIdentity(clean(patient)!)
         };
     }
 
@@ -180,20 +177,8 @@ export class PatientModel {
             return { notFound: true, message: 'Invalid medical cadet referral code.' };
         }
 
-        let familyMemberId = null;
-        {
-            const memberMatch = this.db.prepare(`
-                SELECT m.id 
-                FROM family_members m 
-                JOIN families f ON m.family_id = f.id 
-                WHERE f.student_id = ?
-                  AND (m.contact_number = ? OR LOWER(TRIM(m.name)) = LOWER(TRIM(?)))
-                  AND NOT EXISTS (SELECT 1 FROM patients p2 WHERE p2.family_member_id = m.id AND p2.id != ?)
-                ORDER BY CASE WHEN m.contact_number = ? THEN 0 ELSE 1 END
-                LIMIT 1
-            `).get(student.id, currentPatient.phone, currentPatient.name, patientId, currentPatient.phone);
-            if (memberMatch) familyMemberId = memberMatch.id;
-        }
+        // A referral links care teams; names and shared phones do not prove record ownership.
+        const familyMemberId = null;
 
         this.db.prepare(`
             UPDATE patients
@@ -214,16 +199,13 @@ export class PatientModel {
         };
     }
 
-    getRecords(patient: Row) {
-        let memberId = patient.family_member_id;
-
-        // Auto-match member by phone if not linked yet
-        if (!memberId && patient.phone) {
-            const match = this.db.prepare('SELECT id FROM family_members WHERE contact_number = ? LIMIT 1').get(patient.phone);
-            if (match) {
-                memberId = match.id;
-                this.db.prepare('UPDATE patients SET family_member_id = ? WHERE id = ?').run(memberId, patient.id);
-            }
+    getRecords(patient: Row, requestedMemberId?: number) {
+        const memberId = requestedMemberId || patient.family_member_id;
+        const target = memberId && this.db.prepare('SELECT * FROM family_members WHERE id = ?').get(memberId);
+        if (memberId && (!target || !canReadMember(this.db, patient, target))) {
+            this.db.prepare(`INSERT INTO portal_privacy_audit (actor_role, actor_id, action, resource_type, resource_id, created_at)
+                VALUES ('patient', ?, 'records_denied', 'member', ?, ?)`).run(patient.id, Number(memberId), Date.now());
+            throw new StatusError('You do not have permission to view this health record.', 403);
         }
 
         let member: Row | null | undefined = null;
@@ -236,7 +218,7 @@ export class PatientModel {
 
         if (memberId) {
             member = this.db.prepare(`
-                SELECT m.*, f.family_no, f.family_code, f.head_of_family, f.village, f.city, f.district
+                SELECT m.*, f.survey_date AS measured_at
                 FROM family_members m
                 JOIN families f ON m.family_id = f.id
                 WHERE m.id = ?
@@ -251,15 +233,20 @@ export class PatientModel {
         }
 
         return {
-            profile: clean(patient),
-            member: clean(member),
-            conditions: cleanList(conditions),
-            medications: cleanList(medications),
-            allergies: cleanList(allergies),
+            profile: publicIdentity(clean(patient)!),
+            member: member ? {
+                id: member.id, name: member.name, medpulse_id: member.medpulse_id,
+                sbp: member.sbp, dbp: member.dbp, rbs: member.rbs, hb: member.hb, bmi: member.bmi,
+                measured_at: member.measured_at || null,
+            } : null,
+            provenance: { source: 'Family health survey', verified: false, recorded_at: member?.measured_at || null },
+            conditions: cleanList(conditions).map(({ id, condition_name, status, created_at }) => ({ id, condition_name, status, recorded_at: created_at || null, source: 'Family health survey', verified: false })),
+            medications: cleanList(medications).map(({ id, name, dosage, frequency, reason, created_at, currently_taking }) => ({ id, name, dosage, frequency, reason, currently_taking, recorded_at: created_at || null, source: 'Family health survey', verified: false })),
+            allergies: cleanList(allergies).map(({ id, allergen, reaction, allergy_type, severity, created_at }) => ({ id, allergen, reaction, allergy_type, severity, recorded_at: created_at || null, source: 'Family health survey', verified: false })),
             medicalHistory: cleanList(medicalHistory),
             lifestyle: clean(lifestyle),
-            follow_ups: cleanList(followUps),
-            followUps: cleanList(followUps)
+            follow_ups: cleanList(followUps).map(({ id, visit_number, visit_date, sbp, dbp, rbs, hb, weight_kg, next_visit_date }) => ({ id, visit_number, visit_date, sbp, dbp, rbs, hb, weight_kg, next_visit_date, source: 'Family health survey follow-up', verified: false })),
+
         };
     }
 }

@@ -1,3 +1,4 @@
+import { patientNotificationView } from '../../common/patient-notification';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
@@ -175,7 +176,7 @@ export class CampaignController {
                 success: true,
                 unread_count: unreadCount,
                 total: notifications.length,
-                notifications
+                notifications: notifications.map(patientNotificationView)
             };
         } catch (err) {
             throw serverError(err);
@@ -198,7 +199,7 @@ export class CampaignController {
             return {
                 success: true,
                 message: status === 'Acknowledged' ? 'Thank you! Your attendance has been confirmed.' : 'Notification updated.',
-                notification: updated
+                notification: patientNotificationView(updated)
             };
         } catch (err) {
             throw serverError(err);

@@ -924,7 +924,7 @@ export function FamilyManageApp() {
             if (!res.ok) throw new Error(data.error || 'Failed to provision patient account');
             setProvResult({
                 message: data.message || 'Account successfully generated and linked!',
-                name: data.name || name, uid: data.patient_uid || '-', phone: data.phone || '-', pin: data.pin || pin || '1234',
+                name: data.name || name, uid: data.patient_uid || '-', phone: data.phone || '-', pin: data.alreadyExists ? 'Unchanged — use the patient’s existing PIN' : data.pin || pin || '1234',
                 url: `${window.location.origin}/login.html?patient=1`,
             });
             showToast(data.message || 'Patient account ready!', 'success');

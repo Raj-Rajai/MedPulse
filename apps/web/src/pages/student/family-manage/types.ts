@@ -11,6 +11,7 @@ export interface FamilyRow {
 /** Roster member inside GET /api/families/:id. */
 export interface RosterMember {
     id: number;
+    medpulse_id?: string | null;
     name?: string;
     member_order?: Scalar;
     relation_to_hof?: string | null;
