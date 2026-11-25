@@ -86,6 +86,8 @@ export default defineConfig({
     build: {
         outDir: resolve(__dirname, 'dist'),
         emptyOutDir: true,
+        // lightningcss (Vite 8 default) rejects ::picker(select):popover-open in controls.css
+        cssMinify: 'esbuild',
         // The student portal bundle is ~560 kB (163 kB gzipped); raise the 500 kB warning threshold.
         chunkSizeWarningLimit: 700,
         assetsDir: 'shared/assets',

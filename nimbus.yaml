@@ -6,7 +6,7 @@ version: 1
 
 # 1. Runtimes: Nimbus verifies or auto-activates required versions
 runtime:
-  node: 22            # package.json requires node >=22.5.0 (built-in node:sqlite; render.yaml uses 22.14.0)
+  node: 24            # Matches Node 24.15.0 (satisfies engines >=22.5.0 and Vite 8 ^20.19.0 || >=22.12.0)
 
 # 2. Dependency Installation (runs from repository root across workspaces: apps/api, apps/web)
 install:
@@ -18,7 +18,7 @@ build:
 
 # 4. Environment Variables (.env)
 env:
-  NODE_VERSION: "22.14.0"
+  NODE_VERSION: "24.15.0"
   NODE_ENV: production
   NPM_CONFIG_PRODUCTION: "false"
   PORT: "3000"
