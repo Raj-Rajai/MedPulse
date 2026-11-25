@@ -1,0 +1,50 @@
+# ==============================================================================
+# Nimbus Deployment Specification (nimbus.yaml)
+# Place this file in the root of your repository.
+# ==============================================================================
+version: 1
+
+# 1. Runtimes: Nimbus verifies or auto-activates required versions
+runtime:
+  node: 22            # package.json requires node >=22.5.0 (built-in node:sqlite; render.yaml uses 22.14.0)
+
+# 2. Dependency Installation (runs from repository root across workspaces: apps/api, apps/web)
+install:
+  - npm install --include=dev
+
+# 3. Build & Preparation (builds both apps/api and apps/web)
+build:
+  - npm run build
+
+# 4. Environment Variables (.env)
+env:
+  NODE_VERSION: "22.14.0"
+  NODE_ENV: production
+  NPM_CONFIG_PRODUCTION: "false"
+  PORT: "3000"
+
+# 5. Nginx Web Server / Reverse Proxy Configuration
+nginx:
+  # Reverse Proxy to NestJS API + built React portals on PORT 3000
+  proxy_pass: "http://127.0.0.1:3000"
+
+# 6. PM2 Process Manager (NestJS entry point from `npm start` -> apps/api/dist/main.js)
+pm2:
+  name: medpulse
+  script: apps/api/dist/main.js
+  instances: 1                # Single instance avoids SQLite lock contention on database/health_survey.db
+  exec_mode: fork             # Single process matching `npm start`
+  env:
+    PORT: 3000
+    NODE_ENV: production
+
+# 7. Supervisor (Optional alternative for Python, Go, or PHP queue workers)
+# supervisor:
+#   program: queue-worker
+#   config: |
+#     [program:queue-worker]
+#     command=php artisan queue:work --sleep=3 --tries=3
+#     directory={domainPath}
+#     autostart=true
+#     autorestart=true
+#     user=www-data
