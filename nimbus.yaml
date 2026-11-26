@@ -6,7 +6,7 @@ version: 1
 
 # 1. Runtimes: Nimbus verifies or auto-activates required versions
 runtime:
-  node: 24            # Matches Node 24.15.0 (satisfies engines >=22.5.0 and Vite 8 ^20.19.0 || >=22.12.0)
+  node: 22            # Matches Node 24.15.0 (satisfies engines >=22.5.0 and Vite 8 ^20.19.0 || >=22.12.0)
 
 # 2. Dependency Installation (runs from repository root across workspaces: apps/api, apps/web)
 install:
