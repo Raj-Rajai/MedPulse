@@ -18,7 +18,7 @@ build:
 
 # 4. Environment Variables (.env)
 env:
-  NODE_VERSION: "24.15.0"
+  NODE_VERSION: "22"
   NODE_ENV: production
   NPM_CONFIG_PRODUCTION: "false"
   PORT: "3000"
