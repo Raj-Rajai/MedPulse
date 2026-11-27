@@ -7,8 +7,8 @@ const request = (ctx: ExecutionContext) => ctx.switchToHttp().getRequest<Request
 @Injectable()
 export class StudentGuard implements CanActivate {
     constructor(private readonly auth: AuthService) {}
-    canActivate(ctx: ExecutionContext): boolean {
-        this.auth.authenticateStudent(request(ctx));
+    async canActivate(ctx: ExecutionContext): Promise<boolean> {
+        await this.auth.authenticateStudent(request(ctx));
         return true;
     }
 }
@@ -16,8 +16,8 @@ export class StudentGuard implements CanActivate {
 @Injectable()
 export class AdminGuard implements CanActivate {
     constructor(private readonly auth: AuthService) {}
-    canActivate(ctx: ExecutionContext): boolean {
-        this.auth.authenticateAdmin(request(ctx));
+    async canActivate(ctx: ExecutionContext): Promise<boolean> {
+        await this.auth.authenticateAdmin(request(ctx));
         return true;
     }
 }
@@ -25,8 +25,8 @@ export class AdminGuard implements CanActivate {
 @Injectable()
 export class PatientGuard implements CanActivate {
     constructor(private readonly auth: AuthService) {}
-    canActivate(ctx: ExecutionContext): boolean {
-        this.auth.authenticatePatient(request(ctx));
+    async canActivate(ctx: ExecutionContext): Promise<boolean> {
+        await this.auth.authenticatePatient(request(ctx));
         return true;
     }
 }
@@ -34,8 +34,8 @@ export class PatientGuard implements CanActivate {
 @Injectable()
 export class HospitalGuard implements CanActivate {
     constructor(private readonly auth: AuthService) {}
-    canActivate(ctx: ExecutionContext): boolean {
-        this.auth.authenticateHospitalAdmin(request(ctx));
+    async canActivate(ctx: ExecutionContext): Promise<boolean> {
+        await this.auth.authenticateHospitalAdmin(request(ctx));
         return true;
     }
 }

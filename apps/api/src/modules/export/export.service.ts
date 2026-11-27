@@ -19,85 +19,89 @@ export class ExportService {
      * Fetch complete aggregated dataset for a student,
      * combining family records, baseline data entry, and latest follow-ups.
      */
-    getStudentExportData(studentId: unknown): { student: Row; families: Row[] } | null {
-        const student = this.db.prepare(`
-            SELECT s.*, c.name as college_name, c.city as college_city
-            FROM students s
-            LEFT JOIN colleges c ON s.college_id = c.id
-            WHERE s.id = ?
-        `).get(studentId);
+    async getStudentExportData(studentId: unknown): Promise<{ student: Row; families: Row[] } | null> {
+        const sid = Number(studentId);
+        const student = await this.db.queryOne(
+            `SELECT s.*, c.name as college_name, c.city as college_city
+             FROM students s
+             LEFT JOIN colleges c ON s.college_id = c.id
+             WHERE s.id = $1`,
+            sid,
+        );
 
         if (!student) return null;
 
-        const families = this.db.prepare(`
-            SELECT f.*
-            FROM families f
-            WHERE f.student_id = ?
-            ORDER BY f.family_no ASC, f.id ASC
-        `).all(studentId);
+        const families = await this.db.queryAll(
+            `SELECT f.*
+             FROM families f
+             WHERE f.student_id = $1
+             ORDER BY f.family_no ASC, f.id ASC`,
+            sid,
+        );
 
-        const fullFamilies = families.map((fam) => {
-            const members = this.db.prepare(`
-                SELECT m.*,
-                       fu.id as followup_id,
-                       fu.visit_number as latest_visit_number,
-                       fu.visit_date as latest_visit_date,
-                       fu.sbp as fu_sbp,
-                       fu.dbp as fu_dbp,
-                       fu.rbs as fu_rbs,
-                       fu.hb as fu_hb,
-                       fu.weight_kg as fu_weight_kg,
-                       fu.muac_cm as fu_muac_cm,
-                       fu.treatment_compliance as latest_compliance,
-                       fu.health_progress as latest_progress,
-                       fu.clinical_notes as latest_notes,
-                       (SELECT COUNT(*) FROM follow_ups WHERE member_id = m.id) as total_followups
-                FROM family_members m
-                LEFT JOIN (
-                    SELECT f1.*
-                    FROM follow_ups f1
-                    INNER JOIN (
-                        SELECT member_id, MAX(visit_date) as max_date, MAX(id) as max_id
-                        FROM follow_ups
-                        GROUP BY member_id
-                    ) f2 ON f1.member_id = f2.member_id AND f1.id = f2.max_id
-                ) fu ON fu.member_id = m.id
-                WHERE m.family_id = ?
-                ORDER BY m.member_order ASC, m.id ASC
-            `).all(fam.id);
+        const fullFamilies: Row[] = [];
+        for (const fam of families) {
+            const members = await this.db.queryAll(
+                `SELECT m.*,
+                        fu.id as followup_id,
+                        fu.visit_number as latest_visit_number,
+                        fu.visit_date as latest_visit_date,
+                        fu.sbp as fu_sbp,
+                        fu.dbp as fu_dbp,
+                        fu.rbs as fu_rbs,
+                        fu.hb as fu_hb,
+                        fu.weight_kg as fu_weight_kg,
+                        fu.muac_cm as fu_muac_cm,
+                        fu.treatment_compliance as latest_compliance,
+                        fu.health_progress as latest_progress,
+                        fu.clinical_notes as latest_notes,
+                        (SELECT COUNT(*) FROM follow_ups WHERE member_id = m.id) as total_followups
+                 FROM family_members m
+                 LEFT JOIN (
+                     SELECT f1.*
+                     FROM follow_ups f1
+                     INNER JOIN (
+                         SELECT member_id, MAX(visit_date) as max_date, MAX(id) as max_id
+                         FROM follow_ups
+                         GROUP BY member_id
+                     ) f2 ON f1.member_id = f2.member_id AND f1.id = f2.max_id
+                 ) fu ON fu.member_id = m.id
+                 WHERE m.family_id = $1
+                 ORDER BY m.member_order ASC, m.id ASC`,
+                Number(fam.id),
+            );
 
             const cleanMembers = members.map((m) => {
                 const hasFollowup = m.latest_visit_number !== null && m.latest_visit_number !== undefined;
                 return {
                     ...m,
                     has_followup: hasFollowup,
-                    // Effective parameters (latest follow-up if present, else baseline)
                     effective_sbp: hasFollowup && m.fu_sbp !== null ? m.fu_sbp : m.sbp,
                     effective_dbp: hasFollowup && m.fu_dbp !== null ? m.fu_dbp : m.dbp,
                     effective_rbs: hasFollowup && m.fu_rbs !== null ? m.fu_rbs : m.rbs,
                     effective_hb: hasFollowup && m.fu_hb !== null ? m.fu_hb : m.hb,
                     effective_weight: hasFollowup && m.fu_weight_kg !== null ? m.fu_weight_kg : m.weight_kg,
-                    effective_muac: hasFollowup && m.fu_muac_cm !== null ? m.fu_muac_cm : m.muac_cm
+                    effective_muac: hasFollowup && m.fu_muac_cm !== null ? m.fu_muac_cm : m.muac_cm,
                 };
             });
 
-            return {
+            fullFamilies.push({
                 ...clean(fam),
-                members: cleanMembers
-            };
-        });
+                members: cleanMembers,
+            });
+        }
 
         return {
             student: clean(student)!,
-            families: fullFamilies
+            families: fullFamilies,
         };
     }
 
     /**
      * Generate standard CSV matching the 43 columns of Roll235.pdf + follow-up tracking columns.
      */
-    generateCsv(studentId: unknown): string {
-        const data = this.getStudentExportData(studentId);
+    async generateCsv(studentId: unknown): Promise<string> {
+        const data = await this.getStudentExportData(studentId);
         if (!data) return '';
 
         const { student, families } = data;
@@ -250,8 +254,8 @@ export class ExportService {
      * Generate high-fidelity clinical PDF ("make pdf a little good")
      * matching the 43 columns of Roll235.pdf + follow-up tracking sections.
      */
-    generatePdfStream(studentId: unknown, outputStream: NodeJS.WritableStream): void {
-        const data = this.getStudentExportData(studentId);
+    async generatePdfStream(studentId: unknown, outputStream: NodeJS.WritableStream): Promise<void> {
+        const data = await this.getStudentExportData(studentId);
         if (!data) {
             throw new Error('No survey data found for student');
         }
@@ -629,15 +633,15 @@ export class ExportService {
     /**
      * Generate Master Compilation CSV across ALL students (or filtered by college)
      */
-    generateMasterCsv(collegeId: unknown = null): string {
+    async generateMasterCsv(collegeId: unknown = null): Promise<string> {
         let studentQuery = `SELECT id FROM students WHERE 1=1`;
         const params: unknown[] = [];
         if (collegeId) {
-            studentQuery += ` AND college_id = ?`;
-            params.push(collegeId);
+            params.push(Number(collegeId));
+            studentQuery += ` AND college_id = $${params.length}`;
         }
         studentQuery += ` ORDER BY roll_number ASC`;
-        const studentRows = this.db.prepare(studentQuery).all(...params);
+        const studentRows = await this.db.queryAll(studentQuery, ...params);
 
         const headers = [
             "Cadet Name",
@@ -712,7 +716,7 @@ export class ExportService {
         rows.push(headers.map(escapeCsv).join(','));
 
         for (const sRow of studentRows) {
-            const data = this.getStudentExportData(sRow.id);
+            const data = await this.getStudentExportData(sRow.id);
             if (!data || !data.families) continue;
             const { student, families } = data;
 
@@ -796,7 +800,7 @@ export class ExportService {
     /**
      * Generate Master Faculty Surveillance & Audit PDF Report
      */
-    generateFacultyAuditPdfStream(res: NodeJS.WritableStream): void {
+    async generateFacultyAuditPdfStream(res: NodeJS.WritableStream): Promise<void> {
         const doc = new PDFDocument({
             size: 'A4',
             layout: 'landscape',
@@ -832,13 +836,22 @@ export class ExportService {
             .text('Status: Official Academic Record', contentWidth - 100, 52, { width: 120, align: 'right' });
 
         // Aggregate Stats Query
-        const totalStudents = this.db.prepare('SELECT COUNT(*) as c FROM students').get()?.c || 0;
-        const totalFamilies = this.db.prepare('SELECT COUNT(*) as c FROM families').get()?.c || 0;
-        const totalMembers = this.db.prepare('SELECT COUNT(*) as c FROM family_members').get()?.c || 0;
-        const totalFollowups = this.db.prepare('SELECT COUNT(*) as c FROM follow_ups').get()?.c || 0;
-        const totalHtn = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE has_htn = 'Y'").get()?.c || 0;
-        const totalDm = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE has_dm = 'Y'").get()?.c || 0;
-        const totalAnaemia = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE has_anaemia = 'Y'").get()?.c || 0;
+        const [sRow, fRow, mRow, fuRow, htnRow, dmRow, anRow] = await Promise.all([
+            this.db.queryOne('SELECT COUNT(*) as c FROM students'),
+            this.db.queryOne('SELECT COUNT(*) as c FROM families'),
+            this.db.queryOne('SELECT COUNT(*) as c FROM family_members'),
+            this.db.queryOne('SELECT COUNT(*) as c FROM follow_ups'),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE has_htn = 'Y'"),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE has_dm = 'Y'"),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE has_anaemia = 'Y'"),
+        ]);
+        const totalStudents = sRow?.c || 0;
+        const totalFamilies = fRow?.c || 0;
+        const totalMembers = mRow?.c || 0;
+        const totalFollowups = fuRow?.c || 0;
+        const totalHtn = htnRow?.c || 0;
+        const totalDm = dmRow?.c || 0;
+        const totalAnaemia = anRow?.c || 0;
 
         // Executive KPI Strip
         const kpiY = 88;
@@ -891,14 +904,14 @@ export class ExportService {
             hx += c.w;
         }
 
-        const students = this.db.prepare(`
+        const students = await this.db.queryAll(`
             SELECT s.*, c.name as college_name,
                    (SELECT COUNT(*) FROM families f WHERE f.student_id = s.id) as fam_count,
                    (SELECT COUNT(*) FROM family_members m JOIN families f ON m.family_id = f.id WHERE f.student_id = s.id) as mem_count
             FROM students s
             LEFT JOIN colleges c ON s.college_id = c.id
             ORDER BY s.roll_number ASC
-        `).all();
+        `);
 
         let curY = theadY + 16;
         const rowH = 18;

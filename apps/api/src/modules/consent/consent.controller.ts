@@ -8,7 +8,7 @@ export class ConsentController {
     constructor(private readonly consentModel: ConsentModel) {}
 
     @Get('status')
-    getStatus(
+    async getStatus(
         @Query('consent_type') consentType: string,
         @Query('version') version: string,
         @Query('user_id') queryUserId?: string,
@@ -20,8 +20,7 @@ export class ConsentController {
             const type = consentType || 'STUDENT_DATA_USE_PRIVACY';
             const ver = version || '1.0.0';
 
-            const status = this.consentModel.getStatus(userId, type, ver);
-            return status;
+            return await this.consentModel.getStatus(userId, type, ver);
         } catch (err) {
             throw serverError(err);
         }
@@ -29,7 +28,7 @@ export class ConsentController {
 
     @Post()
     @HttpCode(200)
-    recordConsent(@Body() body: any, @Req() req: Request) {
+    async recordConsent(@Body() body: any, @Req() req: Request) {
         try {
             const user = (req as any)?.session?.user;
             const userId = String(body.user_id || body.roll_number || user?.roll_number || user?.id || '235');
@@ -46,7 +45,7 @@ export class ConsentController {
             const ipAddress = req.ip || req.socket.remoteAddress || null;
             const userAgent = req.headers['user-agent'] || null;
 
-            const rec = this.consentModel.recordConsent({
+            const rec = await this.consentModel.recordConsent({
                 userId,
                 actorId,
                 role,
@@ -69,7 +68,7 @@ export class ConsentController {
 
     @Post('withdraw')
     @HttpCode(200)
-    withdrawConsent(@Body() body: any, @Req() req: Request) {
+    async withdrawConsent(@Body() body: any, @Req() req: Request) {
         try {
             const user = (req as any)?.session?.user;
             const userId = String(body.user_id || body.roll_number || user?.roll_number || user?.id || '235');
@@ -83,7 +82,7 @@ export class ConsentController {
             const ipAddress = req.ip || req.socket.remoteAddress || null;
             const userAgent = req.headers['user-agent'] || null;
 
-            const rec = this.consentModel.recordConsent({
+            const rec = await this.consentModel.recordConsent({
                 userId,
                 actorId,
                 role,

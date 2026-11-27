@@ -7,9 +7,9 @@ export class CollegeController {
     constructor(private readonly colleges: CollegeModel) {}
 
     @Get('colleges')
-    getColleges() {
+    async getColleges() {
         try {
-            return this.colleges.getAll();
+            return await this.colleges.getAll();
         } catch (err) {
             throw serverError(err);
         }

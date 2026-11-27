@@ -20,44 +20,44 @@ export class HospitalVisitModel {
         return this.database.db;
     }
 
-    createVisit(hospitalId: unknown, data: Record<string, any>, admin: Row | undefined): Row | undefined {
+    async createVisit(hospitalId: unknown, data: Record<string, any>, admin: Row | undefined): Promise<Row | undefined> {
         if (!data.patient_name || !data.patient_name.trim()) {
             throw new Error('Patient name is required for registration.');
         }
 
-        // Generate Unique Visit / Registration ID
+        const hid = Number(hospitalId);
+
         let visitUid = '';
         while (true) {
             const randSuffix = Math.floor(10000 + Math.random() * 90000);
             visitUid = `REG-${new Date().getFullYear()}-${randSuffix}`;
-            const collision = this.db.prepare('SELECT id FROM hospital_visits WHERE visit_uid = ?').get(visitUid);
+            const collision = await this.db.queryOne('SELECT id FROM hospital_visits WHERE visit_uid = $1', visitUid);
             if (!collision) break;
         }
 
-        let patientId: any = data.patient_id || null;
+        let patientId: any = data.patient_id ? Number(data.patient_id) : null;
         const familyMemberId = data.family_member_id ? Number(data.family_member_id) : null;
 
-        // If this is an FAP family member, link or create in patients table if needed
         if (familyMemberId) {
-            const existingPatient = this.db.prepare('SELECT id FROM patients WHERE family_member_id = ? AND hospital_id = ?').get(familyMemberId, hospitalId);
+            const existingPatient = await this.db.queryOne(
+                'SELECT id FROM patients WHERE family_member_id = $1 AND hospital_id = $2',
+                familyMemberId,
+                hid,
+            );
             if (existingPatient) {
                 patientId = existingPatient.id;
             } else {
-                // Check if patient with this phone exists
                 const phone = data.contact_number && data.contact_number.trim() ? data.contact_number.trim() : null;
-                const phoneMatch = phone ? this.db.prepare('SELECT id FROM patients WHERE phone = ?').get(phone) : null;
+                const phoneMatch = phone ? await this.db.queryOne('SELECT id FROM patients WHERE phone = $1', phone) : null;
                 if (phoneMatch) {
                     patientId = phoneMatch.id;
                 } else {
-                    // Create patient record
                     const patUid = `PAT-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
                     const safePhone = phone || `99${Math.floor(10000000 + Math.random() * 90000000)}`;
                     try {
-                        const patStmt = this.db.prepare(`
-                            INSERT INTO patients (patient_uid, name, phone, age_years, gender, address, model_type, family_member_id, hospital_id, status)
-                            VALUES (?, ?, ?, ?, ?, ?, 'Dependent', ?, ?, 'Active')
-                        `);
-                        const patRes = patStmt.run(
+                        const patRes = await this.db.insert(
+                            `INSERT INTO patients (patient_uid, name, phone, age_years, gender, address, model_type, family_member_id, hospital_id, status)
+                             VALUES ($1, $2, $3, $4, $5, $6, 'Dependent', $7, $8, 'Active')`,
                             patUid,
                             data.patient_name.trim(),
                             safePhone,
@@ -65,18 +65,18 @@ export class HospitalVisitModel {
                             data.gender || 'Other',
                             data.address || data.village || '',
                             familyMemberId,
-                            hospitalId,
+                            hid,
                         );
                         patientId = patRes.lastInsertRowid;
-                    } catch (e) {
+                    } catch {
                         // In case of conflict, proceed without crashing
                     }
                 }
             }
         }
 
-        const stmt = this.db.prepare(`
-            INSERT INTO hospital_visits (
+        const res = await this.db.insert(
+            `INSERT INTO hospital_visits (
                 hospital_id, patient_id, family_member_id, visit_uid,
                 patient_name, age_years, gender, contact_number, address, village,
                 family_code, student_name, student_roll,
@@ -86,19 +86,16 @@ export class HospitalVisitModel {
                 existing_conditions, allergies, diagnosis, treatment_prescribed,
                 disposition, ward_bed_no, follow_up_advice, registered_by_name
             ) VALUES (
-                ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?,
-                ?, ?, ?,
-                COALESCE(?, date('now')), ?, ?, ?,
-                ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?
-            )
-        `);
-
-        const res = stmt.run(
-            hospitalId,
+                $1, $2, $3, $4,
+                $5, $6, $7, $8, $9, $10,
+                $11, $12, $13,
+                COALESCE($14, to_char(CURRENT_DATE, 'YYYY-MM-DD')), $15, $16, $17,
+                $18, $19,
+                $20, $21, $22, $23, $24,
+                $25, $26, $27, $28,
+                $29, $30, $31, $32
+            )`,
+            hid,
             patientId,
             familyMemberId,
             visitUid,
@@ -132,57 +129,60 @@ export class HospitalVisitModel {
             admin?.name || 'Admissions Desk',
         );
 
-        const createdVisit = this.db.prepare('SELECT * FROM hospital_visits WHERE id = ?').get(res.lastInsertRowid);
-        return createdVisit;
+        return this.db.queryOne('SELECT * FROM hospital_visits WHERE id = $1', res.lastInsertRowid);
     }
 
-    listVisits(hospitalId: unknown, { search, department, disposition, date, limit = 25, offset = 0 }: VisitFilters = {}) {
-        let sql = 'WHERE hospital_id = ?';
-        const params: any[] = [hospitalId];
+    async listVisits(hospitalId: unknown, { search, department, disposition, date, limit = 25, offset = 0 }: VisitFilters = {}) {
+        let sql = 'WHERE hospital_id = $1';
+        const params: any[] = [Number(hospitalId)];
 
         if (department && department.trim()) {
-            sql += ' AND department = ?';
             params.push(department.trim());
+            sql += ` AND department = $${params.length}`;
         }
 
         if (disposition && disposition.trim()) {
-            sql += ' AND disposition = ?';
             params.push(disposition.trim());
+            sql += ` AND disposition = $${params.length}`;
         }
 
         if (date && date.trim()) {
-            sql += ' AND visit_date = ?';
             params.push(date.trim());
+            sql += ` AND visit_date = $${params.length}`;
         }
 
         if (search && search.trim()) {
             const term = `%${search.trim().replace(/[\\%_]/g, '\\$&')}%`;
+            params.push(term);
+            const p = `$${params.length}`;
             sql += ` AND (
-                patient_name LIKE ? ESCAPE '\\' OR
-                visit_uid LIKE ? ESCAPE '\\' OR
-                contact_number LIKE ? ESCAPE '\\' OR
-                family_code LIKE ? ESCAPE '\\' OR
-                attending_doctor LIKE ? ESCAPE '\\' OR
-                diagnosis LIKE ? ESCAPE '\\' OR
-                chief_complaint LIKE ? ESCAPE '\\' OR
-                department LIKE ? ESCAPE '\\' OR
-                student_name LIKE ? ESCAPE '\\'
+                patient_name ILIKE ${p} ESCAPE '\\' OR
+                visit_uid ILIKE ${p} ESCAPE '\\' OR
+                contact_number ILIKE ${p} ESCAPE '\\' OR
+                family_code ILIKE ${p} ESCAPE '\\' OR
+                attending_doctor ILIKE ${p} ESCAPE '\\' OR
+                diagnosis ILIKE ${p} ESCAPE '\\' OR
+                chief_complaint ILIKE ${p} ESCAPE '\\' OR
+                department ILIKE ${p} ESCAPE '\\' OR
+                student_name ILIKE ${p} ESCAPE '\\'
             )`;
-            params.push(term, term, term, term, term, term, term, term, term);
         }
 
-        const totalRow = this.db.prepare(`SELECT COUNT(*) AS total FROM hospital_visits ${sql}`).get(...params);
+        const totalRow = await this.db.queryOne(`SELECT COUNT(*) AS total FROM hospital_visits ${sql}`, ...params);
         const total = totalRow ? totalRow.total : 0;
 
         const limitNum = Math.min(100, Math.max(1, Number(limit) || 25));
         const offsetNum = Math.max(0, Number(offset) || 0);
 
-        const visits = this.db.prepare(`
-            SELECT * FROM hospital_visits
-            ${sql}
-            ORDER BY id DESC
-            LIMIT ? OFFSET ?
-        `).all(...params, limitNum, offsetNum);
+        const visits = await this.db.queryAll(
+            `SELECT * FROM hospital_visits
+             ${sql}
+             ORDER BY id DESC
+             LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+            ...params,
+            limitNum,
+            offsetNum,
+        );
 
         return {
             visits,
@@ -192,21 +192,24 @@ export class HospitalVisitModel {
         };
     }
 
-    getSummary(hospitalId: unknown) {
-        const total = this.db.prepare('SELECT COUNT(*) AS total FROM hospital_visits WHERE hospital_id = ?').get(hospitalId)?.total || 0;
-        const today = this.db.prepare("SELECT COUNT(*) AS today FROM hospital_visits WHERE hospital_id = ? AND visit_date = date('now')").get(hospitalId)?.today || 0;
-        const admitted = this.db.prepare("SELECT COUNT(*) AS admitted FROM hospital_visits WHERE hospital_id = ? AND (disposition LIKE '%Admit%' OR disposition = 'Observation')").get(hospitalId)?.admitted || 0;
-        const opd = this.db.prepare("SELECT COUNT(*) AS opd FROM hospital_visits WHERE hospital_id = ? AND disposition LIKE '%Discharged%'").get(hospitalId)?.opd || 0;
+    async getSummary(hospitalId: unknown) {
+        const hid = Number(hospitalId);
+        const [totalRow, todayRow, admittedRow, opdRow] = await Promise.all([
+            this.db.queryOne('SELECT COUNT(*) AS total FROM hospital_visits WHERE hospital_id = $1', hid),
+            this.db.queryOne("SELECT COUNT(*) AS today FROM hospital_visits WHERE hospital_id = $1 AND visit_date = to_char(CURRENT_DATE, 'YYYY-MM-DD')", hid),
+            this.db.queryOne("SELECT COUNT(*) AS admitted FROM hospital_visits WHERE hospital_id = $1 AND (disposition ILIKE '%Admit%' OR disposition = 'Observation')", hid),
+            this.db.queryOne("SELECT COUNT(*) AS opd FROM hospital_visits WHERE hospital_id = $1 AND disposition ILIKE '%Discharged%'", hid),
+        ]);
 
         return {
-            total_registered: total,
-            today_visits: today,
-            admitted_patients: admitted,
-            opd_discharged: opd,
+            total_registered: totalRow?.total || 0,
+            today_visits: todayRow?.today || 0,
+            admitted_patients: admittedRow?.admitted || 0,
+            opd_discharged: opdRow?.opd || 0,
         };
     }
 
-    getVisitById(hospitalId: unknown, visitId: unknown): Row | undefined {
-        return this.db.prepare('SELECT * FROM hospital_visits WHERE id = ? AND hospital_id = ?').get(visitId, hospitalId);
+    async getVisitById(hospitalId: unknown, visitId: unknown): Promise<Row | undefined> {
+        return this.db.queryOne('SELECT * FROM hospital_visits WHERE id = $1 AND hospital_id = $2', Number(visitId), Number(hospitalId));
     }
 }

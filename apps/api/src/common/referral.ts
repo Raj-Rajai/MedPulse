@@ -15,15 +15,15 @@ export function formatReferralCode(collegePrefix: string | null | undefined, rol
 /**
  * Generate and guarantee database uniqueness for a student referral code.
  */
-export function generateUniqueReferralCode(db: Db, collegeId: unknown, rollNumber: unknown): string {
+export async function generateUniqueReferralCode(db: Db, collegeId: unknown, rollNumber: unknown): Promise<string> {
     let prefix = 'MED';
     if (collegeId) {
         try {
-            const col = db.prepare('SELECT code FROM colleges WHERE id = ?').get(collegeId);
+            const col = await db.queryOne('SELECT code FROM colleges WHERE id = $1', Number(collegeId));
             if (col && col.code) {
-                prefix = col.code.split('-')[0] || col.code;
+                prefix = String(col.code).split('-')[0] || String(col.code);
             }
-        } catch (e) {
+        } catch {
             prefix = 'MED';
         }
     }
@@ -36,12 +36,11 @@ export function generateUniqueReferralCode(db: Db, collegeId: unknown, rollNumbe
         attempts++;
         code = formatReferralCode(prefix, rollNumber);
         try {
-            const existing = db.prepare('SELECT id FROM students WHERE referral_code = ?').get(code);
+            const existing = await db.queryOne('SELECT id FROM students WHERE referral_code = $1', code);
             if (!existing) {
                 isUnique = true;
             }
-        } catch (e) {
-            // Table might not have column yet during early migration
+        } catch {
             isUnique = true;
         }
     }

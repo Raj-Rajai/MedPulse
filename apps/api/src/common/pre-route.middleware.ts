@@ -20,26 +20,27 @@ export function apiPreRouteMiddleware(app: INestApplication) {
     const auth = app.get(AuthService);
     const geofence = app.get(GeofenceService);
 
-    return (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         if (isFieldWrite(req.method, req.path)) {
             try {
-                auth.authenticateStudent(req);
+                await auth.authenticateStudent(req);
             } catch (err) {
                 return send(res, err, next);
             }
             let location;
             try {
                 location = JSON.parse(req.get('X-Field-Location') || 'null');
-            } catch (_) {
+            } catch {
                 location = null;
             }
-            const error = checkLocation(geofence.getAreaForStudent(req.student), location);
+            const area = await geofence.getAreaForStudent(req.student);
+            const error = checkLocation(area, location);
             if (error) return res.status(403).json({ error, code: 'LOCATION_REQUIRED' });
         }
 
         if (req.path === '/hospital/fap' || req.path.startsWith('/hospital/fap/')) {
             try {
-                auth.authenticateHospitalAdmin(req);
+                await auth.authenticateHospitalAdmin(req);
             } catch (err) {
                 return send(res, err, next);
             }

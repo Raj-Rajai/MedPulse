@@ -32,7 +32,7 @@ nginx:
 pm2:
   name: medpulse
   script: apps/api/dist/main.js
-  instances: 1                # Single instance avoids SQLite lock contention on database/health_survey.db
+  instances: 1                # Single process (PostgreSQL pool via Prisma DATABASE_URL in .env)
   exec_mode: fork             # Single process matching `npm start`
   env:
     PORT: 3000

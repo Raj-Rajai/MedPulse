@@ -1,25 +1,27 @@
+import type { Prisma, PrismaClient } from '@prisma/client';
 import type { Row } from '../common/row';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export interface RunResult {
-    changes: number | bigint;
-    lastInsertRowid: number | bigint;
+export interface ExecuteResult {
+    changes: number;
 }
 
-export interface Statement {
-    get(...params: any[]): Row | undefined;
-    all(...params: any[]): Row[];
-    run(...params: any[]): RunResult;
+export interface InsertResult {
+    changes: number;
+    lastInsertRowid: number;
 }
 
-/** The subset of `node:sqlite` DatabaseSync (or better-sqlite3) the app uses. */
+export type PrismaTx = Prisma.TransactionClient;
+
+/**
+ * Async PostgreSQL database interface backed by PrismaClient.
+ * Supports both raw PostgreSQL queries ($1, $2, ...) and typed Prisma models.
+ */
 export interface Db {
-    prepare(sql: string): Statement;
-    exec(sql: string): void;
-    close(): void;
-}
-
-export interface SchemaModule {
-    name?: string;
-    apply(db: Db): void;
+    readonly prisma: PrismaClient | PrismaTx;
+    queryOne<T = Row>(sql: string, ...params: unknown[]): Promise<T | undefined>;
+    queryAll<T = Row>(sql: string, ...params: unknown[]): Promise<T[]>;
+    execute(sql: string, ...params: unknown[]): Promise<ExecuteResult>;
+    insert(sql: string, ...params: unknown[]): Promise<InsertResult>;
+    inTransaction<T>(fn: (tx: Db) => Promise<T>): Promise<T>;
 }

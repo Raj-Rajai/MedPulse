@@ -2,6 +2,7 @@ import { Controller, Get, HttpCode, Post, Put, Req, Res, UseGuards } from '@nest
 import type { Request, Response } from 'express';
 import { StudentGuard } from '../../auth/guards';
 import { fail, HttpError, serverError } from '../../common/http-error';
+import { isUniqueConstraintError } from '../../database/pg-errors';
 import { StudentModel } from './student.model';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -22,7 +23,7 @@ export class StudentController {
     @Post('students')
     @HttpCode(201)
     @UseGuards(StudentGuard)
-    createStudent(@Req() req: Request) {
+    async createStudent(@Req() req: Request) {
         try {
             const {
                 roll_number,
@@ -41,12 +42,12 @@ export class StudentController {
             }
 
             const cleanRoll = roll_number.toString().trim();
-            const existing = this.students.findByRoll(cleanRoll);
+            const existing = await this.students.findByRoll(cleanRoll);
             if (existing) {
                 throw fail(409, 'Student with this Roll Number already exists');
             }
 
-            const newStudent = this.students.create({
+            const newStudent = await this.students.create({
                 roll_number: cleanRoll,
                 name,
                 pin,
@@ -61,7 +62,7 @@ export class StudentController {
             return { id: newStudent!.id, ...newStudent };
         } catch (err) {
             if (err instanceof HttpError) throw err;
-            if (err.message && err.message.includes('UNIQUE')) {
+            if (isUniqueConstraintError(err)) {
                 throw fail(409, 'Student with this Roll Number already exists');
             }
             throw serverError(err);
@@ -70,9 +71,9 @@ export class StudentController {
 
     @Get('students/profile')
     @UseGuards(StudentGuard)
-    getProfile(@Req() req: Request) {
+    async getProfile(@Req() req: Request) {
         try {
-            const profileData = this.students.getProfile(req.studentId, req.rollNumber);
+            const profileData = await this.students.getProfile(req.studentId, req.rollNumber);
             if (!profileData) {
                 throw fail(404, 'Student record not found');
             }
@@ -84,11 +85,11 @@ export class StudentController {
 
     @Put('students/profile')
     @UseGuards(StudentGuard)
-    updateProfile(@Req() req: Request) {
+    async updateProfile(@Req() req: Request) {
         try {
             const sid = req.studentId;
             const { name, email, phone, batch_year, posting_unit } = req.body;
-            const updated = this.students.updateProfile(sid, { name, email, phone, batch_year, posting_unit });
+            const updated = await this.students.updateProfile(sid, { name, email, phone, batch_year, posting_unit });
             return {
                 success: true,
                 message: 'Profile updated successfully',
@@ -102,7 +103,7 @@ export class StudentController {
     @Post('students/change-pin')
     @HttpCode(200)
     @UseGuards(StudentGuard)
-    changePin(@Req() req: Request) {
+    async changePin(@Req() req: Request) {
         try {
             const sid = req.studentId;
             const { current_pin, new_pin } = req.body;
@@ -113,7 +114,7 @@ export class StudentController {
                 throw fail(400, 'New PIN must be at least 4 digits');
             }
 
-            const result = this.students.changePin(sid, current_pin, new_pin);
+            const result = await this.students.changePin(sid, current_pin, new_pin);
             if (result.notFound) {
                 throw fail(404, 'Student not found');
             }
@@ -132,14 +133,14 @@ export class StudentController {
 
     @Post('students/provision-patient')
     @UseGuards(StudentGuard)
-    provisionPatient(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    async provisionPatient(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         try {
             const { member_id, phone, pin, name } = req.body;
             if (!member_id) {
                 throw fail(400, 'Family member ID is required.');
             }
 
-            const result = this.students.provisionPatient(req.studentId, req.student.referral_code, {
+            const result = await this.students.provisionPatient(req.studentId, req.student.referral_code, {
                 member_id,
                 phone,
                 pin,

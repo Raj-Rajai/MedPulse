@@ -11,45 +11,43 @@ export class CampaignModel {
         return this.database.db;
     }
 
-    /**
-     * Create a new public health campaign
-     */
-    create(data: Record<string, any>): Row | null {
+    async create(data: Record<string, any>): Promise<Row | null> {
         const title = data.title ? data.title.trim() : 'Public Health Campaign';
         const keyword = data.keyword ? data.keyword.trim().toUpperCase() : 'GENERAL';
         const description = data.description ? data.description.trim() : '';
-        const collegeId = data.college_id || null;
-        const adminId = data.created_by_admin_id || null;
+        const collegeId = data.college_id ? Number(data.college_id) : null;
+        const adminId = data.created_by_admin_id ? Number(data.created_by_admin_id) : null;
         const eventDate = data.event_date || null;
         const venue = data.venue ? data.venue.trim() : null;
 
-        const info = this.db.prepare(`
-            INSERT INTO campaigns (title, keyword, description, college_id, created_by_admin_id, event_date, venue, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'Active')
-        `).run(title, keyword, description, collegeId, adminId, eventDate, venue);
+        const info = await this.db.insert(
+            `INSERT INTO campaigns (title, keyword, description, college_id, created_by_admin_id, event_date, venue, status)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'Active')`,
+            title,
+            keyword,
+            description,
+            collegeId,
+            adminId,
+            eventDate,
+            venue,
+        );
 
-        const newId = info.lastInsertRowid;
-        return this.findById(newId);
+        return this.findById(info.lastInsertRowid);
     }
 
-    /**
-     * Retrieve campaign by ID
-     */
-    findById(id: unknown): Row | null {
-        const campaign = this.db.prepare(`
-            SELECT c.*, col.name as college_name, a.name as admin_name
-            FROM campaigns c
-            LEFT JOIN colleges col ON c.college_id = col.id
-            LEFT JOIN admins a ON c.created_by_admin_id = a.id
-            WHERE c.id = ?
-        `).get(id);
+    async findById(id: unknown): Promise<Row | null> {
+        const campaign = await this.db.queryOne(
+            `SELECT c.*, col.name as college_name, a.name as admin_name
+             FROM campaigns c
+             LEFT JOIN colleges col ON c.college_id = col.id
+             LEFT JOIN admins a ON c.created_by_admin_id = a.id
+             WHERE c.id = $1`,
+            Number(id),
+        );
         return clean(campaign);
     }
 
-    /**
-     * List campaigns with aggregated delivery and engagement statistics
-     */
-    list(collegeId: any = null): Row[] {
+    async list(collegeId: any = null): Promise<Row[]> {
         let sql = `
             SELECT c.*, col.name as college_name, a.name as admin_name,
                    COUNT(cn.id) as total_targeted,
@@ -63,23 +61,18 @@ export class CampaignModel {
         `;
         const params: any[] = [];
         if (collegeId) {
-            sql += ' WHERE c.college_id = ? OR c.college_id IS NULL ';
-            params.push(collegeId);
+            sql += ' WHERE c.college_id = $1 OR c.college_id IS NULL ';
+            params.push(Number(collegeId));
         }
-        sql += ' GROUP BY c.id ORDER BY c.created_at DESC';
+        sql += ' GROUP BY c.id, col.name, a.name ORDER BY c.created_at DESC';
 
-        const rows = this.db.prepare(sql).all(...params);
+        const rows = await this.db.queryAll(sql, ...params);
         return cleanList(rows);
     }
 
-    /**
-     * Intelligent matching algorithm: Scans database for patients matching the campaign keyword
-     * (Supports HTN, DM, ANAEMIA, UNDERWEIGHT/MALNUTRITION, ELDERLY, and generic conditions)
-     */
-    findMatchingPatients(keyword: any, collegeId: any = null): Row[] {
+    async findMatchingPatients(keyword: any, collegeId: any = null): Promise<Row[]> {
         const kw = (keyword || '').trim().toUpperCase();
 
-        // Base query joining patients, members, students, colleges, and diagnostic conditions
         let conditionClause = '';
         let matchedLabel = '';
         let isCustomKeyword = false;
@@ -127,13 +120,17 @@ export class CampaignModel {
             )`;
             matchedLabel = 'Geriatric / Age >= 60';
         } else {
-            // General condition keyword search
             conditionClause = `(
-                LOWER(COALESCE(cond.condition_name, '')) LIKE LOWER('%' || ? || '%')
-                OR LOWER(COALESCE(fm.diagnosis, '')) LIKE LOWER('%' || ? || '%')
+                LOWER(COALESCE(cond.condition_name, '')) LIKE LOWER('%' || $2 || '%')
+                OR LOWER(COALESCE(fm.diagnosis, '')) LIKE LOWER('%' || $3 || '%')
             )`;
             matchedLabel = `Custom Condition (${kw})`;
             isCustomKeyword = true;
+        }
+
+        const params: any[] = [matchedLabel];
+        if (isCustomKeyword) {
+            params.push(kw, kw);
         }
 
         let sql = `
@@ -155,7 +152,7 @@ export class CampaignModel {
                 fm.rbs,
                 fm.hb,
                 cond.condition_name,
-                ? as matched_label
+                $1::text as matched_label
             FROM patients p
             LEFT JOIN family_members fm ON p.family_member_id = fm.id
             LEFT JOIN health_conditions cond ON fm.id = cond.member_id
@@ -164,44 +161,28 @@ export class CampaignModel {
             WHERE ${conditionClause}
         `;
 
-        // FIX (SQL injection): the label used to be spliced into the SQL text, and for custom keywords it
-        // contains the user's keyword. It is now a bound parameter. The keyword params are bound only when
-        // the custom-keyword clause (the one with the two placeholders) was chosen; the old separate check
-        // disagreed with the branches above for NUTRITION / GERIATRIC and broke those queries.
-        const params: any[] = [matchedLabel];
-        if (isCustomKeyword) {
-            params.push(kw, kw);
-        }
-
         if (collegeId) {
-            sql += ' AND (s.college_id = ? OR s.college_id IS NULL)';
-            params.push(collegeId);
+            params.push(Number(collegeId));
+            sql += ` AND (s.college_id = $${params.length} OR s.college_id IS NULL)`;
         }
 
         sql += ' ORDER BY p.name ASC';
 
-        const rows = this.db.prepare(sql).all(...params);
+        const rows = await this.db.queryAll(sql, ...params);
         return cleanList(rows);
     }
 
-    /**
-     * Dispatch campaign: Evaluates matching criteria and inserts targeted notification records
-     */
-    dispatchCampaign(campaignId: any) {
-        const campaign = this.findById(campaignId);
+    async dispatchCampaign(campaignId: any) {
+        const campaign = await this.findById(campaignId);
         if (!campaign) throw new Error('Campaign not found');
 
-        const matchingPatients = this.findMatchingPatients(campaign.keyword, campaign.college_id);
+        const matchingPatients = await this.findMatchingPatients(campaign.keyword, campaign.college_id);
 
-        const checkExisting = this.db.prepare(`
-            SELECT patient_id FROM campaign_notifications WHERE campaign_id = ?
-        `);
-        const existingSet = new Set(checkExisting.all(campaignId).map(r => r.patient_id));
-
-        const insertStmt = this.db.prepare(`
-            INSERT INTO campaign_notifications (campaign_id, patient_id, student_id, matched_keyword, matched_condition_detail, status, cadet_call_status)
-            VALUES (?, ?, ?, ?, ?, 'Delivered', 'Pending')
-        `);
+        const existingRows = await this.db.queryAll(
+            'SELECT patient_id FROM campaign_notifications WHERE campaign_id = $1',
+            Number(campaignId),
+        );
+        const existingSet = new Set(existingRows.map((r) => r.patient_id));
 
         let insertedCount = 0;
         for (const pat of matchingPatients) {
@@ -211,12 +192,14 @@ export class CampaignModel {
                 else if (pat.rbs) detail += ` (RBS: ${pat.rbs} mg/dL)`;
                 else if (pat.hb) detail += ` (Hb: ${pat.hb} g/dL)`;
 
-                insertStmt.run(
-                    campaignId,
-                    pat.patient_id,
-                    pat.student_id || null,
+                await this.db.execute(
+                    `INSERT INTO campaign_notifications (campaign_id, patient_id, student_id, matched_keyword, matched_condition_detail, status, cadet_call_status)
+                     VALUES ($1, $2, $3, $4, $5, 'Delivered', 'Pending')`,
+                    Number(campaignId),
+                    Number(pat.patient_id),
+                    pat.student_id ? Number(pat.student_id) : null,
                     campaign.keyword,
-                    detail
+                    detail,
                 );
                 insertedCount++;
             }
@@ -227,16 +210,13 @@ export class CampaignModel {
             keyword: campaign.keyword,
             total_matching: matchingPatients.length,
             newly_notified: insertedCount,
-            already_notified: matchingPatients.length - insertedCount
+            already_notified: matchingPatients.length - insertedCount,
         };
     }
 
-    /**
-     * Patient CRM: Get all active campaigns & notifications for a specific patient
-     */
-    getPatientNotifications(patientId: unknown): Row[] {
-        const rows = this.db.prepare(`
-            SELECT
+    async getPatientNotifications(patientId: unknown): Promise<Row[]> {
+        const rows = await this.db.queryAll(
+            `SELECT
                 cn.id as notification_id,
                 cn.status as notification_status,
                 cn.matched_keyword,
@@ -260,42 +240,47 @@ export class CampaignModel {
                 s.name as cadet_name,
                 s.roll_number as cadet_roll,
                 s.phone as cadet_phone
-            FROM campaign_notifications cn
-            JOIN campaigns c ON cn.campaign_id = c.id
-            LEFT JOIN colleges col ON c.college_id = col.id
-            LEFT JOIN students s ON cn.student_id = s.id
-            WHERE cn.patient_id = ?
-            ORDER BY cn.created_at DESC
-        `).all(patientId);
+             FROM campaign_notifications cn
+             JOIN campaigns c ON cn.campaign_id = c.id
+             LEFT JOIN colleges col ON c.college_id = col.id
+             LEFT JOIN students s ON cn.student_id = s.id
+             WHERE cn.patient_id = $1
+             ORDER BY cn.created_at DESC`,
+            Number(patientId),
+        );
 
         return cleanList(rows);
     }
 
-    /**
-     * Patient CRM: Acknowledge / RSVP to a campaign
-     */
-    acknowledgeNotification(notificationId: unknown, patientId: unknown, status: any = 'Acknowledged', responseNote: any = null): Row | undefined {
-        const notif = this.db.prepare(`
-            SELECT * FROM campaign_notifications WHERE id = ? AND patient_id = ?
-        `).get(notificationId, patientId);
+    async acknowledgeNotification(
+        notificationId: unknown,
+        patientId: unknown,
+        status: any = 'Acknowledged',
+        responseNote: any = null,
+    ): Promise<Row | undefined> {
+        const notif = await this.db.queryOne(
+            'SELECT * FROM campaign_notifications WHERE id = $1 AND patient_id = $2',
+            Number(notificationId),
+            Number(patientId),
+        );
 
         if (!notif) throw new Error('Notification not found or access denied');
 
-        this.db.prepare(`
-            UPDATE campaign_notifications
-            SET status = ?, patient_response_note = COALESCE(?, patient_response_note)
-            WHERE id = ?
-        `).run(status, responseNote, notificationId);
+        await this.db.execute(
+            `UPDATE campaign_notifications
+             SET status = $1, patient_response_note = COALESCE($2, patient_response_note)
+             WHERE id = $3`,
+            status,
+            responseNote,
+            Number(notificationId),
+        );
 
-        return this.db.prepare('SELECT * FROM campaign_notifications WHERE id = ?').get(notificationId);
+        return this.db.queryOne('SELECT * FROM campaign_notifications WHERE id = $1', Number(notificationId));
     }
 
-    /**
-     * Student Portal: Get campaign action items / follow-ups for assigned adopted patients
-     */
-    getCadetCampaignTasks(studentId: unknown): Row[] {
-        const rows = this.db.prepare(`
-            SELECT
+    async getCadetCampaignTasks(studentId: unknown): Promise<Row[]> {
+        const rows = await this.db.queryAll(
+            `SELECT
                 cn.id as notification_id,
                 cn.status as notification_status,
                 cn.matched_keyword,
@@ -315,48 +300,49 @@ export class CampaignModel {
                 c.title as campaign_title,
                 c.event_date,
                 c.venue
-            FROM campaign_notifications cn
-            JOIN campaigns c ON cn.campaign_id = c.id
-            JOIN patients p ON cn.patient_id = p.id
-            WHERE cn.student_id = ?
-            ORDER BY cn.created_at DESC
-        `).all(studentId);
+             FROM campaign_notifications cn
+             JOIN campaigns c ON cn.campaign_id = c.id
+             JOIN patients p ON cn.patient_id = p.id
+             WHERE cn.student_id = $1
+             ORDER BY cn.created_at DESC`,
+            Number(studentId),
+        );
 
         return cleanList(rows);
     }
 
-    /**
-     * Student Portal: Update cadet call / assistance status
-     */
-    updateCadetTaskStatus(notificationId: unknown, studentId: unknown, callStatus: any): Row | undefined {
+    async updateCadetTaskStatus(notificationId: unknown, studentId: unknown, callStatus: any): Promise<Row | undefined> {
         const validStatuses = ['Pending', 'Contacted', 'Assisted'];
         if (!validStatuses.includes(callStatus)) {
             throw new Error(`Invalid call status. Must be one of: ${validStatuses.join(', ')}`);
         }
 
-        const task = this.db.prepare(`
-            SELECT * FROM campaign_notifications WHERE id = ? AND student_id = ?
-        `).get(notificationId, studentId);
+        const task = await this.db.queryOne(
+            'SELECT * FROM campaign_notifications WHERE id = $1 AND student_id = $2',
+            Number(notificationId),
+            Number(studentId),
+        );
 
         if (!task) throw new Error('Campaign task not found for this cadet');
 
-        this.db.prepare(`
-            UPDATE campaign_notifications
-            SET cadet_call_status = ?,
-                contacted_at = CASE WHEN ? = 'Pending' THEN NULL ELSE COALESCE(contacted_at, CURRENT_TIMESTAMP) END,
-                patient_contact_confirmation = CASE WHEN ? = 'Pending' THEN NULL ELSE patient_contact_confirmation END
-            WHERE id = ?
-        `).run(callStatus, callStatus, callStatus, notificationId);
+        await this.db.execute(
+            `UPDATE campaign_notifications
+             SET cadet_call_status = $1,
+                 contacted_at = CASE WHEN $2 = 'Pending' THEN NULL ELSE COALESCE(contacted_at, CURRENT_TIMESTAMP) END,
+                 patient_contact_confirmation = CASE WHEN $3 = 'Pending' THEN NULL ELSE patient_contact_confirmation END
+             WHERE id = $4`,
+            callStatus,
+            callStatus,
+            callStatus,
+            Number(notificationId),
+        );
 
-        return this.db.prepare('SELECT * FROM campaign_notifications WHERE id = ?').get(notificationId);
+        return this.db.queryOne('SELECT * FROM campaign_notifications WHERE id = $1', Number(notificationId));
     }
 
-    /**
-     * Admin Portal: Detailed roster of all targeted patients for a campaign
-     */
-    getCampaignRoster(campaignId: unknown): Row[] {
-        const rows = this.db.prepare(`
-            SELECT
+    async getCampaignRoster(campaignId: unknown): Promise<Row[]> {
+        const rows = await this.db.queryAll(
+            `SELECT
                 cn.id as notification_id,
                 cn.status as status,
                 cn.status as patient_status,
@@ -373,33 +359,40 @@ export class CampaignModel {
                 s.name as cadet_name,
                 s.roll_number as cadet_roll,
                 s.phone as cadet_phone
-            FROM campaign_notifications cn
-            JOIN patients p ON cn.patient_id = p.id
-            LEFT JOIN students s ON cn.student_id = s.id
-            WHERE cn.campaign_id = ?
-            ORDER BY cn.status DESC, p.name ASC
-        `).all(campaignId);
+             FROM campaign_notifications cn
+             JOIN patients p ON cn.patient_id = p.id
+             LEFT JOIN students s ON cn.student_id = s.id
+             WHERE cn.campaign_id = $1
+             ORDER BY cn.status DESC, p.name ASC`,
+            Number(campaignId),
+        );
 
         return cleanList(rows);
     }
 
-    /**
-     * Auto-enroll a patient into any active campaigns matching their health condition
-     */
-    autoEnrollPatient(patientId: unknown): number {
-        const activeCampaigns = this.db.prepare("SELECT * FROM campaigns WHERE status = 'Active'").all();
+    async autoEnrollPatient(patientId: unknown): Promise<number> {
+        const activeCampaigns = await this.db.queryAll("SELECT * FROM campaigns WHERE status = 'Active'");
         let enrolledCount = 0;
+        const pid = Number(patientId);
         for (const camp of activeCampaigns) {
-            const matches = this.findMatchingPatients(camp.keyword, camp.college_id);
-            const isMatch = matches.some(m => m.patient_id === patientId);
-            if (isMatch) {
-                const exists = this.db.prepare('SELECT id FROM campaign_notifications WHERE campaign_id = ? AND patient_id = ?').get(camp.id, patientId);
+            const matches = await this.findMatchingPatients(camp.keyword, camp.college_id);
+            const matchInfo = matches.find((m) => Number(m.patient_id) === pid);
+            if (matchInfo) {
+                const exists = await this.db.queryOne(
+                    'SELECT id FROM campaign_notifications WHERE campaign_id = $1 AND patient_id = $2',
+                    Number(camp.id),
+                    pid,
+                );
                 if (!exists) {
-                    const matchInfo = matches.find(m => m.patient_id === patientId)!;
-                    this.db.prepare(`
-                        INSERT INTO campaign_notifications (campaign_id, patient_id, student_id, matched_keyword, matched_condition_detail, status, cadet_call_status)
-                        VALUES (?, ?, ?, ?, ?, 'Delivered', 'Pending')
-                    `).run(camp.id, patientId, matchInfo.student_id || null, camp.keyword, matchInfo.matched_label);
+                    await this.db.execute(
+                        `INSERT INTO campaign_notifications (campaign_id, patient_id, student_id, matched_keyword, matched_condition_detail, status, cadet_call_status)
+                         VALUES ($1, $2, $3, $4, $5, 'Delivered', 'Pending')`,
+                        Number(camp.id),
+                        pid,
+                        matchInfo.student_id ? Number(matchInfo.student_id) : null,
+                        camp.keyword,
+                        matchInfo.matched_label,
+                    );
                     enrolledCount++;
                 }
             }

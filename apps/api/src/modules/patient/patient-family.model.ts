@@ -1,30 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import type { Db } from '../../database/db.types';
 import { clean, cleanList, Row } from '../../common/row';
 import { StatusError } from '../../common/http-error';
-import { publicIdentity } from '../../auth/portal-session.service';
 import { canReadMember, isMinor } from './patient-privacy.service';
 
-/**
- * CRM: Patient profile card + patient-managed family (head of family).
- *
- * Rules
- *  - Every patient account belongs to exactly one family (patients.family_id).
- *    It is created automatically on registration (or on first access for older accounts).
- *  - If the patient was already surveyed by a student, we reuse that surveyed family.
- *  - The first account in a family is its Head (can add / edit members); later accounts are Members (read-only).
- *  - Patients may edit BASIC details only. Medical fields (BP, sugar, Hb, conditions…) stay read-only
- *    and remain owned by the student survey. Every patient edit is stamped with patient_updated_at.
- *  - Patients can remove only members they added themselves and that have no health data yet.
- */
-
-/** The original `FamilyError(message, status = 400)`. */
 export const FamilyError = StatusError;
 
 export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'];
-export const RELATIONS = ['Head', 'Spouse', 'Son', 'Daughter', 'Father', 'Mother', 'Brother', 'Sister',
-    'Grandson', 'Granddaughter', 'Grandfather', 'Grandmother', 'Daughter-in-law', 'Son-in-law', 'Other'];
+export const RELATIONS = [
+    'Head', 'Spouse', 'Son', 'Daughter', 'Father', 'Mother', 'Brother', 'Sister',
+    'Grandson', 'Granddaughter', 'Grandfather', 'Grandmother', 'Daughter-in-law', 'Son-in-law', 'Other',
+];
 export const MAX_MEMBERS = 25;
 
 const str = (v: any, max = 120): string | null => (v === undefined || v === null ? null : (String(v).trim().slice(0, max) || null));
@@ -70,145 +58,180 @@ export class PatientFamilyModel {
         return this.database.db;
     }
 
-    private getPatient(patientId: unknown): Row {
-        return this.db.prepare('SELECT * FROM patients WHERE id = ?').get(patientId)!;
+    private async getPatient(patientId: unknown, db: Db = this.db): Promise<Row> {
+        return (await db.queryOne('SELECT * FROM patients WHERE id = $1', Number(patientId)))!;
     }
 
-    /** Members whose survey has medical data cannot be deleted by the patient. */
-    private hasHealthData(m: Row): any {
-        const counts = this.db.prepare(`
-        SELECT (SELECT COUNT(*) FROM member_conditions WHERE member_id = ?) +
-               (SELECT COUNT(*) FROM member_medications WHERE member_id = ?) +
-               (SELECT COUNT(*) FROM follow_ups WHERE member_id = ?) AS n
-    `).get(m.id, m.id, m.id)!.n;
-        return counts > 0 || m.sbp || m.dbp || m.rbs || m.hb || m.weight_kg || m.height_m;
+    private async hasHealthData(m: Row, db: Db = this.db): Promise<boolean> {
+        const mid = Number(m.id);
+        const row = await db.queryOne(
+            `SELECT (SELECT COUNT(*) FROM member_conditions WHERE member_id = $1) +
+                    (SELECT COUNT(*) FROM member_medications WHERE member_id = $2) +
+                    (SELECT COUNT(*) FROM follow_ups WHERE member_id = $3) AS n`,
+            mid,
+            mid,
+            mid,
+        );
+        const counts = row?.n || 0;
+        return !!(counts > 0 || m.sbp || m.dbp || m.rbs || m.hb || m.weight_kg || m.height_m);
     }
 
-    /**
-     * Make sure the patient has a family + their own member row. Idempotent.
-     * Returns the fresh patient row.
-     */
-    ensureFamily(patientId: unknown): Row {
-        let p = this.getPatient(patientId);
+    async ensureFamily(patientId: unknown): Promise<Row> {
+        const p = await this.getPatient(patientId);
         if (!p) throw new StatusError('Patient not found', 404);
 
-        if (p.family_id && this.db.prepare('SELECT id FROM families WHERE id = ?').get(p.family_id)) {
+        if (p.family_id && (await this.db.queryOne('SELECT id FROM families WHERE id = $1', Number(p.family_id)))) {
             return p;
         }
 
-        const run = () => {
-            let familyId = null;
-            let memberId = p.family_member_id;
+        await this.db.inTransaction(async (tx) => {
+            let familyId: number | null = null;
+            let memberId: number | null = p.family_member_id ? Number(p.family_member_id) : null;
 
-            // 1) Reuse the surveyed family if the patient is already a surveyed member
             if (memberId) {
-                const m = this.db.prepare('SELECT family_id FROM family_members WHERE id = ?').get(memberId);
-                if (m) familyId = m.family_id; else memberId = null;
+                const m = await tx.queryOne('SELECT family_id FROM family_members WHERE id = $1', memberId);
+                if (m) familyId = Number(m.family_id);
+                else memberId = null;
             }
 
-            // 2) Otherwise create a new household with the patient as head
             if (!familyId) {
                 let familyNo = 1;
                 if (p.student_id) {
-                    familyNo = (this.db.prepare('SELECT MAX(family_no) AS n FROM families WHERE student_id = ?').get(p.student_id)!.n || 0) + 1;
+                    const maxRow = await tx.queryOne('SELECT MAX(family_no) AS n FROM families WHERE student_id = $1', Number(p.student_id));
+                    familyNo = (maxRow?.n || 0) + 1;
                 }
-                const info = this.db.prepare(`
-                    INSERT INTO families (student_id, family_no, head_of_family, address, family_code, family_name, contact_number)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                `).run(p.student_id || null, familyNo, p.name, p.address || null,
-                    `FAM-${p.patient_uid}`, `${p.name.split(/\s+/).slice(-1)[0]} Family`, p.phone);
-                familyId = Number(info.lastInsertRowid);
+                const info = await tx.insert(
+                    `INSERT INTO families (student_id, family_no, head_of_family, address, family_code, family_name, contact_number)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                    p.student_id ? Number(p.student_id) : null,
+                    familyNo,
+                    p.name,
+                    p.address || null,
+                    `FAM-${p.patient_uid}`,
+                    `${p.name.split(/\s+/).slice(-1)[0]} Family`,
+                    p.phone,
+                );
+                familyId = info.lastInsertRowid;
             }
 
-            // 3) Make sure the patient has a member row inside the family
             if (!memberId) {
-                const order = (this.db.prepare('SELECT MAX(member_order) AS n FROM family_members WHERE family_id = ?').get(familyId)!.n || 0) + 1;
+                const orderRow = await tx.queryOne('SELECT MAX(member_order) AS n FROM family_members WHERE family_id = $1', familyId);
+                const order = (orderRow?.n || 0) + 1;
                 const age = ageFromDob(p.date_of_birth);
-                const info = this.db.prepare(`
-                    INSERT INTO family_members (family_id, member_order, name, relation_to_hof, gender, age_years, age_months,
-                                                date_of_birth, contact_number, added_by_patient_id)
-                    VALUES (?, ?, ?, 'Head', ?, ?, ?, ?, ?, ?)
-                `).run(familyId, order, p.name, normGender(p.gender),
-                    age ? age.years : (p.age_years || 0), age ? age.months : 0,
-                    p.date_of_birth || null, p.phone, p.id);
-                memberId = Number(info.lastInsertRowid);
+                const info = await tx.insert(
+                    `INSERT INTO family_members (family_id, member_order, name, relation_to_hof, gender, age_years, age_months,
+                                                 date_of_birth, contact_number, added_by_patient_id)
+                     VALUES ($1, $2, $3, 'Head', $4, $5, $6, $7, $8, $9)`,
+                    familyId,
+                    order,
+                    p.name,
+                    normGender(p.gender),
+                    age ? age.years : (p.age_years || 0),
+                    age ? age.months : 0,
+                    p.date_of_birth || null,
+                    p.phone,
+                    Number(p.id),
+                );
+                memberId = info.lastInsertRowid;
             }
 
-            // 4) First account in a family is the Head
-            const head = this.db.prepare("SELECT id FROM patients WHERE family_id = ? AND family_role = 'Head' AND id != ?").get(familyId, p.id);
-            this.db.prepare(`
-                UPDATE patients SET family_id = ?, family_member_id = ?, family_role = ?, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `).run(familyId, memberId, head ? 'Member' : 'Head', p.id);
-        };
+            const head = await tx.queryOne(
+                "SELECT id FROM patients WHERE family_id = $1 AND family_role = 'Head' AND id != $2",
+                familyId,
+                Number(p.id),
+            );
+            await tx.execute(
+                `UPDATE patients SET family_id = $1, family_member_id = $2, family_role = $3, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $4`,
+                familyId,
+                memberId,
+                head ? 'Member' : 'Head',
+                Number(p.id),
+            );
+        });
 
-        this.db.exec('BEGIN');
-        try { run(); this.db.exec('COMMIT'); } catch (e) { this.db.exec('ROLLBACK'); throw e; }
         return this.getPatient(patientId);
     }
 
-    /**
-     * Called after a patient links a student's referral code.
-     *  - If the student had already surveyed this patient (matchMemberId) and the patient's own
-     *    self-created family is still empty, move the account into the surveyed family.
-     *  - Otherwise the student adopts the patient's family (so they can record health data for it).
-     */
-    onStudentLinked(patientId: unknown, studentId: unknown, matchMemberId: any): Row {
-        let p = this.ensureFamily(patientId);
-        const fam = this.db.prepare('SELECT * FROM families WHERE id = ?').get(p.family_id)!;
-        const run = () => {
-            if (matchMemberId && matchMemberId !== p.family_member_id) {
-                const match = this.db.prepare('SELECT * FROM family_members WHERE id = ?').get(matchMemberId);
-                const others = this.db.prepare('SELECT COUNT(*) AS n FROM family_members WHERE family_id = ? AND id != ?').get(p.family_id, p.family_member_id)!.n;
-                const self = this.db.prepare('SELECT * FROM family_members WHERE id = ?').get(p.family_member_id);
-                if (match && !fam.student_id && others === 0 && self && !this.hasHealthData(self)) {
-                    const head = this.db.prepare("SELECT id FROM patients WHERE family_id = ? AND family_role = 'Head' AND id != ?").get(match.family_id, p.id);
-                    this.db.prepare(`UPDATE patients SET family_id = ?, family_member_id = ?, family_role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
-                        .run(match.family_id, match.id, head ? 'Member' : 'Head', p.id);
-                    this.db.prepare('DELETE FROM family_members WHERE id = ?').run(self.id);
-                    this.db.prepare('DELETE FROM families WHERE id = ? AND NOT EXISTS (SELECT 1 FROM family_members WHERE family_id = ?)').run(fam.id, fam.id);
+    async onStudentLinked(patientId: unknown, studentId: unknown, matchMemberId: any): Promise<Row> {
+        const p = await this.ensureFamily(patientId);
+        const fam = (await this.db.queryOne('SELECT * FROM families WHERE id = $1', Number(p.family_id)))!;
+
+        await this.db.inTransaction(async (tx) => {
+            if (matchMemberId && Number(matchMemberId) !== Number(p.family_member_id)) {
+                const match = await tx.queryOne('SELECT * FROM family_members WHERE id = $1', Number(matchMemberId));
+                const othersRow = await tx.queryOne(
+                    'SELECT COUNT(*) AS n FROM family_members WHERE family_id = $1 AND id != $2',
+                    Number(p.family_id),
+                    Number(p.family_member_id),
+                );
+                const others = othersRow?.n || 0;
+                const self = await tx.queryOne('SELECT * FROM family_members WHERE id = $1', Number(p.family_member_id));
+                if (match && !fam.student_id && others === 0 && self && !(await this.hasHealthData(self, tx))) {
+                    const head = await tx.queryOne(
+                        "SELECT id FROM patients WHERE family_id = $1 AND family_role = 'Head' AND id != $2",
+                        Number(match.family_id),
+                        Number(p.id),
+                    );
+                    await tx.execute(
+                        `UPDATE patients SET family_id = $1, family_member_id = $2, family_role = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4`,
+                        Number(match.family_id),
+                        Number(match.id),
+                        head ? 'Member' : 'Head',
+                        Number(p.id),
+                    );
+                    await tx.execute('DELETE FROM family_members WHERE id = $1', Number(self.id));
+                    await tx.execute(
+                        'DELETE FROM families WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM family_members WHERE family_id = $2)',
+                        Number(fam.id),
+                        Number(fam.id),
+                    );
                     return;
                 }
             }
             if (!fam.student_id) {
-                const no = (this.db.prepare('SELECT MAX(family_no) AS n FROM families WHERE student_id = ?').get(studentId)!.n || 0) + 1;
-                this.db.prepare('UPDATE families SET student_id = ?, family_no = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(studentId, no, fam.id);
+                const maxRow = await tx.queryOne('SELECT MAX(family_no) AS n FROM families WHERE student_id = $1', Number(studentId));
+                const no = (maxRow?.n || 0) + 1;
+                await tx.execute(
+                    'UPDATE families SET student_id = $1, family_no = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+                    Number(studentId),
+                    no,
+                    Number(fam.id),
+                );
             }
-        };
-        this.db.exec('BEGIN');
-        try { run(); this.db.exec('COMMIT'); } catch (e) { this.db.exec('ROLLBACK'); throw e; }
+        });
+
         return this.getPatient(patientId);
     }
 
-    /* ======================= Profile card ======================= */
-
-    getCard(patientId: unknown): Row {
-        const p = this.ensureFamily(patientId);
-        const row = this.db.prepare(`
-            SELECT p.*, s.name AS student_name, s.roll_number AS student_roll, c.name AS college_name,
-                   h.name AS hospital_name, h.code AS hospital_code, h.city AS hospital_city,
-                   h.contact_phone AS hospital_phone, h.contact_email AS hospital_email,
-                   f.family_code, f.family_name, f.head_of_family, f.address AS family_address,
-                   f.village, f.city, f.district, f.state, f.pincode,
-                   (SELECT COUNT(*) FROM family_members m WHERE m.family_id = p.family_id) AS family_size
-            FROM patients p
-            LEFT JOIN students s ON s.id = p.student_id
-            LEFT JOIN colleges c ON c.id = s.college_id
-            LEFT JOIN hospitals h ON h.id = COALESCE(p.hospital_id, 1)
-            LEFT JOIN families f ON f.id = p.family_id
-            WHERE p.id = ?
-        `).get(p.id);
+    async getCard(patientId: unknown): Promise<Row> {
+        const p = await this.ensureFamily(patientId);
+        const row = await this.db.queryOne(
+            `SELECT p.*, s.name AS student_name, s.roll_number AS student_roll, c.name AS college_name,
+                    h.name AS hospital_name, h.code AS hospital_code, h.city AS hospital_city,
+                    h.contact_phone AS hospital_phone, h.contact_email AS hospital_email,
+                    f.family_code, f.family_name, f.head_of_family, f.address AS family_address,
+                    f.village, f.city, f.district, f.state, f.pincode,
+                    (SELECT COUNT(*) FROM family_members m WHERE m.family_id = p.family_id) AS family_size
+             FROM patients p
+             LEFT JOIN students s ON s.id = p.student_id
+             LEFT JOIN colleges c ON c.id = s.college_id
+             LEFT JOIN hospitals h ON h.id = COALESCE(p.hospital_id, 1)
+             LEFT JOIN families f ON f.id = p.family_id
+             WHERE p.id = $1`,
+            Number(p.id),
+        );
         const card = clean(row)!;
-        delete card.pin;                                // never send credentials to the client
+        delete card.pin;
         const age = ageFromDob(card.date_of_birth);
         if (age) card.age_years = age.years;
         delete card.blood_group;
         return card;
     }
 
-    updateProfile(patientId: unknown, body: Record<string, any> = {}): Row {
+    async updateProfile(patientId: unknown, body: Record<string, any> = {}): Promise<Row> {
         if (body.blood_group !== undefined) throw new StatusError('Request a clinical correction for blood group information.', 403);
-        const p = this.ensureFamily(patientId);
+        const p = await this.ensureFamily(patientId);
         const next = {
             name: body.name !== undefined ? str(body.name, 80) : p.name,
             email: body.email !== undefined ? str(body.email, 120) : p.email,
@@ -218,7 +241,7 @@ export class PatientFamilyModel {
             blood_group: body.blood_group !== undefined ? str(body.blood_group, 10) : p.blood_group,
             emergency_contact_name: body.emergency_contact_name !== undefined ? str(body.emergency_contact_name, 80) : p.emergency_contact_name,
             emergency_contact_phone: body.emergency_contact_phone !== undefined ? (digits(body.emergency_contact_phone) || null) : p.emergency_contact_phone,
-            emergency_contact_relation: body.emergency_contact_relation !== undefined ? str(body.emergency_contact_relation, 40) : p.emergency_contact_relation
+            emergency_contact_relation: body.emergency_contact_relation !== undefined ? str(body.emergency_contact_relation, 40) : p.emergency_contact_relation,
         };
         if (!next.name) throw new StatusError('Name is required.');
         if (next.blood_group && !BLOOD_GROUPS.includes(next.blood_group)) throw new StatusError(`Blood group must be one of: ${BLOOD_GROUPS.join(', ')}`);
@@ -227,91 +250,148 @@ export class PatientFamilyModel {
         if (next.emergency_contact_phone && next.emergency_contact_phone === p.phone) throw new StatusError('Emergency contact should be someone other than you.');
         const age = ageFromDob(next.date_of_birth);
 
-        this.db.prepare(`
-            UPDATE patients SET name = ?, email = ?, gender = ?, date_of_birth = ?, age_years = COALESCE(?, age_years), address = ?,
-                   blood_group = ?, emergency_contact_name = ?, emergency_contact_phone = ?, emergency_contact_relation = ?,
-                   updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(next.name, next.email, next.gender, next.date_of_birth, age ? age.years : null, next.address,
-            next.blood_group, next.emergency_contact_name, next.emergency_contact_phone, next.emergency_contact_relation, p.id);
+        await this.db.execute(
+            `UPDATE patients
+             SET name = $1, email = $2, gender = $3, date_of_birth = $4, age_years = COALESCE($5, age_years), address = $6,
+                 blood_group = $7, emergency_contact_name = $8, emergency_contact_phone = $9, emergency_contact_relation = $10,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $11`,
+            next.name,
+            next.email,
+            next.gender,
+            next.date_of_birth,
+            age ? age.years : null,
+            next.address,
+            next.blood_group,
+            next.emergency_contact_name,
+            next.emergency_contact_phone,
+            next.emergency_contact_relation,
+            Number(p.id),
+        );
 
-        // Keep the patient's own survey row in sync (basic fields only)
         if (p.family_member_id) {
-            this.db.prepare(`
-                UPDATE family_members SET name = ?, gender = COALESCE(?, gender), date_of_birth = COALESCE(?, date_of_birth),
-                       age_years = COALESCE(?, age_years), age_months = COALESCE(?, age_months),
-                       patient_updated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `).run(next.name, normGender(next.gender), next.date_of_birth, age ? age.years : null, age ? age.months : null, p.family_member_id);
+            await this.db.execute(
+                `UPDATE family_members
+                 SET name = $1, gender = COALESCE($2, gender), date_of_birth = COALESCE($3, date_of_birth),
+                     age_years = COALESCE($4, age_years), age_months = COALESCE($5, age_months),
+                     patient_updated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $6`,
+                next.name,
+                normGender(next.gender),
+                next.date_of_birth,
+                age ? age.years : null,
+                age ? age.months : null,
+                Number(p.family_member_id),
+            );
             if (p.family_role === 'Head') {
-                this.db.prepare('UPDATE families SET head_of_family = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(next.name, p.family_id);
+                await this.db.execute(
+                    'UPDATE families SET head_of_family = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+                    next.name,
+                    Number(p.family_id),
+                );
             }
         }
         return this.getCard(p.id);
     }
 
-    /* ======================= Family ======================= */
-
-    getFamily(patientId: unknown) {
-        const p = this.ensureFamily(patientId);
-        const family = this.db.prepare(`
-            SELECT f.id, f.family_code, f.family_name, f.head_of_family, f.address, f.village, f.city, f.district, f.state, f.pincode,
-                   f.contact_number, f.student_id, s.name AS student_name, s.roll_number AS student_roll
-            FROM families f LEFT JOIN students s ON s.id = f.student_id
-            WHERE f.id = ?
-        `).get(p.family_id);
-
-        const members = this.db.prepare(`
-            SELECT m.id, m.medpulse_id, m.member_order, m.name, m.relation_to_hof, m.gender, m.age_years, m.age_months, m.date_of_birth,
-                   m.contact_number, m.marital_status, m.education, m.occupation,
-                   m.sbp, m.dbp, m.rbs, m.hb, m.bmi, m.weight_kg, m.height_m, m.has_htn, m.has_dm, m.has_anaemia,
-                   m.added_by_patient_id, m.patient_updated_at, m.updated_at,
-                   (SELECT GROUP_CONCAT(condition_name, ', ') FROM member_conditions c WHERE c.member_id = m.id) AS conditions,
-                   (SELECT COUNT(*) FROM member_medications x WHERE x.member_id = m.id) AS medications_count,
-                   (SELECT p2.patient_uid FROM patients p2 WHERE p2.family_member_id = m.id LIMIT 1) AS account_uid
-            FROM family_members m
-            WHERE m.family_id = ?
-            ORDER BY CASE WHEN m.id = ? THEN 0 ELSE 1 END, m.member_order, m.id
-        `).all(p.family_id, p.family_member_id);
+    async getFamily(patientId: unknown) {
+        const p = await this.ensureFamily(patientId);
+        const [family, members] = await Promise.all([
+            this.db.queryOne(
+                `SELECT f.id, f.family_code, f.family_name, f.head_of_family, f.address, f.village, f.city, f.district, f.state, f.pincode,
+                        f.contact_number, f.student_id, s.name AS student_name, s.roll_number AS student_roll
+                 FROM families f LEFT JOIN students s ON s.id = f.student_id
+                 WHERE f.id = $1`,
+                Number(p.family_id),
+            ),
+            this.db.queryAll(
+                `SELECT m.id, m.medpulse_id, m.member_order, m.name, m.relation_to_hof, m.gender, m.age_years, m.age_months, m.date_of_birth,
+                        m.contact_number, m.marital_status, m.education, m.occupation,
+                        m.sbp, m.dbp, m.rbs, m.hb, m.bmi, m.weight_kg, m.height_m, m.has_htn, m.has_dm, m.has_anaemia,
+                        m.added_by_patient_id, m.patient_updated_at, m.updated_at,
+                        (SELECT STRING_AGG(condition_name, ', ') FROM member_conditions c WHERE c.member_id = m.id) AS conditions,
+                        (SELECT COUNT(*) FROM member_medications x WHERE x.member_id = m.id) AS medications_count,
+                        (SELECT p2.patient_uid FROM patients p2 WHERE p2.family_member_id = m.id LIMIT 1) AS account_uid
+                 FROM family_members m
+                 WHERE m.family_id = $1
+                 ORDER BY CASE WHEN m.id = $2 THEN 0 ELSE 1 END, m.member_order, m.id`,
+                Number(p.family_id),
+                Number(p.family_member_id || 0),
+            ),
+        ]);
 
         const canEdit = p.family_role === 'Head';
+        const mappedMembers = await Promise.all(
+            cleanList(members).map(async (m) => {
+                const self = Number(m.id) === Number(p.family_member_id);
+                const account = await this.db.queryOne(
+                    'SELECT id FROM patients WHERE family_member_id = $1 AND status = $2',
+                    Number(m.id),
+                    'Active',
+                );
+                const basicEditable = canEdit && !self && Number(m.added_by_patient_id) === Number(p.id) && !account;
+                const canView = await canReadMember(this.db, p, { ...m, family_id: p.family_id });
+                const hasHealth = basicEditable ? await this.hasHealthData(m) : false;
+                return {
+                    id: m.id,
+                    name: m.name,
+                    medpulse_id: m.medpulse_id,
+                    relation_to_hof: m.relation_to_hof,
+                    is_self: self,
+                    surveyed: !m.added_by_patient_id,
+                    age_years: m.age_years,
+                    gender: m.gender,
+                    can_view_records: canView,
+                    can_request_guardian: !self && isMinor(m),
+                    account_patient_id: account?.id || null,
+                    can_edit: basicEditable,
+                    can_delete: basicEditable && !hasHealth,
+                    ...(self || basicEditable
+                        ? {
+                            date_of_birth: m.date_of_birth,
+                            contact_number: m.contact_number,
+                            occupation: m.occupation,
+                            education: m.education,
+                            marital_status: m.marital_status,
+                        }
+                        : {}),
+                };
+            }),
+        );
+
         return {
             family: clean(family),
             role: p.family_role,
             can_edit: canEdit,
             relations: RELATIONS,
-            members: cleanList(members).map((m) => {
-                const self = m.id === p.family_member_id;
-                const account = this.db.prepare('SELECT id FROM patients WHERE family_member_id = ? AND status = ?').get(m.id, 'Active');
-                const basicEditable = canEdit && !self && m.added_by_patient_id === p.id && !account;
-                return {
-                    id: m.id, name: m.name, medpulse_id: m.medpulse_id, relation_to_hof: m.relation_to_hof,
-                    is_self: self, surveyed: !m.added_by_patient_id, age_years: m.age_years, gender: m.gender,
-                    can_view_records: canReadMember(this.db, p, { ...m, family_id: p.family_id }),
-                    can_request_guardian: !self && isMinor(m), account_patient_id: account?.id || null,
-                    can_edit: basicEditable, can_delete: basicEditable && !this.hasHealthData(m),
-                    ...(self || basicEditable ? { date_of_birth: m.date_of_birth, contact_number: m.contact_number,
-                        occupation: m.occupation, education: m.education, marital_status: m.marital_status } : {}),
-                };
-            })
+            members: mappedMembers,
         };
     }
 
-    updateFamily(patientId: unknown, body: Record<string, any> = {}) {
-        const p = this.requireHead(patientId);
-        const f = this.db.prepare('SELECT * FROM families WHERE id = ?').get(p.family_id)!;
+    async updateFamily(patientId: unknown, body: Record<string, any> = {}) {
+        const p = await this.requireHead(patientId);
+        const f = (await this.db.queryOne('SELECT * FROM families WHERE id = $1', Number(p.family_id)))!;
         const pick = (k: string, max: number) => (body[k] !== undefined ? str(body[k], max) : f[k]);
         const pin = body.pincode !== undefined ? (digits(body.pincode) || null) : f.pincode;
         if (pin && pin.length !== 6) throw new StatusError('PIN code must be 6 digits.');
-        this.db.prepare(`
-            UPDATE families SET family_name = ?, address = ?, village = ?, city = ?, district = ?, state = ?, pincode = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(pick('family_name', 80), pick('address', 300), pick('village', 80), pick('city', 80), pick('district', 80), pick('state', 80), pin, f.id);
+        await this.db.execute(
+            `UPDATE families
+             SET family_name = $1, address = $2, village = $3, city = $4, district = $5, state = $6, pincode = $7, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $8`,
+            pick('family_name', 80),
+            pick('address', 300),
+            pick('village', 80),
+            pick('city', 80),
+            pick('district', 80),
+            pick('state', 80),
+            pin,
+            Number(f.id),
+        );
         return this.getFamily(patientId);
     }
 
-    requireHead(patientId: unknown): Row {
-        const p = this.ensureFamily(patientId);
+    async requireHead(patientId: unknown): Promise<Row> {
+        const p = await this.ensureFamily(patientId);
         if (p.family_role !== 'Head') throw new StatusError('Only the head of the family can make changes.', 403);
         return p;
     }
@@ -334,8 +414,10 @@ export class PatientFamilyModel {
         const dob = validDob(body.date_of_birth);
         if (dob !== undefined) out.date_of_birth = dob;
         const age = ageFromDob(dob === undefined ? existing.date_of_birth : dob);
-        if (age) { out.age_years = age.years; out.age_months = age.months; }
-        else if (body.age_years !== undefined && body.age_years !== '' && body.age_years !== null) {
+        if (age) {
+            out.age_years = age.years;
+            out.age_months = age.months;
+        } else if (body.age_years !== undefined && body.age_years !== '' && body.age_years !== null) {
             const a = parseInt(body.age_years, 10);
             if (isNaN(a) || a < 0 || a > 120) throw new StatusError('Age must be between 0 and 120.');
             out.age_years = a;
@@ -351,60 +433,88 @@ export class PatientFamilyModel {
         return out;
     }
 
-    addMember(patientId: unknown, body: Record<string, any> = {}) {
-        const p = this.requireHead(patientId);
+    async addMember(patientId: unknown, body: Record<string, any> = {}) {
+        const p = await this.requireHead(patientId);
         const data = this.memberPayload(body);
         if (!data.name) throw new StatusError('Member name is required.');
         if (!data.relation_to_hof) throw new StatusError('Relation is required.');
         if (!data.gender) throw new StatusError('Gender is required.');
         if (data.age_years === undefined) throw new StatusError('Enter date of birth or age.');
-        const count = this.db.prepare('SELECT COUNT(*) AS n FROM family_members WHERE family_id = ?').get(p.family_id)!.n;
-        if (count >= MAX_MEMBERS) throw new StatusError(`A family can have at most ${MAX_MEMBERS} members.`);
-        const dup = this.db.prepare('SELECT id FROM family_members WHERE family_id = ? AND LOWER(TRIM(name)) = LOWER(?)').get(p.family_id, data.name);
+
+        const countRow = await this.db.queryOne('SELECT COUNT(*) AS n FROM family_members WHERE family_id = $1', Number(p.family_id));
+        if ((countRow?.n || 0) >= MAX_MEMBERS) throw new StatusError(`A family can have at most ${MAX_MEMBERS} members.`);
+        const dup = await this.db.queryOne(
+            'SELECT id FROM family_members WHERE family_id = $1 AND LOWER(TRIM(name)) = LOWER($2)',
+            Number(p.family_id),
+            data.name,
+        );
         if (dup) throw new StatusError(`${data.name} is already in your family.`, 409);
 
-        const order = (this.db.prepare('SELECT MAX(member_order) AS n FROM family_members WHERE family_id = ?').get(p.family_id)!.n || 0) + 1;
-        const info = this.db.prepare(`
-            INSERT INTO family_members (family_id, member_order, name, relation_to_hof, gender, age_years, age_months, date_of_birth,
-                                        contact_number, marital_status, education, occupation, added_by_patient_id, patient_updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-        `).run(p.family_id, order, data.name, data.relation_to_hof, data.gender, data.age_years, data.age_months || 0,
-            data.date_of_birth || null, data.contact_number || null, data.marital_status || 'Unknown',
-            data.education || null, data.occupation || null, p.id);
-        return { id: Number(info.lastInsertRowid), ...this.getFamily(patientId) };
+        const orderRow = await this.db.queryOne('SELECT MAX(member_order) AS n FROM family_members WHERE family_id = $1', Number(p.family_id));
+        const order = (orderRow?.n || 0) + 1;
+        const info = await this.db.insert(
+            `INSERT INTO family_members (family_id, member_order, name, relation_to_hof, gender, age_years, age_months, date_of_birth,
+                                         contact_number, marital_status, education, occupation, added_by_patient_id, patient_updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP)`,
+            Number(p.family_id),
+            order,
+            data.name,
+            data.relation_to_hof,
+            data.gender,
+            data.age_years,
+            data.age_months || 0,
+            data.date_of_birth || null,
+            data.contact_number || null,
+            data.marital_status || 'Unknown',
+            data.education || null,
+            data.occupation || null,
+            Number(p.id),
+        );
+        return { id: info.lastInsertRowid, ...(await this.getFamily(patientId)) };
     }
 
-    getMemberInFamily(p: Row, memberId: unknown): Row {
-        const m = this.db.prepare('SELECT * FROM family_members WHERE id = ?').get(memberId);
-        if (!m || m.family_id !== p.family_id) throw new StatusError('Family member not found', 404);
+    async getMemberInFamily(p: Row, memberId: unknown): Promise<Row> {
+        const m = await this.db.queryOne('SELECT * FROM family_members WHERE id = $1', Number(memberId));
+        if (!m || Number(m.family_id) !== Number(p.family_id)) throw new StatusError('Family member not found', 404);
         return m;
     }
 
-    updateMember(patientId: unknown, memberId: unknown, body: Record<string, any> = {}) {
-        const p = this.requireHead(patientId);
-        const m = this.getMemberInFamily(p, memberId);
-        if (m.id === p.family_member_id) throw new StatusError('Edit your own details from your Profile.');
-        const account = this.db.prepare('SELECT id FROM patients WHERE family_member_id = ?').get(m.id);
-        if (m.added_by_patient_id !== p.id || account) throw new StatusError('This member manages their own details or is managed by the care team.', 403);
+    async updateMember(patientId: unknown, memberId: unknown, body: Record<string, any> = {}) {
+        const p = await this.requireHead(patientId);
+        const m = await this.getMemberInFamily(p, memberId);
+        if (Number(m.id) === Number(p.family_member_id)) throw new StatusError('Edit your own details from your Profile.');
+        const account = await this.db.queryOne('SELECT id FROM patients WHERE family_member_id = $1', Number(m.id));
+        if (Number(m.added_by_patient_id) !== Number(p.id) || account) {
+            throw new StatusError('This member manages their own details or is managed by the care team.', 403);
+        }
         const data = this.memberPayload(body, m);
         if (data.name === null) throw new StatusError('Member name cannot be empty.');
         const keys = Object.keys(data);
         if (!keys.length) throw new StatusError('Nothing to update.');
-        this.db.prepare(`
-            UPDATE family_members SET ${keys.map((k) => `${k} = ?`).join(', ')}, patient_updated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(...keys.map((k) => data[k]), m.id);
+        const setSql = keys.map((k, idx) => `${k} = $${idx + 1}`).join(', ');
+        await this.db.execute(
+            `UPDATE family_members SET ${setSql}, patient_updated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $${keys.length + 1}`,
+            ...keys.map((k) => data[k]),
+            Number(m.id),
+        );
         return this.getFamily(patientId);
     }
 
-    deleteMember(patientId: unknown, memberId: unknown) {
-        const p = this.requireHead(patientId);
-        const m = this.getMemberInFamily(p, memberId);
-        if (m.id === p.family_member_id) throw new StatusError('You cannot remove yourself.');
-        if (m.added_by_patient_id !== p.id) throw new StatusError('This member was recorded in the health survey. Ask your hospital or student to remove them.', 403);
-        if (this.hasHealthData(m)) throw new StatusError('This member already has health records, so they cannot be removed.', 403);
-        if (this.db.prepare('SELECT id FROM patients WHERE family_member_id = ?').get(m.id)) throw new StatusError('This member has their own patient account.', 403);
-        this.db.prepare('DELETE FROM family_members WHERE id = ?').run(m.id);
+    async deleteMember(patientId: unknown, memberId: unknown) {
+        const p = await this.requireHead(patientId);
+        const m = await this.getMemberInFamily(p, memberId);
+        if (Number(m.id) === Number(p.family_member_id)) throw new StatusError('You cannot remove yourself.');
+        if (Number(m.added_by_patient_id) !== Number(p.id)) {
+            throw new StatusError('This member was recorded in the health survey. Ask your hospital or student to remove them.', 403);
+        }
+        if (await this.hasHealthData(m)) {
+            throw new StatusError('This member already has health records, so they cannot be removed.', 403);
+        }
+        if (await this.db.queryOne('SELECT id FROM patients WHERE family_member_id = $1', Number(m.id))) {
+            throw new StatusError('This member has their own patient account.', 403);
+        }
+        await this.db.execute('DELETE FROM family_members WHERE id = $1', Number(m.id));
         return this.getFamily(patientId);
     }
 }

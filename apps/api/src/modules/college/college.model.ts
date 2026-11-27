@@ -17,56 +17,57 @@ export class CollegeModel {
         return this.database.db;
     }
 
-    getAll(): Row[] {
-        const rows = this.db.prepare('SELECT * FROM colleges ORDER BY name ASC').all();
+    async getAll(): Promise<Row[]> {
+        const rows = await this.db.queryAll('SELECT * FROM colleges ORDER BY name ASC');
         return cleanList(rows);
     }
 
-    getById(id: unknown): Row | null {
-        const row = this.db.prepare('SELECT * FROM colleges WHERE id = ?').get(id);
+    async getById(id: unknown): Promise<Row | null> {
+        const row = await this.db.queryOne('SELECT * FROM colleges WHERE id = $1', Number(id));
         return clean(row);
     }
 
-    getByCode(code: string): Row | null {
-        const row = this.db.prepare('SELECT id FROM colleges WHERE LOWER(code) = LOWER(?)').get(code.trim());
+    async getByCode(code: string): Promise<Row | null> {
+        const row = await this.db.queryOne('SELECT id FROM colleges WHERE LOWER(code) = LOWER($1)', code.trim());
         return clean(row);
     }
 
-    create({ name, code, city, state }: CollegeInput): Row | null {
-        const stmt = this.db.prepare(`
-            INSERT INTO colleges (name, code, city, state)
-            VALUES (?, ?, ?, ?)
-        `);
-        const result = stmt.run(name!.trim(), code!.trim(), city ? city.trim() : null, state ? state.trim() : null);
-        return this.getById(Number(result.lastInsertRowid));
+    async create({ name, code, city, state }: CollegeInput): Promise<Row | null> {
+        const result = await this.db.insert(
+            `INSERT INTO colleges (name, code, city, state) VALUES ($1, $2, $3, $4)`,
+            name!.trim(),
+            code!.trim(),
+            city ? city.trim() : null,
+            state ? state.trim() : null,
+        );
+        return this.getById(result.lastInsertRowid);
     }
 
-    update(id: unknown, { name, code, city, state }: CollegeInput): Row | null {
-        this.db.prepare(`
-            UPDATE colleges
-            SET name = COALESCE(?, name),
-                code = COALESCE(?, code),
-                city = COALESCE(?, city),
-                state = COALESCE(?, state)
-            WHERE id = ?
-        `).run(
+    async update(id: unknown, { name, code, city, state }: CollegeInput): Promise<Row | null> {
+        await this.db.execute(
+            `UPDATE colleges
+             SET name = COALESCE($1, name),
+                 code = COALESCE($2, code),
+                 city = COALESCE($3, city),
+                 state = COALESCE($4, state)
+             WHERE id = $5`,
             name ? name.trim() : null,
             code ? code.trim() : null,
             city ? city.trim() : null,
             state ? state.trim() : null,
-            id,
+            Number(id),
         );
         return this.getById(id);
     }
 
-    getAdminOverview(): Row[] {
-        const rows = this.db.prepare(`
+    async getAdminOverview(): Promise<Row[]> {
+        const rows = await this.db.queryAll(`
             SELECT c.*,
                    (SELECT COUNT(*) FROM students s WHERE s.college_id = c.id) as students_count,
                    (SELECT COUNT(*) FROM families f JOIN students s ON f.student_id = s.id WHERE s.college_id = c.id) as families_count
             FROM colleges c
             ORDER BY c.name ASC
-        `).all();
+        `);
         return cleanList(rows);
     }
 }

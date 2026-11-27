@@ -8,7 +8,6 @@ import { GeofenceService, type AcademicYearInput } from './geofence.service';
 const AREA_ERROR = 'Enter a village name, valid latitude and longitude, and a radius from 25 to 50,000 metres.';
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Academic year form: label "YYYY-YYYY" (consecutive years), optional ISO start/end dates. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function academicYearInput(body: any): AcademicYearInput {
     const label = typeof body?.label === 'string' ? body.label.trim() : '';
@@ -26,106 +25,106 @@ function academicYearInput(body: any): AcademicYearInput {
 export class GeofenceController {
     constructor(private readonly geofence: GeofenceService) {}
 
-    /* ── Default field area (years without their own area) ── */
-
     @Get('admin/geofence')
     @UseGuards(AdminGuard)
     @Header('Cache-Control', 'no-store')
-    getAdminArea(@Req() req: Request) {
-        return { area: this.geofence.getArea(req.admin.college_id), scope: req.admin.college_id ? 'Your college' : 'Default for all colleges' };
+    async getAdminArea(@Req() req: Request) {
+        return {
+            area: await this.geofence.getArea(req.admin.college_id),
+            scope: req.admin.college_id ? 'Your college' : 'Default for all colleges',
+        };
     }
 
     @Put('admin/geofence')
     @UseGuards(AdminGuard)
-    saveAdminArea(@Req() req: Request) {
+    async saveAdminArea(@Req() req: Request) {
         if (!validArea(req.body)) throw fail(400, AREA_ERROR);
         const { name, latitude, longitude, radius } = req.body;
-        this.geofence.saveArea(req.admin.college_id || 0, name, latitude, longitude, radius, req.admin.id);
+        await this.geofence.saveArea(req.admin.college_id || 0, name, latitude, longitude, radius, req.admin.id);
         return { success: true };
     }
-
-    /* ── Academic years (admin config) ── */
 
     @Get('admin/academic-years')
     @UseGuards(AdminGuard)
     @Header('Cache-Control', 'no-store')
-    listAcademicYears(@Req() req: Request) {
-        return { years: this.geofence.listAcademicYears(), default_area: this.geofence.getArea(req.admin.college_id) };
+    async listAcademicYears(@Req() req: Request) {
+        return {
+            years: await this.geofence.listAcademicYears(),
+            default_area: await this.geofence.getArea(req.admin.college_id),
+        };
     }
 
     @Post('admin/academic-years')
     @HttpCode(201)
     @UseGuards(AdminGuard)
-    createAcademicYear(@Req() req: Request) {
+    async createAcademicYear(@Req() req: Request) {
         const input = academicYearInput(req.body);
-        if (this.geofence.labelTaken(input.label)) throw fail(409, `Academic year ${input.label} already exists.`);
-        return { success: true, year: this.geofence.createAcademicYear(input) };
+        if (await this.geofence.labelTaken(input.label)) throw fail(409, `Academic year ${input.label} already exists.`);
+        return { success: true, year: await this.geofence.createAcademicYear(input) };
     }
 
-    /** Move students into an academic year (academic_year_id null = unassigned). */
     @Post('admin/academic-years/assign')
     @HttpCode(200)
     @UseGuards(AdminGuard)
-    assignStudents(@Req() req: Request) {
+    async assignStudents(@Req() req: Request) {
         const ids = Array.isArray(req.body?.student_ids) ? req.body.student_ids.map(Number).filter((n: number) => Number.isInteger(n) && n > 0) : [];
         if (!ids.length) throw fail(400, 'Choose at least one student.');
         const raw = req.body?.academic_year_id;
         const yearId = raw === null || raw === '' || raw === undefined ? null : Number(raw);
-        if (yearId !== null && !this.geofence.getAcademicYear(yearId)) throw fail(404, 'Academic year not found.');
-        return { success: true, updated: this.geofence.assignStudents(yearId, ids) };
+        if (yearId !== null && !(await this.geofence.getAcademicYear(yearId))) throw fail(404, 'Academic year not found.');
+        return { success: true, updated: await this.geofence.assignStudents(yearId, ids) };
     }
 
     @Put('admin/academic-years/:id')
     @UseGuards(AdminGuard)
-    updateAcademicYear(@Req() req: Request) {
+    async updateAcademicYear(@Req() req: Request) {
         const id = Number(req.params.id);
-        if (!this.geofence.getAcademicYear(id)) throw fail(404, 'Academic year not found.');
+        if (!(await this.geofence.getAcademicYear(id))) throw fail(404, 'Academic year not found.');
         const input = academicYearInput(req.body);
-        if (this.geofence.labelTaken(input.label, id)) throw fail(409, `Academic year ${input.label} already exists.`);
-        return { success: true, year: this.geofence.updateAcademicYear(id, input) };
+        if (await this.geofence.labelTaken(input.label, id)) throw fail(409, `Academic year ${input.label} already exists.`);
+        return { success: true, year: await this.geofence.updateAcademicYear(id, input) };
     }
 
     @Delete('admin/academic-years/:id')
     @UseGuards(AdminGuard)
-    deleteAcademicYear(@Req() req: Request) {
+    async deleteAcademicYear(@Req() req: Request) {
         const id = Number(req.params.id);
-        if (!this.geofence.getAcademicYear(id)) throw fail(404, 'Academic year not found.');
-        return { success: true, unassigned_students: this.geofence.deleteAcademicYear(id) };
+        if (!(await this.geofence.getAcademicYear(id))) throw fail(404, 'Academic year not found.');
+        return { success: true, unassigned_students: await this.geofence.deleteAcademicYear(id) };
     }
 
     @Put('admin/academic-years/:id/area')
     @UseGuards(AdminGuard)
-    saveYearArea(@Req() req: Request) {
+    async saveYearArea(@Req() req: Request) {
         const id = Number(req.params.id);
-        if (!this.geofence.getAcademicYear(id)) throw fail(404, 'Academic year not found.');
+        if (!(await this.geofence.getAcademicYear(id))) throw fail(404, 'Academic year not found.');
         if (!validArea(req.body)) throw fail(400, AREA_ERROR);
         const { name, latitude, longitude, radius } = req.body;
-        this.geofence.saveYearArea(id, name, latitude, longitude, radius, req.admin.id);
+        await this.geofence.saveYearArea(id, name, latitude, longitude, radius, req.admin.id);
         return { success: true };
     }
 
     @Delete('admin/academic-years/:id/area')
     @UseGuards(AdminGuard)
-    clearYearArea(@Req() req: Request) {
+    async clearYearArea(@Req() req: Request) {
         const id = Number(req.params.id);
-        if (!this.geofence.getAcademicYear(id)) throw fail(404, 'Academic year not found.');
-        this.geofence.clearYearArea(id);
+        if (!(await this.geofence.getAcademicYear(id))) throw fail(404, 'Academic year not found.');
+        await this.geofence.clearYearArea(id);
         return { success: true };
     }
-
-    /* ── Student side ── */
 
     @Get('student/geofence')
     @UseGuards(StudentGuard)
     @Header('Cache-Control', 'no-store')
-    getStudentArea(@Req() req: Request) {
-        return { area: this.geofence.getAreaForStudent(req.student) };
+    async getStudentArea(@Req() req: Request) {
+        return { area: await this.geofence.getAreaForStudent(req.student) };
     }
 
     @Post('student/geofence/check')
     @UseGuards(StudentGuard)
-    checkStudentLocation(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-        const error = checkLocation(this.geofence.getAreaForStudent(req.student), req.body);
+    async checkStudentLocation(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const area = await this.geofence.getAreaForStudent(req.student);
+        const error = checkLocation(area, req.body);
         res.status(error ? 403 : 200);
         return error ? { error } : { success: true };
     }

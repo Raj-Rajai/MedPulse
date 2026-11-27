@@ -5,13 +5,9 @@ import { HospitalGuard } from '../../auth/guards';
 import { fail, HttpError } from '../../common/http-error';
 import { HospitalFapModel } from './hospital-fap.model';
 
-/**
- * The original `handle` wrapper forwarded thrown errors to the centralized errorHandler,
- * which logs and answers `{ error: err.message || 'Internal server error', status: err.status || 500 }`.
- */
-const handle = <T>(fn: () => T): T => {
+const handle = async <T>(fn: () => Promise<T>): Promise<T> => {
     try {
-        return fn();
+        return await fn();
     } catch (err) {
         if (err instanceof HttpError) throw err;
         console.error('Unhandled server error:', err);
@@ -21,7 +17,6 @@ const handle = <T>(fn: () => T): T => {
     }
 };
 
-/** Auth for /hospital/fap is also applied by the pre-route middleware (router.use in the original). */
 @Controller()
 @UseGuards(HospitalGuard)
 export class HospitalFapController {
@@ -62,9 +57,9 @@ export class HospitalFapController {
 
     @Get('hospital/fap/patients/:id')
     dossier(@Req() req: Request) {
-        return handle(() => {
+        return handle(async () => {
             if (!/^\d+$/.test(req.params.id as string)) throw fail(400, 'Invalid FAP record ID.');
-            const dossier = this.fap.dossier(req.hospitalId, Number(req.params.id));
+            const dossier = await this.fap.dossier(req.hospitalId, Number(req.params.id));
             if (!dossier) throw fail(404, 'FAP record not found for this hospital.');
             return dossier;
         });

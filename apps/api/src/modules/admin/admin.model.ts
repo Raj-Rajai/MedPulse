@@ -12,86 +12,95 @@ export class AdminModel {
         return this.database.db;
     }
 
-    findByUsername(username: any): Row | null {
+    async findByUsername(username: any): Promise<Row | null> {
         if (!username) return null;
-        const row = this.db.prepare('SELECT * FROM admins WHERE LOWER(username) = LOWER(?)').get(username.trim());
+        const row = await this.db.queryOne('SELECT * FROM admins WHERE LOWER(username) = LOWER($1)', username.trim());
         return clean(row);
     }
 
-    findById(id: any): Row | null {
+    async findById(id: any): Promise<Row | null> {
         if (!id) return null;
-        const row = this.db.prepare('SELECT * FROM admins WHERE id = ?').get(id);
+        const row = await this.db.queryOne('SELECT * FROM admins WHERE id = $1', Number(id));
         return clean(row);
     }
 
-    getStats(): Row {
-        const totalStudents = this.db.prepare('SELECT COUNT(*) as c FROM students').get()?.c || 0;
-        const activeStudents = this.db.prepare("SELECT COUNT(*) as c FROM students WHERE status = 'Active'").get()?.c || 0;
-        const totalFamilies = this.db.prepare('SELECT COUNT(*) as c FROM families').get()?.c || 0;
-        const totalMembers = this.db.prepare('SELECT COUNT(*) as c FROM family_members').get()?.c || 0;
-        const totalFollowups = this.db.prepare('SELECT COUNT(*) as c FROM follow_ups').get()?.c || 0;
-        const totalColleges = this.db.prepare('SELECT COUNT(*) as c FROM colleges').get()?.c || 0;
-
-        // Epidemiological Disease Burden in Catchment Area
-        const totalHtn = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE has_htn = 'Y'").get()?.c || 0;
-        const totalDm = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE has_dm = 'Y'").get()?.c || 0;
-        const totalAnaemia = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE has_anaemia = 'Y'").get()?.c || 0;
-        const totalMalnutrition = this.db.prepare("SELECT COUNT(*) as c FROM family_members WHERE is_underweight = 'Y' OR is_wasting = 'Y' OR is_severe_wasting = 'Y'").get()?.c || 0;
-
-        // Breakdown by Medical College
-        const collegesBreakdown = this.db.prepare(`
-            SELECT c.id, c.name, c.code, c.city, c.state,
-                   (SELECT COUNT(*) FROM students s WHERE s.college_id = c.id) as students_count,
-                   (SELECT COUNT(*) FROM families f JOIN students s ON f.student_id = s.id WHERE s.college_id = c.id) as families_count,
-                   (SELECT COUNT(*) FROM family_members m JOIN families f ON m.family_id = f.id JOIN students s ON f.student_id = s.id WHERE s.college_id = c.id) as members_count
-            FROM colleges c
-            ORDER BY c.name ASC
-        `).all();
-
-        // Recent Survey Activity Streams
-        const recentFamilies = this.db.prepare(`
-            SELECT f.id, f.family_no, f.family_code, f.head_of_family, f.created_at, f.village,
-                   s.roll_number, s.name as student_name,
-                   (SELECT COUNT(*) FROM family_members m WHERE m.family_id = f.id) as members_count
-            FROM families f
-            JOIN students s ON f.student_id = s.id
-            ORDER BY f.id DESC
-            LIMIT 6
-        `).all();
-
-        const recentFollowups = this.db.prepare(`
-            SELECT fu.id, fu.visit_number, fu.visit_date, fu.health_progress, fu.treatment_compliance, fu.clinical_notes,
-                   m.name as member_name, f.family_no, s.roll_number, s.name as student_name
-            FROM follow_ups fu
-            JOIN family_members m ON fu.member_id = m.id
-            JOIN families f ON m.family_id = f.id
-            JOIN students s ON f.student_id = s.id
-            ORDER BY fu.id DESC
-            LIMIT 6
-        `).all();
+    async getStats(): Promise<Row> {
+        const [
+            totalStudents,
+            activeStudents,
+            totalFamilies,
+            totalMembers,
+            totalFollowups,
+            totalColleges,
+            totalHtn,
+            totalDm,
+            totalAnaemia,
+            totalMalnutrition,
+            collegesBreakdown,
+            recentFamilies,
+            recentFollowups,
+        ] = await Promise.all([
+            this.db.queryOne('SELECT COUNT(*) as c FROM students'),
+            this.db.queryOne("SELECT COUNT(*) as c FROM students WHERE status = 'Active'"),
+            this.db.queryOne('SELECT COUNT(*) as c FROM families'),
+            this.db.queryOne('SELECT COUNT(*) as c FROM family_members'),
+            this.db.queryOne('SELECT COUNT(*) as c FROM follow_ups'),
+            this.db.queryOne('SELECT COUNT(*) as c FROM colleges'),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE has_htn = 'Y'"),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE has_dm = 'Y'"),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE has_anaemia = 'Y'"),
+            this.db.queryOne("SELECT COUNT(*) as c FROM family_members WHERE is_underweight = 'Y' OR is_wasting = 'Y' OR is_severe_wasting = 'Y'"),
+            this.db.queryAll(`
+                SELECT c.id, c.name, c.code, c.city, c.state,
+                       (SELECT COUNT(*) FROM students s WHERE s.college_id = c.id) as students_count,
+                       (SELECT COUNT(*) FROM families f JOIN students s ON f.student_id = s.id WHERE s.college_id = c.id) as families_count,
+                       (SELECT COUNT(*) FROM family_members m JOIN families f ON m.family_id = f.id JOIN students s ON f.student_id = s.id WHERE s.college_id = c.id) as members_count
+                FROM colleges c
+                ORDER BY c.name ASC
+            `),
+            this.db.queryAll(`
+                SELECT f.id, f.family_no, f.family_code, f.head_of_family, f.created_at, f.village,
+                       s.roll_number, s.name as student_name,
+                       (SELECT COUNT(*) FROM family_members m WHERE m.family_id = f.id) as members_count
+                FROM families f
+                JOIN students s ON f.student_id = s.id
+                ORDER BY f.id DESC
+                LIMIT 6
+            `),
+            this.db.queryAll(`
+                SELECT fu.id, fu.visit_number, fu.visit_date, fu.health_progress, fu.treatment_compliance, fu.clinical_notes,
+                       m.name as member_name, f.family_no, s.roll_number, s.name as student_name
+                FROM follow_ups fu
+                JOIN family_members m ON fu.member_id = m.id
+                JOIN families f ON m.family_id = f.id
+                JOIN students s ON f.student_id = s.id
+                ORDER BY fu.id DESC
+                LIMIT 6
+            `),
+        ]);
 
         return {
             overview: {
-                total_students: totalStudents,
-                active_students: activeStudents,
-                total_families: totalFamilies,
-                total_members: totalMembers,
-                total_followups: totalFollowups,
-                total_colleges: totalColleges
+                total_students: totalStudents?.c || 0,
+                active_students: activeStudents?.c || 0,
+                total_families: totalFamilies?.c || 0,
+                total_members: totalMembers?.c || 0,
+                total_followups: totalFollowups?.c || 0,
+                total_colleges: totalColleges?.c || 0,
             },
             burden: {
-                total_htn: totalHtn,
-                total_dm: totalDm,
-                total_anaemia: totalAnaemia,
-                total_malnutrition: totalMalnutrition
+                total_htn: totalHtn?.c || 0,
+                total_dm: totalDm?.c || 0,
+                total_anaemia: totalAnaemia?.c || 0,
+                total_malnutrition: totalMalnutrition?.c || 0,
             },
             colleges: cleanList(collegesBreakdown),
             recent_families: cleanList(recentFamilies),
-            recent_followups: cleanList(recentFollowups)
+            recent_followups: cleanList(recentFollowups),
         };
     }
 
-    getStudents({ college_id, status, search }: Record<string, any>): Row[] {
+    async getStudents({ college_id, status, search }: Record<string, any>): Promise<Row[]> {
         let query = `
             SELECT s.*, c.name as college_name, ay.label as academic_year,
                    (SELECT COUNT(*) FROM families f WHERE f.student_id = s.id) as families_count,
@@ -105,50 +114,52 @@ export class AdminModel {
         const params: any[] = [];
 
         if (college_id) {
-            query += ` AND s.college_id = ?`;
-            params.push(college_id);
+            params.push(Number(college_id));
+            query += ` AND s.college_id = $${params.length}`;
         }
         if (status) {
-            query += ` AND s.status = ?`;
             params.push(status);
+            query += ` AND s.status = $${params.length}`;
         }
         if (search) {
-            query += ` AND (s.name LIKE ? OR s.roll_number LIKE ? OR s.email LIKE ?)`;
             const term = `%${search.trim()}%`;
-            params.push(term, term, term);
+            params.push(term);
+            const p = `$${params.length}`;
+            query += ` AND (s.name ILIKE ${p} OR s.roll_number ILIKE ${p} OR s.email ILIKE ${p})`;
         }
 
         query += ` ORDER BY s.roll_number ASC`;
-        const rows = this.db.prepare(query).all(...params);
+        const rows = await this.db.queryAll(query, ...params);
         return cleanList(rows);
     }
 
-    /** A valid academic_years id from a request value, the current year when absent, or null. */
-    private academicYearId(value: unknown, fallbackToCurrent: boolean): number | null {
+    private async academicYearId(value: unknown, fallbackToCurrent: boolean): Promise<number | null> {
         if (value !== undefined && value !== null && value !== '') {
-            const row = this.db.prepare('SELECT id FROM academic_years WHERE id = ?').get(Number(value));
+            const row = await this.db.queryOne('SELECT id FROM academic_years WHERE id = $1', Number(value));
             if (row) return Number(row.id);
         }
         if (!fallbackToCurrent) return null;
-        const current = this.db.prepare('SELECT id FROM academic_years WHERE is_current = 1').get();
+        const current = await this.db.queryOne('SELECT id FROM academic_years WHERE is_current = 1');
         return current ? Number(current.id) : null;
     }
 
-    createStudent({ roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status, academic_year_id }: Record<string, any>, requesterAdmin: Row): Row {
+    async createStudent(
+        { roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, status, academic_year_id }: Record<string, any>,
+        requesterAdmin: Row,
+    ): Promise<Row> {
         const cleanRoll = roll_number.toString().trim();
-        const existing = this.db.prepare('SELECT id FROM students WHERE LOWER(roll_number) = LOWER(?)').get(cleanRoll);
+        const existing = await this.db.queryOne('SELECT id FROM students WHERE LOWER(roll_number) = LOWER($1)', cleanRoll);
         if (existing) {
             return { conflict: true, message: `Cadet with Roll Number "${cleanRoll}" is already registered.` };
         }
 
         const targetCollegeId = college_id ? Number(college_id) : (requesterAdmin.university_id || 1);
-        const referralCode = generateUniqueReferralCode(this.db, targetCollegeId, cleanRoll);
+        const referralCode = await generateUniqueReferralCode(this.db, targetCollegeId, cleanRoll);
+        const ayId = await this.academicYearId(academic_year_id, true);
 
-        const stmt = this.db.prepare(`
-            INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status, academic_year_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-        const result = stmt.run(
+        const result = await this.db.insert(
+            `INSERT INTO students (roll_number, name, pin, email, phone, batch_year, posting_unit, college_id, referral_code, status, academic_year_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
             cleanRoll,
             name.trim(),
             pin && pin.toString().trim() ? pin.toString().trim() : '1234',
@@ -159,39 +170,43 @@ export class AdminModel {
             targetCollegeId,
             referralCode,
             status ? status.trim() : 'Active',
-            this.academicYearId(academic_year_id, true)
+            ayId,
         );
 
-        const newStudent = this.db.prepare(`
-            SELECT s.*, c.name as college_name 
-            FROM students s 
-            LEFT JOIN colleges c ON s.college_id = c.id 
-            WHERE s.id = ?
-        `).get(Number(result.lastInsertRowid));
+        const newStudent = await this.db.queryOne(
+            `SELECT s.*, c.name as college_name
+             FROM students s
+             LEFT JOIN colleges c ON s.college_id = c.id
+             WHERE s.id = $1`,
+            result.lastInsertRowid,
+        );
 
         return { student: clean(newStudent) };
     }
 
-    updateStudent(studentId: any, { name, email, phone, batch_year, posting_unit, college_id, status, academic_year_id }: Record<string, any>): Row | null {
-        const current = this.db.prepare('SELECT * FROM students WHERE id = ?').get(studentId);
+    async updateStudent(
+        studentId: any,
+        { name, email, phone, batch_year, posting_unit, college_id, status, academic_year_id }: Record<string, any>,
+    ): Promise<Row | null> {
+        const sid = Number(studentId);
+        const current = await this.db.queryOne('SELECT * FROM students WHERE id = $1', sid);
         if (!current) return null;
 
-        // Only when the form sends it; '' or null unassigns the student.
         if (academic_year_id !== undefined) {
-            this.db.prepare('UPDATE students SET academic_year_id = ? WHERE id = ?').run(this.academicYearId(academic_year_id, false), studentId);
+            const ayId = await this.academicYearId(academic_year_id, false);
+            await this.db.execute('UPDATE students SET academic_year_id = $1 WHERE id = $2', ayId, sid);
         }
 
-        this.db.prepare(`
-            UPDATE students
-            SET name = COALESCE(?, name),
-                email = ?,
-                phone = ?,
-                batch_year = COALESCE(?, batch_year),
-                posting_unit = COALESCE(?, posting_unit),
-                college_id = COALESCE(?, college_id),
-                status = COALESCE(?, status)
-            WHERE id = ?
-        `).run(
+        await this.db.execute(
+            `UPDATE students
+             SET name = COALESCE($1, name),
+                 email = $2,
+                 phone = $3,
+                 batch_year = COALESCE($4, batch_year),
+                 posting_unit = COALESCE($5, posting_unit),
+                 college_id = COALESCE($6, college_id),
+                 status = COALESCE($7, status)
+             WHERE id = $8`,
             name ? name.trim() : null,
             email !== undefined ? (email ? email.trim() : null) : current.email,
             phone !== undefined ? (phone ? phone.trim() : null) : current.phone,
@@ -199,55 +214,63 @@ export class AdminModel {
             posting_unit ? posting_unit.trim() : null,
             college_id ? Number(college_id) : null,
             status ? status.trim() : null,
-            studentId
+            sid,
         );
 
-        const updated = this.db.prepare(`
-            SELECT s.*, c.name as college_name 
-            FROM students s 
-            LEFT JOIN colleges c ON s.college_id = c.id 
-            WHERE s.id = ?
-        `).get(studentId);
+        const updated = await this.db.queryOne(
+            `SELECT s.*, c.name as college_name
+             FROM students s
+             LEFT JOIN colleges c ON s.college_id = c.id
+             WHERE s.id = $1`,
+            sid,
+        );
 
         return clean(updated);
     }
 
-    resetStudentPin(studentId: any, newPin = '1234'): Row | null {
-        const student = this.db.prepare('SELECT id, roll_number, name FROM students WHERE id = ?').get(studentId);
+    async resetStudentPin(studentId: any, newPin = '1234'): Promise<Row | null> {
+        const sid = Number(studentId);
+        const student = await this.db.queryOne('SELECT id, roll_number, name FROM students WHERE id = $1', sid);
         if (!student) return null;
 
-        this.db.prepare('UPDATE students SET pin = ? WHERE id = ?').run(newPin, studentId);
+        await this.db.execute('UPDATE students SET pin = $1 WHERE id = $2', newPin, sid);
         return student;
     }
 
-    deleteStudent(studentId: any): Row | null {
-        const student = this.db.prepare('SELECT id, roll_number, name FROM students WHERE id = ?').get(studentId);
+    async deleteStudent(studentId: any): Promise<Row | null> {
+        const sid = Number(studentId);
+        const student = await this.db.queryOne('SELECT id, roll_number, name FROM students WHERE id = $1', sid);
         if (!student) return null;
 
-        this.db.prepare('DELETE FROM students WHERE id = ?').run(studentId);
+        await this.db.execute('DELETE FROM students WHERE id = $1', sid);
         return student;
     }
 
-    getStudentFamilies(studentId: any): Row | null {
-        const student = this.db.prepare('SELECT s.*, c.name as college_name FROM students s LEFT JOIN colleges c ON s.college_id = c.id WHERE s.id = ?').get(studentId);
+    async getStudentFamilies(studentId: any): Promise<Row | null> {
+        const sid = Number(studentId);
+        const student = await this.db.queryOne(
+            'SELECT s.*, c.name as college_name FROM students s LEFT JOIN colleges c ON s.college_id = c.id WHERE s.id = $1',
+            sid,
+        );
         if (!student) return null;
 
-        const families = this.db.prepare(`
-            SELECT f.*,
-                   (SELECT COUNT(*) FROM family_members m WHERE m.family_id = f.id) as members_count,
-                   (SELECT COUNT(*) FROM follow_ups fu WHERE fu.student_id = f.student_id) as total_followups
-            FROM families f
-            WHERE f.student_id = ?
-            ORDER BY f.family_no ASC
-        `).all(studentId);
+        const families = await this.db.queryAll(
+            `SELECT f.*,
+                    (SELECT COUNT(*) FROM family_members m WHERE m.family_id = f.id) as members_count,
+                    (SELECT COUNT(*) FROM follow_ups fu WHERE fu.student_id = f.student_id) as total_followups
+             FROM families f
+             WHERE f.student_id = $1
+             ORDER BY f.family_no ASC`,
+            sid,
+        );
 
         return {
             student: clean(student),
-            families: cleanList(families)
+            families: cleanList(families),
         };
     }
 
-    getFamilies({ student_id, college_id, village, search }: Record<string, any>): Row[] {
+    async getFamilies({ student_id, college_id, village, search }: Record<string, any>): Promise<Row[]> {
         let query = `
             SELECT f.*, s.roll_number, s.name as student_name, c.name as college_name,
                    (SELECT COUNT(*) FROM family_members m WHERE m.family_id = f.id) as members_count
@@ -259,29 +282,30 @@ export class AdminModel {
         const params: any[] = [];
 
         if (student_id) {
-            query += ` AND f.student_id = ?`;
-            params.push(student_id);
+            params.push(Number(student_id));
+            query += ` AND f.student_id = $${params.length}`;
         }
         if (college_id) {
-            query += ` AND s.college_id = ?`;
-            params.push(college_id);
+            params.push(Number(college_id));
+            query += ` AND s.college_id = $${params.length}`;
         }
         if (village) {
-            query += ` AND f.village = ?`;
             params.push(village);
+            query += ` AND f.village = $${params.length}`;
         }
         if (search) {
-            query += ` AND (f.head_of_family LIKE ? OR f.family_code LIKE ? OR f.village LIKE ? OR s.roll_number LIKE ? OR s.name LIKE ?)`;
             const term = `%${search.trim()}%`;
-            params.push(term, term, term, term, term);
+            params.push(term);
+            const p = `$${params.length}`;
+            query += ` AND (f.head_of_family ILIKE ${p} OR f.family_code ILIKE ${p} OR f.village ILIKE ${p} OR s.roll_number ILIKE ${p} OR s.name ILIKE ${p})`;
         }
 
         query += ` ORDER BY f.id DESC`;
-        const rows = this.db.prepare(query).all(...params);
+        const rows = await this.db.queryAll(query, ...params);
         return cleanList(rows);
     }
 
-    getMembers({ has_htn, has_dm, has_anaemia, search }: Record<string, any>): Row[] {
+    async getMembers({ has_htn, has_dm, has_anaemia, search }: Record<string, any>): Promise<Row[]> {
         let query = `
             SELECT m.*, f.family_no, f.family_code, f.head_of_family, f.village,
                    s.roll_number, s.name as student_name, c.name as college_name
@@ -294,40 +318,43 @@ export class AdminModel {
         const params: any[] = [];
 
         if (has_htn) {
-            query += ` AND m.has_htn = ?`;
             params.push(has_htn);
+            query += ` AND m.has_htn = $${params.length}`;
         }
         if (has_dm) {
-            query += ` AND m.has_dm = ?`;
             params.push(has_dm);
+            query += ` AND m.has_dm = $${params.length}`;
         }
         if (has_anaemia) {
-            query += ` AND m.has_anaemia = ?`;
             params.push(has_anaemia);
+            query += ` AND m.has_anaemia = $${params.length}`;
         }
         if (search) {
-            query += ` AND (m.name LIKE ? OR m.diagnosis LIKE ? OR f.head_of_family LIKE ? OR s.roll_number LIKE ?)`;
             const term = `%${search.trim()}%`;
-            params.push(term, term, term, term);
+            params.push(term);
+            const p = `$${params.length}`;
+            query += ` AND (m.name ILIKE ${p} OR m.diagnosis ILIKE ${p} OR f.head_of_family ILIKE ${p} OR s.roll_number ILIKE ${p})`;
         }
 
         query += ` ORDER BY m.id DESC LIMIT 100`;
-        const rows = this.db.prepare(query).all(...params);
+        const rows = await this.db.queryAll(query, ...params);
         return cleanList(rows);
     }
 
-    getUniversityAdmins(uniId: any): Row {
-        const college = this.db.prepare('SELECT * FROM colleges WHERE id = ?').get(uniId);
+    async getUniversityAdmins(uniId: any): Promise<Row> {
+        const uid = Number(uniId);
+        const college = await this.db.queryOne('SELECT * FROM colleges WHERE id = $1', uid);
         const maxQuota = (college && college.max_admins) ? college.max_admins : 10;
 
-        const admins = this.db.prepare(`
-            SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
-                   c.name as university_name, c.code as university_code
-            FROM admins a
-            LEFT JOIN colleges c ON a.university_id = c.id
-            WHERE a.university_id = ?
-            ORDER BY CASE WHEN a.role LIKE '%Super Admin%' THEN 1 ELSE 2 END, a.id ASC
-        `).all(uniId);
+        const admins = await this.db.queryAll(
+            `SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
+                    c.name as university_name, c.code as university_code
+             FROM admins a
+             LEFT JOIN colleges c ON a.university_id = c.id
+             WHERE a.university_id = $1
+             ORDER BY CASE WHEN a.role LIKE '%Super Admin%' THEN 1 ELSE 2 END, a.id ASC`,
+            uid,
+        );
 
         const superAdminCount = admins.filter((a) => a.role === 'University Super Admin' || a.role === 'Super Admin').length;
         const regularAdmins = admins.filter((a) => a.role !== 'University Super Admin' && a.role !== 'Super Admin');
@@ -340,15 +367,18 @@ export class AdminModel {
                 current_admins: adminCount,
                 remaining_seats: Math.max(0, maxQuota - adminCount),
                 super_admin_count: superAdminCount,
-                is_at_capacity: adminCount >= maxQuota
+                is_at_capacity: adminCount >= maxQuota,
             },
-            admins: cleanList(admins)
+            admins: cleanList(admins),
         };
     }
 
-    createUniversityAdmin({ username, name, pin, email, phone, role, university_id, status }: Record<string, any>, requesterAdmin: Row): Row {
+    async createUniversityAdmin(
+        { username, name, pin, email, phone, role, university_id, status }: Record<string, any>,
+        requesterAdmin: Row,
+    ): Promise<Row> {
         const targetUniId = university_id ? Number(university_id) : (requesterAdmin.university_id || 1);
-        const college = this.db.prepare('SELECT * FROM colleges WHERE id = ?').get(targetUniId);
+        const college = await this.db.queryOne('SELECT * FROM colleges WHERE id = $1', targetUniId);
         if (!college) {
             return { notFound: true, message: 'Target university institution not found' };
         }
@@ -356,45 +386,43 @@ export class AdminModel {
         const maxQuota = college.max_admins || 10;
         const targetRole = (role && role.includes('Super Admin')) ? 'University Super Admin' : 'University Admin';
 
-        // 1. Enforce 1 Super Admin constraint
         if (targetRole === 'University Super Admin') {
-            const existingSuper = this.db.prepare(`
-                SELECT id, name, username FROM admins 
-                WHERE university_id = ? AND (role = 'University Super Admin' OR role = 'Super Admin')
-            `).get(targetUniId);
+            const existingSuper = await this.db.queryOne(
+                `SELECT id, name, username FROM admins
+                 WHERE university_id = $1 AND (role = 'University Super Admin' OR role = 'Super Admin')`,
+                targetUniId,
+            );
             if (existingSuper) {
                 return {
                     conflict: true,
-                    message: `University "${college.name}" already has an appointed Super Admin: ${existingSuper.name} (${existingSuper.username}). Each university can have only 1 Super Admin.`
+                    message: `University "${college.name}" already has an appointed Super Admin: ${existingSuper.name} (${existingSuper.username}). Each university can have only 1 Super Admin.`,
                 };
             }
         } else {
-            // 2. Enforce strict 10 University Admins quota constraint
-            const currentCount = this.db.prepare(`
-                SELECT COUNT(*) as c FROM admins 
-                WHERE university_id = ? AND role != 'University Super Admin' AND role != 'Super Admin'
-            `).get(targetUniId)?.c || 0;
+            const currentRow = await this.db.queryOne(
+                `SELECT COUNT(*) as c FROM admins
+                 WHERE university_id = $1 AND role != 'University Super Admin' AND role != 'Super Admin'`,
+                targetUniId,
+            );
+            const currentCount = currentRow?.c || 0;
 
             if (currentCount >= maxQuota) {
                 return {
                     quotaExceeded: true,
-                    message: `University Admin quota exceeded for "${college.name}". Maximum ${maxQuota} University Admins allowed (Current: ${currentCount}/${maxQuota} seats used).`
+                    message: `University Admin quota exceeded for "${college.name}". Maximum ${maxQuota} University Admins allowed (Current: ${currentCount}/${maxQuota} seats used).`,
                 };
             }
         }
 
-        // 3. Username uniqueness
         const cleanUser = username.toString().trim();
-        const existingUser = this.db.prepare('SELECT id FROM admins WHERE LOWER(username) = LOWER(?)').get(cleanUser);
+        const existingUser = await this.db.queryOne('SELECT id FROM admins WHERE LOWER(username) = LOWER($1)', cleanUser);
         if (existingUser) {
             return { userConflict: true, message: `Admin username "${cleanUser}" is already taken.` };
         }
 
-        const stmt = this.db.prepare(`
-            INSERT INTO admins (username, name, pin, email, phone, role, university_id, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-        const result = stmt.run(
+        const result = await this.db.insert(
+            `INSERT INTO admins (username, name, pin, email, phone, role, university_id, status)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
             cleanUser,
             name.trim(),
             pin && pin.toString().trim() ? pin.toString().trim() : '9999',
@@ -402,70 +430,74 @@ export class AdminModel {
             phone ? phone.trim() : null,
             targetRole,
             targetUniId,
-            status || 'Active'
+            status || 'Active',
         );
 
-        const newAdmin = this.db.prepare(`
-            SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
-                   c.name as university_name, c.code as university_code
-            FROM admins a
-            LEFT JOIN colleges c ON a.university_id = c.id
-            WHERE a.id = ?
-        `).get(Number(result.lastInsertRowid));
+        const newAdmin = await this.db.queryOne(
+            `SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
+                    c.name as university_name, c.code as university_code
+             FROM admins a
+             LEFT JOIN colleges c ON a.university_id = c.id
+             WHERE a.id = $1`,
+            result.lastInsertRowid,
+        );
 
         return {
             collegeName: college.name,
-            admin: clean(newAdmin)
+            admin: clean(newAdmin),
         };
     }
 
-    updateUniversityAdmin(adminId: any, { name, email, phone, status }: Record<string, any>): Row | null {
-        const current = this.db.prepare('SELECT * FROM admins WHERE id = ?').get(adminId);
+    async updateUniversityAdmin(adminId: any, { name, email, phone, status }: Record<string, any>): Promise<Row | null> {
+        const aid = Number(adminId);
+        const current = await this.db.queryOne('SELECT * FROM admins WHERE id = $1', aid);
         if (!current) return null;
 
-        this.db.prepare(`
-            UPDATE admins
-            SET name = COALESCE(?, name),
-                email = ?,
-                phone = ?,
-                status = COALESCE(?, status)
-            WHERE id = ?
-        `).run(
+        await this.db.execute(
+            `UPDATE admins
+             SET name = COALESCE($1, name),
+                 email = $2,
+                 phone = $3,
+                 status = COALESCE($4, status)
+             WHERE id = $5`,
             name ? name.trim() : null,
             email !== undefined ? (email ? email.trim() : null) : current.email,
             phone !== undefined ? (phone ? phone.trim() : null) : current.phone,
             status ? status.trim() : null,
-            adminId
+            aid,
         );
 
-        const updated = this.db.prepare(`
-            SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
-                   c.name as university_name, c.code as university_code
-            FROM admins a
-            LEFT JOIN colleges c ON a.university_id = c.id
-            WHERE a.id = ?
-        `).get(adminId);
+        const updated = await this.db.queryOne(
+            `SELECT a.id, a.username, a.name, a.email, a.phone, a.role, a.university_id, a.status, a.created_at,
+                    c.name as university_name, c.code as university_code
+             FROM admins a
+             LEFT JOIN colleges c ON a.university_id = c.id
+             WHERE a.id = $1`,
+            aid,
+        );
 
         return clean(updated);
     }
 
-    resetUniversityAdminPin(adminId: any, newPin = '9999'): Row | null {
-        const target = this.db.prepare('SELECT id, name, username FROM admins WHERE id = ?').get(adminId);
+    async resetUniversityAdminPin(adminId: any, newPin = '9999'): Promise<Row | null> {
+        const aid = Number(adminId);
+        const target = await this.db.queryOne('SELECT id, name, username FROM admins WHERE id = $1', aid);
         if (!target) return null;
 
-        this.db.prepare('UPDATE admins SET pin = ? WHERE id = ?').run(newPin, adminId);
+        await this.db.execute('UPDATE admins SET pin = $1 WHERE id = $2', newPin, aid);
         return target;
     }
 
-    deleteUniversityAdmin(adminId: any): Row {
-        const target = this.db.prepare('SELECT id, name, username, role, university_id FROM admins WHERE id = ?').get(adminId);
+    async deleteUniversityAdmin(adminId: any): Promise<Row> {
+        const aid = Number(adminId);
+        const target = await this.db.queryOne('SELECT id, name, username, role, university_id FROM admins WHERE id = $1', aid);
         if (!target) return { notFound: true };
 
         if (target.role === 'University Super Admin' || target.role === 'Super Admin') {
             return { isSuperAdmin: true };
         }
 
-        this.db.prepare('DELETE FROM admins WHERE id = ?').run(adminId);
+        await this.db.execute('DELETE FROM admins WHERE id = $1', aid);
         return { target };
     }
 }

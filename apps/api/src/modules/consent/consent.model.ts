@@ -30,20 +30,22 @@ export class ConsentModel {
         return this.dbService.db;
     }
 
-    getStatus(userId: string, consentType: string, version: string): { consented: boolean; consent: Row | null } {
-        const stmt = this.db.prepare(`
-            SELECT * FROM consent_records
-            WHERE user_id = ? AND consent_type = ? AND consent_version = ?
-            ORDER BY id DESC LIMIT 1
-        `);
-        const rec = stmt.get(userId, consentType, version);
+    async getStatus(userId: string, consentType: string, version: string): Promise<{ consented: boolean; consent: Row | null }> {
+        const rec = await this.db.queryOne(
+            `SELECT * FROM consent_records
+             WHERE user_id = $1 AND consent_type = $2 AND consent_version = $3
+             ORDER BY id DESC LIMIT 1`,
+            userId,
+            consentType,
+            version,
+        );
         if (rec && rec.action === 'GRANTED') {
             return { consented: true, consent: rec };
         }
         return { consented: false, consent: null };
     }
 
-    recordConsent(data: {
+    async recordConsent(data: {
         userId: string;
         actorId: string;
         role: string;
@@ -56,19 +58,16 @@ export class ConsentModel {
         source: string;
         ipAddress?: string | null;
         userAgent?: string | null;
-    }): Row {
+    }): Promise<Row> {
         const consentId = `cst_${randomUUID()}`;
         const timestamp = new Date().toISOString();
 
-        const insert = this.db.prepare(`
-            INSERT INTO consent_records (
+        await this.db.execute(
+            `INSERT INTO consent_records (
                 consent_id, user_id, actor_id, role, consent_type,
                 consent_version, purpose_version, privacy_policy_version,
                 purpose_scope, action, source, ip_address, user_agent, timestamp
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-
-        insert.run(
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
             consentId,
             data.userId,
             data.actorId,
@@ -82,25 +81,28 @@ export class ConsentModel {
             data.source,
             data.ipAddress || null,
             data.userAgent || null,
-            timestamp
+            timestamp,
         );
 
-        const rec = this.db.prepare('SELECT * FROM consent_records WHERE consent_id = ?').get(consentId);
+        const rec = await this.db.queryOne('SELECT * FROM consent_records WHERE consent_id = $1', consentId);
         return rec!;
     }
 
-    getHistory(userId: string, consentType?: string): Row[] {
+    async getHistory(userId: string, consentType?: string): Promise<Row[]> {
         if (consentType) {
-            return this.db.prepare(`
-                SELECT * FROM consent_records
-                WHERE user_id = ? AND consent_type = ?
-                ORDER BY id DESC
-            `).all(userId, consentType);
+            return this.db.queryAll(
+                `SELECT * FROM consent_records
+                 WHERE user_id = $1 AND consent_type = $2
+                 ORDER BY id DESC`,
+                userId,
+                consentType,
+            );
         }
-        return this.db.prepare(`
-            SELECT * FROM consent_records
-            WHERE user_id = ?
-            ORDER BY id DESC
-        `).all(userId);
+        return this.db.queryAll(
+            `SELECT * FROM consent_records
+             WHERE user_id = $1
+             ORDER BY id DESC`,
+            userId,
+        );
     }
 }

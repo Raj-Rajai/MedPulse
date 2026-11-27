@@ -6,8 +6,10 @@ The original Express app is the reference; the API is checked against it request
 ## Layout
 ```
 apps/api/            NestJS API (TypeScript)
+  prisma/schema.prisma PostgreSQL schema (Prisma ORM, 39 models)
+  scripts/             SQLite -> PostgreSQL migration & verification script
   src/main.ts          server entry: body parsers, portal pages, /api prefix
-  src/database/        SQLite connection, schema modules, Roll 235 seeder
+  src/database/        Prisma PostgreSQL service, PG triggers, Roll 235 seeder
   src/auth/            student / admin / patient / hospital guards + access checks
   src/common/          error rendering, JSON adapter, pre-route middleware (geofence, FAP auth)
   src/modules/<domain> one Nest module per domain: admin, campaign, college, engagement, export,
@@ -15,7 +17,7 @@ apps/api/            NestJS API (TypeScript)
   PORTING.md           conventions used for the port
 apps/web/            React + Vite portals: all portals are ported (student, admin, patient, hospital,
                        login/register/home); `npm start` serves the React build (apps/web/dist)
-database/            seed JSON + SQL references; health_survey.db lives here at runtime
+database/            legacy SQLite backup / seed references
 tools/parity/        replays ~350 requests against the original and the new API and diffs them
 tools/ui-parity/     screenshot harness comparing original HTML pages with the React pages
 ```
@@ -23,11 +25,12 @@ tools/ui-parity/     screenshot harness comparing original HTML pages with the R
 ## Run
 ```bash
 npm install
+cp .env.example .env          # set DATABASE_URL to your PostgreSQL instance
+npm run db:push               # create PostgreSQL tables from Prisma schema
 npm run build
-cp /path/to/your/health_survey.db database/   # or let it create a fresh one
-npm start                                      # http://localhost:3000
+npm start                     # http://localhost:3000
 ```
-Environment: `PORT`, `MEDPULSE_DB_PATH`, `MEDPULSE_FRONTEND_DIR`, `MEDPULSE_ROOT`.
+Environment: `DATABASE_URL`, `PORT`, `MEDPULSE_FRONTEND_DIR`, `MEDPULSE_ROOT`.
 
 ## Member identity on local and hosted servers
 

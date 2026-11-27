@@ -166,9 +166,9 @@ function standingOf(percentage: number, total: number, failed: number): string {
 }
 
 /** Students of `batch` ('all' = every batch). Students without a batch count as the default batch. */
-const BATCH_SQL = `(? = 'all' OR substr(lower(COALESCE(NULLIF(TRIM(s.batch_year), ''), '${DEFAULT_BATCH}')), 1, length(?)) = lower(?))`;
+const batchSql = (p: number) => `($${p} = 'all' OR substr(lower(COALESCE(NULLIF(TRIM(s.batch_year), ''), '${DEFAULT_BATCH}')), 1, length($${p})) = lower($${p}))`;
 const ACTIVE_SQL = `COALESCE(s.status, 'Active') != 'Inactive'`;
-const ROLL_ORDER = 'ORDER BY CAST(s.roll_number AS INTEGER), s.roll_number, s.id';
+const ROLL_ORDER = `ORDER BY (CASE WHEN s.roll_number ~ '^\\d+$' THEN s.roll_number::bigint ELSE 0 END), s.roll_number, s.id`;
 
 /* ------------------------------------------------------------------ */
 /* Model                                                               */
@@ -176,49 +176,50 @@ const ROLL_ORDER = 'ORDER BY CAST(s.roll_number AS INTEGER), s.roll_number, s.id
 
 @Injectable()
 export class AcademicModel {
-    constructor(private readonly database: DatabaseService, private readonly clusters: AttendanceClusterService) { }
+    constructor(private readonly database: DatabaseService, private readonly clusters: AttendanceClusterService) {}
 
     private get db() {
         return this.database.db;
     }
 
-    private transaction<T>(fn: () => T): T {
-        this.db.exec('BEGIN');
-        try {
-            const out = fn();
-            this.db.exec('COMMIT');
-            return out;
-        } catch (e) {
-            this.db.exec('ROLLBACK');
-            throw e;
-        }
-    }
-
-    /** College an admin manages (admins.university_id references colleges(id)). */
     static collegeOfAdmin(admin: Row): number {
         return Number(admin.university_id || admin.college_id || 1);
     }
 
-    private upsertSubject(collegeId: number, code: string, name: string, faculty: string | null, room: string | null) {
-        this.db.prepare(`
-            INSERT INTO academic_subjects (college_id, code, name, default_faculty, default_room)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT (college_id, code) DO UPDATE SET
-                name = excluded.name,
-                default_faculty = COALESCE(excluded.default_faculty, academic_subjects.default_faculty),
-                default_room = COALESCE(excluded.default_room, academic_subjects.default_room),
-                updated_at = CURRENT_TIMESTAMP
-        `).run(collegeId, code, name, faculty, room);
+    private async upsertSubject(db: typeof this.db, collegeId: number, code: string, name: string, faculty: string | null, room: string | null) {
+        await db.execute(
+            `INSERT INTO academic_subjects (college_id, code, name, default_faculty, default_room)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (college_id, code) DO UPDATE SET
+                 name = EXCLUDED.name,
+                 default_faculty = COALESCE(EXCLUDED.default_faculty, academic_subjects.default_faculty),
+                 default_room = COALESCE(EXCLUDED.default_room, academic_subjects.default_room),
+                 updated_at = CURRENT_TIMESTAMP`,
+            Number(collegeId),
+            code,
+            name,
+            faculty,
+            room,
+        );
     }
 
-    private studentInCollege(collegeId: number, studentId: unknown): Row | undefined {
-        return this.db.prepare('SELECT s.id, s.roll_number, s.name FROM students s WHERE s.id = ? AND s.college_id = ?').get(studentId, collegeId);
+    private async studentInCollege(collegeId: number, studentId: unknown): Promise<Row | undefined> {
+        return this.db.queryOne(
+            'SELECT s.id, s.roll_number, s.name FROM students s WHERE s.id = $1 AND s.college_id = $2',
+            Number(studentId),
+            Number(collegeId),
+        );
     }
 
     /* ======================= Admin: meta ======================= */
 
-    getMeta(collegeId: number): Row {
-        const saved = cleanList(this.db.prepare('SELECT code, name, default_faculty, default_room FROM academic_subjects WHERE college_id = ? ORDER BY name').all(collegeId));
+    async getMeta(collegeId: number): Promise<Row> {
+        const saved = cleanList(
+            await this.db.queryAll(
+                'SELECT code, name, default_faculty, default_room FROM academic_subjects WHERE college_id = $1 ORDER BY name',
+                Number(collegeId),
+            ),
+        );
         const byCode = new Map<string, Row>();
         for (const s of DEFAULT_SUBJECTS) byCode.set(s.code, { ...s });
         for (const s of saved) {
@@ -239,30 +240,35 @@ export class AcademicModel {
 
     /* ======================= Admin: attendance ======================= */
 
-    getAttendanceSheet(collegeId: number, q: Row): Row {
+    async getAttendanceSheet(collegeId: number, q: Row): Promise<Row> {
         const date = q.date === undefined || q.date === '' ? todayIso() : q.date;
         if (!isIsoDate(date)) throw new StatusError('date must be a valid YYYY-MM-DD date', 400);
         const lectureNo = q.lecture_no === undefined || q.lecture_no === '' ? 1 : parseInt(String(q.lecture_no), 10);
         if (!Number.isInteger(lectureNo) || lectureNo < 1 || lectureNo > 12) throw new StatusError('lecture_no must be a number from 1 to 12', 400);
         const batch = text(q.batch) || 'all';
 
-        const students = cleanList(this.db.prepare(`
-            SELECT s.id AS student_id, s.roll_number, s.name, s.posting_unit, s.batch_year,
-                   a.id AS record_id, COALESCE(a.status, 'Not Marked') AS status, COALESCE(a.remarks, '') AS remarks,
-                   a.lecture_id
-            FROM students s
-            LEFT JOIN academic_attendance a ON a.student_id = s.id AND a.lecture_date = ? AND a.lecture_no = ?
-            WHERE s.college_id = ? AND ${BATCH_SQL} AND (${ACTIVE_SQL} OR a.id IS NOT NULL)
-            ${ROLL_ORDER}
-        `).all(date, lectureNo, collegeId, batch, batch, batch));
+        const students = cleanList(
+            await this.db.queryAll(
+                `SELECT s.id AS student_id, s.roll_number, s.name, s.posting_unit, s.batch_year,
+                        a.id AS record_id, COALESCE(a.status, 'Not Marked') AS status, COALESCE(a.remarks, '') AS remarks,
+                        a.lecture_id
+                 FROM students s
+                 LEFT JOIN academic_attendance a ON a.student_id = s.id AND a.lecture_date = $1 AND a.lecture_no = $2
+                 WHERE s.college_id = $3 AND ${batchSql(4)} AND (${ACTIVE_SQL} OR a.id IS NOT NULL)
+                 ${ROLL_ORDER}`,
+                date,
+                lectureNo,
+                Number(collegeId),
+                batch,
+            ),
+        );
 
-        // Session details: the lecture most of this cohort was marked in for the slot.
         const counts = new Map<number, number>();
         for (const s of students) if (s.lecture_id) counts.set(s.lecture_id, (counts.get(s.lecture_id) || 0) + 1);
         let sessionInfo: Row | null = null;
         if (counts.size) {
             const lectureId = [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
-            const l = this.db.prepare('SELECT * FROM academic_lectures WHERE id = ?').get(lectureId);
+            const l = await this.db.queryOne('SELECT * FROM academic_lectures WHERE id = $1', Number(lectureId));
             if (l) {
                 sessionInfo = {
                     lecture_id: l.id,
@@ -281,7 +287,7 @@ export class AcademicModel {
         return { date, lecture_no: lectureNo, batch, students, session_info: sessionInfo };
     }
 
-    saveAttendance(collegeId: number, adminId: number, body: Row): Row {
+    async saveAttendance(collegeId: number, adminId: number, body: Row): Promise<Row> {
         const date = body.date;
         if (!isIsoDate(date)) throw new StatusError('A valid attendance date (YYYY-MM-DD) is required', 400);
         const lectureNo = parseInt(String(body.lecture_no), 10);
@@ -299,43 +305,67 @@ export class AcademicModel {
         const timeSlot = text(body.time_slot) || null;
         const topic = text(body.topic) || null;
 
-        const entries = list.map((e: Row, i: number) => {
+        const entries: Array<{ studentId: number; status: string; remarks: string | null }> = [];
+        for (let i = 0; i < list.length; i++) {
+            const e = list[i];
             const status = text(e?.status) || 'Present';
             if (!(ATTENDANCE_STATUSES as readonly string[]).includes(status)) {
                 throw new StatusError(`Invalid status "${status}" in attendance entry ${i + 1}`, 400);
             }
-            const student = this.studentInCollege(collegeId, e?.student_id);
+            const student = await this.studentInCollege(collegeId, e?.student_id);
             if (!student) throw new StatusError(`Student ${text(e?.student_id) || '(missing)'} is not registered in your college`, 400);
-            return { studentId: student.id as number, status, remarks: text(e?.remarks) || null };
-        });
+            entries.push({ studentId: Number(student.id), status, remarks: text(e?.remarks) || null });
+        }
 
-        return this.transaction(() => {
-            this.upsertSubject(collegeId, subjectCode, name, faculty, room);
-            this.db.prepare(`
-                INSERT INTO academic_lectures (college_id, lecture_date, lecture_no, subject_code, subject_name, session_type, time_slot, room_no, faculty_name, topic, created_by_admin_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (college_id, lecture_date, lecture_no, subject_code) DO UPDATE SET
-                    subject_name = excluded.subject_name, session_type = excluded.session_type, time_slot = excluded.time_slot,
-                    room_no = excluded.room_no, faculty_name = excluded.faculty_name, topic = excluded.topic,
-                    updated_at = CURRENT_TIMESTAMP
-            `).run(collegeId, date, lectureNo, subjectCode, name, sessionType, timeSlot, room, faculty, topic, adminId);
-            const lecture = this.db.prepare('SELECT id FROM academic_lectures WHERE college_id = ? AND lecture_date = ? AND lecture_no = ? AND subject_code = ?')
-                .get(collegeId, date, lectureNo, subjectCode)!;
+        return this.db.inTransaction(async (tx) => {
+            await this.upsertSubject(tx, collegeId, subjectCode, name, faculty, room);
+            await tx.execute(
+                `INSERT INTO academic_lectures (college_id, lecture_date, lecture_no, subject_code, subject_name, session_type, time_slot, room_no, faculty_name, topic, created_by_admin_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                 ON CONFLICT (college_id, lecture_date, lecture_no, subject_code) DO UPDATE SET
+                     subject_name = EXCLUDED.subject_name, session_type = EXCLUDED.session_type, time_slot = EXCLUDED.time_slot,
+                     room_no = EXCLUDED.room_no, faculty_name = EXCLUDED.faculty_name, topic = EXCLUDED.topic,
+                     updated_at = CURRENT_TIMESTAMP`,
+                Number(collegeId),
+                date,
+                lectureNo,
+                subjectCode,
+                name,
+                sessionType,
+                timeSlot,
+                room,
+                faculty,
+                topic,
+                Number(adminId),
+            );
+            const lecture = (await tx.queryOne(
+                'SELECT id FROM academic_lectures WHERE college_id = $1 AND lecture_date = $2 AND lecture_no = $3 AND subject_code = $4',
+                Number(collegeId),
+                date,
+                lectureNo,
+                subjectCode,
+            ))!;
 
-            const upsert = this.db.prepare(`
-                INSERT INTO academic_attendance (lecture_id, student_id, lecture_date, lecture_no, status, remarks, marked_by_admin_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (student_id, lecture_date, lecture_no) DO UPDATE SET
-                    lecture_id = excluded.lecture_id, status = excluded.status, remarks = excluded.remarks,
-                    marked_by_admin_id = excluded.marked_by_admin_id, updated_at = CURRENT_TIMESTAMP
-            `);
             const tally: Record<string, number> = { Present: 0, Absent: 0 };
             for (const e of entries) {
-                upsert.run(lecture.id, e.studentId, date, lectureNo, e.status, e.remarks, adminId);
-                this.clusters.recordManualChange(e.studentId, date, lectureNo, adminId, e.status);
+                await tx.execute(
+                    `INSERT INTO academic_attendance (lecture_id, student_id, lecture_date, lecture_no, status, remarks, marked_by_admin_id)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)
+                     ON CONFLICT (student_id, lecture_date, lecture_no) DO UPDATE SET
+                         lecture_id = EXCLUDED.lecture_id, status = EXCLUDED.status, remarks = EXCLUDED.remarks,
+                         marked_by_admin_id = EXCLUDED.marked_by_admin_id, updated_at = CURRENT_TIMESTAMP`,
+                    Number(lecture.id),
+                    e.studentId,
+                    date,
+                    lectureNo,
+                    e.status,
+                    e.remarks,
+                    Number(adminId),
+                );
+                await this.clusters.recordManualChange(e.studentId, date, lectureNo, adminId, e.status, tx);
                 tally[e.status] = (tally[e.status] || 0) + 1;
             }
-            this.removeEmptyLectures(collegeId, date, lectureNo);
+            await this.removeEmptyLectures(tx, collegeId, date, lectureNo);
 
             return {
                 success: true,
@@ -347,63 +377,71 @@ export class AcademicModel {
         });
     }
 
-    /** Lectures in a slot that no longer have any attendance rows (every student moved to another subject). */
-    private removeEmptyLectures(collegeId: number, date: string, lectureNo: number) {
-        this.db.prepare(`
-            DELETE FROM academic_lectures
-            WHERE college_id = ? AND lecture_date = ? AND lecture_no = ?
-              AND NOT EXISTS (SELECT 1 FROM academic_attendance a WHERE a.lecture_id = academic_lectures.id)
-              AND NOT EXISTS (SELECT 1 FROM attendance_clusters c WHERE c.lecture_id = academic_lectures.id)
-        `).run(collegeId, date, lectureNo);
+    private async removeEmptyLectures(db: typeof this.db, collegeId: number, date: string, lectureNo: number) {
+        await db.execute(
+            `DELETE FROM academic_lectures
+             WHERE college_id = $1 AND lecture_date = $2 AND lecture_no = $3
+               AND NOT EXISTS (SELECT 1 FROM academic_attendance a WHERE a.lecture_id = academic_lectures.id)
+               AND NOT EXISTS (SELECT 1 FROM attendance_clusters c WHERE c.lecture_id = academic_lectures.id)`,
+            Number(collegeId),
+            date,
+            Number(lectureNo),
+        );
     }
 
-    getAttendanceHistory(collegeId: number, q: Row): Row {
+    async getAttendanceHistory(collegeId: number, q: Row): Promise<Row> {
         let limit = parseInt(String(q.limit ?? '100'), 10);
         if (!Number.isInteger(limit) || limit < 1) limit = 100;
         limit = Math.min(limit, 1000);
-        const where = ['l.college_id = ?'];
-        const params: unknown[] = [collegeId];
+        const where = ['l.college_id = $1'];
+        const params: unknown[] = [Number(collegeId)];
         if (q.date) {
             if (!isIsoDate(q.date)) throw new StatusError('date must be a valid YYYY-MM-DD date', 400);
-            where.push('a.lecture_date = ?');
             params.push(q.date);
+            where.push(`a.lecture_date = $${params.length}`);
         }
         if (q.status && q.status !== 'all') {
             if (!(ATTENDANCE_STATUSES as readonly string[]).includes(String(q.status))) throw new StatusError('Unknown attendance status filter', 400);
-            where.push('a.status = ?');
             params.push(q.status);
+            where.push(`a.status = $${params.length}`);
         }
         const search = text(q.search);
         if (search) {
-            where.push('(s.roll_number LIKE ? OR s.name LIKE ? OR l.subject_name LIKE ? OR l.subject_code LIKE ? OR l.topic LIKE ? OR l.faculty_name LIKE ?)');
             const like = `%${search}%`;
-            params.push(like, like, like, like, like, like);
+            params.push(like);
+            const p = `$${params.length}`;
+            where.push(`(s.roll_number ILIKE ${p} OR s.name ILIKE ${p} OR l.subject_name ILIKE ${p} OR l.subject_code ILIKE ${p} OR l.topic ILIKE ${p} OR l.faculty_name ILIKE ${p})`);
         }
-        const records = cleanList(this.db.prepare(`
-            SELECT a.id, a.lecture_date AS date, a.lecture_no, s.id AS student_id, s.roll_number, s.name AS student_name,
-                   l.subject_name AS subject, l.subject_code, l.session_type, l.topic, a.status, a.remarks,
-                   l.faculty_name, l.room_no, l.time_slot, a.updated_at
-            FROM academic_attendance a
-            JOIN academic_lectures l ON l.id = a.lecture_id
-            JOIN students s ON s.id = a.student_id
-            WHERE ${where.join(' AND ')}
-            ORDER BY a.lecture_date DESC, a.lecture_no ASC, CAST(s.roll_number AS INTEGER), s.roll_number
-            LIMIT ?
-        `).all(...params, limit));
+        params.push(limit);
+        const records = cleanList(
+            await this.db.queryAll(
+                `SELECT a.id, a.lecture_date AS date, a.lecture_no, s.id AS student_id, s.roll_number, s.name AS student_name,
+                        l.subject_name AS subject, l.subject_code, l.session_type, l.topic, a.status, a.remarks,
+                        l.faculty_name, l.room_no, l.time_slot, a.updated_at
+                 FROM academic_attendance a
+                 JOIN academic_lectures l ON l.id = a.lecture_id
+                 JOIN students s ON s.id = a.student_id
+                 WHERE ${where.join(' AND ')}
+                 ORDER BY a.lecture_date DESC, a.lecture_no ASC, (CASE WHEN s.roll_number ~ '^\\d+$' THEN s.roll_number::bigint ELSE 0 END), s.roll_number
+                 LIMIT $${params.length}`,
+                ...params,
+            ),
+        );
         return { records, count: records.length };
     }
 
-    /** Returns false when the record does not exist in this college. */
-    deleteAttendance(collegeId: number, id: unknown): boolean {
-        const rec = this.db.prepare(`
-            SELECT a.id, a.lecture_date, a.lecture_no FROM academic_attendance a
-            JOIN academic_lectures l ON l.id = a.lecture_id
-            WHERE a.id = ? AND l.college_id = ?
-        `).get(id, collegeId);
+    async deleteAttendance(collegeId: number, id: unknown): Promise<boolean> {
+        const rec = await this.db.queryOne(
+            `SELECT a.id, a.lecture_date, a.lecture_no FROM academic_attendance a
+             JOIN academic_lectures l ON l.id = a.lecture_id
+             WHERE a.id = $1 AND l.college_id = $2`,
+            Number(id),
+            Number(collegeId),
+        );
         if (!rec) return false;
-        this.transaction(() => {
-            this.db.prepare('DELETE FROM academic_attendance WHERE id = ?').run(rec.id);
-            this.removeEmptyLectures(collegeId, rec.lecture_date, rec.lecture_no);
+        await this.db.inTransaction(async (tx) => {
+            await tx.execute('DELETE FROM academic_attendance WHERE id = $1', Number(rec.id));
+            await this.removeEmptyLectures(tx, collegeId, rec.lecture_date, Number(rec.lecture_no));
         });
         return true;
     }
@@ -420,47 +458,62 @@ export class AcademicModel {
         return { yearLevel, examType, subjectCode };
     }
 
-    listExams(collegeId: number): Row {
-        const exams = cleanList(this.db.prepare(`
-            SELECT e.*, COUNT(m.id) AS marks_entered,
-                   ROUND(AVG(m.percentage), 1) AS class_average,
-                   SUM(CASE WHEN m.status IN ('Pass', 'Distinction') THEN 1 ELSE 0 END) AS passed
-            FROM academic_exams e
-            LEFT JOIN academic_exam_marks m ON m.exam_id = e.id
-            WHERE e.college_id = ?
-            GROUP BY e.id
-            ORDER BY e.year_level DESC, e.exam_date DESC, e.id DESC
-        `).all(collegeId));
+    async listExams(collegeId: number): Promise<Row> {
+        const exams = cleanList(
+            await this.db.queryAll(
+                `SELECT e.*, COUNT(m.id) AS marks_entered,
+                        ROUND(AVG(m.percentage)::numeric, 1) AS class_average,
+                        COALESCE(SUM(CASE WHEN m.status IN ('Pass', 'Distinction') THEN 1 ELSE 0 END), 0) AS passed
+                 FROM academic_exams e
+                 LEFT JOIN academic_exam_marks m ON m.exam_id = e.id
+                 WHERE e.college_id = $1
+                 GROUP BY e.id
+                 ORDER BY e.year_level DESC, e.exam_date DESC, e.id DESC`,
+                Number(collegeId),
+            ),
+        );
         return { exams };
     }
 
-    getExamSheet(collegeId: number, q: Row): Row {
+    async getExamSheet(collegeId: number, q: Row): Promise<Row> {
         const { yearLevel, examType, subjectCode } = this.parseExamKey(q);
         const isTwoPaper = isTwoPaperType(examType);
-        const exam = this.db.prepare('SELECT * FROM academic_exams WHERE college_id = ? AND year_level = ? AND exam_type = ? AND subject_code = ?')
-            .get(collegeId, yearLevel, examType, subjectCode);
+        const exam = await this.db.queryOne(
+            'SELECT * FROM academic_exams WHERE college_id = $1 AND year_level = $2 AND exam_type = $3 AND subject_code = $4',
+            Number(collegeId),
+            yearLevel,
+            examType,
+            subjectCode,
+        );
         const batch = YEAR_BATCH[yearLevel];
-        const marksheet = cleanList(this.db.prepare(`
-            SELECT s.id AS student_id, s.roll_number, s.name, s.batch_year,
-                   m.paper1_obtained, m.paper2_obtained, m.theory_obtained, m.practical_obtained, m.viva_obtained,
-                   m.total_obtained, m.percentage, COALESCE(m.status, 'Not Entered') AS status, COALESCE(m.faculty_remarks, '') AS faculty_remarks
-            FROM students s
-            LEFT JOIN academic_exam_marks m ON m.student_id = s.id AND m.exam_id = ?
-            WHERE s.college_id = ? AND ((${BATCH_SQL} AND ${ACTIVE_SQL}) OR m.id IS NOT NULL)
-            ${ROLL_ORDER}
-        `).all(exam ? exam.id : -1, collegeId, batch, batch, batch));
+        const marksheet = cleanList(
+            await this.db.queryAll(
+                `SELECT s.id AS student_id, s.roll_number, s.name, s.batch_year,
+                        m.paper1_obtained, m.paper2_obtained, m.theory_obtained, m.practical_obtained, m.viva_obtained,
+                        m.total_obtained, m.percentage, COALESCE(m.status, 'Not Entered') AS status, COALESCE(m.faculty_remarks, '') AS faculty_remarks
+                 FROM students s
+                 LEFT JOIN academic_exam_marks m ON m.student_id = s.id AND m.exam_id = $1
+                 WHERE s.college_id = $2 AND ((${batchSql(3)} AND ${ACTIVE_SQL}) OR m.id IS NOT NULL)
+                 ${ROLL_ORDER}`,
+                exam ? Number(exam.id) : -1,
+                Number(collegeId),
+                batch,
+            ),
+        );
         return {
             year_level: yearLevel,
             exam_type: examType,
             subject_code: subjectCode,
             is_two_paper: isTwoPaper,
-            max_marks: isTwoPaper ? { paper1: 100, paper2: 100, theory: 200, practical: 100, viva: 20, total: 300 } : { theory: 100, practical: 100, viva: 20, total: 200 },
+            max_marks: isTwoPaper
+                ? { paper1: 100, paper2: 100, theory: 200, practical: 100, viva: 20, total: 300 }
+                : { theory: 100, practical: 100, viva: 20, total: 200 },
             exam: exam ? { ...exam } : null,
             marksheet,
         };
     }
 
-    saveExamMarks(collegeId: number, adminId: number, body: Row): Row {
+    async saveExamMarks(collegeId: number, adminId: number, body: Row): Promise<Row> {
         const { yearLevel, examType, subjectCode } = this.parseExamKey(body);
         const isTwoPaper = isTwoPaperType(examType);
         const examDate = text(body.exam_date) || null;
@@ -469,54 +522,75 @@ export class AcademicModel {
         if (!Array.isArray(results) || results.length === 0) throw new StatusError('results must be a non-empty list of student marks', 400);
 
         const name = subjectName(subjectCode, body.subject);
-        const entries = results.map((r: Row, i: number) => {
-            const student = this.studentInCollege(collegeId, r?.student_id);
+        const entries: Array<{ studentId: number; marks: ComputedMarks | null; remarks: string | null }> = [];
+        for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            const student = await this.studentInCollege(collegeId, r?.student_id);
             if (!student) throw new StatusError(`Student ${text(r?.student_id) || '(missing) in row ' + (i + 1)} is not registered in your college`, 400);
             const marks = computeMarks(r || {}, isTwoPaper, `roll ${student.roll_number}`);
-            return { studentId: student.id as number, marks, remarks: text(r?.faculty_remarks) || null };
-        });
+            entries.push({ studentId: Number(student.id), marks, remarks: text(r?.faculty_remarks) || null });
+        }
 
-        return this.transaction(() => {
-            this.upsertSubject(collegeId, subjectCode, name, null, null);
-            this.db.prepare(`
-                INSERT INTO academic_exams (college_id, year_level, exam_type, subject_code, subject_name, exam_code, exam_name, exam_date, academic_year, created_by_admin_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (college_id, year_level, exam_type, subject_code) DO UPDATE SET
-                    subject_name = excluded.subject_name, exam_code = excluded.exam_code, exam_name = excluded.exam_name,
-                    exam_date = excluded.exam_date, academic_year = excluded.academic_year, updated_at = CURRENT_TIMESTAMP
-            `).run(
-                collegeId, yearLevel, examType, subjectCode, name,
+        return this.db.inTransaction(async (tx) => {
+            await this.upsertSubject(tx, collegeId, subjectCode, name, null, null);
+            await tx.execute(
+                `INSERT INTO academic_exams (college_id, year_level, exam_type, subject_code, subject_name, exam_code, exam_name, exam_date, academic_year, created_by_admin_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                 ON CONFLICT (college_id, year_level, exam_type, subject_code) DO UPDATE SET
+                     subject_name = EXCLUDED.subject_name, exam_code = EXCLUDED.exam_code, exam_name = EXCLUDED.exam_name,
+                     exam_date = EXCLUDED.exam_date, academic_year = EXCLUDED.academic_year, updated_at = CURRENT_TIMESTAMP`,
+                Number(collegeId),
+                yearLevel,
+                examType,
+                subjectCode,
+                name,
                 text(body.exam_code) || `${subjectCode}-${examType}`,
                 text(body.exam_name) || `${examType} Examination`,
                 examDate,
                 text(body.academic_year) || null,
-                adminId,
+                Number(adminId),
             );
-            const exam = this.db.prepare('SELECT id, exam_code FROM academic_exams WHERE college_id = ? AND year_level = ? AND exam_type = ? AND subject_code = ?')
-                .get(collegeId, yearLevel, examType, subjectCode)!;
+            const exam = (await tx.queryOne(
+                'SELECT id, exam_code FROM academic_exams WHERE college_id = $1 AND year_level = $2 AND exam_type = $3 AND subject_code = $4',
+                Number(collegeId),
+                yearLevel,
+                examType,
+                subjectCode,
+            ))!;
 
-            const upsert = this.db.prepare(`
-                INSERT INTO academic_exam_marks (exam_id, student_id, paper1_obtained, paper2_obtained, theory_obtained, practical_obtained, viva_obtained,
-                                                 total_obtained, total_max, percentage, status, faculty_remarks, entered_by_admin_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (exam_id, student_id) DO UPDATE SET
-                    paper1_obtained = excluded.paper1_obtained, paper2_obtained = excluded.paper2_obtained,
-                    theory_obtained = excluded.theory_obtained, practical_obtained = excluded.practical_obtained,
-                    viva_obtained = excluded.viva_obtained, total_obtained = excluded.total_obtained, total_max = excluded.total_max,
-                    percentage = excluded.percentage, status = excluded.status, faculty_remarks = excluded.faculty_remarks,
-                    entered_by_admin_id = excluded.entered_by_admin_id, updated_at = CURRENT_TIMESTAMP
-            `);
-            const clear = this.db.prepare('DELETE FROM academic_exam_marks WHERE exam_id = ? AND student_id = ?');
             let saved = 0;
             let cleared = 0;
             for (const e of entries) {
                 if (!e.marks) {
-                    cleared += Number(clear.run(exam.id, e.studentId).changes);
+                    const res = await tx.execute('DELETE FROM academic_exam_marks WHERE exam_id = $1 AND student_id = $2', Number(exam.id), e.studentId);
+                    cleared += res.changes;
                     continue;
                 }
                 const m = e.marks;
-                upsert.run(exam.id, e.studentId, m.paper1_obtained, m.paper2_obtained, m.theory_obtained, m.practical_obtained, m.viva_obtained,
-                    m.total_obtained, m.total_max, m.percentage, m.status, e.remarks, adminId);
+                await tx.execute(
+                    `INSERT INTO academic_exam_marks (exam_id, student_id, paper1_obtained, paper2_obtained, theory_obtained, practical_obtained, viva_obtained,
+                                                      total_obtained, total_max, percentage, status, faculty_remarks, entered_by_admin_id)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                     ON CONFLICT (exam_id, student_id) DO UPDATE SET
+                         paper1_obtained = EXCLUDED.paper1_obtained, paper2_obtained = EXCLUDED.paper2_obtained,
+                         theory_obtained = EXCLUDED.theory_obtained, practical_obtained = EXCLUDED.practical_obtained,
+                         viva_obtained = EXCLUDED.viva_obtained, total_obtained = EXCLUDED.total_obtained, total_max = EXCLUDED.total_max,
+                         percentage = EXCLUDED.percentage, status = EXCLUDED.status, faculty_remarks = EXCLUDED.faculty_remarks,
+                         entered_by_admin_id = EXCLUDED.entered_by_admin_id, updated_at = CURRENT_TIMESTAMP`,
+                    Number(exam.id),
+                    e.studentId,
+                    m.paper1_obtained,
+                    m.paper2_obtained,
+                    m.theory_obtained,
+                    m.practical_obtained,
+                    m.viva_obtained,
+                    m.total_obtained,
+                    m.total_max,
+                    m.percentage,
+                    m.status,
+                    e.remarks,
+                    Number(adminId),
+                );
                 saved++;
             }
             return {
@@ -530,26 +604,30 @@ export class AcademicModel {
         });
     }
 
-    /** Returns false when the exam does not exist in this college. */
-    deleteExam(collegeId: number, id: unknown): boolean {
-        const res = this.db.prepare('DELETE FROM academic_exams WHERE id = ? AND college_id = ?').run(id, collegeId);
-        return Number(res.changes) > 0;
+    async deleteExam(collegeId: number, id: unknown): Promise<boolean> {
+        const res = await this.db.execute('DELETE FROM academic_exams WHERE id = $1 AND college_id = $2', Number(id), Number(collegeId));
+        return res.changes > 0;
     }
 
     /* ======================= Student: attendance ======================= */
 
-    getDatewise(student: Row, date: string): Row {
-        const collegeId = student.college_id || 1;
-        const lectures = cleanList(this.db.prepare(`
-            SELECT l.id AS lecture_id, l.lecture_no, l.room_no, COALESCE(l.time_slot, '') AS time, l.subject_code, l.subject_name,
-                   l.session_type AS theory_practical, l.faculty_name, l.topic,
-                   COALESCE(a.status, 'Not Marked') AS status, a.remarks,
-                   l.attendance_requested, l.attendance_requested_at
-            FROM academic_lectures l
-            LEFT JOIN academic_attendance a ON l.id = a.lecture_id AND a.student_id = ?
-            WHERE l.college_id = ? AND l.lecture_date = ?
-            ORDER BY l.lecture_no
-        `).all(student.id, collegeId, date));
+    async getDatewise(student: Row, date: string): Promise<Row> {
+        const collegeId = Number(student.college_id || 1);
+        const lectures = cleanList(
+            await this.db.queryAll(
+                `SELECT l.id AS lecture_id, l.lecture_no, l.room_no, COALESCE(l.time_slot, '') AS time, l.subject_code, l.subject_name,
+                        l.session_type AS theory_practical, l.faculty_name, l.topic,
+                        COALESCE(a.status, 'Not Marked') AS status, a.remarks,
+                        l.attendance_requested, l.attendance_requested_at
+                 FROM academic_lectures l
+                 LEFT JOIN academic_attendance a ON l.id = a.lecture_id AND a.student_id = $1
+                 WHERE l.college_id = $2 AND l.lecture_date = $3
+                 ORDER BY l.lecture_no`,
+                Number(student.id),
+                collegeId,
+                date,
+            ),
+        );
         const summary = { total: lectures.length, present: 0, absent: 0, not_marked: 0 };
         for (const l of lectures) {
             if (l.status === 'Present') summary.present++;
@@ -567,14 +645,15 @@ export class AcademicModel {
         };
     }
 
-    getSubjectWise(student: Row): Row {
-        const rows = this.db.prepare(`
-            SELECT l.subject_code, l.subject_name, l.session_type, l.faculty_name, a.status, a.lecture_date, a.lecture_no
-            FROM academic_attendance a
-            JOIN academic_lectures l ON l.id = a.lecture_id
-            WHERE a.student_id = ?
-            ORDER BY a.lecture_date, a.lecture_no
-        `).all(student.id);
+    async getSubjectWise(student: Row): Promise<Row> {
+        const rows = await this.db.queryAll(
+            `SELECT l.subject_code, l.subject_name, l.session_type, l.faculty_name, a.status, a.lecture_date, a.lecture_no
+             FROM academic_attendance a
+             JOIN academic_lectures l ON l.id = a.lecture_id
+             WHERE a.student_id = $1
+             ORDER BY a.lecture_date, a.lecture_no`,
+            Number(student.id),
+        );
 
         interface Part { total: number; attended: number }
         interface Acc { subject: string; subject_code: string; faculty_name: string | null; total: number; attended: number; absent: number; theory: Part; practical: Part }
@@ -585,7 +664,7 @@ export class AcademicModel {
                 s = { subject: r.subject_name, subject_code: r.subject_code, faculty_name: null, total: 0, attended: 0, absent: 0, theory: { total: 0, attended: 0 }, practical: { total: 0, attended: 0 } };
                 bySubject.set(r.subject_code, s);
             }
-            s.subject = r.subject_name; // latest name wins (rows are in date order)
+            s.subject = r.subject_name;
             if (r.faculty_name) s.faculty_name = r.faculty_name;
             if (r.status === 'Present' || r.status === 'Absent') {
                 const attended = r.status === 'Present';
@@ -646,30 +725,32 @@ export class AcademicModel {
 
     /* ======================= Student: exams ======================= */
 
-    private studentExamRows(studentId: unknown, year: string): Row[] {
-        const params: unknown[] = [studentId];
-        let where = 'm.student_id = ?';
+    private async studentExamRows(studentId: unknown, year: string): Promise<Row[]> {
+        const params: unknown[] = [Number(studentId)];
+        let where = 'm.student_id = $1';
         if (year !== 'all') {
-            where += ' AND e.year_level = ?';
             params.push(Number(year));
+            where += ` AND e.year_level = $${params.length}`;
         }
-        return this.db.prepare(`
-            SELECT e.id AS exam_id, e.year_level, e.exam_type, e.exam_code, e.exam_name, e.exam_date, e.academic_year,
-                   e.subject_name, e.subject_code, e.created_at AS exam_created_at,
-                   m.paper1_obtained, m.paper2_obtained, m.theory_obtained, m.practical_obtained, m.viva_obtained,
-                   m.total_obtained, m.total_max, m.percentage, m.status, m.faculty_remarks
-            FROM academic_exam_marks m
-            JOIN academic_exams e ON e.id = m.exam_id
-            WHERE ${where}
-        `).all(...params);
+        return this.db.queryAll(
+            `SELECT e.id AS exam_id, e.year_level, e.exam_type, e.exam_code, e.exam_name, e.exam_date, e.academic_year,
+                    e.subject_name, e.subject_code, e.created_at AS exam_created_at,
+                    m.paper1_obtained, m.paper2_obtained, m.theory_obtained, m.practical_obtained, m.viva_obtained,
+                    m.total_obtained, m.total_max, m.percentage, m.status, m.faculty_remarks
+             FROM academic_exam_marks m
+             JOIN academic_exams e ON e.id = m.exam_id
+             WHERE ${where}`,
+            ...params,
+        );
     }
 
-    getExamResults(student: Row, year: string): Row {
+    async getExamResults(student: Row, year: string): Promise<Row> {
         const score = (obtained: number, max: number, passPct: number) => {
             const percentage = pct(obtained, max);
             return { obtained, max, percentage, passed: percentage >= passPct };
         };
-        const exams = this.studentExamRows(student.id, year)
+        const rows = await this.studentExamRows(student.id, year);
+        const exams = rows
             .sort((a, b) => b.year_level - a.year_level || (EXAM_TYPE_ORDER[a.exam_type] || 5) - (EXAM_TYPE_ORDER[b.exam_type] || 5) || String(a.subject_name).localeCompare(String(b.subject_name)))
             .map((r) => {
                 const two = isTwoPaperType(r.exam_type);
@@ -711,8 +792,8 @@ export class AcademicModel {
         };
     }
 
-    getExamSummary(student: Row, year: string): Row {
-        const rows = this.studentExamRows(student.id, year);
+    async getExamSummary(student: Row, year: string): Promise<Row> {
+        const rows = await this.studentExamRows(student.id, year);
         let obtained = 0, max = 0, thObt = 0, thMax = 0, prObt = 0, prMax = 0, iaObt = 0, iaMax = 0, iaCount = 0;
         let distinctions = 0, passed = 0, failed = 0;
         for (const r of rows) {
@@ -750,23 +831,23 @@ export class AcademicModel {
 
     /* ======================= Student: schedule ======================= */
 
-    /** The student's teaching schedule: every lecture session they were enrolled in (marked) by faculty. */
-    getSchedule(student: Row, department: string): Row {
-        const collegeId = student.college_id || 1;
-        const params: unknown[] = [student.id, collegeId];
+    async getSchedule(student: Row, department: string): Promise<Row> {
+        const collegeId = Number(student.college_id || 1);
+        const params: unknown[] = [Number(student.id), collegeId];
         let filter = '';
         if (department && department !== 'all') {
-            filter = ' AND (l.subject_name LIKE ? OR l.subject_code = ?)';
             params.push(`%${department}%`, department);
+            filter = ` AND (l.subject_name ILIKE $${params.length - 1} OR l.subject_code = $${params.length})`;
         }
-        const rows = this.db.prepare(`
-            SELECT l.id, l.lecture_date, l.lecture_no, l.time_slot, l.subject_code, l.subject_name, l.session_type,
-                   l.room_no, l.faculty_name, l.topic, l.attendance_requested, l.attendance_requested_at, a.status
-            FROM academic_lectures l
-            LEFT JOIN academic_attendance a ON l.id = a.lecture_id AND a.student_id = ?
-            WHERE l.college_id = ?${filter}
-            ORDER BY l.lecture_date ASC, l.lecture_no ASC
-        `).all(...params);
+        const rows = await this.db.queryAll(
+            `SELECT l.id, l.lecture_date, l.lecture_no, l.time_slot, l.subject_code, l.subject_name, l.session_type,
+                    l.room_no, l.faculty_name, l.topic, l.attendance_requested, l.attendance_requested_at, a.status
+             FROM academic_lectures l
+             LEFT JOIN academic_attendance a ON l.id = a.lecture_id AND a.student_id = $1
+             WHERE l.college_id = $2${filter}
+             ORDER BY l.lecture_date ASC, l.lecture_no ASC`,
+            ...params,
+        );
         const schedules = rows.map((r) => {
             const d = new Date(r.lecture_date + 'T00:00:00Z');
             const compMatch = (r.topic || '').match(/^([A-Z]{2}\s*[\d.]+)/i);
@@ -799,21 +880,22 @@ export class AcademicModel {
 
     /* ======================= Admin: schedule CRUD ======================= */
 
-    getAdminSchedule(collegeId: number, department: string): Row {
-        const params: unknown[] = [collegeId];
+    async getAdminSchedule(collegeId: number, department: string): Promise<Row> {
+        const params: unknown[] = [Number(collegeId)];
         let filter = '';
         if (department && department !== 'all') {
-            filter = ' AND (l.subject_name LIKE ? OR l.subject_code = ?)';
             params.push(`%${department}%`, department);
+            filter = ` AND (l.subject_name ILIKE $${params.length - 1} OR l.subject_code = $${params.length})`;
         }
-        const rows = this.db.prepare(`
-            SELECT l.id, l.college_id, l.lecture_date, l.lecture_no, l.time_slot, l.subject_code, l.subject_name,
-                   l.session_type, l.room_no, l.faculty_name, l.topic, l.attendance_requested, l.attendance_requested_at, l.created_at, l.updated_at,
-                   (SELECT COUNT(*) FROM academic_attendance a WHERE a.lecture_id = l.id) AS attendance_count
-            FROM academic_lectures l
-            WHERE l.college_id = ?${filter}
-            ORDER BY l.lecture_date ASC, l.lecture_no ASC
-        `).all(...params);
+        const rows = await this.db.queryAll(
+            `SELECT l.id, l.college_id, l.lecture_date, l.lecture_no, l.time_slot, l.subject_code, l.subject_name,
+                    l.session_type, l.room_no, l.faculty_name, l.topic, l.attendance_requested, l.attendance_requested_at, l.created_at, l.updated_at,
+                    (SELECT COUNT(*) FROM academic_attendance a WHERE a.lecture_id = l.id) AS attendance_count
+             FROM academic_lectures l
+             WHERE l.college_id = $1${filter}
+             ORDER BY l.lecture_date ASC, l.lecture_no ASC`,
+            ...params,
+        );
 
         const schedules = rows.map((r) => {
             const d = new Date(r.lecture_date + 'T00:00:00Z');
@@ -849,7 +931,7 @@ export class AcademicModel {
         return { schedules, total: schedules.length };
     }
 
-    createLecture(collegeId: number, adminId: number | null, body: Record<string, unknown>): Row {
+    async createLecture(collegeId: number, adminId: number | null, body: Record<string, unknown>): Promise<Row> {
         const lectureDate = text(body.lecture_date || body.date_iso);
         if (!isIsoDate(lectureDate)) throw new StatusError('A valid lecture date in YYYY-MM-DD format is required', 400);
 
@@ -865,26 +947,43 @@ export class AcademicModel {
         const roomNo = text(body.room_no || body.venue || (sessionType === 'Practical' ? 'Pathology Practical Lab' : 'Lecture Theatre 1 (LT-1)'));
         const facultyName = text(body.faculty_name || 'Dr. Ramesh Mehta (Prof & HOD)');
 
-        const existing = this.db.prepare('SELECT id FROM academic_lectures WHERE college_id = ? AND lecture_date = ? AND lecture_no = ? AND subject_code = ?')
-            .get(collegeId, lectureDate, lectureNo, subjectCode);
-        if (existing) this.clusters.assertLectureEditable(existing.id);
+        const existing = await this.db.queryOne(
+            'SELECT id FROM academic_lectures WHERE college_id = $1 AND lecture_date = $2 AND lecture_no = $3 AND subject_code = $4',
+            Number(collegeId),
+            lectureDate,
+            lectureNo,
+            subjectCode,
+        );
+        if (existing) await this.clusters.assertLectureEditable(existing.id);
 
-        this.upsertSubject(collegeId, subjectCode, name, facultyName, roomNo);
+        await this.upsertSubject(this.db, collegeId, subjectCode, name, facultyName, roomNo);
 
-        const res = this.db.prepare(`
-            INSERT INTO academic_lectures (
+        const res = await this.db.insert(
+            `INSERT INTO academic_lectures (
                 college_id, lecture_date, lecture_no, subject_code, subject_name,
                 session_type, time_slot, room_no, faculty_name, topic, created_by_admin_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             ON CONFLICT (college_id, lecture_date, lecture_no, subject_code) DO UPDATE SET
-                subject_name = excluded.subject_name,
-                session_type = excluded.session_type,
-                time_slot = excluded.time_slot,
-                room_no = excluded.room_no,
-                faculty_name = excluded.faculty_name,
-                topic = excluded.topic,
+                subject_name = EXCLUDED.subject_name,
+                session_type = EXCLUDED.session_type,
+                time_slot = EXCLUDED.time_slot,
+                room_no = EXCLUDED.room_no,
+                faculty_name = EXCLUDED.faculty_name,
+                topic = EXCLUDED.topic,
                 updated_at = CURRENT_TIMESTAMP
-        `).run(collegeId, lectureDate, lectureNo, subjectCode, name, sessionType, timeSlot, roomNo, facultyName, topic, adminId);
+            RETURNING id`,
+            Number(collegeId),
+            lectureDate,
+            lectureNo,
+            subjectCode,
+            name,
+            sessionType,
+            timeSlot,
+            roomNo,
+            facultyName,
+            topic,
+            adminId !== null ? Number(adminId) : null,
+        );
 
         return {
             id: res.lastInsertRowid,
@@ -892,11 +991,11 @@ export class AcademicModel {
         };
     }
 
-    updateLecture(collegeId: number, lectureId: number | string, body: Record<string, unknown>): Row {
+    async updateLecture(collegeId: number, lectureId: number | string, body: Record<string, unknown>): Promise<Row> {
         const id = Number(lectureId);
-        const existing = this.db.prepare('SELECT id FROM academic_lectures WHERE id = ? AND college_id = ?').get(id, collegeId);
+        const existing = await this.db.queryOne('SELECT id FROM academic_lectures WHERE id = $1 AND college_id = $2', id, Number(collegeId));
         if (!existing) throw new StatusError('Lecture session not found', 404);
-        this.clusters.assertLectureEditable(id);
+        await this.clusters.assertLectureEditable(id);
 
         const lectureDate = text(body.lecture_date || body.date_iso);
         if (lectureDate && !isIsoDate(lectureDate)) throw new StatusError('Invalid lecture date', 400);
@@ -904,44 +1003,49 @@ export class AcademicModel {
         const updates: string[] = ['updated_at = CURRENT_TIMESTAMP'];
         const params: unknown[] = [];
 
-        if (lectureDate) { updates.push('lecture_date = ?'); params.push(lectureDate); }
-        if (body.lecture_no !== undefined) { updates.push('lecture_no = ?'); params.push(Number(body.lecture_no) || 1); }
-        if (body.subject_code !== undefined) { updates.push('subject_code = ?'); params.push(text(body.subject_code)); }
+        const pushUpdate = (col: string, val: unknown) => {
+            params.push(val);
+            updates.push(`${col} = $${params.length}`);
+        };
+
+        if (lectureDate) pushUpdate('lecture_date', lectureDate);
+        if (body.lecture_no !== undefined) pushUpdate('lecture_no', Number(body.lecture_no) || 1);
+        if (body.subject_code !== undefined) pushUpdate('subject_code', text(body.subject_code));
         if (body.subject_name !== undefined || body.department !== undefined) {
-            updates.push('subject_name = ?');
-            params.push(text(body.subject_name || body.department));
+            pushUpdate('subject_name', text(body.subject_name || body.department));
         }
         if (body.session_type !== undefined) {
-            updates.push('session_type = ?');
-            params.push(body.session_type === 'Practical' ? 'Practical' : 'Theory');
+            pushUpdate('session_type', body.session_type === 'Practical' ? 'Practical' : 'Theory');
         }
-        if (body.time_slot !== undefined) { updates.push('time_slot = ?'); params.push(text(body.time_slot)); }
+        if (body.time_slot !== undefined) pushUpdate('time_slot', text(body.time_slot));
         if (body.room_no !== undefined || body.venue !== undefined) {
-            updates.push('room_no = ?');
-            params.push(text(body.room_no || body.venue));
+            pushUpdate('room_no', text(body.room_no || body.venue));
         }
-        if (body.faculty_name !== undefined) { updates.push('faculty_name = ?'); params.push(text(body.faculty_name)); }
-        if (body.topic !== undefined) { updates.push('topic = ?'); params.push(text(body.topic)); }
+        if (body.faculty_name !== undefined) pushUpdate('faculty_name', text(body.faculty_name));
+        if (body.topic !== undefined) pushUpdate('topic', text(body.topic));
 
-        params.push(id, collegeId);
-        this.db.prepare(`UPDATE academic_lectures SET ${updates.join(', ')} WHERE id = ? AND college_id = ?`).run(...params);
+        params.push(id, Number(collegeId));
+        await this.db.execute(
+            `UPDATE academic_lectures SET ${updates.join(', ')} WHERE id = $${params.length - 1} AND college_id = $${params.length}`,
+            ...params,
+        );
 
         return { id, message: 'Lecture session updated successfully' };
     }
 
-    deleteLecture(collegeId: number, lectureId: number | string): boolean {
+    async deleteLecture(collegeId: number, lectureId: number | string): Promise<boolean> {
         const id = Number(lectureId);
-        if (!this.db.prepare('SELECT id FROM academic_lectures WHERE id = ? AND college_id = ?').get(id, collegeId)) return false;
-        this.clusters.assertLectureEditable(id);
-        const res = this.db.prepare('DELETE FROM academic_lectures WHERE id = ? AND college_id = ?').run(id, collegeId);
+        if (!(await this.db.queryOne('SELECT id FROM academic_lectures WHERE id = $1 AND college_id = $2', id, Number(collegeId)))) return false;
+        await this.clusters.assertLectureEditable(id);
+        const res = await this.db.execute('DELETE FROM academic_lectures WHERE id = $1 AND college_id = $2', id, Number(collegeId));
         return res.changes > 0;
     }
 
-    requestAttendance(collegeId: number, adminId: number | null, lectureId: unknown, body: Record<string, unknown> = {}): Row {
+    requestAttendance(collegeId: number, adminId: number | null, lectureId: unknown, body: Record<string, unknown> = {}): Promise<Row> {
         return this.clusters.start(collegeId, adminId, lectureId, body);
     }
 
-    fillAttendance(student: Row, body: Record<string, unknown>): Row {
+    fillAttendance(student: Row, body: Record<string, unknown>): Promise<Row> {
         return this.clusters.fill(student, body);
     }
 }

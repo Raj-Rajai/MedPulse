@@ -1,7 +1,7 @@
 import type { Db } from '../database/db.types';
 
-export function seedAcademicSchedule(db: Db): void {
-    const lectureCount = db.prepare('SELECT COUNT(*) as count FROM academic_lectures').get() as { count: number };
+export async function seedAcademicSchedule(db: Db): Promise<void> {
+    const lectureCount = await db.queryOne<{ count: number }>('SELECT COUNT(*) as count FROM academic_lectures');
     if (lectureCount && lectureCount.count > 0) return;
 
     console.log('🌱 Seeding NMC CBME Academic & Teaching Schedule for College 1...');
@@ -153,13 +153,11 @@ export function seedAcademicSchedule(db: Db): void {
         },
     ];
 
-    const insert = db.prepare(`
-        INSERT OR IGNORE INTO academic_lectures (college_id, lecture_date, lecture_no, subject_code, subject_name, session_type, time_slot, room_no, faculty_name, topic)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
     for (const s of sessions) {
-        insert.run(
+        await db.execute(
+            `INSERT INTO academic_lectures (college_id, lecture_date, lecture_no, subject_code, subject_name, session_type, time_slot, room_no, faculty_name, topic)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+             ON CONFLICT (college_id, lecture_date, lecture_no, subject_code) DO NOTHING`,
             s.college_id,
             s.lecture_date,
             s.lecture_no,
@@ -169,7 +167,7 @@ export function seedAcademicSchedule(db: Db): void {
             s.time_slot,
             s.room_no,
             s.faculty_name,
-            s.topic
+            s.topic,
         );
     }
 

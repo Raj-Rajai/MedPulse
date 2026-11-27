@@ -5,7 +5,6 @@ import { fail, serverError, statusOf, StatusError } from '../../common/http-erro
 import { AcademicModel, isIsoDate, todayIso } from './academic.model';
 import { AttendanceClusterService } from './attendance-cluster.service';
 
-/** Model validation errors keep their status; anything else is a 500. */
 export const academicError = (err: unknown) => (err instanceof StatusError ? fail(statusOf(err), err.message) : serverError(err));
 
 const yearParam = (v: unknown): string => {
@@ -14,10 +13,6 @@ const yearParam = (v: unknown): string => {
     return y;
 };
 
-/**
- * Student academic records (/api/academic/*). Every route reads the signed-in student's own rows
- * (the profile page also sends ?roll_number=, which only identifies the student to StudentGuard).
- */
 @Controller()
 @UseGuards(StudentGuard)
 export class AcademicController {
@@ -25,42 +20,42 @@ export class AcademicController {
 
     @Get('academic/attendance/clusters')
     @Header('Cache-Control', 'no-store')
-    getClusters(@Req() req: Request) {
-        try { return { clusters: this.clusters.list(req.student) }; }
+    async getClusters(@Req() req: Request) {
+        try { return { clusters: await this.clusters.list(req.student) }; }
         catch (err) { throw academicError(err); }
     }
 
     @Post('academic/attendance/clusters/:id/challenge')
     @HttpCode(200)
     @Header('Cache-Control', 'no-store')
-    getClusterChallenge(@Req() req: Request) {
-        try { return this.clusters.challenge(req.student, req.params.id); }
+    async getClusterChallenge(@Req() req: Request) {
+        try { return await this.clusters.challenge(req.student, req.params.id); }
         catch (err) { throw academicError(err); }
     }
 
     @Get('academic/attendance/clusters/:id')
     @Header('Cache-Control', 'no-store')
-    getClusterRoom(@Req() req: Request) {
-        try { return this.clusters.studentRoom(req.student, req.params.id); }
+    async getClusterRoom(@Req() req: Request) {
+        try { return await this.clusters.studentRoom(req.student, req.params.id); }
         catch (err) { throw academicError(err); }
     }
 
     @Post('academic/attendance/clusters/:id/join')
     @HttpCode(200)
     @Header('Cache-Control', 'no-store')
-    joinClusterRoom(@Req() req: Request) {
-        try { return this.clusters.join(req.student, req.params.id); }
+    async joinClusterRoom(@Req() req: Request) {
+        try { return await this.clusters.join(req.student, req.params.id); }
         catch (err) { throw academicError(err); }
     }
 
     @Get('academic/attendance/datewise')
     @Header('Cache-Control', 'no-store')
-    getDatewise(@Req() req: Request) {
+    async getDatewise(@Req() req: Request) {
         try {
             const raw = req.query.date;
             const date = raw === undefined || raw === '' ? todayIso() : String(raw);
             if (!isIsoDate(date)) throw fail(400, 'date must be a valid YYYY-MM-DD date');
-            return this.academic.getDatewise(req.student, date);
+            return await this.academic.getDatewise(req.student, date);
         } catch (err) {
             throw academicError(err);
         }
@@ -68,9 +63,9 @@ export class AcademicController {
 
     @Get('academic/attendance/subject-wise')
     @Header('Cache-Control', 'no-store')
-    getSubjectWise(@Req() req: Request) {
+    async getSubjectWise(@Req() req: Request) {
         try {
-            return this.academic.getSubjectWise(req.student);
+            return await this.academic.getSubjectWise(req.student);
         } catch (err) {
             throw academicError(err);
         }
@@ -78,9 +73,9 @@ export class AcademicController {
 
     @Get('academic/exams/results')
     @Header('Cache-Control', 'no-store')
-    getExamResults(@Req() req: Request) {
+    async getExamResults(@Req() req: Request) {
         try {
-            return this.academic.getExamResults(req.student, yearParam(req.query.year));
+            return await this.academic.getExamResults(req.student, yearParam(req.query.year));
         } catch (err) {
             throw academicError(err);
         }
@@ -88,9 +83,9 @@ export class AcademicController {
 
     @Get('academic/exams/summary')
     @Header('Cache-Control', 'no-store')
-    getExamSummary(@Req() req: Request) {
+    async getExamSummary(@Req() req: Request) {
         try {
-            return this.academic.getExamSummary(req.student, yearParam(req.query.year));
+            return await this.academic.getExamSummary(req.student, yearParam(req.query.year));
         } catch (err) {
             throw academicError(err);
         }
@@ -98,10 +93,10 @@ export class AcademicController {
 
     @Get('academic/schedule')
     @Header('Cache-Control', 'no-store')
-    getSchedule(@Req() req: Request) {
+    async getSchedule(@Req() req: Request) {
         try {
             const dept = req.query.department === undefined ? 'all' : String(req.query.department).trim();
-            return this.academic.getSchedule(req.student, dept || 'all');
+            return await this.academic.getSchedule(req.student, dept || 'all');
         } catch (err) {
             throw academicError(err);
         }
@@ -109,9 +104,9 @@ export class AcademicController {
 
     @Post('academic/attendance/fill')
     @HttpCode(200)
-    fillAttendance(@Req() req: Request) {
+    async fillAttendance(@Req() req: Request) {
         try {
-            return this.academic.fillAttendance(req.student, req.body || {});
+            return await this.academic.fillAttendance(req.student, req.body || {});
         } catch (err) {
             throw academicError(err);
         }

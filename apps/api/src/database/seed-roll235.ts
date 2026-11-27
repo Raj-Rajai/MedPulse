@@ -6,17 +6,16 @@ import { DATABASE_DIR } from './paths';
 
 /** Only the part of CampaignModel the seeder needs (avoids a database -> campaign module import cycle). */
 export interface CampaignDispatcher {
-    dispatchCampaign(campaignId: number): unknown;
+    dispatchCampaign(campaignId: number): Promise<unknown>;
 }
 
 /**
- * Seeds the Roll 235 field survey (from Roll235.pdf) — unchanged from backend/config/seed-roll235.js.
+ * Seeds the Roll 235 field survey (from Roll235.pdf) into PostgreSQL.
  */
-export function seedRoll235(db: Db, campaigns: CampaignDispatcher) {
+export async function seedRoll235(db: Db, campaigns: CampaignDispatcher) {
 
     console.log('🌱 Seeding Roll 235 Real Field Survey Data from Roll235.pdf...');
 
-    // Parse JSON generated from Roll235.pdf
     const parsedJsonPath = path.join(DATABASE_DIR, 'roll235_parsed.json');
     let membersData: any[] = [];
 
@@ -35,37 +34,39 @@ export function seedRoll235(db: Db, campaigns: CampaignDispatcher) {
     }
 
     // Ensure default College 1 exists
-    db.prepare(`
-        INSERT OR IGNORE INTO colleges (id, name, code, city, state)
+    await db.execute(`
+        INSERT INTO colleges (id, name, code, city, state)
         VALUES (1, 'SAL Institute of Medical Sciences & Hospital', 'SAL-01', 'Ahmedabad', 'Gujarat')
-    `).run();
+        ON CONFLICT (id) DO NOTHING
+    `);
 
     // Ensure Student 1 (Roll 235 - Dhruv Patel) exists
-    let student: any = db.prepare("SELECT * FROM students WHERE roll_number = '235'").get();
+    let student: any = await db.queryOne("SELECT * FROM students WHERE roll_number = '235'");
     if (!student) {
-        db.prepare(`
+        await db.execute(`
             INSERT INTO students (roll_number, name, pin, batch_year, college_id, email, phone, posting_unit, status)
             VALUES ('235', 'Dhruv Patel', '1234', '3rd Year MBBS (PSM Batch 2024-25)', 1, 'dhruv.patel@medpulse.edu', '+91 98765 43210', 'Community Medicine Unit 3', 'Active')
-        `).run();
-        student = db.prepare("SELECT * FROM students WHERE roll_number = '235'").get();
+        `);
+        student = await db.queryOne("SELECT * FROM students WHERE roll_number = '235'");
     }
-    const studentId = student.id;
+    const studentId = Number(student.id);
 
-// Delete previous families and cascade delete for clean slate for student 1
-const oldFamilies = db.prepare('SELECT id FROM families WHERE student_id = ?').all(studentId);
-for (const f of oldFamilies) {
-    const mems = db.prepare('SELECT id FROM family_members WHERE family_id = ?').all(f.id);
-    for (const m of mems) {
-        db.prepare('DELETE FROM follow_ups WHERE member_id = ?').run(m.id);
-        db.prepare('DELETE FROM member_conditions WHERE member_id = ?').run(m.id);
-        db.prepare('DELETE FROM member_medications WHERE member_id = ?').run(m.id);
-        db.prepare('DELETE FROM member_allergies WHERE member_id = ?').run(m.id);
-        db.prepare('DELETE FROM member_medical_history WHERE member_id = ?').run(m.id);
-        db.prepare('DELETE FROM member_lifestyle WHERE member_id = ?').run(m.id);
+    // Delete previous families and cascade delete for clean slate for student 1
+    const oldFamilies = await db.queryAll('SELECT id FROM families WHERE student_id = $1', studentId);
+    for (const f of oldFamilies) {
+        const mems = await db.queryAll('SELECT id FROM family_members WHERE family_id = $1', Number(f.id));
+        for (const m of mems) {
+            const mid = Number(m.id);
+            await db.execute('DELETE FROM follow_ups WHERE member_id = $1', mid);
+            await db.execute('DELETE FROM member_conditions WHERE member_id = $1', mid);
+            await db.execute('DELETE FROM member_medications WHERE member_id = $1', mid);
+            await db.execute('DELETE FROM member_allergies WHERE member_id = $1', mid);
+            await db.execute('DELETE FROM member_medical_history WHERE member_id = $1', mid);
+            await db.execute('DELETE FROM member_lifestyle WHERE member_id = $1', mid);
+        }
+        await db.execute('DELETE FROM family_members WHERE family_id = $1', Number(f.id));
+        await db.execute('DELETE FROM families WHERE id = $1', Number(f.id));
     }
-    db.prepare('DELETE FROM family_members WHERE family_id = ?').run(f.id);
-    db.prepare('DELETE FROM families WHERE id = ?').run(f.id);
-}
 
 // Group members by family_no (1 to 5)
 const familiesMap: Record<number, any[]> = {};
@@ -154,17 +155,16 @@ for (const [fNoStr, mems] of Object.entries(familiesMap)) {
     }
     totalCU = Math.round(totalCU * 10) / 10;
 
-    const famRes = db.prepare(`
-        INSERT INTO families (
+    const famRes = await db.insert(
+        `INSERT INTO families (
             student_id, family_no, head_of_family, village_ward, address, survey_date,
             total_cu, calorie_intake_per_cu, calorie_status, dietary_advice_given,
             family_code, family_name, contact_number, village, city, district, state, pincode
         ) VALUES (
-            ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?
-        )
-    `).run(
+            $1, $2, $3, $4, $5, $6,
+            $7, $8, $9, $10,
+            $11, $12, $13, $14, $15, $16, $17, $18
+        )`,
         studentId,
         fNo,
         meta.head,
@@ -182,7 +182,7 @@ for (const [fNoStr, mems] of Object.entries(familiesMap)) {
         'Gandhinagar',
         'Gandhinagar',
         'Gujarat',
-        '382421'
+        '382421',
     );
 
     const familyDbId = famRes.lastInsertRowid;
@@ -244,8 +244,8 @@ for (const [fNoStr, mems] of Object.entries(familiesMap)) {
 
         const workType = ['S', 'M', 'H', 'NA'].includes(m.work_type) ? m.work_type : 'S';
 
-        const memRes = db.prepare(`
-            INSERT INTO family_members (
+        const memRes = await db.insert(
+            `INSERT INTO family_members (
                 family_id, member_order, name, relation_to_hof, gender,
                 age_years, age_months, has_htn, sbp, dbp, has_dm, rbs,
                 has_pallor, hb, has_anaemia, height_m, weight_kg, bmi,
@@ -255,16 +255,15 @@ for (const [fNoStr, mems] of Object.entries(familiesMap)) {
                 anc_taken, delivery_place, pnc_taken, fp_method_used, mamta_card,
                 immunization_status, work_type, consumption_unit
             ) VALUES (
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?
-            )
-        `).run(
+                $1, $2, $3, $4, $5,
+                $6, $7, $8, $9, $10, $11, $12,
+                $13, $14, $15, $16, $17, $18,
+                $19, $20, $21, $22, $23, $24,
+                $25, $26, $27, $28, $29,
+                $30, $31, $32, $33, $34,
+                $35, $36, $37, $38, $39,
+                $40, $41, $42
+            )`,
             familyDbId,
             idx + 1,
             m.name,
@@ -306,7 +305,7 @@ for (const [fNoStr, mems] of Object.entries(familiesMap)) {
             cleanYNA(m.mamta_card, 'NA'),
             cleanYNA(m.immunization_status, 'NA'),
             workType,
-            parseFloat(m.consumption_unit) || 1.0
+            parseFloat(m.consumption_unit) || 1.0,
         );
 
         const memberDbId = memRes.lastInsertRowid;
@@ -413,17 +412,16 @@ for (const item of followUpsToSeed) {
     const mem = insertedMembers.find(m => m.name.toLowerCase() === item.name.toLowerCase());
     if (mem) {
         for (const v of item.visits) {
-            db.prepare(`
-                INSERT INTO follow_ups (
+            await db.execute(
+                `INSERT INTO follow_ups (
                     member_id, student_id, visit_date, visit_number,
                     sbp, dbp, rbs, hb, weight_kg,
                     treatment_compliance, health_progress, clinical_notes, next_visit_date
                 ) VALUES (
-                    ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?
-                )
-            `).run(
+                    $1, $2, $3, $4,
+                    $5, $6, $7, $8, $9,
+                    $10, $11, $12, $13
+                )`,
                 mem.id,
                 studentId,
                 v.date,
@@ -436,7 +434,7 @@ for (const item of followUpsToSeed) {
                 v.comp,
                 v.prog,
                 v.notes,
-                '2026-10-15'
+                '2026-10-15',
             );
             totalFollowUps++;
         }
@@ -446,36 +444,48 @@ for (const item of followUpsToSeed) {
     console.log(`Successfully created ${totalFollowUps} longitudinal follow-up records for Roll 235.`);
 
     // Seed/link default demo patient (9876543210 / 1234) to Radhuji Thakore (HTN & Anaemia)
-    const radhuji = db.prepare("SELECT * FROM family_members WHERE LOWER(name) LIKE '%radhuji%'").get();
+    const radhuji = await db.queryOne("SELECT * FROM family_members WHERE LOWER(name) LIKE '%radhuji%'");
     if (radhuji) {
-        const existingDemoPatient = db.prepare("SELECT * FROM patients WHERE phone = '9876543210'").get();
+        const existingDemoPatient = await db.queryOne("SELECT * FROM patients WHERE phone = '9876543210'");
         if (!existingDemoPatient) {
-            db.prepare(`
-                INSERT INTO patients (patient_uid, student_id, family_member_id, name, phone, pin, age_years, gender, model_type, referral_code_used)
-                VALUES ('PAT-ROLL235-001', ?, ?, ?, '9876543210', '1234', ?, ?, 'Dependent', 'SAL-235-DA9B')
-            `).run(studentId, radhuji.id, radhuji.name, radhuji.age_years || 60, radhuji.gender || 'Male');
+            await db.execute(
+                `INSERT INTO patients (patient_uid, student_id, family_member_id, name, phone, pin, age_years, gender, model_type, referral_code_used)
+                 VALUES ('PAT-ROLL235-001', $1, $2, $3, '9876543210', '1234', $4, $5, 'Dependent', 'SAL-235-DA9B')`,
+                studentId,
+                Number(radhuji.id),
+                radhuji.name,
+                radhuji.age_years || 60,
+                radhuji.gender || 'M',
+            );
         } else {
-            db.prepare(`
-                UPDATE patients 
-                SET family_member_id = ?, name = ?, student_id = ?, model_type = 'Dependent', referral_code_used = 'SAL-235-DA9B', age_years = ?, gender = ?
-                WHERE id = ?
-            `).run(radhuji.id, radhuji.name, studentId, radhuji.age_years || 60, radhuji.gender || 'Male', existingDemoPatient.id);
+            await db.execute(
+                `UPDATE patients
+                 SET family_member_id = $1, name = $2, student_id = $3, model_type = 'Dependent', referral_code_used = 'SAL-235-DA9B', age_years = $4, gender = $5
+                 WHERE id = $6`,
+                Number(radhuji.id),
+                radhuji.name,
+                studentId,
+                radhuji.age_years || 60,
+                radhuji.gender || 'M',
+                Number(existingDemoPatient.id),
+            );
         }
     }
 
     // Seed default HTN Campaign matching the user's workflow diagram
     try {
-        const campCount = db.prepare('SELECT COUNT(*) as count FROM campaigns').get();
+        const campCount = await db.queryOne('SELECT COUNT(*) as count FROM campaigns');
         if (!campCount || campCount.count === 0) {
-            db.prepare(`
+            await db.execute(`
                 INSERT INTO campaigns (id, title, keyword, description, college_id, created_by_admin_id, event_date, venue, status)
                 VALUES (1, 'Statewide Hypertension & Cardiovascular Wellness Drive', 'HTN', 'Comprehensive blood pressure screening, free antihypertensive medication review, and dietary sodium restriction counseling led by medical faculty and clinical cadets.', 1, 1, '2026-10-15', 'RHTC Community Health Center, Field Wing B', 'Active')
-            `).run();
+                ON CONFLICT (id) DO NOTHING
+            `);
 
-            campaigns.dispatchCampaign(1);
+            await campaigns.dispatchCampaign(1);
         }
     } catch (e) {
-        console.warn('Campaign seed note:', e.message);
+        console.warn('Campaign seed note:', (e as Error).message);
     }
 
     console.log('Seed synchronization complete!');

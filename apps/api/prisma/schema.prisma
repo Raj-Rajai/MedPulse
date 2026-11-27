@@ -1,0 +1,904 @@
+// MedPulse PostgreSQL Schema (Prisma ORM)
+// Migrated from SQLite (39 tables, all relations, constraints, and indexes)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model College {
+  id         Int       @id @default(autoincrement())
+  name       String
+  code       String    @unique
+  city       String?
+  state      String?
+  created_at DateTime? @default(now())
+  max_admins Int?      @default(10)
+
+  admins              Admin[]
+  students            Student[]
+  campaigns           Campaign[]
+  academic_subjects   AcademicSubject[]
+  academic_lectures   AcademicLecture[]
+  academic_exams      AcademicExam[]
+  attendance_clusters AttendanceCluster[]
+
+  @@map("colleges")
+}
+
+model Admin {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  name          String
+  pin           String    @default("9999")
+  email         String?
+  role          String?   @default("Faculty Supervisor")
+  created_at    DateTime? @default(now())
+  university_id Int?
+  phone         String?
+  status        String?   @default("Active")
+
+  college             College?            @relation(fields: [university_id], references: [id], onDelete: SetNull)
+  campaigns           Campaign[]
+  academic_lectures   AcademicLecture[]
+  academic_attendance AcademicAttendance[]
+  academic_exams      AcademicExam[]
+  academic_exam_marks AcademicExamMark[]
+  attendance_clusters AttendanceCluster[]
+
+  @@index([university_id], map: "idx_admins_uni")
+  @@index([username], map: "idx_admins_username")
+  @@map("admins")
+}
+
+model AcademicYear {
+  id              Int       @id @default(autoincrement())
+  label           String    @unique
+  start_date      String?
+  end_date        String?
+  is_current      Int       @default(0)
+  area_name       String?
+  latitude        Float?
+  longitude       Float?
+  radius          Float?
+  area_updated_by Int?
+  area_updated_at String?
+  created_at      DateTime? @default(now())
+
+  students Student[]
+
+  @@map("academic_years")
+}
+
+model Student {
+  id               Int       @id @default(autoincrement())
+  roll_number      String    @unique
+  name             String
+  pin              String?   @default("1234")
+  batch_year       String?
+  college_id       Int?
+  created_at       DateTime? @default(now())
+  email            String?
+  phone            String?
+  posting_unit     String?   @default("RHTC - Rural Health Training Center")
+  status           String?   @default("Active")
+  referral_code    String?
+  academic_year_id Int?
+
+  college                    College?                   @relation(fields: [college_id], references: [id], onDelete: SetNull)
+  academic_year              AcademicYear?              @relation(fields: [academic_year_id], references: [id], onDelete: SetNull)
+  families                   Family[]
+  follow_ups                 FollowUp[]
+  patients                   Patient[]
+  campaign_notifications     CampaignNotification[]
+  academic_attendance        AcademicAttendance[]
+  academic_exam_marks        AcademicExamMark[]
+  attendance_cluster_members AttendanceClusterMember[]
+  attendance_cluster_events  AttendanceClusterEvent[]
+
+  @@index([referral_code], map: "idx_students_referral")
+  @@index([roll_number], map: "idx_students_roll")
+  @@map("students")
+}
+
+model StudentGeofence {
+  scope_id   Int    @id
+  name       String
+  latitude   Float
+  longitude  Float
+  radius     Float
+  updated_by Int
+  updated_at String @default(dbgenerated("to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')"))
+
+  @@map("student_geofences")
+}
+
+model Family {
+  id                    Int       @id @default(autoincrement())
+  student_id            Int?
+  family_no             Int
+  head_of_family        String
+  village_ward          String?
+  address               String?
+  survey_date           String?   @default(dbgenerated("to_char(CURRENT_DATE, 'YYYY-MM-DD')"))
+  total_cu              Float?    @default(0)
+  calorie_intake_per_cu Float?    @default(0)
+  calorie_status        String?   @default("N")
+  dietary_advice_given  String?   @default("N")
+  notes                 String?
+  created_at            DateTime? @default(now())
+  family_code           String?
+  family_name           String?
+  contact_number        String?
+  village               String?
+  city                  String?
+  district              String?
+  state                 String?
+  pincode               String?
+  updated_at            DateTime? @default(now())
+
+  student Student?       @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  members FamilyMember[]
+
+  @@unique([student_id, family_no])
+  @@index([family_code], map: "idx_families_code")
+  @@index([student_id], map: "idx_families_student")
+  @@map("families")
+}
+
+model FamilyMember {
+  id                  Int       @id @default(autoincrement())
+  family_id           Int
+  member_order        Int       @default(1)
+  name                String
+  relation_to_hof     String?
+  gender              String?
+  age_years           Int       @default(0)
+  age_months          Int       @default(0)
+  has_htn             String?   @default("NA")
+  sbp                 Int?
+  dbp                 Int?
+  has_dm              String?   @default("NA")
+  rbs                 Float?
+  has_pallor          String?   @default("NA")
+  hb                  Float?
+  has_anaemia         String?   @default("NA")
+  height_m            Float?
+  weight_kg           Float?
+  bmi                 Float?
+  waist_cm            Float?
+  hip_cm              Float?
+  whr                 Float?
+  hc_cm               Float?
+  cc_cm               Float?
+  muac_cm             Float?
+  is_underweight      String?   @default("NA")
+  is_overweight       String?   @default("NA")
+  is_stunting         String?   @default("NA")
+  is_wasting          String?   @default("NA")
+  is_severe_wasting   String?   @default("NA")
+  diagnosis           String?
+  treatment_taken     String?   @default("NA")
+  treatment_source    String?
+  oral_hygiene        String?   @default("Y")
+  general_hygiene     String?   @default("Y")
+  anc_taken           String?   @default("NA")
+  delivery_place      String?   @default("NA")
+  pnc_taken           String?   @default("NA")
+  fp_method_used      String?   @default("NA")
+  mamta_card          String?   @default("NA")
+  immunization_status String?   @default("NA")
+  work_type           String?   @default("NA")
+  consumption_unit    Float?    @default(1.0)
+  created_at          DateTime? @default(now())
+  date_of_birth       String?
+  contact_number      String?
+  marital_status      String?   @default("Unknown")
+  education           String?
+  occupation          String?
+  updated_at          DateTime? @default(now())
+  added_by_patient_id Int?
+  patient_updated_at  DateTime?
+  medpulse_id         String?   @unique(map: "family_members_medpulse_id_unique")
+
+  family                     Family                     @relation(fields: [family_id], references: [id], onDelete: Cascade)
+  follow_ups                 FollowUp[]
+  follow_up_visits           FollowUpVisit[]
+  allergies                  Allergy[]
+  clinical_history           ClinicalHistory[]
+  health_conditions          HealthCondition[]
+  lifestyle_habits           LifestyleHabit?
+  medications                Medication[]
+  member_allergies           MemberAllergy[]
+  member_conditions          MemberCondition[]
+  member_lifestyle           MemberLifestyle?
+  member_medical_history     MemberMedicalHistory[]
+  member_medications         MemberMedication[]
+  patients                   Patient[]
+  hospital_visits            HospitalVisit[]
+  hospital_callback_requests HospitalCallbackRequest[]
+  record_access              PatientRecordAccess[]
+  record_corrections         PatientRecordCorrection[]
+
+  @@unique([family_id, member_order])
+  @@index([age_years], map: "idx_members_age")
+  @@index([has_anaemia], map: "idx_members_anaemia")
+  @@index([has_dm], map: "idx_members_dm")
+  @@index([date_of_birth], map: "idx_members_dob")
+  @@index([family_id], map: "idx_members_family")
+  @@index([has_htn], map: "idx_members_htn")
+  @@map("family_members")
+}
+
+model FollowUp {
+  id                   Int       @id @default(autoincrement())
+  member_id            Int
+  student_id           Int
+  visit_date           String?   @default(dbgenerated("to_char(CURRENT_DATE, 'YYYY-MM-DD')"))
+  visit_number         Int?      @default(1)
+  sbp                  Int?
+  dbp                  Int?
+  rbs                  Float?
+  hb                   Float?
+  weight_kg            Float?
+  muac_cm              Float?
+  treatment_compliance String?   @default("NA")
+  health_progress      String?   @default("Stable")
+  clinical_notes       String?
+  next_visit_date      String?
+  created_at           DateTime? @default(now())
+
+  member  FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  student Student      @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@index([visit_date], map: "idx_followups_date")
+  @@index([member_id], map: "idx_followups_member")
+  @@map("follow_ups")
+}
+
+model FollowUpVisit {
+  id             Int       @id @default(autoincrement())
+  member_id      Int
+  visit_date     String
+  purpose        String?
+  vitals_summary String?
+  notes          String?
+  created_at     DateTime? @default(now())
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("follow_up_visits")
+}
+
+model Allergy {
+  id        Int     @id @default(autoincrement())
+  member_id Int
+  allergen  String
+  severity  String? @default("Mild")
+  reaction  String?
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("allergies")
+}
+
+model ClinicalHistory {
+  id          Int     @id @default(autoincrement())
+  member_id   Int
+  event_type  String
+  event_date  String?
+  description String?
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("clinical_history")
+}
+
+model HealthCondition {
+  id             Int     @id @default(autoincrement())
+  member_id      Int
+  condition_name String
+  diagnosed_date String?
+  status         String? @default("Active")
+  notes          String?
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("health_conditions")
+}
+
+model LifestyleHabit {
+  id                  Int     @id @default(autoincrement())
+  member_id           Int     @unique
+  smoking_status      String?
+  alcohol_status      String?
+  dietary_pattern     String?
+  physical_activity   String?
+  systolic_bp         Int?
+  diastolic_bp        Int?
+  blood_sugar_fasting Float?
+  blood_sugar_random  Float?
+  bmi                 Float?
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("lifestyle_habits")
+}
+
+model Medication {
+  id            Int     @id @default(autoincrement())
+  member_id     Int
+  medicine_name String
+  dosage        String?
+  frequency     String?
+  adherence     String? @default("Good")
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("medications")
+}
+
+model MemberAllergy {
+  id           Int       @id @default(autoincrement())
+  member_id    Int
+  allergen     String
+  allergy_type String?   @default("Medication")
+  reaction     String?
+  severity     String?   @default("Moderate")
+  notes        String?
+  created_at   DateTime? @default(now())
+  updated_at   DateTime? @default(now())
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@index([member_id], map: "idx_allergies_member")
+  @@map("member_allergies")
+}
+
+model MemberCondition {
+  id             Int       @id @default(autoincrement())
+  member_id      Int
+  condition_name String
+  status         String?   @default("Active")
+  diagnosed_year Int?
+  notes          String?
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @default(now())
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@index([member_id], map: "idx_conditions_member")
+  @@map("member_conditions")
+}
+
+model MemberLifestyle {
+  id                Int       @id @default(autoincrement())
+  member_id         Int       @unique
+  smoking_status    String?   @default("Never")
+  alcohol_status    String?   @default("Never")
+  physical_activity String?   @default("Moderate")
+  diet              String?
+  notes             String?
+  updated_at        DateTime? @default(now())
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@index([member_id], map: "idx_lifestyle_member")
+  @@map("member_lifestyle")
+}
+
+model MemberMedicalHistory {
+  id              Int       @id @default(autoincrement())
+  member_id       Int
+  category        String
+  description     String
+  year            Int?
+  notes           String?
+  created_at      DateTime? @default(now())
+  updated_at      DateTime? @default(now())
+  hospital_doctor String?
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@index([member_id], map: "idx_history_member")
+  @@map("member_medical_history")
+}
+
+model MemberMedication {
+  id               Int       @id @default(autoincrement())
+  member_id        Int
+  name             String
+  dosage           String?
+  frequency        String?
+  reason           String?
+  currently_taking String?   @default("Yes")
+  notes            String?
+  created_at       DateTime? @default(now())
+  updated_at       DateTime? @default(now())
+
+  member FamilyMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@index([member_id], map: "idx_medications_member")
+  @@map("member_medications")
+}
+
+model Hospital {
+  id               Int       @id @default(autoincrement())
+  name             String
+  code             String    @unique
+  type             String?   @default("Civil / General Hospital")
+  city             String?
+  district         String?
+  state            String?
+  bed_capacity     Int?      @default(500)
+  contact_email    String?
+  contact_phone    String?
+  max_super_admins Int?      @default(3)
+  max_admins       Int?      @default(20)
+  status           String?   @default("Active")
+  created_at       DateTime? @default(now())
+
+  hospital_admins            HospitalAdmin[]
+  hospital_visits            HospitalVisit[]
+  hospital_callback_requests HospitalCallbackRequest[]
+  record_corrections         PatientRecordCorrection[]
+
+  @@index([code], map: "idx_hosp_code")
+  @@map("hospitals")
+}
+
+model HospitalAdmin {
+  id          Int       @id @default(autoincrement())
+  hospital_id Int
+  username    String    @unique
+  name        String
+  email       String?
+  phone       String?
+  pin         String    @default("8888")
+  role        String?   @default("Hospital Admin")
+  department  String?   @default("General Medicine")
+  status      String?   @default("Active")
+  created_at  DateTime? @default(now())
+
+  hospital                   Hospital                  @relation(fields: [hospital_id], references: [id], onDelete: Cascade)
+  handled_callback_requests  HospitalCallbackRequest[]
+  reviewed_record_access     PatientRecordAccess[]
+  reviewed_record_corrections PatientRecordCorrection[]
+
+  @@index([hospital_id], map: "idx_hosp_admins_hosp")
+  @@index([role], map: "idx_hosp_admins_role")
+  @@index([username], map: "idx_hosp_admins_user")
+  @@map("hospital_admins")
+}
+
+model Patient {
+  id                         Int       @id @default(autoincrement())
+  patient_uid                String    @unique
+  name                       String
+  phone                      String    @unique
+  email                      String?
+  pin                        String    @default("1234")
+  date_of_birth              String?
+  age_years                  Int?
+  gender                     String?
+  address                    String?
+  model_type                 String?   @default("Independent")
+  student_id                 Int?
+  referral_code_used         String?
+  family_member_id           Int?
+  hospital_id                Int?      @default(1)
+  status                     String?   @default("Active")
+  created_at                 DateTime? @default(now())
+  updated_at                 DateTime? @default(now())
+  blood_group                String?
+  emergency_contact_name     String?
+  emergency_contact_phone    String?
+  emergency_contact_relation String?
+  family_id                  Int?
+  family_role                String?   @default("Head")
+
+  student                    Student?                  @relation(fields: [student_id], references: [id], onDelete: SetNull)
+  family_member              FamilyMember?             @relation(fields: [family_member_id], references: [id], onDelete: SetNull)
+  hospital_visits            HospitalVisit[]
+  hospital_callback_requests HospitalCallbackRequest[]
+  campaign_notifications     CampaignNotification[]
+  grantee_record_access      PatientRecordAccess[]     @relation("GranteePatient")
+  owner_record_access        PatientRecordAccess[]     @relation("OwnerPatient")
+  record_corrections         PatientRecordCorrection[]
+
+  @@index([family_member_id], map: "idx_patients_member")
+  @@index([model_type], map: "idx_patients_model")
+  @@index([phone], map: "idx_patients_phone")
+  @@index([student_id], map: "idx_patients_student")
+  @@index([patient_uid], map: "idx_patients_uid")
+  @@map("patients")
+}
+
+model HospitalVisit {
+  id                   Int       @id @default(autoincrement())
+  hospital_id          Int
+  patient_id           Int?
+  family_member_id     Int?
+  visit_uid            String    @unique
+  patient_name         String
+  age_years            Int?
+  gender               String?
+  contact_number       String?
+  address              String?
+  village              String?
+  family_code          String?
+  student_name         String?
+  student_roll         String?
+  visit_date           String?   @default(dbgenerated("to_char(CURRENT_DATE, 'YYYY-MM-DD')"))
+  department           String    @default("General Medicine")
+  attending_doctor     String?   @default("Dr. Ramesh Patel")
+  visit_type           String?   @default("FAP Survey Referral")
+  chief_complaint      String?
+  symptoms_duration    String?
+  sbp                  Int?
+  dbp                  Int?
+  pulse                Int?
+  temperature          Float?
+  rbs                  Float?
+  existing_conditions  String?
+  allergies            String?
+  diagnosis            String?
+  treatment_prescribed String?
+  disposition          String?   @default("Discharged OPD")
+  ward_bed_no          String?
+  follow_up_advice     String?
+  registered_by_name   String?
+  created_at           DateTime? @default(now())
+
+  hospital      Hospital      @relation(fields: [hospital_id], references: [id], onDelete: Cascade)
+  patient       Patient?      @relation(fields: [patient_id], references: [id], onDelete: SetNull)
+  family_member FamilyMember? @relation(fields: [family_member_id], references: [id], onDelete: SetNull)
+
+  @@index([visit_date], map: "idx_hosp_visits_date")
+  @@index([hospital_id], map: "idx_hosp_visits_hosp")
+  @@index([family_member_id], map: "idx_hosp_visits_member")
+  @@index([visit_uid], map: "idx_hosp_visits_uid")
+  @@map("hospital_visits")
+}
+
+model HospitalCallbackRequest {
+  id                   Int       @id @default(autoincrement())
+  patient_id           Int
+  hospital_id          Int?
+  for_member_id        Int?
+  channel              String?   @default("Callback")
+  department           String    @default("General Medicine")
+  reason               String    @default("Consultation")
+  message              String?
+  preferred_time       String?
+  status               String?   @default("Open")
+  hospital_note        String?
+  scheduled_for        String?
+  handled_by_admin_id  Int?
+  patient_confirmation String?
+  created_at           DateTime? @default(now())
+  updated_at           DateTime? @default(now())
+  resolved_at          DateTime?
+
+  patient          Patient        @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  hospital         Hospital?      @relation(fields: [hospital_id], references: [id], onDelete: SetNull)
+  for_member       FamilyMember?  @relation(fields: [for_member_id], references: [id], onDelete: SetNull)
+  handled_by_admin HospitalAdmin? @relation(fields: [handled_by_admin_id], references: [id], onDelete: SetNull)
+
+  @@index([hospital_id, status], map: "idx_hosp_cb_hospital")
+  @@index([patient_id], map: "idx_hosp_cb_patient")
+  @@map("hospital_callback_requests")
+}
+
+model Campaign {
+  id                  Int       @id @default(autoincrement())
+  title               String
+  keyword             String
+  description         String
+  college_id          Int?
+  created_by_admin_id Int?
+  event_date          String?
+  venue               String?
+  status              String?   @default("Active")
+  created_at          DateTime? @default(now())
+
+  college          College?               @relation(fields: [college_id], references: [id], onDelete: SetNull)
+  created_by_admin Admin?                 @relation(fields: [created_by_admin_id], references: [id], onDelete: SetNull)
+  notifications    CampaignNotification[]
+
+  @@index([college_id], map: "idx_campaigns_college")
+  @@index([keyword], map: "idx_campaigns_keyword")
+  @@map("campaigns")
+}
+
+model CampaignNotification {
+  id                           Int       @id @default(autoincrement())
+  campaign_id                  Int
+  patient_id                   Int
+  student_id                   Int?
+  matched_keyword              String
+  matched_condition_detail     String?
+  status                       String?   @default("Delivered")
+  patient_response_note        String?
+  cadet_call_status            String?   @default("Pending")
+  created_at                   DateTime? @default(now())
+  rsvp                         String?   @default("Pending")
+  rsvp_note                    String?
+  rsvp_at                      DateTime?
+  read_at                      DateTime?
+  contacted_at                 DateTime?
+  patient_contact_confirmation String?
+  patient_contact_confirmed_at DateTime?
+
+  campaign Campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  patient  Patient  @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  student  Student? @relation(fields: [student_id], references: [id], onDelete: SetNull)
+
+  @@index([campaign_id], map: "idx_campaign_notifs_camp")
+  @@index([patient_id], map: "idx_campaign_notifs_patient")
+  @@index([student_id], map: "idx_campaign_notifs_student")
+  @@map("campaign_notifications")
+}
+
+model AcademicSubject {
+  id              Int       @id @default(autoincrement())
+  college_id      Int
+  code            String
+  name            String
+  default_faculty String?
+  default_room    String?
+  created_at      DateTime? @default(now())
+  updated_at      DateTime? @default(now())
+
+  college College @relation(fields: [college_id], references: [id], onDelete: Cascade)
+
+  @@unique([college_id, code])
+  @@map("academic_subjects")
+}
+
+model AcademicLecture {
+  id                      Int       @id @default(autoincrement())
+  college_id              Int
+  lecture_date            String
+  lecture_no              Int
+  subject_code            String
+  subject_name            String
+  session_type            String    @default("Theory")
+  time_slot               String?
+  room_no                 String?
+  faculty_name            String?
+  topic                   String?
+  created_by_admin_id     Int?
+  created_at              DateTime? @default(now())
+  updated_at              DateTime? @default(now())
+  attendance_requested    Int?      @default(0)
+  attendance_requested_at String?
+
+  college            College              @relation(fields: [college_id], references: [id], onDelete: Cascade)
+  created_by_admin   Admin?               @relation(fields: [created_by_admin_id], references: [id], onDelete: SetNull)
+  attendance         AcademicAttendance[]
+  attendance_cluster AttendanceCluster?
+
+  @@unique([college_id, lecture_date, lecture_no, subject_code])
+  @@index([college_id, lecture_date, lecture_no], map: "idx_academic_lectures_slot")
+  @@map("academic_lectures")
+}
+
+model AcademicAttendance {
+  id                 Int       @id @default(autoincrement())
+  lecture_id         Int
+  student_id         Int
+  lecture_date       String
+  lecture_no         Int
+  status             String
+  remarks            String?
+  marked_by_admin_id Int?
+  created_at         DateTime? @default(now())
+  updated_at         DateTime? @default(now())
+
+  lecture         AcademicLecture @relation(fields: [lecture_id], references: [id], onDelete: Cascade)
+  student         Student         @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  marked_by_admin Admin?          @relation(fields: [marked_by_admin_id], references: [id], onDelete: SetNull)
+
+  @@unique([student_id, lecture_date, lecture_no])
+  @@index([lecture_id], map: "idx_academic_attendance_lecture")
+  @@index([lecture_date, lecture_no], map: "idx_academic_attendance_slot")
+  @@map("academic_attendance")
+}
+
+model AcademicExam {
+  id                  Int       @id @default(autoincrement())
+  college_id          Int
+  year_level          Int
+  exam_type           String
+  subject_code        String
+  subject_name        String
+  exam_code           String?
+  exam_name           String?
+  exam_date           String?
+  academic_year       String?
+  created_by_admin_id Int?
+  created_at          DateTime? @default(now())
+  updated_at          DateTime? @default(now())
+
+  college          College            @relation(fields: [college_id], references: [id], onDelete: Cascade)
+  created_by_admin Admin?             @relation(fields: [created_by_admin_id], references: [id], onDelete: SetNull)
+  marks            AcademicExamMark[]
+
+  @@unique([college_id, year_level, exam_type, subject_code])
+  @@map("academic_exams")
+}
+
+model AcademicExamMark {
+  id                  Int       @id @default(autoincrement())
+  exam_id             Int
+  student_id          Int
+  paper1_obtained     Float?
+  paper2_obtained     Float?
+  theory_obtained     Float     @default(0)
+  practical_obtained  Float     @default(0)
+  viva_obtained       Float     @default(0)
+  total_obtained      Float     @default(0)
+  total_max           Float
+  percentage          Float     @default(0)
+  status              String
+  faculty_remarks     String?
+  entered_by_admin_id Int?
+  created_at          DateTime? @default(now())
+  updated_at          DateTime? @default(now())
+
+  exam             AcademicExam @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  student          Student      @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  entered_by_admin Admin?       @relation(fields: [entered_by_admin_id], references: [id], onDelete: SetNull)
+
+  @@unique([exam_id, student_id])
+  @@index([student_id], map: "idx_academic_exam_marks_student")
+  @@map("academic_exam_marks")
+}
+
+model AttendanceCluster {
+  id                 String  @id
+  lecture_id         Int     @unique
+  college_id         Int
+  admin_id           Int
+  anchor_token_hash  String
+  radius_m           Float   @default(1)
+  tx_power_at_1m     Float
+  path_loss_exponent Float
+  started_at         BigInt
+  ends_at            BigInt
+  closed_at          BigInt?
+
+  lecture AcademicLecture           @relation(fields: [lecture_id], references: [id], onDelete: Cascade)
+  college College                   @relation(fields: [college_id], references: [id], onDelete: Restrict)
+  admin   Admin                     @relation(fields: [admin_id], references: [id], onDelete: Restrict)
+  members AttendanceClusterMember[]
+  events  AttendanceClusterEvent[]
+
+  @@index([closed_at, ends_at], map: "attendance_clusters_expiry")
+  @@map("attendance_clusters")
+}
+
+model AttendanceClusterMember {
+  cluster_id           String
+  student_id           Int
+  challenge            String? @unique
+  challenge_issued_at  BigInt?
+  challenge_expires_at BigInt?
+  verified_until       BigInt?
+  distance_m           Float?
+  accepted_at          BigInt?
+  joined_at            BigInt?
+
+  cluster AttendanceCluster @relation(fields: [cluster_id], references: [id], onDelete: Cascade)
+  student Student           @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@id([cluster_id, student_id])
+  @@map("attendance_cluster_members")
+}
+
+model AttendanceClusterEvent {
+  id         Int    @id @default(autoincrement())
+  cluster_id String
+  student_id Int?
+  event      String
+  distance_m Float?
+  created_at BigInt
+
+  cluster AttendanceCluster @relation(fields: [cluster_id], references: [id], onDelete: Cascade)
+  student Student?          @relation(fields: [student_id], references: [id], onDelete: SetNull)
+
+  @@map("attendance_cluster_events")
+}
+
+model ConsentRecord {
+  id                     Int       @id @default(autoincrement())
+  consent_id             String    @unique
+  user_id                String
+  actor_id               String
+  role                   String
+  consent_type           String
+  consent_version        String
+  purpose_version        String
+  privacy_policy_version String
+  purpose_scope          String
+  action                 String
+  source                 String
+  ip_address             String?
+  user_agent             String?
+  timestamp              String
+  created_at             DateTime? @default(now())
+
+  @@index([user_id, consent_type, action], map: "idx_consent_records_user")
+  @@index([consent_type, consent_version], map: "idx_consent_records_version")
+  @@map("consent_records")
+}
+
+model PortalSession {
+  token_hash String @id
+  role       String
+  actor_id   Int
+  expires_at BigInt
+  created_at BigInt
+
+  @@map("portal_sessions")
+}
+
+model PatientRecordAccess {
+  id                 Int     @id @default(autoincrement())
+  member_id          Int
+  grantee_patient_id Int
+  owner_patient_id   Int?
+  kind               String
+  status             String
+  relationship       String?
+  expires_at         BigInt
+  created_at         BigInt
+  reviewed_by        Int?
+  reviewed_at        BigInt?
+
+  member          FamilyMember   @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  grantee_patient Patient        @relation("GranteePatient", fields: [grantee_patient_id], references: [id], onDelete: Cascade)
+  owner_patient   Patient?       @relation("OwnerPatient", fields: [owner_patient_id], references: [id], onDelete: Cascade)
+  reviewer        HospitalAdmin? @relation(fields: [reviewed_by], references: [id], onDelete: SetNull)
+
+  @@index([member_id, grantee_patient_id, status], map: "patient_access_lookup")
+  @@map("patient_record_access")
+}
+
+model PatientRecordCorrection {
+  id          Int     @id @default(autoincrement())
+  patient_id  Int
+  member_id   Int
+  hospital_id Int?
+  record_type String
+  record_id   Int?
+  message     String
+  status      String  @default("Pending")
+  created_at  BigInt
+  reviewed_by Int?
+  reviewed_at BigInt?
+
+  patient  Patient        @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  member   FamilyMember   @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  hospital Hospital?      @relation(fields: [hospital_id], references: [id], onDelete: SetNull)
+  reviewer HospitalAdmin? @relation(fields: [reviewed_by], references: [id], onDelete: SetNull)
+
+  @@map("patient_record_corrections")
+}
+
+model PortalPrivacyAudit {
+  id            Int    @id @default(autoincrement())
+  actor_role    String
+  actor_id      Int
+  action        String
+  resource_type String
+  resource_id   Int?
+  created_at    BigInt
+
+  @@map("portal_privacy_audit")
+}

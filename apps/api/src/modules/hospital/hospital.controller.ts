@@ -1,4 +1,4 @@
-import { PortalSessionService, publicIdentity } from '../../auth/portal-session.service';
+import { PortalSessionService } from '../../auth/portal-session.service';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller, Delete, Get, HttpCode, Post, Put, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
@@ -17,19 +17,19 @@ export class HospitalController {
 
     @Post('hospital/login')
     @HttpCode(200)
-    login(@Req() req: Request) {
+    async login(@Req() req: Request) {
         try {
             const { username, pin } = req.body;
             if (!username || !pin) {
                 throw fail(400, 'Username and security PIN are required.');
             }
 
-            const admin = this.hospitals.findByCredentials(username);
+            const admin = await this.hospitals.findByCredentials(username);
             if (!admin || admin.pin !== pin.trim()) {
                 throw fail(401, 'Invalid hospital credentials or incorrect PIN.');
             }
 
-            this.sessions.issue(req, 'hospital', admin.id);
+            await this.sessions.issue(req, 'hospital', admin.id);
             return {
                 success: true,
                 admin: {
@@ -67,10 +67,9 @@ export class HospitalController {
 
     @Get('hospital/stats')
     @UseGuards(HospitalGuard)
-    getStats(@Req() req: Request) {
+    async getStats(@Req() req: Request) {
         try {
-            const stats = this.hospitals.getStats(req.hospitalId);
-            return stats;
+            return await this.hospitals.getStats(req.hospitalId);
         } catch (err) {
             throw serverError(err);
         }
@@ -78,10 +77,9 @@ export class HospitalController {
 
     @Get('hospital/filter-options')
     @UseGuards(HospitalGuard)
-    getFilterOptions() {
+    async getFilterOptions() {
         try {
-            const options = this.hospitals.getFilterOptions();
-            return options;
+            return await this.hospitals.getFilterOptions();
         } catch (err) {
             throw serverError(err);
         }
@@ -89,11 +87,11 @@ export class HospitalController {
 
     @Get('hospital/patients')
     @UseGuards(HospitalGuard)
-    getPatients(@Req() req: Request) {
+    async getPatients(@Req() req: Request) {
         try {
             const hospitalId = req.hospitalId;
             const { university_id, student_id, model_type, condition, search, limit = 50, offset = 0 } = req.query as Record<string, any>;
-            const patients = this.hospitals.getPatients(hospitalId, {
+            const patients = await this.hospitals.getPatients(hospitalId, {
                 university_id,
                 student_id,
                 model_type,
@@ -114,10 +112,10 @@ export class HospitalController {
 
     @Get('hospital/patients/:id')
     @UseGuards(HospitalGuard)
-    getPatientDossier(@Req() req: Request) {
+    async getPatientDossier(@Req() req: Request) {
         try {
             const patientId = req.params.id;
-            const dossier = this.hospitals.getPatientDossier(patientId, req.hospitalId);
+            const dossier = await this.hospitals.getPatientDossier(patientId, req.hospitalId);
             if (!dossier || dossier.patient.hospital_id !== req.hospitalId) {
                 throw fail(404, 'Patient record not found.');
             }
@@ -129,10 +127,9 @@ export class HospitalController {
 
     @Get('hospital/staff')
     @UseGuards(HospitalGuard)
-    getStaff(@Req() req: Request) {
+    async getStaff(@Req() req: Request) {
         try {
-            const staffData = this.hospitals.getStaff(req.hospitalId, req.hospitalAdmin);
-            return staffData;
+            return await this.hospitals.getStaff(req.hospitalId, req.hospitalAdmin);
         } catch (err) {
             throw serverError(err);
         }
@@ -141,7 +138,7 @@ export class HospitalController {
     @Post('hospital/staff')
     @HttpCode(201)
     @UseGuards(HospitalGuard)
-    createStaff(@Req() req: Request) {
+    async createStaff(@Req() req: Request) {
         try {
             const hospitalId = req.hospitalId;
             const { username, name, email, phone, pin = '8888', role = 'Hospital Admin', department = 'General Medicine' } = req.body;
@@ -155,7 +152,7 @@ export class HospitalController {
                 throw fail(400, 'Role must be Hospital Super Admin or Hospital Admin.');
             }
 
-            const result = this.hospitals.createStaff(hospitalId, req.hospitalAdmin, {
+            const result = await this.hospitals.createStaff(hospitalId, req.hospitalAdmin, {
                 username,
                 name,
                 email,
@@ -165,12 +162,8 @@ export class HospitalController {
                 department,
             });
 
-            if (result.quotaError) {
-                throw fail(403, result.message);
-            }
-            if (result.userConflict) {
-                throw fail(409, result.message);
-            }
+            if (result.quotaError) throw fail(403, result.message);
+            if (result.userConflict) throw fail(409, result.message);
 
             return {
                 success: true,
@@ -184,13 +177,13 @@ export class HospitalController {
 
     @Put('hospital/staff/:id')
     @UseGuards(HospitalGuard)
-    updateStaff(@Req() req: Request) {
+    async updateStaff(@Req() req: Request) {
         try {
             const staffId = req.params.id;
             const hospitalId = req.hospitalId;
             const { name, email, phone, department, status } = req.body;
 
-            const updated = this.hospitals.updateStaff(staffId, hospitalId, { name, email, phone, department, status });
+            const updated = await this.hospitals.updateStaff(staffId, hospitalId, { name, email, phone, department, status });
             if (!updated) {
                 throw fail(404, 'Staff member not found.');
             }
@@ -204,7 +197,7 @@ export class HospitalController {
     @Post('hospital/staff/:id/reset-pin')
     @HttpCode(200)
     @UseGuards(HospitalGuard)
-    resetStaffPin(@Req() req: Request) {
+    async resetStaffPin(@Req() req: Request) {
         try {
             const staffId = req.params.id;
             const hospitalId = req.hospitalId;
@@ -214,7 +207,7 @@ export class HospitalController {
                 throw fail(400, 'Security PIN must be at least 4 digits.');
             }
 
-            const staff = this.hospitals.resetStaffPin(staffId, hospitalId, pin);
+            const staff = await this.hospitals.resetStaffPin(staffId, hospitalId, pin);
             if (!staff) {
                 throw fail(404, 'Staff member not found.');
             }
@@ -227,12 +220,12 @@ export class HospitalController {
 
     @Delete('hospital/staff/:id')
     @UseGuards(HospitalGuard)
-    deleteStaff(@Req() req: Request) {
+    async deleteStaff(@Req() req: Request) {
         try {
             const staffId = req.params.id;
             const hospitalId = req.hospitalId;
 
-            const result = this.hospitals.deleteStaff(staffId, hospitalId);
+            const result = await this.hospitals.deleteStaff(staffId, hospitalId);
             if (result.notFound) {
                 throw fail(404, 'Staff member not found.');
             }
@@ -249,13 +242,12 @@ export class HospitalController {
         }
     }
 
-    // Hospital Patient Visits & Registrations
     @Get('hospital/visits')
     @UseGuards(HospitalGuard)
-    getVisits(@Req() req: Request) {
+    async getVisits(@Req() req: Request) {
         try {
             const { search, department, disposition, date, limit = 25, offset = 0 } = req.query as Record<string, any>;
-            const result = this.visits.listVisits(req.hospitalId, {
+            return await this.visits.listVisits(req.hospitalId, {
                 search,
                 department,
                 disposition,
@@ -263,7 +255,6 @@ export class HospitalController {
                 limit,
                 offset,
             });
-            return result;
         } catch (err) {
             throw serverError(err);
         }
@@ -271,10 +262,9 @@ export class HospitalController {
 
     @Get('hospital/visits/summary')
     @UseGuards(HospitalGuard)
-    getVisitsSummary(@Req() req: Request) {
+    async getVisitsSummary(@Req() req: Request) {
         try {
-            const summary = this.visits.getSummary(req.hospitalId);
-            return summary;
+            return await this.visits.getSummary(req.hospitalId);
         } catch (err) {
             throw serverError(err);
         }
@@ -283,9 +273,9 @@ export class HospitalController {
     @Post('hospital/visits')
     @HttpCode(201)
     @UseGuards(HospitalGuard)
-    createVisit(@Req() req: Request) {
+    async createVisit(@Req() req: Request) {
         try {
-            const visit = this.visits.createVisit(req.hospitalId, req.body, req.hospitalAdmin)!;
+            const visit = (await this.visits.createVisit(req.hospitalId, req.body, req.hospitalAdmin))!;
             return {
                 success: true,
                 message: `Patient ${visit.patient_name} registered successfully with ID ${visit.visit_uid}.`,
@@ -298,9 +288,9 @@ export class HospitalController {
 
     @Get('hospital/visits/:id')
     @UseGuards(HospitalGuard)
-    getVisitDetails(@Req() req: Request) {
+    async getVisitDetails(@Req() req: Request) {
         try {
-            const visit = this.visits.getVisitById(req.hospitalId, req.params.id);
+            const visit = await this.visits.getVisitById(req.hospitalId, req.params.id);
             if (!visit) {
                 throw fail(404, 'Hospital visit record not found.');
             }

@@ -6,10 +6,9 @@ import { fail, HttpError, StatusError } from '../../common/http-error';
 import { EngagementModel } from './engagement.model';
 import { patientNotificationView } from '../../common/patient-notification';
 
-// Map model validation errors to proper HTTP status codes
-function handle<T>(fn: () => T): T {
+async function handle<T>(fn: () => Promise<T>): Promise<T> {
     try {
-        return fn();
+        return await fn();
     } catch (err) {
         if (err instanceof HttpError) throw err;
         const status = err instanceof StatusError ? err.status : 500;
@@ -27,20 +26,20 @@ export class EngagementController {
     @HttpCode(200)
     @UseGuards(PatientGuard)
     markRead(@Req() req: Request) {
-        return handle(() => ({ success: true, updated: this.engagement.markNotificationsRead(req.patientId) }));
+        return handle(async () => ({ success: true, updated: await this.engagement.markNotificationsRead(req.patientId) }));
     }
 
     @Post('patient/notifications/:id/rsvp')
     @HttpCode(200)
     @UseGuards(PatientGuard)
     rsvp(@Req() req: Request) {
-        return handle(() => {
+        return handle(async () => {
             const { rsvp, note } = req.body || {};
-            const result = this.engagement.rsvp(parseInt(req.params.id as string, 10), req.patient, rsvp, note);
+            const result = await this.engagement.rsvp(parseInt(req.params.id as string, 10), req.patient, rsvp, note);
             const messages: Record<string, string> = {
                 'Attending': 'Thank you! Your attendance is confirmed.',
                 'Not Attending': 'Noted. The camp team has been informed you cannot attend.',
-                'Need Help': 'Your student will call you to help you attend.'
+                'Need Help': 'Your student will call you to help you attend.',
             };
             return { success: true, message: messages[rsvp], notification: patientNotificationView(result.notification) };
         });
@@ -50,8 +49,12 @@ export class EngagementController {
     @HttpCode(200)
     @UseGuards(PatientGuard)
     confirmCampaignContact(@Req() req: Request) {
-        return handle(() => {
-            const notification = this.engagement.confirmCampaignContact(parseInt(req.params.id as string, 10), req.patientId, toBool(req.body && req.body.confirmed));
+        return handle(async () => {
+            const notification = await this.engagement.confirmCampaignContact(
+                parseInt(req.params.id as string, 10),
+                req.patientId,
+                toBool(req.body && req.body.confirmed),
+            );
             return { success: true, notification: patientNotificationView(notification) };
         });
     }

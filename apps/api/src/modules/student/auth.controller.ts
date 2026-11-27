@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { fail, HttpError, serverError } from '../../common/http-error';
-import type { Row } from '../../common/row';
+import { isUniqueConstraintError } from '../../database/pg-errors';
 import { StudentModel } from './student.model';
 import { PortalSessionService, publicIdentity } from '../../auth/portal-session.service';
 import { StudentGuard } from '../../auth/guards';
@@ -13,7 +13,7 @@ export class AuthController {
 
     @Post('auth/register')
     @HttpCode(201)
-    register(@Req() req: Request) {
+    async register(@Req() req: Request) {
         try {
             const {
                 roll_number,
@@ -41,12 +41,12 @@ export class AuthController {
                 throw fail(400, 'PIN / Passcode must be at least 4 characters');
             }
 
-            const existing = this.students.findByRoll(cleanRoll);
+            const existing = await this.students.findByRoll(cleanRoll);
             if (existing) {
                 throw fail(409, `Student with Roll Number "${cleanRoll}" is already registered. Please sign in instead.`);
             }
 
-            const newStudent = this.students.create({
+            const newStudent = await this.students.create({
                 roll_number: cleanRoll,
                 name,
                 pin: cleanPin,
@@ -59,7 +59,7 @@ export class AuthController {
             });
 
             if (!newStudent) throw fail(500, 'Student registration could not be completed.');
-            this.sessions.issue(req, 'student', newStudent.id);
+            await this.sessions.issue(req, 'student', newStudent.id);
             return {
                 success: true,
                 message: 'Student registration completed successfully',
@@ -67,7 +67,7 @@ export class AuthController {
             };
         } catch (err) {
             if (err instanceof HttpError) throw err;
-            if (err.message && err.message.includes('UNIQUE')) {
+            if (isUniqueConstraintError(err)) {
                 throw fail(409, 'Student with this Roll Number is already registered');
             }
             throw serverError(err);
@@ -76,19 +76,18 @@ export class AuthController {
 
     @Post('auth/login')
     @HttpCode(200)
-    login(@Req() req: Request) {
+    async login(@Req() req: Request) {
         try {
             const { roll_number, pin } = req.body;
             if (!roll_number) {
                 throw fail(400, 'Roll number is required');
             }
 
-            const student = this.students.findByRoll(roll_number.trim());
+            const student = await this.students.findByRoll(roll_number.trim());
             if (!student) {
                 throw fail(404, 'Student with Roll Number ' + roll_number + ' not found');
             }
 
-            // FIX (security): the original skipped the PIN check when no PIN was sent, so a roll number alone signed in.
             if (!pin || !String(pin).trim()) {
                 throw fail(400, 'PIN is required');
             }
@@ -97,7 +96,7 @@ export class AuthController {
                 throw fail(401, 'Invalid PIN / Password');
             }
 
-            this.sessions.issue(req, 'student', student.id);
+            await this.sessions.issue(req, 'student', student.id);
             return {
                 success: true,
                 student: publicIdentity(student),

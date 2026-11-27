@@ -8,25 +8,29 @@ import { PatientPrivacyService } from './patient-privacy.service';
 
 @Controller()
 export class PatientController {
-    constructor(private readonly patients: PatientModel, private readonly sessions: PortalSessionService, private readonly privacy: PatientPrivacyService) {}
+    constructor(
+        private readonly patients: PatientModel,
+        private readonly sessions: PortalSessionService,
+        private readonly privacy: PatientPrivacyService,
+    ) {}
 
     @Post('patient/verify-referral')
     @HttpCode(200)
-    verifyReferral(@Req() req: Request) {
+    async verifyReferral(@Req() req: Request) {
         try {
             const { referral_code } = req.body;
             if (!referral_code || !referral_code.toString().trim()) {
                 throw new HttpError(400, { valid: false, error: 'Referral code is required.' });
             }
 
-            const student = this.patients.verifyReferral(referral_code.toString().trim());
+            const student = await this.patients.verifyReferral(referral_code.toString().trim());
             if (!student) {
                 throw new HttpError(404, { valid: false, error: 'No medical cadet found with this referral code.' });
             }
 
             return {
                 valid: true,
-                student
+                student,
             };
         } catch (err) {
             if (err instanceof HttpError) throw err;
@@ -36,7 +40,7 @@ export class PatientController {
 
     @Post('patient/register')
     @HttpCode(201)
-    register(@Req() req: Request) {
+    async register(@Req() req: Request) {
         try {
             const { name, phone, pin, email, gender, age_years, date_of_birth, address, is_adopted, referral_code } = req.body;
 
@@ -52,7 +56,7 @@ export class PatientController {
                 throw fail(400, 'Please provide a valid 10-digit mobile phone number.');
             }
 
-            const result = this.patients.register({
+            const result = await this.patients.register({
                 name,
                 phone,
                 pin,
@@ -62,21 +66,17 @@ export class PatientController {
                 date_of_birth,
                 address,
                 is_adopted,
-                referral_code
+                referral_code,
             });
 
-            if (result.conflict) {
-                throw fail(409, result.message);
-            }
-            if (result.badRequest) {
-                throw fail(400, result.message);
-            }
+            if (result.conflict) throw fail(409, result.message);
+            if (result.badRequest) throw fail(400, result.message);
 
-            this.sessions.issue(req, 'patient', result.patient.id);
+            await this.sessions.issue(req, 'patient', result.patient.id);
             return {
                 success: true,
                 message: `Patient account registered successfully as ${result.modelType}.`,
-                patient: publicIdentity(result.patient)
+                patient: publicIdentity(result.patient),
             };
         } catch (err) {
             throw serverError(err);
@@ -85,7 +85,7 @@ export class PatientController {
 
     @Post('patient/login')
     @HttpCode(200)
-    login(@Req() req: Request) {
+    async login(@Req() req: Request) {
         try {
             const { identifier, pin } = req.body;
             if (!identifier || !identifier.trim()) {
@@ -95,7 +95,7 @@ export class PatientController {
                 throw fail(400, 'PIN / Passcode is required.');
             }
 
-            const result = this.patients.login(identifier, pin);
+            const result = await this.patients.login(identifier, pin);
             if (result.notFound) {
                 throw fail(404, 'No patient record found matching this Phone number or Patient ID.');
             }
@@ -103,11 +103,11 @@ export class PatientController {
                 throw fail(401, 'Invalid PIN / Passcode.');
             }
 
-            this.sessions.issue(req, 'patient', result.patient.id);
+            await this.sessions.issue(req, 'patient', result.patient.id);
             return {
                 success: true,
                 message: 'Signed in successfully.',
-                patient: publicIdentity(result.patient)
+                patient: publicIdentity(result.patient),
             };
         } catch (err) {
             throw serverError(err);
@@ -123,14 +123,14 @@ export class PatientController {
     @Post('patient/link-referral')
     @HttpCode(200)
     @UseGuards(PatientGuard)
-    linkReferral(@Req() req: Request) {
+    async linkReferral(@Req() req: Request) {
         try {
             const { referral_code } = req.body;
             if (!referral_code || !referral_code.trim()) {
                 throw fail(400, 'Referral code is required.');
             }
 
-            const result = this.patients.linkReferral(req.patientId, referral_code, req.patient);
+            const result = await this.patients.linkReferral(req.patientId, referral_code, req.patient);
             if (result.notFound) {
                 throw fail(404, result.message);
             }
@@ -138,7 +138,7 @@ export class PatientController {
             return {
                 success: true,
                 message: `Successfully linked to Medical Cadet ${result.student.name} (${result.student.college_name})!`,
-                patient: publicIdentity(result.patient)
+                patient: publicIdentity(result.patient),
             };
         } catch (err) {
             throw serverError(err);
@@ -147,10 +147,10 @@ export class PatientController {
 
     @Get('patient/records')
     @UseGuards(PatientGuard)
-    getRecords(@Req() req: Request) {
+    async getRecords(@Req() req: Request) {
         try {
-            const records = this.patients.getRecords(req.patient);
-            this.privacy.audit('patient', req.patientId, 'records_read', 'member', req.patient.family_member_id);
+            const records = await this.patients.getRecords(req.patient);
+            await this.privacy.audit('patient', req.patientId, 'records_read', 'member', req.patient.family_member_id);
             return records;
         } catch (err) {
             throw serverError(err);

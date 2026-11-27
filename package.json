@@ -12,6 +12,10 @@
     "build": "npm --prefix apps/api run build && npm --prefix apps/web run build",
     "start": "npm --prefix apps/api run start",
     "typecheck": "npm --prefix apps/api run typecheck && npm --prefix apps/web run typecheck",
+    "db:generate": "npm --prefix apps/api run prisma:generate",
+    "db:push": "npm --prefix apps/api run prisma:push",
+    "db:migrate-sqlite": "node apps/api/scripts/migrate-sqlite-to-pg.mjs",
+    "db:migrate-sqlite:cleanup": "node apps/api/scripts/migrate-sqlite-to-pg.mjs --zip-and-delete",
     "parity": "node tools/parity/run.mjs"
   },
   "engines": {
