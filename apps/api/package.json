@@ -7,7 +7,7 @@
     "prisma:push": "prisma db push --schema=prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=prisma/schema.prisma",
     "build": "prisma generate --schema=prisma/schema.prisma && tsc -p tsconfig.json",
-    "start": "node dist/main.js",
+    "start": "prisma db push --schema=prisma/schema.prisma --skip-generate && node dist/main.js",
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

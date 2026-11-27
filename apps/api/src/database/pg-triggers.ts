@@ -5,6 +5,9 @@ import type { PrismaClient } from '@prisma/client';
  * - Rejects client-supplied medpulse_id on INSERT
  * - Auto-assigns `MP-00000001` from the generated `id`
  * - Makes `id` and `medpulse_id` immutable on UPDATE
+ *
+ * Each statement is executed separately because PostgreSQL prepared statements
+ * reject multiple commands in a single `$executeRawUnsafe` call.
  */
 export async function ensurePostgresTriggers(prisma: PrismaClient): Promise<void> {
     await prisma.$executeRawUnsafe(`
@@ -16,7 +19,7 @@ export async function ensurePostgresTriggers(prisma: PrismaClient): Promise<void
             END IF;
             RETURN NEW;
         END;
-        $$ LANGUAGE plpgsql;
+        $$ LANGUAGE plpgsql
     `);
 
     await prisma.$executeRawUnsafe(`
@@ -28,7 +31,7 @@ export async function ensurePostgresTriggers(prisma: PrismaClient): Promise<void
             WHERE id = NEW.id AND (medpulse_id IS NULL OR medpulse_id = '');
             RETURN NEW;
         END;
-        $$ LANGUAGE plpgsql;
+        $$ LANGUAGE plpgsql
     `);
 
     await prisma.$executeRawUnsafe(`
@@ -48,30 +51,30 @@ export async function ensurePostgresTriggers(prisma: PrismaClient): Promise<void
             END IF;
             RETURN NEW;
         END;
-        $$ LANGUAGE plpgsql;
+        $$ LANGUAGE plpgsql
     `);
 
+    await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS family_members_identity_server_only ON family_members`);
     await prisma.$executeRawUnsafe(`
-        DROP TRIGGER IF EXISTS family_members_identity_server_only ON family_members;
         CREATE TRIGGER family_members_identity_server_only
         BEFORE INSERT ON family_members
         FOR EACH ROW
-        EXECUTE FUNCTION family_members_medpulse_id_before_insert();
+        EXECUTE FUNCTION family_members_medpulse_id_before_insert()
     `);
 
+    await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS family_members_identity_assign ON family_members`);
     await prisma.$executeRawUnsafe(`
-        DROP TRIGGER IF EXISTS family_members_identity_assign ON family_members;
         CREATE TRIGGER family_members_identity_assign
         AFTER INSERT ON family_members
         FOR EACH ROW
-        EXECUTE FUNCTION family_members_medpulse_id_after_insert();
+        EXECUTE FUNCTION family_members_medpulse_id_after_insert()
     `);
 
+    await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS family_members_identity_immutable ON family_members`);
     await prisma.$executeRawUnsafe(`
-        DROP TRIGGER IF EXISTS family_members_identity_immutable ON family_members;
         CREATE TRIGGER family_members_identity_immutable
         BEFORE UPDATE OF id, medpulse_id ON family_members
         FOR EACH ROW
-        EXECUTE FUNCTION family_members_medpulse_id_before_update();
+        EXECUTE FUNCTION family_members_medpulse_id_before_update()
     `);
 }
