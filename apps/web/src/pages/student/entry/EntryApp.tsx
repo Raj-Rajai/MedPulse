@@ -3,7 +3,7 @@ import { readStoredUser } from '../common/badges';
 import { medpulseMemberId } from '../common/memberIdentity';
 import { TOAST_ENTRY, useToasts } from '../common/Toasts';
 import { errMsg, getHouseholdDisplayName, runWhenActive } from '../common/utils';
-import { LocationVerificationCard } from '../common/fieldLocation';
+import { LocationVerificationCard, useFieldLocationState } from '../common/fieldLocation';
 import {
     familyCode,
     isSurveyDone,
@@ -58,6 +58,8 @@ function checkYearStatus(
 export function EntryApp() {
     const { showToast, container: toasts } = useToasts(TOAST_ENTRY);
     const [loggedInStudent] = useState(readStoredUser);
+    const locationState = useFieldLocationState();
+    const isReadOnly = locationState.readOnly;
 
     const {
         activeModal,
@@ -182,6 +184,10 @@ export function EntryApp() {
     /* ---- Update Survey Data for Selected Member ---- */
     const handleChangeSurveyData = (updater: (prev: MemberSurveyData) => MemberSurveyData) => {
         if (!memberId) return;
+        if (isReadOnly) {
+            showToast('Read-Only Mode (R Only): You are away from your designated location. CUD operations are disabled.', 'error');
+            return;
+        }
         setSurveyRecord((prev) => {
             if (!prev) return prev;
             const currentMs = prev.memberSurveys[memberId] || createEmptyMemberSurvey(member);
@@ -202,6 +208,10 @@ export function EntryApp() {
     /* ---- Save Draft ---- */
     const handleSaveDraft = async () => {
         if (!surveyRecord || !familyId) return;
+        if (isReadOnly) {
+            showToast('Read-Only Mode (R Only): You are outside your designated field area. Saving is disabled.', 'error');
+            return;
+        }
         setSaving('save');
         try {
             await syncSurveyWithBackend(surveyRecord, 'draft');
@@ -217,6 +227,10 @@ export function EntryApp() {
     /* ---- Submit Record ---- */
     const handleSubmitRecord = async () => {
         if (!surveyRecord || !familyId) return;
+        if (isReadOnly) {
+            showToast('Read-Only Mode (R Only): You are outside your designated field area. Submitting is disabled.', 'error');
+            return;
+        }
         setSaving('submit');
         try {
             await syncSurveyWithBackend(surveyRecord, 'submitted');
@@ -232,6 +246,10 @@ export function EntryApp() {
     /* ---- Save and Move to Next Member ---- */
     const handleNextMember = async () => {
         if (!surveyRecord || !familyId || !memberId) return;
+        if (isReadOnly) {
+            showToast('Read-Only Mode (R Only): You are outside your designated field area. Saving is disabled.', 'error');
+            return;
+        }
         setSaving('next');
         try {
             await syncSurveyWithBackend(surveyRecord, 'draft');
@@ -604,18 +622,20 @@ export function EntryApp() {
 
                                     {/* Categorized Clinical Sections View */}
                                     {surveyRecord && (
-                                        <SurveyFormView
-                                            member={member}
-                                            surveyData={currentMemberSurvey}
-                                            onChangeSurveyData={handleChangeSurveyData}
-                                            currentYear={currentYear}
-                                            status={surveyRecord.status}
-                                            saving={saving}
-                                            onSaveDraft={handleSaveDraft}
-                                            onSubmitRecord={handleSubmitRecord}
-                                            onNextMember={handleNextMember}
-                                            hasNextMember={currentMemberIndex >= 0 && currentMemberIndex < members.length - 1}
-                                        />
+                                        <fieldset disabled={isReadOnly} style={{ border: 'none', padding: 0, margin: 0, minWidth: 0 }}>
+                                            <SurveyFormView
+                                                member={member}
+                                                surveyData={currentMemberSurvey}
+                                                onChangeSurveyData={handleChangeSurveyData}
+                                                currentYear={currentYear}
+                                                status={surveyRecord.status}
+                                                saving={saving}
+                                                onSaveDraft={handleSaveDraft}
+                                                onSubmitRecord={handleSubmitRecord}
+                                                onNextMember={handleNextMember}
+                                                hasNextMember={currentMemberIndex >= 0 && currentMemberIndex < members.length - 1}
+                                            />
+                                        </fieldset>
                                     )}
                                 </div>
                             </div>
@@ -628,6 +648,10 @@ export function EntryApp() {
                                         members={members}
                                         surveyRecord={surveyRecord}
                                         onChangeSurveyRecord={(updater) => {
+                                            if (isReadOnly) {
+                                                showToast('Read-Only Mode (R Only): You are away from your designated location. CUD operations are disabled.', 'error');
+                                                return;
+                                            }
                                             setSurveyRecord((prev) => {
                                                 if (!prev) return prev;
                                                 const next = updater(prev);
@@ -641,6 +665,10 @@ export function EntryApp() {
                                     <HealthyMacrosSection
                                         surveyRecord={surveyRecord}
                                         onChangeSurveyRecord={(updater) => {
+                                            if (isReadOnly) {
+                                                showToast('Read-Only Mode (R Only): You are away from your designated location. CUD operations are disabled.', 'error');
+                                                return;
+                                            }
                                             setSurveyRecord((prev) => {
                                                 if (!prev) return prev;
                                                 const next = updater(prev);

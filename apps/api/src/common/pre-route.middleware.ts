@@ -27,15 +27,17 @@ export function apiPreRouteMiddleware(app: INestApplication) {
             } catch (err) {
                 return send(res, err, next);
             }
-            let location;
-            try {
-                location = JSON.parse(req.get('X-Field-Location') || 'null');
-            } catch {
-                location = null;
-            }
             const area = await geofence.getAreaForStudent(req.student);
-            const error = checkLocation(area, location);
-            if (error) return res.status(403).json({ error, code: 'LOCATION_REQUIRED' });
+            if (!area || area.enabled !== false) {
+                let location;
+                try {
+                    location = JSON.parse(req.get('X-Field-Location') || 'null');
+                } catch {
+                    location = null;
+                }
+                const error = checkLocation(area, location);
+                if (error) return res.status(403).json({ error, code: 'LOCATION_REQUIRED' });
+            }
         }
 
         if (req.path === '/hospital/fap' || req.path.startsWith('/hospital/fap/')) {

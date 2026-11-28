@@ -309,10 +309,7 @@ export async function syncSurveyWithBackend(
         updatedAt: new Date().toISOString(),
     });
 
-    // Always persist to localStorage first
-    persistSurveyLocally(finalRecord);
-
-    // Save member records to backend
+    // Save member records to backend first (throws if blocked by geofence / 403 LOCATION_REQUIRED)
     const memberIds = Object.keys(finalRecord.memberSurveys).map(Number);
     for (const mId of memberIds) {
         const ms = finalRecord.memberSurveys[mId];
@@ -366,40 +363,43 @@ export async function syncSurveyWithBackend(
             consumption_unit: parseFloat(ms.consumption_unit) || 1.0,
         };
 
-        try {
-            await fetch(`/api/members/${mId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(memberPayload),
-            });
-        } catch (e) {
-            console.warn(`Failed to sync member ${mId} to API:`, e);
+        const res = await fetch(`/api/members/${mId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(memberPayload),
+        });
+        if (!res.ok) {
+            const errData = (await res.json().catch(() => ({}))) as { error?: string };
+            throw new Error(errData.error || `Failed to save member record (HTTP ${res.status})`);
         }
     }
 
     // Save family diet and embed full survey records in family notes
-    try {
-        const familyPayload = {
-            total_cu: parseFloat(finalRecord.totalCu) || null,
-            calorie_intake_per_cu: parseInt(finalRecord.calorieIntakePerCu, 10) || null,
-            calorie_status: finalRecord.calorieStatus || 'Normal',
-            dietary_advice_given: finalRecord.dietaryAdviceGiven || 'N',
-            notes: JSON.stringify({
-                medpulse_survey_records: true,
-                version: 1,
-                last_year: finalRecord.professionalYear,
-                survey_records: {
-                    [finalRecord.professionalYear]: finalRecord,
-                },
-            }),
-        };
+    const familyPayload = {
+        total_cu: parseFloat(finalRecord.totalCu) || null,
+        calorie_intake_per_cu: parseInt(finalRecord.calorieIntakePerCu, 10) || null,
+        calorie_status: finalRecord.calorieStatus || 'Normal',
+        dietary_advice_given: finalRecord.dietaryAdviceGiven || 'N',
+        notes: JSON.stringify({
+            medpulse_survey_records: true,
+            version: 1,
+            last_year: finalRecord.professionalYear,
+            survey_records: {
+                [finalRecord.professionalYear]: finalRecord,
+            },
+        }),
+    };
 
-        await fetch(`/api/families/${finalRecord.familyId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(familyPayload),
-        });
-    } catch (e) {
-        console.warn('Failed to sync family record to API:', e);
+    const famRes = await fetch(`/api/families/${finalRecord.familyId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(familyPayload),
+    });
+    if (!famRes.ok) {
+        const errData = (await famRes.json().catch(() => ({}))) as { error?: string };
+        throw new Error(errData.error || `Failed to save family survey record (HTTP ${famRes.status})`);
     }
+
+    // Only persist to localStorage after backend CUD verification succeeds
+    persistSurveyLocally(finalRecord);
 }

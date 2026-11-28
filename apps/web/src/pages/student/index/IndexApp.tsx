@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { readStoredUser } from '../common/badges';
 import { TOAST_INDEX, useToasts } from '../common/Toasts';
 import { errMsg } from '../common/utils';
+import { LocationVerificationCard } from '../common/fieldLocation';
 import type { StudentSession } from '../../../shared/session';
 import { ConfidentialityNoticeModal } from '../../../shared/privacy/ConfidentialityNoticeModal';
 import { useStudentPrivacy } from '../../../shared/privacy/useStudentPrivacy';
@@ -322,6 +323,7 @@ export function IndexApp() {
         <>
             {toasts}
             <main className="main-content">
+            <LocationVerificationCard />
             <div className="page-header anim-fade-up">
                 <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                     <img src="/images/sal-logo.png" alt="SAL Logo" className="header-brand-logo" />

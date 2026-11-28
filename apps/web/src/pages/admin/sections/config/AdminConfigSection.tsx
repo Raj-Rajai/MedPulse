@@ -14,12 +14,15 @@ import type { AcademicYear, FieldArea } from '../../types';
 /** The list entry that edits the default area. */
 const DEFAULT = 'default';
 const EMPTY_AREA = { name: '', latitude: '', longitude: '', radius: '500' };
-const RADIUS_PRESETS = [250, 500, 1000, 2000];
+const RADIUS_PRESETS = [100, 250, 500, 1000, 2000, 5000];
 
 const radiusText = (r: number | string) => (Number(r) >= 1000 ? `${Number(r) / 1000} km` : `${Number(r)} m`);
 const hasArea = (y: AcademicYear) => !!y.area_name && y.latitude !== null && y.latitude !== undefined;
+const isYearAreaEnabled = (y: AcademicYear) => y.area_enabled === undefined || y.area_enabled === null ? true : Boolean(Number(y.area_enabled));
 const areaOfYear = (y: AcademicYear): FieldArea | null =>
-    hasArea(y) ? { name: String(y.area_name), latitude: Number(y.latitude), longitude: Number(y.longitude), radius: Number(y.radius) } : null;
+    hasArea(y)
+        ? { name: String(y.area_name), latitude: Number(y.latitude), longitude: Number(y.longitude), radius: Number(y.radius), enabled: isYearAreaEnabled(y) }
+        : null;
 const formOf = (a: FieldArea | null) => (a ? { name: String(a.name), latitude: String(a.latitude), longitude: String(a.longitude), radius: String(a.radius) } : EMPTY_AREA);
 
 /** OpenStreetMap embed framing the circle (bbox a little larger than the radius). */
@@ -112,10 +115,11 @@ function YearModal({ open, year, years, onClose, onSaved }: { open: boolean; yea
 }
 
 /* ---------------- Page ---------------- */
-export function AdminConfigSection({ active, years, defaultArea, onChanged }: {
+export function AdminConfigSection({ active, years, defaultArea, locationBindingEnabled = true, onChanged }: {
     active: boolean;
     years: AcademicYear[] | null;
     defaultArea: FieldArea | null;
+    locationBindingEnabled?: boolean;
     /** Reload academic years (and students) after any change. */
     onChanged: () => void;
 }) {
@@ -123,6 +127,7 @@ export function AdminConfigSection({ active, years, defaultArea, onChanged }: {
     const [selected, setSelected] = useState<string>('');
     const [form, setForm] = useState(EMPTY_AREA);
     const [busy, setBusy] = useState(false);
+    const [toggling, setToggling] = useState(false);
     const [locating, setLocating] = useState(false);
     const [modal, setModal] = useState<{ open: boolean; year: AcademicYear | null }>({ open: false, year: null });
 
@@ -147,6 +152,44 @@ export function AdminConfigSection({ active, years, defaultArea, onChanged }: {
         && Number.isFinite(radius) && radius >= 25 && radius <= 50000;
     const dirty = !savedArea || form.name.trim() !== String(savedArea.name) || lat !== Number(savedArea.latitude) || lng !== Number(savedArea.longitude) || radius !== Number(savedArea.radius);
     const set = (k: keyof typeof EMPTY_AREA) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
+
+    const toggleMasterBinding = async () => {
+        setToggling(true);
+        try {
+            const nextState = !locationBindingEnabled;
+            await call('/api/admin/geofence/toggle', 'PUT', { enabled: nextState });
+            showToast(
+                nextState
+                    ? 'Location Binding turned ON — Students outside the designated area are restricted to Read-Only (R) mode.'
+                    : 'Location Binding turned OFF — Students can perform full CRUD operations from any location.',
+                'success',
+            );
+            onChanged();
+        } catch (err) {
+            showToast(errMessage(err), 'error');
+        } finally {
+            setToggling(false);
+        }
+    };
+
+    const toggleYearBinding = async (year: AcademicYear) => {
+        setToggling(true);
+        try {
+            const nextState = !isYearAreaEnabled(year);
+            await call('/api/admin/geofence/toggle', 'PUT', { enabled: nextState, academic_year_id: year.id });
+            showToast(
+                nextState
+                    ? `Location Binding enabled for ${year.label}.`
+                    : `Location Binding paused for ${year.label}.`,
+                'success',
+            );
+            onChanged();
+        } catch (err) {
+            showToast(errMessage(err), 'error');
+        } finally {
+            setToggling(false);
+        }
+    };
 
     const useMyLocation = () => {
         if (!navigator.geolocation) {
@@ -217,6 +260,100 @@ export function AdminConfigSection({ active, years, defaultArea, onChanged }: {
 
     return (
         <div id="viewConfig" className={`admin-view-pane${active ? ' active' : ''}`}>
+            {/* Master Student Location Binding ON/OFF Switch Card */}
+            <div
+                className="card"
+                id="locationBindingMasterCard"
+                style={{
+                    marginBottom: '1.25rem',
+                    padding: '1.25rem 1.5rem',
+                    border: locationBindingEnabled ? '1.5px solid #10b981' : '1.5px solid var(--border, #e2e8f0)',
+                    background: locationBindingEnabled ? 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 60%)' : '#ffffff',
+                }}
+            >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ flex: '1', minWidth: '260px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                            <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>📍</span>
+                            <h2 className="card-title" style={{ margin: 0, fontSize: '1.15rem' }}>
+                                Student Location Binding (Community Medicine CUD Lock)
+                            </h2>
+                            <span
+                                id="locationBindingStatusBadge"
+                                className={`badge ${locationBindingEnabled ? 'badge-success' : 'badge-warning'}`}
+                                style={{ fontSize: '0.78rem', padding: '0.25rem 0.65rem', fontWeight: 700 }}
+                            >
+                                {locationBindingEnabled ? '● ON — Geofence Enforced' : '○ OFF — Unrestricted CRUD'}
+                            </span>
+                        </div>
+                        <p className="card-desc" style={{ margin: 0, fontSize: '0.86rem', lineHeight: 1.5 }}>
+                            {locationBindingEnabled
+                                ? 'Active: Students outside their designated lat-long area can only Read (R) records in Community Medicine; Create, Update, and Delete (CUD) operations are blocked.'
+                                : 'Paused: Location binding is turned OFF. Students can perform Create, Read, Update, and Delete (CRUD) operations from any location.'}
+                        </p>
+                        {defaultArea && (
+                            <div style={{ marginTop: '0.45rem', fontSize: '0.8rem', color: 'var(--text-secondary, #475569)', fontWeight: 600 }}>
+                                Active Default Area: <strong>{defaultArea.name}</strong> ({Number(defaultArea.latitude).toFixed(4)}, {Number(defaultArea.longitude).toFixed(4)}) • Radius: <strong>{radiusText(defaultArea.radius)}</strong>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                        <button
+                            type="button"
+                            id="btnToggleLocationBinding"
+                            role="switch"
+                            aria-checked={locationBindingEnabled}
+                            aria-label="Toggle Student Location Binding ON or OFF"
+                            disabled={toggling}
+                            onClick={toggleMasterBinding}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.65rem',
+                                padding: '0.55rem 1.1rem',
+                                borderRadius: '999px',
+                                border: locationBindingEnabled ? '1.5px solid #059669' : '1.5px solid #cbd5e1',
+                                background: locationBindingEnabled ? '#059669' : '#f1f5f9',
+                                color: locationBindingEnabled ? '#ffffff' : '#334155',
+                                fontWeight: 700,
+                                fontSize: '0.88rem',
+                                cursor: toggling ? 'wait' : 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: locationBindingEnabled ? '0 4px 12px rgba(5, 150, 105, 0.25)' : 'none',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    width: '36px',
+                                    height: '20px',
+                                    borderRadius: '999px',
+                                    background: locationBindingEnabled ? 'rgba(255,255,255,0.28)' : '#cbd5e1',
+                                    position: 'relative',
+                                    display: 'inline-block',
+                                    transition: 'background 0.2s ease',
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        borderRadius: '50%',
+                                        background: '#ffffff',
+                                        position: 'absolute',
+                                        top: '2px',
+                                        left: locationBindingEnabled ? '18px' : '2px',
+                                        transition: 'left 0.2s ease',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                    }}
+                                />
+                            </span>
+                            <span>{toggling ? 'Updating…' : locationBindingEnabled ? 'Location Binding: ON' : 'Location Binding: OFF'}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div className="mm-split mm-split-even">
                 <div className="card">
                     <div className="mm-card-head">
@@ -265,8 +402,18 @@ export function AdminConfigSection({ active, years, defaultArea, onChanged }: {
                                         : savedArea ? 'Students in this academic year must be inside this area to enter data.' : 'This year uses the default area until you save one here.'}
                                 </p>
                             </div>
-                            {selected !== DEFAULT && savedArea && (
-                                <button type="button" className="btn btn-secondary btn-sm" onClick={removeArea} disabled={busy}>Remove area</button>
+                            {selected !== DEFAULT && savedArea && selectedYear && (
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <button
+                                        type="button"
+                                        className={`btn btn-sm ${isYearAreaEnabled(selectedYear) ? 'btn-primary' : 'btn-secondary'}`}
+                                        onClick={() => toggleYearBinding(selectedYear)}
+                                        disabled={toggling || busy}
+                                    >
+                                        {isYearAreaEnabled(selectedYear) ? '● Year Area: ON' : '○ Year Area: OFF'}
+                                    </button>
+                                    <button type="button" className="btn btn-secondary btn-sm" onClick={removeArea} disabled={busy}>Remove area</button>
+                                </div>
                             )}
                         </div>
 

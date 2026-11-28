@@ -148,7 +148,13 @@ function AdminConsole() {
                 <HouseholdsSection active={activeTab === 'households'} loadSignal={signals.households} cadets={cadets.all} />
                 <CampaignsSection active={activeTab === 'campaigns'} loadSignal={signals.campaigns} onOpenRoster={(c) => roster.show(c)} />
                 <ExportsSection active={activeTab === 'exports'} exports={exports} />
-                <AdminConfigSection active={activeTab === 'config'} years={academic.years} defaultArea={academic.defaultArea} onChanged={reloadAcademic} />
+                <AdminConfigSection
+                    active={activeTab === 'config'}
+                    years={academic.years}
+                    defaultArea={academic.defaultArea}
+                    locationBindingEnabled={academic.enabled}
+                    onChanged={reloadAcademic}
+                />
             </main>
 
             {/* MODALS */}

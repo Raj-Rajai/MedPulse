@@ -55,15 +55,27 @@ export const isCurrent = (y: AcademicYear) => !!Number(y.is_current);
 export function useAcademicYears() {
     const [years, setYears] = useState<AcademicYear[] | null>(null);
     const [defaultArea, setDefaultArea] = useState<FieldArea | null>(null);
+    const [enabled, setEnabled] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     const load = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/academic-years', { cache: 'no-store' });
-            const data = (await res.json().catch(() => ({}))) as { years?: AcademicYear[]; default_area?: FieldArea | null; error?: string };
+            const data = (await res.json().catch(() => ({}))) as {
+                years?: AcademicYear[];
+                default_area?: FieldArea | null;
+                enabled?: boolean;
+                error?: string;
+            };
             if (!res.ok) throw new Error(data.error || 'Unable to load academic years.');
             setYears(data.years || []);
             setDefaultArea(data.default_area || null);
+            const isOn = data.enabled !== undefined
+                ? Boolean(data.enabled)
+                : data.default_area
+                    ? data.default_area.enabled !== false && Number(data.default_area.enabled ?? 1) !== 0
+                    : true;
+            setEnabled(isOn);
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
@@ -72,5 +84,5 @@ export function useAcademicYears() {
 
     useEffect(() => { load(); }, [load]);
 
-    return { years, defaultArea, error, load };
+    return { years, defaultArea, enabled, setEnabled, error, load };
 }

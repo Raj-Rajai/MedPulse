@@ -29,8 +29,10 @@ export class GeofenceController {
     @UseGuards(AdminGuard)
     @Header('Cache-Control', 'no-store')
     async getAdminArea(@Req() req: Request) {
+        const area = await this.geofence.getArea(req.admin.college_id);
         return {
-            area: await this.geofence.getArea(req.admin.college_id),
+            area,
+            enabled: area ? area.enabled !== false : false,
             scope: req.admin.college_id ? 'Your college' : 'Default for all colleges',
         };
     }
@@ -39,18 +41,43 @@ export class GeofenceController {
     @UseGuards(AdminGuard)
     async saveAdminArea(@Req() req: Request) {
         if (!validArea(req.body)) throw fail(400, AREA_ERROR);
-        const { name, latitude, longitude, radius } = req.body;
-        await this.geofence.saveArea(req.admin.college_id || 0, name, latitude, longitude, radius, req.admin.id);
+        const { name, latitude, longitude, radius, enabled } = req.body;
+        await this.geofence.saveArea(
+            req.admin.college_id || 0,
+            name,
+            Number(latitude),
+            Number(longitude),
+            Number(radius),
+            req.admin.id,
+            typeof enabled === 'boolean' ? enabled : undefined,
+        );
         return { success: true };
+    }
+
+    @Put('admin/geofence/toggle')
+    @UseGuards(AdminGuard)
+    async toggleGeofence(@Req() req: Request) {
+        const enabled = !!req.body?.enabled;
+        const yearId = req.body?.academic_year_id;
+        if (yearId !== undefined && yearId !== null && yearId !== '' && yearId !== 'default') {
+            const numId = Number(yearId);
+            if (!(await this.geofence.getAcademicYear(numId))) throw fail(404, 'Academic year not found.');
+            await this.geofence.setYearAreaEnabled(numId, enabled, req.admin.id);
+            return { success: true, enabled, academic_year_id: numId };
+        }
+        await this.geofence.setEnabled(req.admin.college_id || 0, enabled, req.admin.id);
+        return { success: true, enabled };
     }
 
     @Get('admin/academic-years')
     @UseGuards(AdminGuard)
     @Header('Cache-Control', 'no-store')
     async listAcademicYears(@Req() req: Request) {
+        const defaultArea = await this.geofence.getArea(req.admin.college_id);
         return {
             years: await this.geofence.listAcademicYears(),
-            default_area: await this.geofence.getArea(req.admin.college_id),
+            default_area: defaultArea,
+            enabled: defaultArea ? defaultArea.enabled !== false : false,
         };
     }
 
@@ -117,15 +144,21 @@ export class GeofenceController {
     @UseGuards(StudentGuard)
     @Header('Cache-Control', 'no-store')
     async getStudentArea(@Req() req: Request) {
-        return { area: await this.geofence.getAreaForStudent(req.student) };
+        const area = await this.geofence.getAreaForStudent(req.student);
+        const enabled = area ? area.enabled !== false : false;
+        return { area, enabled };
     }
 
     @Post('student/geofence/check')
     @UseGuards(StudentGuard)
     async checkStudentLocation(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const area = await this.geofence.getAreaForStudent(req.student);
+        if (area && area.enabled === false) {
+            res.status(200);
+            return { success: true, enabled: false };
+        }
         const error = checkLocation(area, req.body);
         res.status(error ? 403 : 200);
-        return error ? { error } : { success: true };
+        return error ? { error, enabled: true } : { success: true, enabled: true };
     }
 }

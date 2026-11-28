@@ -9,7 +9,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { readStoredUser } from '../common/badges';
 import { TOAST_PROFILE, useToasts } from '../common/Toasts';
 import { errMsg, runWhenActive } from '../common/utils';
-import { LocationVerificationCard } from '../common/fieldLocation';
+import { LocationVerificationCard, useFieldLocationState } from '../common/fieldLocation';
 import { selectValue } from '../common/Select';
 import { useValidatedField, validatePhone, type ValidatedField } from '../../../shared/validation';
 import { OPT, fieldKit } from './fields';
@@ -61,6 +61,15 @@ function checkPhone(value: string, field: ValidatedField, inputId: string, toast
 export function FamilyManageApp() {
     const { showToast, container: toasts } = useToasts(TOAST_PROFILE);
     const [loggedInStudent] = useState(readStoredUser);
+    const locationState = useFieldLocationState();
+    const isReadOnly = locationState.readOnly;
+    const guardCud = (): boolean => {
+        if (isReadOnly) {
+            showToast('Read-Only Mode (R Only): You are away from your designated location. Create, Update, and Delete (CUD) operations are disabled.', 'error');
+            return true;
+        }
+        return false;
+    };
 
     const {
         activeModal,
@@ -162,6 +171,7 @@ export function FamilyManageApp() {
     }, []);
 
     const showCreateFamilyForm = () => {
+        if (guardCud()) return;
         const list = familiesRef.current;
         const nextNo = list.length > 0 ? Math.max(...list.map((f) => f.family_no || 0)) + 1 : 1;
         const defaultRoll = loggedInStudent ? String(loggedInStudent.roll_number) : '271';
@@ -386,6 +396,7 @@ export function FamilyManageApp() {
     const [editFamilySaving, setEditFamilySaving] = useState(false);
     const efPhone = useValidatedField('phone', true);
     const openEditFamilyModal = () => {
+        if (guardCud()) return;
         const d = familyData;
         if (!d) return;
         const study = extractStudyData(d);
@@ -458,6 +469,7 @@ export function FamilyManageApp() {
     };
 
     const confirmDeleteFamily = async () => {
+        if (guardCud()) return;
         const famId = selectedFamilyIdRef.current;
         if (!famId) return;
         const fam = familiesRef.current.find((f) => f.id === famId);
@@ -484,6 +496,7 @@ export function FamilyManageApp() {
         : allMembers;
 
     const confirmDeleteMember = async () => {
+        if (guardCud()) return;
         const cur = memberDataRef.current;
         if (!selectedMemberIdRef.current || !cur) return;
         const confirmed = await showConfirm('Delete Member Record', `Are you sure you want to permanently delete "${cur.name}" and all their clinical sub-entities (conditions, medications, allergies, history, and follow-ups)?`, 'Delete Member', true);
@@ -513,6 +526,7 @@ export function FamilyManageApp() {
     const [subSaving, setSubSaving] = useState<string | null>(null);
 
     const openAdd = (form: typeof cond, setModal: typeof setCondModal, title: string, focusId: string) => {
+        if (guardCud()) return;
         if (!selectedMemberIdRef.current) return;
         form.reset();
         setModal({ open: true, title });
@@ -542,6 +556,7 @@ export function FamilyManageApp() {
     };
 
     const subDelete = async (title: string, message: string, url: string, failMsg: string, okMsg: string, refreshFamilies = false) => {
+        if (guardCud()) return;
         const confirmed = await showConfirm(title, message, 'Delete', true);
         if (!confirmed) return;
         try {
@@ -561,24 +576,28 @@ export function FamilyManageApp() {
     const closeHist = () => { setHistModal((s) => ({ ...s, open: false })); hist.reset(); };
 
     const openEditCondition = (id: number) => {
+        if (guardCud()) return;
         const c = memberDataRef.current?.conditions?.find((x) => x.id === id);
         if (!c) return;
         cond.setValues({ condEditId: String(c.id), condName: inputValue(c.condition_name), condCategory: c.category || 'Other', condStatus: c.status || 'Active', condSeverity: c.severity || 'Moderate', condDate: c.diagnosis_date || '', condNotes: c.notes || '' });
         setCondModal({ open: true, title: '✏ Edit Medical Condition' });
     };
     const openEditMedication = (id: number) => {
+        if (guardCud()) return;
         const m = memberDataRef.current?.medications?.find((x) => x.id === id);
         if (!m) return;
         med.setValues({ medEditId: String(m.id), medName: inputValue(m.medication_name), medDosage: m.dosage || '', medFrequency: m.frequency || 'OD (Once daily)', medRoute: m.route || 'Oral', medPrescribedFor: m.prescribed_for || '', medStartDate: m.start_date || '', medAdherence: m.adherence_status || 'Good' });
         setMedModal({ open: true, title: '✏ Edit Medication' });
     };
     const openEditAllergy = (id: number) => {
+        if (guardCud()) return;
         const a = memberDataRef.current?.allergies?.find((x) => x.id === id);
         if (!a) return;
         alg.setValues({ algEditId: String(a.id), algAllergen: inputValue(a.allergen), algType: a.allergy_type || 'Drug', algSeverity: a.severity || 'Moderate', algReaction: a.reaction_description || '' });
         setAlgModal({ open: true, title: '✏ Edit Allergy' });
     };
     const openEditHistory = (id: number) => {
+        if (guardCud()) return;
         const h = memberDataRef.current?.history?.find((x) => x.id === id);
         if (!h) return;
         hist.setValues({ histEditId: String(h.id), histType: h.event_type || 'Surgery', histDesc: inputValue(h.description), histDate: h.event_date || '', histFacility: h.facility_name || '', histNotes: h.outcome_notes || '' });
@@ -622,6 +641,7 @@ export function FamilyManageApp() {
     const ls = useForm(LS_DEFAULTS);
     const [lsOpen, setLsOpen] = useState(false);
     const openEditLifestyleModal = () => {
+        if (guardCud()) return;
         if (!selectedMemberIdRef.current) return;
         const l: Lifestyle = memberDataRef.current?.lifestyle || {};
         ls.setValues({
@@ -658,6 +678,7 @@ export function FamilyManageApp() {
     const fu = useForm(FU_DEFAULTS);
     const [fuSaving, setFuSaving] = useState(false);
     const toggleFollowUpForm = () => {
+        if (!fuOpen && guardCud()) return;
         if (!selectedMemberIdRef.current) {
             showToast('Please select a household member first before logging a follow-up visit', 'warning');
             return;
@@ -705,6 +726,7 @@ export function FamilyManageApp() {
     const [emSaving, setEmSaving] = useState(false);
     const emPhone = useValidatedField('phone', true);
     const openEditMemberModal = () => {
+        if (guardCud()) return;
         const m = memberDataRef.current;
         if (!m) return;
         em.setValues({
@@ -803,6 +825,7 @@ export function FamilyManageApp() {
         setDraftAlert(false);
     };
     const openAddMemberModal = () => {
+        if (guardCud()) return;
         const famId = selectedFamilyIdRef.current;
         if (!famId) { showToast('Please select a household first', 'error'); return; }
         const fam = familiesRef.current.find((f) => f.id === famId);
@@ -898,6 +921,7 @@ export function FamilyManageApp() {
     const [provSaving, setProvSaving] = useState(false);
     const [copied, setCopied] = useState(false);
     const openProvisionModalForCurrentMember = () => {
+        if (guardCud()) return;
         const m = memberDataRef.current;
         if (!selectedMemberIdRef.current || !m) {
             showToast('Please select a family member first', 'info');
@@ -1006,6 +1030,7 @@ export function FamilyManageApp() {
         <>
             <main className="main-content">
                 <div id="globalAlert" style={{ display: 'none' }} />
+                <LocationVerificationCard buttonLabel="📍 Verify Location" />
 
                 <div className="page-header anim-fade-up">
                     <div>

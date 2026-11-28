@@ -187,8 +187,15 @@ export interface AcademicYear {
     latitude?: number | null;
     longitude?: number | null;
     radius?: number | null;
+    area_enabled?: number | boolean | null;
     area_updated_at?: string | null;
     students_count: number;
 }
 
-export interface FieldArea { name: string; latitude: number | string; longitude: number | string; radius: number | string }
+export interface FieldArea {
+    name: string;
+    latitude: number | string;
+    longitude: number | string;
+    radius: number | string;
+    enabled?: boolean | number;
+}

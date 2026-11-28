@@ -11,6 +11,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { BodyPortal, useStudentChrome } from './Page';
 import { MobileNavToggle, SidebarOverlay, StudentSidebar, type StudentRoute } from './StudentSidebar';
 import { SignInLink, StudentBadge, logoutToLogin } from './badges';
+import { installFieldLocation, refreshFieldLocationStatus } from './fieldLocation';
 import { standardSidebar } from './sidebar';
 import { getUser, type StudentSession } from '../../../shared/session';
 
@@ -72,7 +73,14 @@ export function StudentPortalApp({ initialRoute }: StudentPortalProps) {
     useStudentChrome(standardSidebar);
 
     useEffect(() => {
+        installFieldLocation();
+    }, []);
+
+    useEffect(() => {
         setUser(getUser());
+        if (route === 'home' || route === 'families' || route === 'entry') {
+            void refreshFieldLocationStatus(true);
+        }
     }, [route]);
 
     useEffect(() => {

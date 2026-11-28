@@ -9,31 +9,56 @@
  */
 import { useSyncExternalStore, type CSSProperties } from 'react';
 
-interface FieldLocation {
+export interface FieldLocation {
     latitude: number;
     longitude: number;
     accuracy: number;
     timestamp: number;
 }
 
-interface LocationState {
+export interface DesignatedArea {
+    name: string;
+    latitude: number;
+    longitude: number;
+    radius: number;
+    enabled?: boolean;
+}
+
+export interface LocationState {
     text: string;
     color: string;
+    enabled: boolean;
+    area: DesignatedArea | null;
     verified: boolean;
+    readOnly: boolean;
     busy: boolean;
 }
 
 const ACCENT = 'var(--accent, #6d28d9)';
-let state: LocationState = { text: 'Loading permitted area…', color: ACCENT, verified: false, busy: false };
+let state: LocationState = {
+    text: 'Loading permitted area…',
+    color: ACCENT,
+    enabled: true,
+    area: null,
+    verified: false,
+    readOnly: false,
+    busy: false,
+};
 const listeners = new Set<() => void>();
 const emit = (patch: Partial<LocationState>) => {
-    state = { ...state, ...patch };
+    const next = { ...state, ...patch };
+    next.readOnly = next.enabled && !next.verified;
+    state = next;
     listeners.forEach((l) => l());
 };
 const subscribe = (l: () => void) => {
     listeners.add(l);
     return () => listeners.delete(l);
 };
+
+export function useFieldLocationState(): LocationState {
+    return useSyncExternalStore(subscribe, () => state);
+}
 
 function setStatus(text: string, isSuccess = false, isError = false): void {
     emit({ text, color: isSuccess ? '#059669' : isError ? '#dc2626' : ACCENT });
@@ -57,7 +82,7 @@ function locate(): Promise<FieldLocation> {
                 timestamp: position.timestamp,
             }),
             (error) => reject(new Error(error.code === 1
-                ? 'Location permission denied. Allow location in your browser settings, then try again.'
+                ? 'Location permission denied. Only Read (R) operations are available until you allow location inside the designated area.'
                 : error.code === 3 ? 'Location timed out. Move outdoors and try again.'
                     : 'Location unavailable. Turn on device location and try again.')),
             { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
@@ -65,8 +90,12 @@ function locate(): Promise<FieldLocation> {
     });
 }
 
-async function verify(): Promise<FieldLocation> {
-    setStatus('Checking your current location…');
+async function verify(): Promise<FieldLocation | null> {
+    if (!state.enabled) {
+        emit({ verified: true });
+        return verifiedLocation;
+    }
+    setStatus('Checking your current location against designated field area…');
     const location = await locate();
     const response = await nativeFetch('/api/student/geofence/check', {
         method: 'POST',
@@ -74,20 +103,99 @@ async function verify(): Promise<FieldLocation> {
         body: JSON.stringify(location),
     });
     const data = await response.json();
+    if (data && data.enabled === false) {
+        verifiedLocation = location;
+        emit({ enabled: false, verified: true });
+        setStatus('Location binding is turned OFF by administrator — full Read & Write (CRUD) access enabled.', true, false);
+        return location;
+    }
     if (!response.ok) throw new Error(data.error || 'Location verification failed.');
     verifiedLocation = location;
-    setStatus('✓ Inside permitted area. You can enter data; location will be checked again when you save.', true);
+    setStatus(
+        `✓ Inside designated location${state.area ? ` (${state.area.name})` : ''}. Full Create, Read, Update & Delete (CRUD) access enabled.`,
+        true,
+    );
     emit({ verified: true });
     clearTimeout(expiryTimer);
     expiryTimer = setTimeout(() => {
         verifiedLocation = null;
-        setStatus('Location check expired. Check your location again to continue entering data.', false, true);
-        emit({ verified: false });
-    }, 60000);
+        if (state.enabled) {
+            setStatus('Location check expired. Verify your location again to perform CUD operations (Read-Only mode active).', false, true);
+            emit({ verified: false });
+        }
+    }, 300000);
     return location;
 }
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+export async function refreshFieldLocationStatus(autoVerify = true): Promise<void> {
+    try {
+        const response = await nativeFetch('/api/student/geofence', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to load permitted area.');
+        const isEnabled = data.enabled !== undefined ? Boolean(data.enabled) : Boolean(data.area && data.area.enabled !== false);
+        const area: DesignatedArea | null = data.area || null;
+
+        if (!isEnabled) {
+            clearTimeout(expiryTimer);
+            emit({
+                enabled: false,
+                area,
+                verified: true,
+                text: 'Location binding is turned OFF by administrator — full Read & Write (CRUD) access enabled.',
+                color: '#059669',
+            });
+            return;
+        }
+
+        if (!area) {
+            verifiedLocation = null;
+            emit({
+                enabled: true,
+                area: null,
+                verified: false,
+                text: 'Read-Only Mode (R Only): Your administrator has enabled location binding, but no village area is configured yet. CUD operations are disabled.',
+                color: '#dc2626',
+            });
+            return;
+        }
+
+        emit({ enabled: true, area });
+        if (verifiedLocation) {
+            // Re-validate existing cached location against the newly loaded area
+            const chk = await nativeFetch('/api/student/geofence/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...verifiedLocation, timestamp: Date.now() }),
+            });
+            if (chk.ok) {
+                emit({ verified: true });
+                setStatus(`✓ Inside designated location (${area.name}, within ${area.radius}m). Full CRUD access enabled.`, true, false);
+                return;
+            }
+            verifiedLocation = null;
+        }
+
+        if (autoVerify) {
+            emit({ busy: true });
+            try {
+                await verify();
+            } catch (error) {
+                verifiedLocation = null;
+                emit({ verified: false });
+                setStatus(errText(error), false, true);
+            } finally {
+                emit({ busy: false });
+            }
+        } else {
+            emit({ verified: false });
+            setStatus(`Designated area: ${area.name} (within ${area.radius} metres). Verify location to unlock CUD operations.`, false, false);
+        }
+    } catch (error) {
+        setStatus(errText(error), false, true);
+    }
+}
 
 /** Install the fetch wrapper and load the permitted area (idempotent). */
 export function installFieldLocation(): void {
@@ -102,47 +210,47 @@ export function installFieldLocation(): void {
             return nativeFetch(input, init);
         }
         try {
+            if (!state.enabled) {
+                const response = await nativeFetch(input, init);
+                if (response.status === 403) {
+                    const data = await response.clone().json().catch(() => ({}));
+                    if (data.code === 'LOCATION_REQUIRED') {
+                        await refreshFieldLocationStatus(true);
+                    }
+                }
+                return response;
+            }
             const location = verifiedLocation || (await verify());
             const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-            headers.set('X-Field-Location', JSON.stringify(location));
+            if (location) headers.set('X-Field-Location', JSON.stringify(location));
             const response = await nativeFetch(input, { ...init, headers });
             if (response.status === 403) {
-                const data = await response.clone().json();
+                const data = await response.clone().json().catch(() => ({}));
                 if (data.code === 'LOCATION_REQUIRED') {
                     verifiedLocation = null;
-                    setStatus(data.error, false, true);
+                    emit({ enabled: true, verified: false });
+                    setStatus(data.error || 'Read-Only Mode: Outside designated location.', false, true);
                 }
             }
             return response;
         } catch (error) {
             verifiedLocation = null;
+            emit({ verified: false });
             setStatus(errText(error), false, true);
-            return new Response(JSON.stringify({ error: errText(error) }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify({ error: errText(error), code: 'LOCATION_REQUIRED' }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' },
+            });
         }
     };
 
-    (async () => {
-        try {
-            const response = await nativeFetch('/api/student/geofence', { cache: 'no-store' });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Unable to load permitted area.');
-            if (data.area) {
-                setStatus(`Permitted area: ${data.area.name}, within ${data.area.radius} metres. Enable location to begin.`);
-            } else {
-                setStatus('Your administrator must configure the village area before field entry is available.', false, true);
-            }
-        } catch (error) {
-            setStatus(errText(error), false, true);
-        }
-    })();
+    void refreshFieldLocationStatus(true);
 }
 
-async function checkAgain(): Promise<void> {
+export async function checkAgain(): Promise<void> {
     emit({ busy: true });
     try {
-        await verify();
-    } catch (error) {
-        setStatus(errText(error), false, true);
+        await refreshFieldLocationStatus(true);
     } finally {
         emit({ busy: false });
     }
@@ -154,24 +262,55 @@ const cardStyle: CSSProperties = {
 };
 
 /** `buttonLabel`: family-manage.html renamed the button to "Check location" (and moved the card to the end of <main>). */
-export function LocationVerificationCard({ buttonLabel = '📍 Enable location / Check again' }: { buttonLabel?: string }) {
+export function LocationVerificationCard({ buttonLabel = '📍 Verify location / Check again' }: { buttonLabel?: string }) {
     const s = useSyncExternalStore(subscribe, () => state);
-    const style: CSSProperties = s.verified ? { ...cardStyle, borderColor: '#10b981', background: '#f0fdf4' } : cardStyle;
+    const style: CSSProperties = !s.enabled
+        ? { ...cardStyle, borderColor: '#10b981', background: '#f0fdf4' }
+        : s.verified
+            ? { ...cardStyle, borderColor: '#10b981', background: '#f0fdf4' }
+            : { ...cardStyle, borderColor: '#ef4444', background: '#fef2f2' };
+
     return (
         <section className="card anim-fade-up" id="locationVerificationCard" style={style}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ flex: '1', minWidth: '240px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '1.15rem' }}>📍</span>
-                        <strong style={{ fontSize: '0.98rem', color: 'var(--text-primary)', fontWeight: 700 }}>Location check</strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '1.15rem' }}>{s.readOnly ? '🔒' : '📍'}</span>
+                        <strong style={{ fontSize: '0.98rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+                            Student Location Binding
+                        </strong>
+                        <span
+                            id="studentLocationModeBadge"
+                            className={`badge ${s.readOnly ? 'badge-danger' : 'badge-success'}`}
+                            style={{ fontSize: '0.74rem', padding: '0.2rem 0.6rem', fontWeight: 700 }}
+                        >
+                            {!s.enabled
+                                ? '🔓 Location Binding OFF — Full CRUD'
+                                : s.verified
+                                    ? '🟢 Inside Designated Area — Full CRUD'
+                                    : '🔒 Read-Only Mode (R Only — CUD Disabled)'}
+                        </span>
                     </div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '6px', lineHeight: '1.45' }}>
-                        Allow location access to enter field records. Your current location is checked when you save; it is not continuously tracked or stored.
+                    {s.area && (
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 600 }}>
+                            Designated Area: <strong>{s.area.name}</strong> ({Number(s.area.latitude).toFixed(4)}, {Number(s.area.longitude).toFixed(4)}) • Allowed Radius: <strong>{s.area.radius}m</strong>
+                        </p>
+                    )}
+                    <p data-location-status="" role="status" aria-live="polite" style={{ fontSize: '0.82rem', fontWeight: 600, color: s.color, margin: '0' }}>
+                        {s.text}
                     </p>
-                    <p data-location-status="" role="status" aria-live="polite" style={{ fontSize: '0.82rem', fontWeight: 600, color: s.color, margin: '0' }}>{s.text}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button type="button" className="btn btn-primary" id="btnLocationCheck" disabled={s.busy} onClick={checkAgain} style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem', whiteSpace: 'nowrap' }}>{buttonLabel}</button>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        id="btnLocationCheck"
+                        disabled={s.busy}
+                        onClick={checkAgain}
+                        style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem', whiteSpace: 'nowrap' }}
+                    >
+                        {s.busy ? 'Checking GPS…' : buttonLabel}
+                    </button>
                 </div>
             </div>
         </section>

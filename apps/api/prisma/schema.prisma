@@ -65,6 +65,7 @@ model AcademicYear {
   latitude        Float?
   longitude       Float?
   radius          Float?
+  area_enabled    Int       @default(1)
   area_updated_by Int?
   area_updated_at String?
   created_at      DateTime? @default(now())
@@ -111,6 +112,7 @@ model StudentGeofence {
   latitude   Float
   longitude  Float
   radius     Float
+  enabled    Int    @default(1)
   updated_by Int
   updated_at String @default(dbgenerated("to_char(CURRENT_TIMESTAMP AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')"))
 
